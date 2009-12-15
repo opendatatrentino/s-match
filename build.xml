@@ -1,0 +1,38 @@
+<project name="S-Match" default="jar" basedir=".">
+    <description>S-Match - semantic matching algorithms library</description>
+
+    <target name="init" depends="clean">
+        <tstamp/>
+        <mkdir dir="classes"/>
+        <mkdir dir="build"/>
+        <mkdir dir="dist"/>
+        <property name="jar-name" location="build/s-match.jar"/>
+        <property name="zip-name" location="dist/s-match-${DSTAMP}.zip"/>
+    </target>
+
+    <target name="compile" depends="init" description="compile the source">
+        <javac srcdir="src" destdir="classes" encoding="utf-8">
+            <classpath>
+                <fileset dir="lib">
+                    <include name="**/*.jar"/>
+                </fileset>
+            </classpath>
+        </javac>
+    </target>
+
+    <target name="jar" depends="compile" description="generate the jar">
+        <mkdir dir="build"/>
+        <jar jarfile="${jar-name}" basedir="classes"/>
+    </target>
+
+    <target name="dist" depends="jar" description="generate the distribution zip file">
+        <zip destfile="${zip-name}" basedir="${basedir}" level="9"
+             includes="bin/** build/** conf/** data/** doc/** lib/** src/** test/** test-data/cw/*.txt build.xml license.txt readme.txt"/>
+    </target>
+
+    <target name="clean" description="clean up">
+        <delete dir="classes"/>
+        <delete dir="dist"/>
+        <delete dir="build"/>
+    </target>
+</project>

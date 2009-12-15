@@ -1,0 +1,34 @@
+Courses
+	College of Arts and Sciences
+		Earth and Atmospheric Sciences
+		Economics
+		English
+		Classics
+			Latin
+			Greek
+		Asian Languages
+			Indonesian
+			Sanskrit
+			Thai
+			Korean
+			Japanese
+			Hindi
+			Vietnamese
+			Chinese
+		History
+			Latin America History
+			America History
+			Modern European History
+			Ancient European History
+			Asia History
+			Medieval Renaissance and Early Modern European History
+		Mathematics
+		Astronomy
+		Computer Science
+		Linguistics
+	College of Engineering
+		Chemical Engineering
+		Civil and Environmental Engineering
+		Electrical Computer Engineering
+		Materials Science and Engineering
+		Earth and Atmospheric Sciences

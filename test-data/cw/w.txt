@@ -1,0 +1,39 @@
+Course
+	College of Arts and Sciences
+		English
+		Earth Sciences
+			Geophysics
+			Geological Sciences
+		Computer Science
+		Economics
+		Astronomy
+		Asian Languages
+			Korean
+			Vietnamese
+			Sanskrit
+			Thai
+			Japanese
+			Indian
+			Hindi
+			Indonesian
+			Chinese
+		Classics
+			Greek
+			Latin
+		History
+			Modern European History
+			History of Americas
+			Ancient and Medieval History
+			History Asia
+		Linguistics
+			French Linguistics
+			Spanish Linguistics
+			Romance Linguistics
+			Linguistics
+		Mathematics
+		History and Philosophy Science
+	College Engineering
+		Civil and Environmental Engineering
+		Electrical Engineering
+		Chemical Engineering
+		Materials Science and Engineering

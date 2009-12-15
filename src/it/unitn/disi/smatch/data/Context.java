@@ -1,0 +1,495 @@
+package it.unitn.disi.smatch.data;
+
+import java.util.HashSet;
+import java.util.Vector;
+
+/**
+ * A Context contains datastructure of ctxml file and some methods
+ * applyed to concept as whole.
+ *
+ * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
+ * @author Aliaksandr Autayeu avtaev@gmail.com
+ */
+public class Context implements IMatchingContext, IContextData, IContext {
+    //xml schemas information
+    public static final String NAMESPACE_URI = "http://www.w3.org/2001/XMLSchema";
+    public static final String INSTANCE_NAMESPACE_URI = "http://www.w3.org/2001/XMLSchema-instance";
+    private static String SCHEMA_LOCATION = "../datastructures/ctxs/ctxmlSchema.xsd";
+    //default name of the base node
+    public static final String BASE_NODE = "ctxBaseNode$c0";
+    //types of arcs
+    public static final String IS_A = "IsA";
+
+    //ctxml metadata variables
+    public static final String LANGUAGE_ENGLISH = "en";
+    public static final String STATUS_UNDEFINED = "undefined";
+    private String language;
+    private String namespace;
+    private String description;
+    private String ctxId;
+    private String label;
+    private String status;
+    private boolean normalized = true;
+    private String owner;
+    private String group;
+    private String securityAccessRights;
+    private String securityEncription;
+
+    //root concept
+    private INode root;
+
+    //tokens of context (used only in root concept)
+//    private Vector<String> tokens = new Vector<String>();
+    //hash to map formula to senses
+    //private Hashtable<String, Integer> ACoLid_RowColumnNumberHash = new Hashtable<String, Integer>();
+
+//    public Hashtable<String, Integer> getACoLid_RowColumnNumberHash() {
+//        return ACoLid_RowColumnNumberHash;
+//    }
+
+    private HashSet<String> synonyms = new HashSet<String>();
+    private HashSet<String> mg = new HashSet<String>();
+    private HashSet<String> lg = new HashSet<String>();
+    private HashSet<String> opp = new HashSet<String>();
+
+
+    //Constructor
+    public Context() {
+        ctxId = "555";
+        if (ctxId == null || ctxId.equals("")) {
+            System.out.println("Error on create Unique ID");
+        }
+        this.status = Context.STATUS_UNDEFINED;
+        description = "";
+        language = Context.LANGUAGE_ENGLISH;
+        namespace = "";
+        root = Node.getInstance();
+    }
+
+    public static IContext getInstance() {
+        return new Context();
+    }
+
+    public IContextData getContextData() {
+        return this;
+    }
+
+    public IMatchingContext getMatchingContext() {
+        return this;
+    }
+
+    /**
+     * The returned list is ordered as in depth first traversal
+     */
+    public Vector<INode> getAllNodes() {
+//        if (allNodes == null) {
+        INode root = getRoot();
+        Vector<INode> list = new Vector<INode>();
+        list.add(root);
+        list.addAll(root.getDescendants());
+//        Vector<INode> descendants = root.getDescendants();
+//        for (int i = 0; i < descendants.size(); i++)
+//            list.add(descendants.get(i));
+
+        for (int i = 0; i < list.size(); i++) {
+            list.get(i).getNodeData().setIndex(i);
+        }
+
+        return list;
+//        } else
+//            return allNodes;
+    }
+
+    /**
+     * The returned string is ordered as in depth first traversal
+     * Each name is followed by the specified separator
+     */
+    public String getAllNodeNames(String separator) {
+        separator = " " + separator + " ";
+        StringBuffer allConceptNames = new StringBuffer();
+        INode root = getRoot();
+        allConceptNames.append(root.getNodeName()).append(separator);
+        Vector<INode> descendants = root.getDescendants();
+        for (int i = 0; i < descendants.size(); i++) {
+            INode c = (descendants.get(i));
+            allConceptNames.append(c.getNodeName()).append(separator);
+        }
+        allConceptNames.setLength(allConceptNames.length() - 3);
+        return allConceptNames.toString();
+    }
+
+    public Vector<IAtomicConceptOfLabel> getAllContextACoLs() {
+//        if (allACoLs == null) {
+        INode root = getRoot();
+        Vector<IAtomicConceptOfLabel> result = new Vector<IAtomicConceptOfLabel>();
+        result = fillACoLsVector(root, result);
+        return result;
+//        } else
+//            return (Vector<AtomicConceptOfLabel>)allACoLs.clone();
+    }
+
+    private Vector<IAtomicConceptOfLabel> fillACoLsVector(INode cpt, Vector<IAtomicConceptOfLabel> partialResult) {
+        Vector<IAtomicConceptOfLabel> table = cpt.getNodeData().getACoLs();
+        for (IAtomicConceptOfLabel acol : table) {
+            String pos = acol.getPos();
+
+            if (!pos.equals("")) {
+                int tmpInt = partialResult.size();
+                partialResult.add(acol);
+                acol.setIndex(tmpInt);
+            }
+        }
+        if (cpt.getChildren().size() > 0) {
+            for (int i = 0; i < cpt.getChildren().size(); i++) {
+                INode child = cpt.getChildren().get(i);
+                this.fillACoLsVector(child, partialResult);
+            }
+        }
+        return partialResult;
+    }
+
+    /**
+     * clear all data acquired in linguistic preprocessing phase
+     */
+    public void resetOldPreprocessing() {
+        Vector<INode> allNodes = new Vector<INode>(root.getDescendants());
+        allNodes.add(root);
+        for (int i = 0; i < allNodes.size(); i++) {
+            INodeData c = allNodes.get(i).getNodeData();
+            c.resetLogicalFormula();
+            c.resetSetOfSenses();
+        }
+    }
+
+    //Getters and Setters for ctxml metadata values
+
+    public void setRoot(INode root) {
+        this.root = root;
+    }
+
+    public void setSchemaLocation(String schemaLocation) {
+        setSCHEMA_LOCATION(schemaLocation);
+    }
+
+    public void setCtxId(String ctxId) {
+        if (ctxId == null || ctxId.equals("")) {
+            System.out.println("Null input context identifier");
+        }
+        this.ctxId = ctxId;
+    }
+
+    public void setLanguage(String language) {
+        if (language == null || language.equals("")) {
+            System.out.println("Null concept hiearchy reference language");
+        }
+        this.language = language;
+    }
+
+    public void setNamespace(String namespace) {
+        this.namespace = namespace;
+    }
+
+    public INode getRoot() {
+        return root;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public void setLabel(String label) {
+        this.label = label;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public void setOwner(String owner) {
+        this.owner = owner;
+    }
+
+    public void setGroup(String group) {
+        this.group = group;
+    }
+
+    public void setSecurityAccessRights(String securityAccessRights) {
+        this.securityAccessRights = securityAccessRights;
+    }
+
+    public void setSecurityEncription(String securityEncription) {
+        this.securityEncription = securityEncription;
+    }
+
+    public String newNode(String NodeLabel, String fatherId) {
+        String newNodeId = this.getNewNodeId();
+        String newRootNodeId = newNodeId;
+        INode node = Node.getInstance(NodeLabel, newNodeId);
+        boolean firstRoot = false;
+        // The specified input node is the root of the context
+        if (fatherId == null) {
+            INode oldRoot = this.getRoot();
+            this.setRoot(node);
+            // The specified node is the new root of the context, so we need to
+            // save the old root and made the new root father of the old one.
+            if (oldRoot != null && oldRoot.getNodeId() != null && !oldRoot.getNodeId().equals("")) {
+                oldRoot.getNodeData().setParent(node);
+                this.addNode(oldRoot);
+            } else {
+                firstRoot = true;
+            }
+        } else {
+            // The specified input node is not a root
+            INode father = this.getNode(fatherId);
+            node.getNodeData().setParent(father);
+            this.addNode(node);
+        }
+
+        /// we must change the ids of all the context
+        if (fatherId == null && !firstRoot) {
+            Vector toChangeIds = node.getDescendants();
+            for (int i = 0; i < toChangeIds.size(); i++) {
+                INode change = (INode) (toChangeIds.get(i));
+                newNodeId = this.getNewNodeId();
+                change.getNodeData().setNodeId(newNodeId);
+                change.getNodeData().setNodeUniqueName();
+            }
+        }
+        if (fatherId == null) {
+            return newRootNodeId;
+        }
+        return newNodeId;
+    }
+
+    public String renameNode(String NodeId, String newLabel) {
+        INodeData node = this.getNode(NodeId).getNodeData();
+        String newNodeId = this.getNewNodeId();
+        node.setNodeName(newLabel);
+        node.setNodeId(newNodeId);
+        node.setNodeUniqueName();
+        node.resetLogicalFormula();
+        node.resetSetOfSenses();
+        return newNodeId;
+    }
+
+    public void moveNode(String NodeId, String newFatherNodeId) {
+        /// first remove the Node from its actual position
+        INode toBeMoved = this.getNode(NodeId);
+        Vector<INode> nodesToBeMoved;
+        if (newFatherNodeId != null) {
+            nodesToBeMoved = toBeMoved.getDescendants();
+        } else {
+            nodesToBeMoved = this.getAllNodes();
+        }
+        this.removeNode(NodeId);
+        /// now insert the Node in its new position in the hierarchy
+        String newNodeId = this.getNewNodeId();
+        toBeMoved.getNodeData().setNodeId(newNodeId);
+        toBeMoved.getNodeData().setNodeUniqueName();
+        if (newFatherNodeId != null) {
+            INode father = this.getNode(newFatherNodeId);
+            toBeMoved.getNodeData().setParent(father);
+            /// put the new Node in the hierarchy
+            this.addNode(toBeMoved);
+        } else {
+            INode oldRoot = this.getRoot();
+            /// put the new root in the hierarchy
+            toBeMoved.getNodeData().setParent(null);
+            this.setRoot(toBeMoved);
+            oldRoot.getNodeData().setParent(toBeMoved);
+            /// put the old root in the hierarchy
+            this.addNode(oldRoot);
+        }
+        /// change the ids of all the moved Nodes
+        for (int i = 0; i < nodesToBeMoved.size(); i++) {
+            INode move = nodesToBeMoved.get(i);
+            newNodeId = this.getNewNodeId();
+            move.getNodeData().setNodeId(newNodeId);
+            move.getNodeData().setNodeUniqueName();
+        }
+    }
+
+    //Context staff
+    /**
+     * This method can be used to add a given Node to the Node
+     * hierarchy.
+     *
+     * @param Node The Node to be added
+     */
+    private void addNode(INode Node) {
+        INode father = Node.getParent();
+        if (father != null) {
+            father.addChild(Node);
+        }
+    }
+
+    /**
+     * This method can be used to remove a given Node from the Node hierarchy.
+     * Note that if you remove a node that is not a leaf, all its children will be
+     * removed from the hierarchy. So, if this method is called from the editor, the
+     * editor must "conserv" the children node and if the user decide to connect one
+     * of them (for example C) to another node of the hierarchy the editor must
+     * re-add the Node C to the Node hierarchy (using the addNode(C) method)
+     * otherwise the Node will be lost.
+     *
+     * @param NodeId The identifier of the Node to be removed
+     */
+    public void removeNode(String NodeId) {
+        INode toBeRemoved = getNode(NodeId);
+        INode father = toBeRemoved.getParent();
+        father.removeChild(toBeRemoved);
+    }
+
+    private int countNode = 1;
+
+    private String getNewNodeId() {
+        //Get the time at which the object has been created, expressed
+        //in milliseconds
+        long now = (new java.util.Date()).getTime();
+        String id = "c" + countNode + "_" + ((now / 1000) % (365 * 24 * 3600));
+        countNode++;
+        return id;
+    }
+
+    /**
+     * This method can be used to find a concept in the hierarchy using its Concept Id
+     */
+    public INode getNode(String conceptId) {
+        INode result = getNode(conceptId, root);
+        if (result == null) {
+            System.out.println("Required concept not in the hiearchy");
+        }
+        return result;
+    }
+
+    /**
+     * This method can be used to find a concept in the sub-hierarchy starting
+     * form the specified node, by the using its Node Id
+     *
+     * @param nodeId The Id of the concept to be returned
+     * @param node   The root of the sub-hierarchy
+     * @return The concept if present in the context, null if the concept is not
+     *         found
+     */
+    private INode getNode(String nodeId, INode node) {
+        INode result = null;
+        String localId = node.getNodeId();
+        if (localId.equals(nodeId)) {
+            return node;
+        }
+        Vector<INode> children = node.getChildren();
+        for (int i = 0; i < children.size(); i++) {
+            INode child = children.get(i);
+            result = getNode(nodeId, child);
+            if (result != null) {
+                break;
+            }
+        }
+        return result;
+    }
+
+
+    public static String getSCHEMA_LOCATION() {
+        return SCHEMA_LOCATION;
+    }
+
+    public static void setSCHEMA_LOCATION(String SCHEMA_LOCATION) {
+        Context.SCHEMA_LOCATION = SCHEMA_LOCATION;
+    }
+
+    public String getLanguage() {
+        return language;
+    }
+
+    public String getNamespace() {
+        return namespace;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public String getCtxId() {
+        return ctxId;
+    }
+
+    public String getLabel() {
+        return label;
+    }
+
+    public String getGroup() {
+        return group;
+    }
+
+    public HashSet<String> getMg() {
+        return mg;
+    }
+
+    public void setMg(HashSet<String> mg) {
+        this.mg = mg;
+    }
+
+    public HashSet<String> getLg() {
+        return lg;
+    }
+
+    public void setLg(HashSet<String> lg) {
+        this.lg = lg;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public boolean isNormalized() {
+        return normalized;
+    }
+
+    public void setNormalized(boolean normalized) {
+        this.normalized = normalized;
+    }
+
+    public String getOwner() {
+        return owner;
+    }
+
+    public String getSecurityAccessRights() {
+        return securityAccessRights;
+    }
+
+    public String getSecurityEncription() {
+        return securityEncription;
+    }
+
+    public HashSet<String> getSynonyms() {
+        return synonyms;
+    }
+
+    public void setSynonyms(HashSet<String> synonyms) {
+        this.synonyms = synonyms;
+    }
+
+    public HashSet<String> getOpp() {
+        return opp;
+    }
+
+    public void setOpp(HashSet<String> opp) {
+        this.opp = opp;
+    }
+
+    public void sort() {
+        root.getNodeData().sort();
+    }
+
+    public void updateNodeIds() {
+        int oldCountNode = countNode;
+        countNode = 1;
+        Vector<INode> allNodes = new Vector<INode>(root.getDescendants());
+        allNodes.add(root);
+        for (INode node : allNodes) {
+            node.getNodeData().setNodeId(getNewNodeId());
+            node.getNodeData().setNodeUniqueName();
+        }
+        countNode = oldCountNode;
+    }
+}
