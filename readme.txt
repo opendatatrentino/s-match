@@ -1,43 +1,34 @@
-This is the readme.txt file for S-Match
-
 1. About S-Match
 
-S-Match is a semantic matching algorithm developed at the 
-University of Trento under the direction of Fausto Giunchiglia.
+S-Match is a semantic matching algorithm developed at the University of Trento
+under the direction of Fausto Giunchiglia.
 
-To learn more about S-Match, consult papers describing various
-aspects of the algorithm and its implementation.
+To learn more about S-Match visit: http://s-match.org/
 
 2. Current Release
 
-This release is a research software, intended mainly for use
-by researchers to conduct experiments.
+This release is a research software, intended mainly for use by researchers to
+conduct experiments.
 
 3. Disclaimer
 
-This release contains not very robust and not optimized code. Its main
-use was and is to conduct experiments. It does contain code
-written as fast as possible with little thinking about memory consumption
-and processing speed.
+This release contains not very robust and not optimized code. Its main use was
+and is to conduct experiments. It does contain code written as fast as possible
+with sometimes little thinking about memory consumption and processing speed.
 
-4. Running
+4. Getting started
 
-To run S-Match:
-
-        0. Make sure your system have WordNet installed.
-           If WordNet is installed in other location than the default one,
-           check file_properties.xml (Windows) or file_propertiesL.xml
-           (Linux) and update dictionary_path to reflect actual WordNet
-           location.
+Run the matching of provided sample trees by running bin/all-cw.cmd (Windows) or 
+all-cw.sh (Linux). This will execute the following steps:
+  a) convert provided trees from text files to internal XML format
+  b) enrich the trees with logical formulas ("offline" steps of the algorithm)
+  c) match the trees ("online" steps of the algorithm)
+  d) match the trees with the minimal matching algorithm
         
-        1. Run the matching of provided sample trees by running
-           bin/all-cw.cmd (Windows) or all-cw.sh (Linux). This will execute
-           the following steps:
-             a) convert provided trees from text files to internal XML format
-             b) enrich the trees with logical formulas ("offline" or 1 and
-                2 steps of the algorithm)
-             c) match the trees ("online" or 3 and 4 steps of the algorithm)
-             d) match the trees with the minimal matching algorithm
-        
-        The script will run normal matching (c) and minimal matching (d)
-        algorithms, rendering results into test-data\cw folder.
+The script will render the results of the
+step c) into: test-data/cw/result-SMatchDefault-cw.txt 
+step d) into: test-data/cw/result-SMatchDefaultMinimal-cw.txt
+
+5. Documentation
+
+For S-Match documentation visit: http://s-match.org/documentation.html
