@@ -26,12 +26,27 @@
         <jar jarfile="${jar-name}" basedir="classes"/>
     </target>
 
-    <target name="dist" depends="jar" description="generate the distribution zip file">
+    <target name="dist" depends="jar,javadoc" description="generate the distribution zip file">
         <zip destfile="${zip-name}" basedir="${basedir}" level="9"
              includes="bin/** build/** conf/** data/** doc/** lib/** src/** test/** test-data/cw/*.txt build.xml license.txt readme.txt"/>
         <zip destfile="${src-zip-name}" basedir="${basedir}" level="9"
              includes="bin/** build/** conf/** doc/** lib/** src/** test/** test-data/cw/*.txt build.xml license.txt readme.txt"/>
+    </target>
 
+    <target name="javadoc" depends="" description="generate the javadoc">
+        <delete dir="doc/api"/>
+        <javadoc packagenames="it.unitn.disi.smatch.*"
+           sourcepath="src"
+           defaultexcludes="yes"
+           destdir="doc/api"
+           author="true"
+           version="true"
+           use="true"
+           encoding="utf8"
+           docencoding="utf8"
+           windowtitle="S-Match API">
+           <bottom><![CDATA[<i>&copy; 2010 <a href="http://disi.unitn.it/~knowdive/">Knowdive</a> @ <a href="http://disi.unitn.it/">DISI</a></i>]]></bottom>
+        </javadoc>
     </target>
 
     <target name="clean" description="clean up">
