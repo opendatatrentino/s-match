@@ -35,7 +35,7 @@ public interface INodeData {
     /**
      * returns atomic concepts of labels associated with the givem node
      *
-     * @return
+     * @return atomic concepts of labels
      */
     Vector<IAtomicConceptOfLabel> getACoLs();
 
@@ -44,7 +44,7 @@ public interface INodeData {
      * Basically, all concepts including parent concepts with some filtering
      * Same filter is used in getAllContextACols, therefore it is needed here.
      *
-     * @return
+     * @return vector of atomic concepts for the node matching task
      */
     Vector<IAtomicConceptOfLabel> getNodeMatchingTaskACols();
 
@@ -94,21 +94,21 @@ public interface INodeData {
     /**
      * returns path to root string for the given node
      *
-     * @return
+     * @return path to root string
      */
     String getPathToRootString();
 
     /**
      * returns depth of the node in the context
      *
-     * @return
+     * @return depth of the node in the context
      */
     int getDepth();
 
     /**
      * Gets index in a Vector. This is to avoid hashtables.
      *
-     * @return
+     * @return index in a Vector. 
      */
     int getIndex();
 
@@ -123,7 +123,7 @@ public interface INodeData {
      * Indicates whether this node belongs to the source context.
      * This is needed for new algorithms which sometimes swap order.
      *
-     * @return
+     * @return whether this node belongs to the source context
      */
     public boolean getSource();
 

@@ -12,7 +12,7 @@ public interface IContext {
     /**
      * Returns an interface to context metadata
      *
-     * @return
+     * @return an interface to context metadata
      */
     IContextData getContextData();
 
@@ -20,7 +20,7 @@ public interface IContext {
      * returns interface to context level functionalities
      * of matching engine
      *
-     * @return
+     * @return interface to context level
      */
     IMatchingContext getMatchingContext();
 
@@ -28,21 +28,21 @@ public interface IContext {
      * Returns all the nodes in the tree
      * The returned list is ordered as in depth first traversal
      *
-     * @return
+     * @return all the nodes in the tree
      */
     Vector<INode> getAllNodes();
 
     /**
      * Sets a new root for the context
      *
-     * @param root
+     * @param root a new root
      */
     void setRoot(INode root);
 
     /**
      * returns the root of the context
      *
-     * @return
+     * @return the root of the context
      */
     INode getRoot();
 
@@ -51,7 +51,7 @@ public interface IContext {
      *
      * @param NodeLabel label of the node
      * @param fatherId  id of the father node
-     * @return
+     * @return a new node
      */
     String newNode(String NodeLabel, String fatherId);
 
@@ -60,7 +60,7 @@ public interface IContext {
      *
      * @param NodeId
      * @param newLabel
-     * @return
+     * @return new name
      */
     String renameNode(String NodeId, String newLabel);
 
@@ -93,7 +93,7 @@ public interface IContext {
      * Each name is followed by the specified separator
      *
      * @param separator
-     * @return
+     * @return string of the labels of all the nodes in the context
      */
     String getAllNodeNames(String separator);
 

@@ -106,7 +106,7 @@ public class DefaultWordNetMatcher implements IWordNetMatcher {
      * @param source
      * @param target
      * @param rel
-     * @return
+     * @return whether particular type of relation between two senses holds according to oracle
      */
     private boolean getRelationFromOracle(String source, String target, char rel) {
         char tmp;
