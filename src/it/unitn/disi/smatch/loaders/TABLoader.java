@@ -9,29 +9,34 @@ import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+
 
 /**
  * Loads context from a tab-separated file.
  *
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
  * @author Aliaksandr Autayeu avtaev@gmail.com
+ * @author Juan Pane pane@disi.unitn.it
  */
 public class TABLoader implements ILoader {
 
+	/*
+	 * refactored, deleted class level variables and changed rootPath from array[]
+	 * to allay list
+	 */
+	//TODO the loader could be made static, but this requires a change in the ILoader interface 
+	
+	
     private static final Logger log = Logger.getLogger(TABLoader.class);
 
-    private Context result = null;
-    private BufferedReader input;
-    private String[] rootPath = new String[50];//max depth
 
     public IContext loadContext(String fileName) {
-        try {
-            result = new Context();
-            input = new BufferedReader(new InputStreamReader(new FileInputStream(fileName), "UTF-8"));
+    	IContext result = null;
+    	try {
+    		BufferedReader input = new BufferedReader(new InputStreamReader(new FileInputStream(fileName), "UTF-8"));
             try {
-                String fatherConceptId = result.newNode("Top", null);
-                rootPath[0] = fatherConceptId;
-                process();
+                result = process(input);
             } finally {
                 input.close();
             }
@@ -43,8 +48,23 @@ public class TABLoader implements ILoader {
         return result;
     }
 
-    private void process() throws IOException {
-        input.readLine();//skip Top
+    
+    /**
+     * Processes the file loading the content. This content is supposed to be
+     * formatted in tab indented format.
+     * @param input		Reader for the input file
+     * @return			the loaded IContext
+     * @throws IOException
+     */
+    private IContext process(BufferedReader input) throws IOException {
+    	IContext result = new Context();
+    	ArrayList<String> rootPath = new ArrayList<String>();
+
+    	//loads the root node
+    	String fatherConceptId = result.newNode(input.readLine(), null);
+        rootPath.add(fatherConceptId);
+        
+        
         String fatherId;
         int old_depth = 0;
         String line;
@@ -55,28 +75,52 @@ public class TABLoader implements ILoader {
             int int_depth = numOfTabs(line);
             String name = line.substring(int_depth);
             if (int_depth == old_depth) {
-                fatherId = rootPath[old_depth - 1];
+                fatherId = rootPath.get(old_depth - 1);
                 String newCID = result.newNode(name, fatherId);
-                rootPath[int_depth] = newCID;
+                setArrayNodeID(int_depth, rootPath, newCID);
             } else if (int_depth > old_depth) {
-                fatherId = rootPath[old_depth];
+                fatherId = rootPath.get(old_depth);
                 String newCID = result.newNode(name, fatherId);
-                rootPath[int_depth] = newCID;
+                setArrayNodeID(int_depth, rootPath, newCID);
                 old_depth = int_depth;
             } else if (int_depth < old_depth) {
-                fatherId = rootPath[int_depth - 1];
+                fatherId = rootPath.get(int_depth - 1);
                 String newCID = result.newNode(name, fatherId);
-                rootPath[int_depth] = newCID;
+                setArrayNodeID(int_depth, rootPath, newCID);
                 old_depth = int_depth;
             }
         }
+        
+        return result;
     }
-
-    private int numOfTabs(String in) {
+    
+    /**
+     * counts the number of tabs in the line
+     * @param line	
+     * @return 	the number of tabs at the beginning of the line
+     */
+    private int numOfTabs(String line) {
         int close_counter = 0;
-        while (close_counter < in.length() && '\t' == in.charAt(close_counter)) {
+        while (close_counter < line.length() && '\t' == line.charAt(close_counter)) {
             close_counter++;
         }
         return close_counter;
     }
+    
+    
+    /**
+     * sets the nodeID at a given position of the array.
+     * Changes the current value if there is one, if there is no value, add a new one
+     * @param index		position to be filled
+     * @param array		array to be modified
+     * @param nodeID	value to be set
+     */
+    private static void setArrayNodeID(int index, ArrayList<String> array, String nodeID){
+        if(index < array.size() ){
+        	array.set(index, nodeID);
+        } else {
+        	array.add(index, nodeID);
+        }
+    }
+    
 }

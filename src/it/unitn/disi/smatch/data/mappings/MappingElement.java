@@ -92,6 +92,8 @@ public class MappingElement implements IMappingElement, Comparable {
 
     }
 
+    //TODO specify which is the format this function loads, certainly is not (source\trel\ttarge)
+    //
     public MappingElement(String fileLine) {
         if (-1 == fileLine.indexOf("\t")) {
             StringTokenizer st1 = new StringTokenizer(fileLine);

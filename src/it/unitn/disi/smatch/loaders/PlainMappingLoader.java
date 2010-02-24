@@ -132,6 +132,8 @@ public class PlainMappingLoader implements IMappingLoader {
         return cNodeMatrix;
     }
 
+    
+    //TODO move this method to the INode interface
     public String getNodePath(INode node) {
         String result = "";
         INode sparent = node;
