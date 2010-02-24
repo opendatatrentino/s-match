@@ -3,3 +3,5 @@ classes
 log
 dist
 release.sh
+.classpath
+.project
