@@ -16,11 +16,7 @@ import javax.swing.JSplitPane;
 import javax.swing.JTree;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreePath;
-import javax.swing.tree.TreeSelectionModel;
-
+import javax.swing.tree.*;
 
 
 import it.unitn.disi.smatch.MatchManager;
@@ -63,9 +59,10 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
 /**
+ * Provides basic S-Match GUI.
  * 
  * @author Juan Pane (pane@disi.unitn.it)
- *
+ * @author Aliaksandr Autayeu avtaev@gmail.com
  */
 public class MatchingBasicGUI extends JPanel
 implements ActionListener, ComponentListener, AdjustmentListener, TreeExpansionListener   {
@@ -110,8 +107,8 @@ implements ActionListener, ComponentListener, AdjustmentListener, TreeExpansionL
 		sourceRowForPath = new HashMap<String, Integer>();
 		targetRowForPath = new HashMap<String, Integer>();
 
-		//Create the nodes.
-		String leftFileName = "D:\\ikke\\Workspaces\\WorkspaceSMatch\\s-match\\test-data\\cw\\c.txt";
+        //Create the nodes.
+        String leftFileName = "..\\test-data\\cw\\c.txt";
 
 		//Create the scroll pane and add the tree to it.        
 		sourceContext = createTree(leftFileName,sourceTree,sourceRowForPath);
@@ -119,8 +116,8 @@ implements ActionListener, ComponentListener, AdjustmentListener, TreeExpansionL
 		leftTreeView.getHorizontalScrollBar().addAdjustmentListener(this);
 		leftTreeView.getVerticalScrollBar().addAdjustmentListener(this);
 
-		//Create the nodes.
-		String rightFileName = "D:\\ikke\\Workspaces\\WorkspaceSMatch\\s-match\\test-data\\cw\\w.txt";
+        //Create the nodes.
+        String rightFileName = "..\\test-data\\cw\\w.txt";
 
 		//Create the scroll pane and add the tree to it. 
 
@@ -129,7 +126,7 @@ implements ActionListener, ComponentListener, AdjustmentListener, TreeExpansionL
 		rightTreeView.getHorizontalScrollBar().addAdjustmentListener(this);
 		rightTreeView.getVerticalScrollBar().addAdjustmentListener(this);
 
-		String mappingFile = "D:\\ikke\\Workspaces\\WorkspaceSMatch\\s-match\\test-data\\cw\\result-SMatchDefaultMinimal-cw.txt";
+		String mappingFile = "..\\test-data\\cw\\result-SMatchDefaultMinimal-cw.txt";
 		//        String mappingFile = "D:\\ikke\\Workspaces\\WorkspaceSMatch\\s-match\\test-data\\cw\\result-SMatchDefault-cw.txt";
 		try {
 //			mappings = PlainMappingLoader.loadMapping(leftTree, rightTree, );
@@ -262,9 +259,10 @@ implements ActionListener, ComponentListener, AdjustmentListener, TreeExpansionL
 	private IContext createTree(String fileName,JTree jTree, HashMap<String, Integer> rowForPathHash){
 		//Create the nodes.
 
-		TABLoader loader = new TABLoader();
-		IContext context = loader.loadContext(fileName);
-		DefaultMutableTreeNode rootNode = convertINodeToMutableTreeNode(null, context.getRoot());
+        TABLoader loader = new TABLoader();
+        IContext context = loader.loadContext(fileName);
+        //DefaultMutableTreeNode rootNode = convertINodeToMutableTreeNode(null, context.getRoot());
+        TreeNode rootNode = context.getRoot();
 
 		//Create a tree that allows one selection at a time.
 		DefaultTreeModel treeModel = new DefaultTreeModel(rootNode);
@@ -292,10 +290,10 @@ implements ActionListener, ComponentListener, AdjustmentListener, TreeExpansionL
 	 */
     private String getPathForTreePath(TreePath treePath) {
         String result = "";
-       Object[] path = treePath.getPath();
-       for(int i = path.length-1 ; i >= 0; i--){
-    	   result = "\\" + path[i] + result;
-       }
+        Object[] path = treePath.getPath();
+        for (int i = path.length - 1; i >= 0; i--) {
+            result = "\\" + path[i] + result;
+        }
         return result;
     }
 	

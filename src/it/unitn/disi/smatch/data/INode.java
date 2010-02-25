@@ -1,5 +1,7 @@
 package it.unitn.disi.smatch.data;
 
+import javax.swing.tree.MutableTreeNode;
+import javax.swing.tree.TreeNode;
 import java.util.Vector;
 
 /**
@@ -8,7 +10,7 @@ import java.util.Vector;
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
-public interface INode {
+public interface INode extends MutableTreeNode {
 
     /**
      * Adds child to the given node.

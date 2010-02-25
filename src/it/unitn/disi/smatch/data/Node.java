@@ -3,6 +3,8 @@ package it.unitn.disi.smatch.data;
 import orbital.logic.imp.Formula;
 import orbital.moon.logic.ClassicalLogic;
 
+import javax.swing.tree.MutableTreeNode;
+import javax.swing.tree.TreeNode;
 import java.util.*;
 
 /**
@@ -36,8 +38,11 @@ public class Node implements INodeData, INode {
     //might be better implemented for a whole context via BitSet
     private boolean source;
 
+    private Object userObject;
+
     private static final Comparator<INode> nodeComparator = new Comparator<INode>() {
         //no safety checks - it should be run properly :-)
+
         public int compare(INode e1, INode e2) {
             return e1.getNodeName().compareTo(e2.getNodeName());
         }
@@ -177,7 +182,7 @@ public class Node implements INodeData, INode {
     public int getDescendantCount() {
         int result = 1;
         for (INode child : children) {
-            result = result + child.getDescendantCount();    
+            result = result + child.getDescendantCount();
         }
         return result;
 
@@ -252,6 +257,7 @@ public class Node implements INodeData, INode {
     }
 
     //Get path to root for output
+
     public String getPathToRootString() {
         INode concept = this;
         StringBuffer path = new StringBuffer("/");
@@ -267,8 +273,32 @@ public class Node implements INodeData, INode {
         return path.toString();
     }
 
+    public TreeNode getChildAt(int childIndex) {
+        return children.get(childIndex);
+    }
+
+    public int getChildCount() {
+        return children.size();
+    }
+
     public INode getParent() {
         return parent;
+    }
+
+    public int getIndex(TreeNode node) {
+        return children.indexOf(node);
+    }
+
+    public boolean getAllowsChildren() {
+        return 0 < getChildCount();
+    }
+
+    public boolean isLeaf() {
+        return 0 == getChildCount();
+    }
+
+    public Enumeration children() {
+        return children.elements();
     }
 
     public String getParentRelationType() {
@@ -390,5 +420,39 @@ public class Node implements INodeData, INode {
             }
         }
         return partialResult;
+    }
+
+    public void insert(MutableTreeNode child, int index) {
+        if (child instanceof Node) {
+            children.insertElementAt((INode) child, index);
+        }
+    }
+
+    public void remove(int index) {
+        children.remove(index);
+    }
+
+    public void remove(MutableTreeNode node) {
+        children.remove(node);
+    }
+
+    public void setUserObject(Object object) {
+        this.userObject = object;
+    }
+
+    public void removeFromParent() {
+        if (null != parent) {
+            parent.removeChild(this);
+        }
+        parent = null;
+    }
+
+    public void setParent(MutableTreeNode newParent) {
+        if (newParent instanceof Node) {
+            if (null != parent) {
+                removeFromParent();
+            }
+            parent = (Node) newParent;
+        }
     }
 }
