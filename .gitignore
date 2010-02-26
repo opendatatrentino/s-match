@@ -5,3 +5,4 @@ dist
 release.sh
 .classpath
 .project
+test-data/manu

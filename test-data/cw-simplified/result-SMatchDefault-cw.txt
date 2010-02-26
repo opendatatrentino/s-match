@@ -1,0 +1,43 @@
+\Courses	=	\Course
+\Courses	>	\Course\College of Arts and Sciences
+\Courses	>	\Course\College of Arts and Sciences\Computer Science
+\Courses	>	\Course\College of Arts and Sciences\Earth Sciences
+\Courses	>	\Course\College of Arts and Sciences\Earth Sciences\Geological Sciences
+\Courses	>	\Course\College of Arts and Sciences\Earth Sciences\Geophysics
+\Courses	>	\Course\College of Arts and Sciences\History
+\Courses	>	\Course\College of Arts and Sciences\History\Ancient and Medieval History
+\Courses	>	\Course\College of Arts and Sciences\History\History of Americas
+\Courses\College of Arts and Sciences	<	\Course
+\Courses\College of Arts and Sciences	=	\Course\College of Arts and Sciences
+\Courses\College of Arts and Sciences	>	\Course\College of Arts and Sciences\Computer Science
+\Courses\College of Arts and Sciences	>	\Course\College of Arts and Sciences\Earth Sciences
+\Courses\College of Arts and Sciences	>	\Course\College of Arts and Sciences\Earth Sciences\Geological Sciences
+\Courses\College of Arts and Sciences	>	\Course\College of Arts and Sciences\Earth Sciences\Geophysics
+\Courses\College of Arts and Sciences	>	\Course\College of Arts and Sciences\History
+\Courses\College of Arts and Sciences	>	\Course\College of Arts and Sciences\History\Ancient and Medieval History
+\Courses\College of Arts and Sciences	>	\Course\College of Arts and Sciences\History\History of Americas
+\Courses\College of Arts and Sciences\Computer Science	<	\Course
+\Courses\College of Arts and Sciences\Computer Science	<	\Course\College of Arts and Sciences
+\Courses\College of Arts and Sciences\Computer Science	=	\Course\College of Arts and Sciences\Computer Science
+\Courses\College of Arts and Sciences\Earth and Atmospheric Sciences	<	\Course
+\Courses\College of Arts and Sciences\Earth and Atmospheric Sciences	<	\Course\College of Arts and Sciences
+\Courses\College of Arts and Sciences\Earth and Atmospheric Sciences	>	\Course\College of Arts and Sciences\Earth Sciences
+\Courses\College of Arts and Sciences\Earth and Atmospheric Sciences	>	\Course\College of Arts and Sciences\Earth Sciences\Geological Sciences
+\Courses\College of Arts and Sciences\Earth and Atmospheric Sciences	>	\Course\College of Arts and Sciences\Earth Sciences\Geophysics
+\Courses\College of Arts and Sciences\History	<	\Course
+\Courses\College of Arts and Sciences\History	<	\Course\College of Arts and Sciences
+\Courses\College of Arts and Sciences\History	=	\Course\College of Arts and Sciences\History
+\Courses\College of Arts and Sciences\History	>	\Course\College of Arts and Sciences\History\Ancient and Medieval History
+\Courses\College of Arts and Sciences\History	>	\Course\College of Arts and Sciences\History\History of Americas
+\Courses\College of Arts and Sciences\History\America History	<	\Course
+\Courses\College of Arts and Sciences\History\America History	<	\Course\College of Arts and Sciences
+\Courses\College of Arts and Sciences\History\America History	<	\Course\College of Arts and Sciences\History
+\Courses\College of Arts and Sciences\History\America History	=	\Course\College of Arts and Sciences\History\History of Americas
+\Courses\College of Arts and Sciences\History\Ancient European History	<	\Course
+\Courses\College of Arts and Sciences\History\Ancient European History	<	\Course\College of Arts and Sciences
+\Courses\College of Arts and Sciences\History\Ancient European History	<	\Course\College of Arts and Sciences\History
+\Courses\College of Arts and Sciences\History\Ancient European History	<	\Course\College of Arts and Sciences\History\Ancient and Medieval History
+\Courses\College of Arts and Sciences\History\Latin America History	<	\Course
+\Courses\College of Arts and Sciences\History\Latin America History	<	\Course\College of Arts and Sciences
+\Courses\College of Arts and Sciences\History\Latin America History	<	\Course\College of Arts and Sciences\History
+\Courses\College of Arts and Sciences\History\Latin America History	<	\Course\College of Arts and Sciences\History\History of Americas

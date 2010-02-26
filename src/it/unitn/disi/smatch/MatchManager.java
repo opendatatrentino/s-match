@@ -294,7 +294,15 @@ public class MatchManager implements IMatchManager {
         }
     }
 
-    // buffer size for input, output operations
+    public static String getOutputFile() {
+		return outputFile;
+	}
+
+	public static void setOutputFile(String outputFile) {
+		MatchManager.outputFile = outputFile;
+	}
+
+	// buffer size for input, output operations
     public static int BUFFER_SIZE = 5000000;
     // ELSMthreshold for element level semantic matchers
     public static double ELSMthreshold = 0.9;
