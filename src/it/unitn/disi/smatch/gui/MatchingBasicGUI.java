@@ -389,11 +389,15 @@ public class MatchingBasicGUI extends JPanel
                 r.setInput(in);
                 int nr = r.getNumImages(true);
                 for (int i = 0; i < nr; i++) {
-                    icons.add(r.read(i));
+                    try {
+                        icons.add(r.read(i));
+                    } catch (Exception e) {
+                        //silently fail
+                    }
                 }
                 frame.setIconImages(icons);
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             //silently fail
         }
 
