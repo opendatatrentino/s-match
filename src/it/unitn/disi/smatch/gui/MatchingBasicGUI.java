@@ -368,7 +368,7 @@ public class MatchingBasicGUI extends JPanel
     private static void createAndShowGUI() {
 
         //Create and set up the window.
-        JFrame frame = new JFrame("TreeDemo");
+        JFrame frame = new JFrame("S-Match GUI");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         //Add content to the window.
@@ -500,9 +500,7 @@ public class MatchingBasicGUI extends JPanel
         fileSelectorPanel.setLayout(layout);
         GridBagConstraints c = new GridBagConstraints();
 
-        JLabel title = new JLabel("Source and Target files sould be in tab indented format:");
-//        title.setFont(plaintext);
-//        title.setPreferredSize(lsize);
+        JLabel title = new JLabel("Source and Target files should be in tab indented format:");
         c.gridx = 0;
         c.gridy = 0;
         c.gridwidth = 3;
@@ -615,9 +613,9 @@ public class MatchingBasicGUI extends JPanel
     	String sourceFileName = sourceFileTxt.getText();
     	String targetFileName = targetFileTxt.getText();
 
-        String defaultConfigFile = "..\\\\conf\\\\SMatchDefault.properties";
-        String minimalConfigFile = "..\\\\conf\\\\SMatchDefaultMinimal.properties";
-        String outputFolder = sourceFileName.substring(0,  sourceFileName.lastIndexOf("\\")+1);
+        String defaultConfigFile = ".." + File.separator + "conf" + File.separator + "SMatchDefault.properties";
+        String minimalConfigFile = ".." + File.separator + "conf" + File.separator + "SMatchDefaultMinimal.properties";
+        String outputFolder = sourceFileName.substring(0,  sourceFileName.lastIndexOf(File.separator)+1);
         
         
         //TODO remove static variables from MatchManager
