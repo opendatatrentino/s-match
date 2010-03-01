@@ -3,6 +3,7 @@ classes
 log
 dist
 release.sh
+doc/api
 .classpath
 .project
 test-data/manu
