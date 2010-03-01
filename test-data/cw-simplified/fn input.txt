@@ -1,4 +1,0 @@
-Courses(College of Arts and Sciences(Earth and Atmospheric Sciences,History(Latin America History,America History,Ancient European History),Computer Science))
-		
-Course(College of Arts and Sciences(Earth Sciences(Geophysics,Geological Sciences),Computer Science,History(History of Americas,Ancient and Medieval History)))
-

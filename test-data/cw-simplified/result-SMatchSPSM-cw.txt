@@ -1,7 +1,0 @@
-\Courses	=	\Course
-\Courses\College of Arts and Sciences	=	\Course\College of Arts and Sciences
-\Courses\College of Arts and Sciences\Earth and Atmospheric Sciences	>	\Course\College of Arts and Sciences\Earth Sciences\Geophysics
-\Courses\College of Arts and Sciences\History	=	\Course\College of Arts and Sciences\History
-\Courses\College of Arts and Sciences\Computer Science	=	\Course\College of Arts and Sciences\Computer Science
-\Courses\College of Arts and Sciences\History\America History	=	\Course\College of Arts and Sciences\History\History of Americas
-\Courses\College of Arts and Sciences\History\Ancient European History	<	\Course\College of Arts and Sciences\History\Ancient and Medieval History
