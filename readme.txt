@@ -18,9 +18,14 @@ with sometimes little thinking about memory consumption and processing speed.
 
 4. Getting started
 
+S-Match is written in Java and runs in a Java Virtual Machine version 6 or later.
+
+4.1 Command line
+
 Run the matching of provided sample trees by running bin/all-cw.cmd (Windows) or 
 all-cw.sh (Linux). This will execute the following steps:
-  a) convert provided trees from text files to internal XML format
+  a) convert sample trees in test-data/cw/c.txt and test-data/cw/w.txt
+     from text files to internal XML format.
   b) enrich the trees with logical formulas ("offline" steps of the algorithm)
   c) match the trees ("online" steps of the algorithm)
   d) match the trees with the minimal matching algorithm
@@ -28,6 +33,14 @@ all-cw.sh (Linux). This will execute the following steps:
 The script will render the results of the
 step c) into: test-data/cw/result-SMatchDefault-cw.txt 
 step d) into: test-data/cw/result-SMatchDefaultMinimal-cw.txt
+
+4.2 GUI
+
+Run bin\runGUI.cmd or bin/runGUI.sh
+
+Access S-Match Wiki for an updated version of GettingStarted:
+
+http://sourceforge.net/apps/trac/s-match/wiki/GettingStarted
 
 5. Documentation
 
