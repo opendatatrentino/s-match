@@ -28,8 +28,10 @@
 
     <target name="dist" depends="jar,javadoc" description="generate the distribution zip file">
         <zip destfile="${zip-name}" basedir="${basedir}" level="9"
+             preserve0permissions="true"
              includes="bin/** build/** conf/** data/** doc/** lib/** res/** src/** test/** test-data/cw/*.txt test-data/cw-simplified/*.txt build.xml license.txt readme.txt"/>
         <zip destfile="${src-zip-name}" basedir="${basedir}" level="9"
+             preserve0permissions="true"
              includes="bin/** build/** conf/**         doc/** lib/** res/** src/** test/** test-data/cw/*.txt test-data/cw-simplified/*.txt build.xml license.txt readme.txt"
              excludes="doc/api/**"/>
     </target>
