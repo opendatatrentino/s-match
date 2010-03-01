@@ -10,20 +10,24 @@ import it.unitn.disi.smatch.data.matrices.IMatchMatrix;
 import it.unitn.disi.smatch.loaders.PlainMappingLoader;
 import it.unitn.disi.smatch.loaders.TABLoader;
 
+import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.imageio.stream.ImageInputStream;
 import javax.swing.*;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
 import javax.swing.tree.*;
-
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.Line2D;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Vector;
 
 /**
@@ -42,6 +46,8 @@ public class MatchingBasicGUI extends JPanel
     private static final String OPEN_MAPPING_COMMAND = "open mapping";
     private static final String RUN_MATCHER_COMMAND = "run matcher";
 
+    private static final String MAIN_ICON_FILE = ".." + File.separator + "res" + File.separator + "s-match.ico";
+
     private JTree sourceTree;
     private JTree targetTree;
     private JSplitPane splitPane;
@@ -54,7 +60,7 @@ public class MatchingBasicGUI extends JPanel
     //matcher source and target files
 //    private String sourceFileName;
 //    private String targetFileName;
-    
+
     JTextField sourceFileTxt;
     JTextField targetFileTxt;
     JTextField mappingFileTxt;
@@ -111,7 +117,7 @@ public class MatchingBasicGUI extends JPanel
 
         //constraints for the split pane
         GridBagConstraints constraintSplit = new GridBagConstraints();
-        
+
         constraintSplit.fill = GridBagConstraints.BOTH;
         constraintSplit.gridx = 0;
         constraintSplit.gridy = 0;
@@ -139,7 +145,7 @@ public class MatchingBasicGUI extends JPanel
         constraintFileSelector.gridy = 1;
         constraintFileSelector.weighty = 0.0;
         constraintFileSelector.weightx = 1.0;
-        
+
 
         //add the file selectors
         add(createFileSelectors(), constraintFileSelector);
@@ -172,8 +178,8 @@ public class MatchingBasicGUI extends JPanel
             IContext sourceContext2, IContext targetContext2,
             String mappingFile) throws IOException {
 
-    	mappingFileTxt.setText(mappingFile);
-    	
+        mappingFileTxt.setText(mappingFile);
+
         PlainMappingLoader mappingLoader = new PlainMappingLoader();
         IMatchMatrix matchmatrix = mappingLoader.loadMapping(sourceContext2, targetContext2, mappingFile);
 
@@ -215,7 +221,7 @@ public class MatchingBasicGUI extends JPanel
      */
     private IContext createTree(String fileName, JTree jTree, HashMap<String, Integer> rowForPathHash) {
         //Create the nodes.
-    	
+
         TABLoader loader = new TABLoader();
         IContext context = loader.loadContext(fileName);
         TreeNode rootNode = context.getRoot();
@@ -255,12 +261,12 @@ public class MatchingBasicGUI extends JPanel
     }
 
 
-
     /**
-      * Paints the windows accordingly to the Swing JPanels, then paints the mappings
-      * (non-Javadoc)
-      * @see javax.swing.JComponent#paintChildren(java.awt.Graphics)
-      */
+     * Paints the windows accordingly to the Swing JPanels, then paints the mappings
+     * (non-Javadoc)
+     *
+     * @see javax.swing.JComponent#paintChildren(java.awt.Graphics)
+     */
     public void paintChildren(Graphics g) {
         super.paintChildren(g);
 
@@ -277,28 +283,28 @@ public class MatchingBasicGUI extends JPanel
      * @param g2
      */
     private void paintMappings(Graphics2D g2) {
-    	if(mappings != null ){
-    		BasicStroke stroke = new BasicStroke(2, BasicStroke.CAP_ROUND, BasicStroke.JOIN_MITER);
+        if (mappings != null) {
+            BasicStroke stroke = new BasicStroke(2, BasicStroke.CAP_ROUND, BasicStroke.JOIN_MITER);
 
-    		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-    				RenderingHints.VALUE_ANTIALIAS_ON);
-    		g2.setColor(Color.RED);
-    		g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, (float) 0.4));
-    		g2.setStroke(stroke);
-    		Rectangle splitBound = splitPane.getBounds();
-    		g2.setClip(0, 0, splitBound.width, splitBound.height - 5);
-    		computeOffset();
-    		for (MappingElement mapping : mappings) {
-    			int source = sourceRowForPath.get(mapping.getSourceEntity());
-    			int target = targetRowForPath.get(mapping.getTargetEntity());
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                    RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setColor(Color.RED);
+            g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, (float) 0.4));
+            g2.setStroke(stroke);
+            Rectangle splitBound = splitPane.getBounds();
+            g2.setClip(0, 0, splitBound.width, splitBound.height - 5);
+            computeOffset();
+            for (MappingElement mapping : mappings) {
+                int source = sourceRowForPath.get(mapping.getSourceEntity());
+                int target = targetRowForPath.get(mapping.getTargetEntity());
 
-    			if (source >= 0 && target >= 0) {
-    				Line2D line2 = drawBoundingLine(sourceTree.getRowBounds(source), targetTree.getRowBounds(target));
-    				changeColorOfRelation(g2, mapping);
-    				g2.draw(line2);
-    			}
-    		}
-    	}
+                if (source >= 0 && target >= 0) {
+                    Line2D line2 = drawBoundingLine(sourceTree.getRowBounds(source), targetTree.getRowBounds(target));
+                    changeColorOfRelation(g2, mapping);
+                    g2.draw(line2);
+                }
+            }
+        }
     }
 
 
@@ -370,6 +376,27 @@ public class MatchingBasicGUI extends JPanel
         //Create and set up the window.
         JFrame frame = new JFrame("S-Match GUI");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        //try to set an icon
+        try {
+            nl.ikarus.nxt.priv.imageio.icoreader.lib.ICOReaderSpi.registerIcoReader();
+            System.setProperty("nl.ikarus.nxt.priv.imageio.icoreader.autoselect.icon", "true");
+            ImageInputStream in = ImageIO.createImageInputStream(new FileInputStream(MAIN_ICON_FILE));
+            ArrayList<Image> icons = new ArrayList<Image>();
+            Iterator<ImageReader> readers = ImageIO.getImageReaders(in);
+            if (readers.hasNext()) {
+                ImageReader r = readers.next();
+                r.setInput(in);
+                int nr = r.getNumImages(true);
+                for (int i = 0; i < nr; i++) {
+                    icons.add(r.read(i));
+                }
+                frame.setIconImages(icons);
+            }
+        } catch (IOException e) {
+            //silently fail
+        }
+
 
         //Add content to the window.
         frame.add(new MatchingBasicGUI());
@@ -476,11 +503,11 @@ public class MatchingBasicGUI extends JPanel
         moreGeneral.setPreferredSize(lsize);
         moreGeneral.setForeground(Color.BLUE);
         legend.add(moreGeneral);
-        
+
         legend.setBorder(
                 BorderFactory.createCompoundBorder(
-                                BorderFactory.createTitledBorder("Reference"),
-                                BorderFactory.createEmptyBorder(5,5,5,5)));
+                        BorderFactory.createTitledBorder("Reference"),
+                        BorderFactory.createEmptyBorder(5, 5, 5, 5)));
 
         return legend;
     }
@@ -493,9 +520,9 @@ public class MatchingBasicGUI extends JPanel
      */
     public JScrollPane createFileSelectors() {
 
-    	
+
         JPanel fileSelectorPanel = new JPanel();
-         GridBagLayout layout = new GridBagLayout();
+        GridBagLayout layout = new GridBagLayout();
 //         layout.
         fileSelectorPanel.setLayout(layout);
         GridBagConstraints c = new GridBagConstraints();
@@ -513,15 +540,15 @@ public class MatchingBasicGUI extends JPanel
         JLabel targetFileLbl = new JLabel("Target file: ");
         JLabel mappingFileLbl = new JLabel("Mapping file: ");
 
-        
-        JLabel labels[] = {sourceFileLbl,targetFileLbl,mappingFileLbl};
-        
+
+        JLabel labels[] = {sourceFileLbl, targetFileLbl, mappingFileLbl};
+
         //create text areas
         sourceFileTxt = new JTextField(40);
         targetFileTxt = new JTextField(40);
         mappingFileTxt = new JTextField(40);
-        
-        JTextField textFields[] ={sourceFileTxt,targetFileTxt,mappingFileTxt};
+
+        JTextField textFields[] = {sourceFileTxt, targetFileTxt, mappingFileTxt};
         //create buttons
 
         JButton sourceButton = new JButton("Open Source");
@@ -536,10 +563,10 @@ public class MatchingBasicGUI extends JPanel
         mappingButton.setActionCommand(OPEN_MAPPING_COMMAND);
         mappingButton.addActionListener(this);
 
-        JButton buttons[] ={sourceButton,targetButton,mappingButton};
-        
-        addLabelTextRows(labels,textFields,buttons,fileSelectorPanel);
-        
+        JButton buttons[] = {sourceButton, targetButton, mappingButton};
+
+        addLabelTextRows(labels, textFields, buttons, fileSelectorPanel);
+
         JButton runButton = new JButton("Run matcher");
         runButton.setActionCommand(RUN_MATCHER_COMMAND);
         runButton.addActionListener(this);
@@ -547,100 +574,98 @@ public class MatchingBasicGUI extends JPanel
         c.gridy = 4;
         c.gridwidth = 3;
         fileSelectorPanel.add(runButton, c);
-        
-        
+
+
         fileSelectorPanel.setBorder(
                 BorderFactory.createCompoundBorder(
-                                BorderFactory.createTitledBorder("Choose the files to be processed"),
-                                BorderFactory.createEmptyBorder(5,5,5,5)));
+                        BorderFactory.createTitledBorder("Choose the files to be processed"),
+                        BorderFactory.createEmptyBorder(5, 5, 5, 5)));
 
         JScrollPane scrollPane = new JScrollPane(fileSelectorPanel);
-        scrollPane.setMinimumSize(new Dimension(100,150));
+        scrollPane.setMinimumSize(new Dimension(100, 150));
 
         return scrollPane;
     }
-    
+
     private void addLabelTextRows(JLabel[] labels,
-    		JTextField[] textFields,
-    		JButton[] buttons,
-    		Container container) {
+                                  JTextField[] textFields,
+                                  JButton[] buttons,
+                                  Container container) {
 
         Dimension buttonsize = new Dimension(130, 20);
         Font plaintext = new Font("plain", Font.TRUETYPE_FONT, 12);
-    	GridBagConstraints c = new GridBagConstraints();
-    	int numLabels = labels.length;
+        GridBagConstraints c = new GridBagConstraints();
+        int numLabels = labels.length;
 
-    	for (int i = 1; i <= numLabels; i++) {
-    		//position labels 
+        for (int i = 1; i <= numLabels; i++) {
+            //position labels
             c.gridx = 0;
             c.gridy = i;
             c.anchor = GridBagConstraints.WEST;
-    		container.add(labels[i-1], c);
-    		labels[i-1].setFont(plaintext);
-    		
-    		//position textfields
+            container.add(labels[i - 1], c);
+            labels[i - 1].setFont(plaintext);
+
+            //position textfields
             c.gridx = 1;
             c.gridy = i;
             c.anchor = GridBagConstraints.CENTER;
             c.fill = GridBagConstraints.HORIZONTAL;
-    		container.add(textFields[i-1], c);
-    		textFields[i-1].setEnabled(false);
-    		
-    		c.fill = GridBagConstraints.NONE;		//reset
-    		
-    		//position textfields
+            container.add(textFields[i - 1], c);
+            textFields[i - 1].setEnabled(false);
+
+            c.fill = GridBagConstraints.NONE;        //reset
+
+            //position textfields
             c.gridx = 2;
             c.gridy = i;
             c.anchor = GridBagConstraints.EAST;
-    		container.add(buttons[i-1], c);
-    		buttons[i-1].setPreferredSize(buttonsize);
-    	}
-    	
-    	
-      
-        
+            container.add(buttons[i - 1], c);
+            buttons[i - 1].setPreferredSize(buttonsize);
+        }
+
 
     }
-    
-    
+
+
     /**
      * matches the source and target files and returns the file with the mapping
+     *
      * @return
      * @throws SMatchException
      */
-    private String runMatcher() throws SMatchException{
+    private String runMatcher() throws SMatchException {
 
-    	String sourceFileName = sourceFileTxt.getText();
-    	String targetFileName = targetFileTxt.getText();
+        String sourceFileName = sourceFileTxt.getText();
+        String targetFileName = targetFileTxt.getText();
 
         String defaultConfigFile = ".." + File.separator + "conf" + File.separator + "SMatchDefault.properties";
         String minimalConfigFile = ".." + File.separator + "conf" + File.separator + "SMatchDefaultMinimal.properties";
-        String outputFolder = sourceFileName.substring(0,  sourceFileName.lastIndexOf(File.separator)+1);
-        
-        
+        String outputFolder = sourceFileName.substring(0, sourceFileName.lastIndexOf(File.separator) + 1);
+
+
         //TODO remove static variables from MatchManager
         MatchManager defaultMatcher = new MatchManager(defaultConfigFile);
 
 
         // directories of files to online
-        MatchManager.ctxsSourceFile = sourceFileName+".xml";
-       	MatchManager.ctxsTargetFile = targetFileName+".xml";
-        
+        MatchManager.ctxsSourceFile = sourceFileName + ".xml";
+        MatchManager.ctxsTargetFile = targetFileName + ".xml";
+
         //linguistic pre-processing
         defaultMatcher.offline(sourceContext, MatchManager.ctxsSourceFile);
         defaultMatcher.offline(targetContext, MatchManager.ctxsTargetFile);
-        
+
         //match
-        MatchManager.setOutputFile(outputFolder+"resultDefault.txt");
+        MatchManager.setOutputFile(outputFolder + "resultDefault.txt");
         defaultMatcher.online(sourceContext, targetContext);
 
-        
+
         MatchManager minimalMatcher = new MatchManager(minimalConfigFile);
         //match
-        MatchManager.setOutputFile(outputFolder+"resultMinimal.txt");
+        MatchManager.setOutputFile(outputFolder + "resultMinimal.txt");
         minimalMatcher.online(sourceContext, targetContext);
-        
-        return outputFolder+"resultDefault.txt";
+
+        return outputFolder + "resultDefault.txt";
     }
 
     /**
@@ -686,16 +711,16 @@ public class MatchingBasicGUI extends JPanel
                 }
             }
 
-        }else if (RUN_MATCHER_COMMAND.equals(command)) {
-           
-        	try {
-        		String mappingFile =  runMatcher();
-        		mappings = loadMappingsFromFile(sourceContext, targetContext, mappingFile);
+        } else if (RUN_MATCHER_COMMAND.equals(command)) {
 
-        	} catch (Exception e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
+            try {
+                String mappingFile = runMatcher();
+                mappings = loadMappingsFromFile(sourceContext, targetContext, mappingFile);
+
+            } catch (Exception e1) {
+                // TODO Auto-generated catch block
+                e1.printStackTrace();
+            }
         }
     }
 

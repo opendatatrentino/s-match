@@ -7,3 +7,6 @@ doc/api
 .classpath
 .project
 test-data/manu
+*.iml
+*.ipr
+*.iws
