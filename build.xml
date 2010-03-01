@@ -28,9 +28,10 @@
 
     <target name="dist" depends="jar,javadoc" description="generate the distribution zip file">
         <zip destfile="${zip-name}" basedir="${basedir}" level="9"
-             includes="bin/** build/** conf/** data/** doc/** lib/** src/** test/** test-data/cw/*.txt build.xml license.txt readme.txt"/>
+             includes="bin/** build/** conf/** data/** doc/** lib/** src/** test/** test-data/cw/*.txt test-data/cw-simplified/*.txt build.xml license.txt readme.txt"/>
         <zip destfile="${src-zip-name}" basedir="${basedir}" level="9"
-             includes="bin/** build/** conf/** doc/** lib/** src/** test/** test-data/cw/*.txt build.xml license.txt readme.txt"/>
+             includes="bin/** build/** conf/**         doc/** lib/** src/** test/** test-data/cw/*.txt test-data/cw-simplified/*.txt build.xml license.txt readme.txt"
+             excludes="doc/api/**"/>
     </target>
 
     <target name="javadoc" depends="" description="generate the javadoc">
@@ -58,5 +59,6 @@
         <delete dir="classes"/>
         <delete dir="dist"/>
         <delete dir="build"/>
+        <delete dir="doc/api"/>
     </target>
 </project>
