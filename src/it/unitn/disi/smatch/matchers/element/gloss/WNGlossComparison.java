@@ -7,8 +7,8 @@ import it.unitn.disi.smatch.oracles.ISynset;
 import java.util.StringTokenizer;
 
 /**
- * implements WNGlossComparison matcher
- * see Element Level Semantic matchers paper for more details
+ * Implements WNGlossComparison matcher.
+ * See Element Level Semantic matchers paper for more details.
  *
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
  * @author Aliaksandr Autayeu avtaev@gmail.com
@@ -17,6 +17,13 @@ public class WNGlossComparison implements ISenseGlossBasedElementLevelSemanticMa
 
     static int threshold = 2;
 
+    /**
+     * Computes the relations with WordNet gloss comparison matcher.
+     *
+     * @param source gloss of source
+     * @param target gloss of target
+     * @return synonym or IDK relation
+     */
     public char match(ISynset source, ISynset target) {
         String sSynset = source.getGloss();
         String tSynset = target.getGloss();

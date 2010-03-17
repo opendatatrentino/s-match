@@ -9,7 +9,7 @@ import java.util.Vector;
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
 public interface IMapping {
-    
+
     boolean contains(IMappingElement me);
 
     Vector<IMappingElement> getMapping();
@@ -20,7 +20,7 @@ public interface IMapping {
 
     void add(IMapping m);
 
-    //compare the mapping with the gold standart
+    //compare the mapping with the gold standard
     void compare(IMapping m);
 
     int getSize();

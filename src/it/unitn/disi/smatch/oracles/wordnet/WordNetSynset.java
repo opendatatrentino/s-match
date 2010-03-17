@@ -18,9 +18,14 @@ import java.util.Vector;
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
 public class WordNetSynset implements ISynset {
-    
+
     Synset tmp = null;
 
+    /**
+     * Constructor class with sense input.
+     *
+     * @param sense input sense
+     */
     public WordNetSynset(Synset sense) {
         tmp = sense;
     }

@@ -17,7 +17,7 @@ import java.util.Vector;
  */
 public class BaselineTreeMatcher extends DefaultTreeMatcher implements ITreeMatcher {
 
-    public IMatchMatrix treeMatch(IContext sourceContext, IContext targetContext, IMatchMatrix ClabMatrix) {
+	public IMatchMatrix treeMatch(IContext sourceContext, IContext targetContext, IMatchMatrix ClabMatrix) {
 //        IMapping result = new Mapping();
         Vector sourceLemmas = null;
         Vector targetLemmas = null;
@@ -72,6 +72,13 @@ public class BaselineTreeMatcher extends DefaultTreeMatcher implements ITreeMatc
         return CnodMatrix;
     }
 
+    /**
+     * Removes duplicates in source or target lemmas.
+     *
+     * @param tmp a vector of lemma
+     * @return a vector with unique lemma
+     */
+    // TODO undefined type in vector.
     protected Vector removeDublicates(Vector tmp) {
         Vector res = new Vector();
         for (int i = 0; i < tmp.size(); i++) {
@@ -85,6 +92,14 @@ public class BaselineTreeMatcher extends DefaultTreeMatcher implements ITreeMatc
         return res;
     }
 
+    /**
+     * Computes the final relation between two nodes.
+     *
+     * @param isContains true if source is more general than target
+     * @param isContained true if the source is less general than target
+     * @param isOpposite true if source and target is in opposite meaning
+     * @return synonym, more general, less general or IDK relation
+     */
     protected char getRelationString(boolean isContains, boolean isContained, boolean isOpposite) {
         //return the tests results
         if (isContains && isContained) {
@@ -100,12 +115,18 @@ public class BaselineTreeMatcher extends DefaultTreeMatcher implements ITreeMatc
             return MatchManager.MORE_GENERAL_THAN;
         }
         if (isOpposite == true) {
-            //The concepts have opposite menaning
+            //The concepts have opposite meaning
             return MatchManager.OPPOSITE_MEANING;
         }
         return MatchManager.IDK_RELATION;
     }
 
+    /**
+     * Retrieves all the lemmas for specific node.
+     *
+     * @param node interface of the node to which lemma should be retrieved
+     * @return a string which contains all the lemmas of that node
+     */
     public Vector<String> getLemmasForReasoning(INode node) {
         Vector<String> result = new Vector<String>();
         result = getLemmasVector(node, result);

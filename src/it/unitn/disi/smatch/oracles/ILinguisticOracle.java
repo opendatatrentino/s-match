@@ -3,9 +3,10 @@ package it.unitn.disi.smatch.oracles;
 import java.util.Vector;
 
 /**
- * Interface to Linguistic Oracle
+ * Interface to Linguistic Oracle.
  */
 public interface ILinguisticOracle {
+
     /**
      * Returns a synset given its id.
      *
@@ -15,7 +16,7 @@ public interface ILinguisticOracle {
     public ISynset getISynset(String source);
 
     /**
-     * Checks if lemmas of two strings are equal (e. g. the string are the same modulo inflections)
+     * Checks if lemmas of two strings are equal (e. g. the string are the same modulo inflections).
      *
      * @param str1 source string
      * @param str2 target string
@@ -26,7 +27,7 @@ public interface ILinguisticOracle {
     /**
      * Returns all senses of a word.
      *
-     * @param word a word
+     * @param word the word to which the sense will be retrieve
      * @return word senses
      */
     public Vector<String> getSenses(String word);
@@ -34,7 +35,7 @@ public interface ILinguisticOracle {
     /**
      * Returns base form (lemma) of a word.
      *
-     * @param deriviation derivation to lemmatize
+     * @param deriviation the word need to deriviate as lemma
      * @return base form of a derivation
      */
     public String getBaseForm(String deriviation);

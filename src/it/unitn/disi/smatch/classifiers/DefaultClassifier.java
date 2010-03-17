@@ -19,9 +19,11 @@ public class DefaultClassifier implements IClassifier {
         //for all nodes in the context
         for (int i = 0; i < allNodes.size(); i++) {
             INode concept = allNodes.elementAt(i);
+            // Creates and interface for node.
             INodeData nd = concept.getNodeData();
             //build cNode
             String cNode = buildCNode(concept);
+            // Sets concept at node formula.
             nd.setcNodeFormula(cNode);
         }
         return context;
@@ -30,8 +32,8 @@ public class DefaultClassifier implements IClassifier {
     /**
      * Constructs concept@node for a node.
      *
-     * @param in node
-     * @return concetp@node formula
+     * @param in node to process
+     * @return concept@node formula
      */
     public String buildCNode(INode in) {
         StringBuffer path = new StringBuffer();

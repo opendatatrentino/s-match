@@ -22,10 +22,10 @@ public interface IWordNetMatcher {
     public char getRelation(Vector<String> listSenseS, Vector<String> listSenseT);
 
     /**
-     * Retuns semantic relations which hols between two ACoLs.
+     * Returns semantic relations which holds between two ACoLs.
      *
      * @param source source ACoL
-     * @param target targe ACoL
+     * @param target target ACoL
      * @return a relation
      */
     public char getRelationACoL(IAtomicConceptOfLabel source, IAtomicConceptOfLabel target);

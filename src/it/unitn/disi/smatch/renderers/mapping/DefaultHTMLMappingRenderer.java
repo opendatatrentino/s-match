@@ -40,11 +40,15 @@ public class DefaultHTMLMappingRenderer implements IMappingRenderer {
     }
 
     /**
-     * Prints cLab and cNode Matrices into file
+     * Prints cLab and cNode Matrices into file.
      *
-     * @param fileName   File name
-     * @param ClabMatrix cLabMatrix
-     * @param CnodMatrix cNodeMatrix
+     * @param fileName   name of the file where the matrices will be written
+     * @param ClabMatrix relation matrix for labels
+     * @param CnodMatrix relation matrix for nodes
+     * @param sourceACoLs concept of source labels
+     * @param targetACoLs concept of target labels
+     * @param sourceNodes concept of source node
+     * @param targetNodes concept of target node
      */
     protected void printMatricesToFile(String fileName, IMatchMatrix ClabMatrix, IMatchMatrix CnodMatrix,
                                        Vector<IAtomicConceptOfLabel> sourceACoLs, Vector<IAtomicConceptOfLabel> targetACoLs,

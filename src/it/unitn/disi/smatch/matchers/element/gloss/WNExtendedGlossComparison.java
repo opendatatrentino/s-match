@@ -7,16 +7,23 @@ import it.unitn.disi.smatch.oracles.ISynset;
 import java.util.StringTokenizer;
 
 /**
- * implements WNExtendedGlossComparison matcher
- * see Element Level Semantic matchers paper for more details
+ * Implements WNExtendedGlossComparison matcher.
+ * see Element Level Semantic matchers paper for more details.
  *
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
 public class WNExtendedGlossComparison extends BasicGlossMatcher implements ISenseGlossBasedElementLevelSemanticMatcher {
-    
+
     static int threshold = 5;
 
+    /**
+     * Computes the relation for extended gloss matcher.
+     *
+     * @param source1 the gloss of source
+     * @param target1 the gloss of target
+     * @return synonym or IDK relation
+     */
     public char match(ISynset source1, ISynset target1) {
         String tExtendedGloss = getExtendedGloss(target1, 1, MatchManager.LESS_GENERAL_THAN);
         String sExtendedGloss = getExtendedGloss(source1, 1, MatchManager.LESS_GENERAL_THAN);

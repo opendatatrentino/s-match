@@ -11,9 +11,9 @@ public interface IStringBasedElementLevelSemanticMatcher {
     /**
      * Returns a relation between source and target strings.
      *
-     * @param source source string
-     * @param target target string
-     * @return a relation between source and target
+     * @param source the string of source label
+     * @param target the string of target label
+     * @return a relation between source and target labels
      */
     char match(String source, String target);
 }

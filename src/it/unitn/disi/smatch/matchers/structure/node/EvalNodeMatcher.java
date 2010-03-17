@@ -90,6 +90,15 @@ public class EvalNodeMatcher extends BaseNodeMatcher implements INodeMatcher {
         return result;
     }
 
+    /**
+     * Makes axioms for CNF formula.
+     *
+     * @param hashConceptNumber HashMap for atomic concept of labels with its id.
+     * @param cLabMatrix relation between atomic concept of labels
+     * @param sourceNode interface of source node
+     * @param targetNode interface of target node
+     * @return an object of axioms
+     */
     protected static Object[] mkAxioms(Hashtable<IAtomicConceptOfLabel, Integer> hashConceptNumber, IMatchMatrix cLabMatrix, INode sourceNode, INode targetNode) {
         StringBuffer axioms = new StringBuffer();
         Integer numberOfClauses = 0;
@@ -163,6 +172,13 @@ public class EvalNodeMatcher extends BaseNodeMatcher implements INodeMatcher {
         return new Object[]{axioms.toString(), numberOfClauses};
     }
 
+    /**
+     * Converts context of node into array list.
+     *
+     * @param hashConceptNumber HashMap for atomic concept of label with its id
+     * @param node interface of node
+     * @return array list of context of node
+     */
     private ArrayList<ArrayList<String>> parseFormula(HashMap<IAtomicConceptOfLabel, Integer> hashConceptNumber, INode node, String formula) {
         ArrayList<ArrayList<String>> representation = new ArrayList<ArrayList<String>>();
         boolean saved_negation = false;
@@ -198,6 +214,12 @@ public class EvalNodeMatcher extends BaseNodeMatcher implements INodeMatcher {
         return representation;
     }
 
+    /**
+     * Converts the logical formula of node into CNF.
+     *
+     * @param formula logical formula of a node
+     * @return Conjunctive Normal Form of node
+     */
     public String toCNF(String formula) {
         String result = formula;
         if ((formula.contains("&") && formula.contains("|")) || formula.contains("~")) {

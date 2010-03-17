@@ -9,8 +9,8 @@ import it.unitn.disi.smatch.oracles.IWordNetMatcher;
 import java.util.StringTokenizer;
 
 /**
- * implements WNSemanticGlossComparison matcher
- * see Element Level Semantic matchers paper for more details
+ * Implements WNSemanticGlossComparison matcher.
+ * See Element Level Semantic matchers paper for more details.
  *
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
  * @author Aliaksandr Autayeu avtaev@gmail.com
@@ -25,6 +25,13 @@ public class WNSemanticGlossComparison extends BasicGlossMatcher implements ISen
         IWNM = MatchManager.getIWNMatcher();
     }
 
+    /**
+     * Computes the relations with WordNet semantic gloss matcher.
+     *
+     * @param source the gloss of source
+     * @param target the gloss of target
+     * @return less general, more general, equal, opposite or IDK relation
+     */
     public char match(ISynset source, ISynset target) {
         int Equals = 0;
         int moreGeneral = 0;
@@ -57,13 +64,13 @@ public class WNSemanticGlossComparison extends BasicGlossMatcher implements ISen
     }
 
     /**
-     * decide which relation to return
+     * Decides which relation to return.
      *
-     * @param lg
-     * @param mg
-     * @param syn
-     * @param opp
-     * @return
+     * @param lg number of less general words between two extended gloss
+     * @param mg number of more general words between two extended gloss
+     * @param syn number of synonym words between two extended gloss
+     * @param opp number of opposite words between two extended gloss
+     * @return the more frequent relation between two extended glosses.
      */
     private char getRelationFromInts(int lg, int mg, int syn, int opp) {
         if ((lg >= mg) && (lg >= syn) && (lg >= opp) && (lg > 0))

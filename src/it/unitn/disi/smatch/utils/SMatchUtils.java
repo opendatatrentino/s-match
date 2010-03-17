@@ -23,7 +23,7 @@ public class SMatchUtils {
      * Value-Vector of Vectors, which contain the other words in the all the multiwords
      * starting from the word in Key.
      *
-     * @param fileName file name
+     * @param fileName the file name from where the hash table will be read
      * @return multiwords hastable
      */
     public static Hashtable<String, Vector<Vector<String>>> readHash(String fileName) {
@@ -48,6 +48,9 @@ public class SMatchUtils {
         return result;
     }
 
+    /**
+     * Configures properties file for logging information.
+     */
     public static void configureLog4J() {
         String log4jConf = System.getProperty("log4j.configuration");
         if (null != log4jConf) {

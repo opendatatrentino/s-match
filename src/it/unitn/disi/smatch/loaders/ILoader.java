@@ -12,10 +12,11 @@ import it.unitn.disi.smatch.SMatchException;
 public interface ILoader {
 
     /**
-     * Loads the context
+     * Loads the context to a file or database.
      *
      * @param fileName file to load (or DB connection string)
-     * @return interface to context datastructure
+     * @return interface to data structure of context
+     * @throws SMatchException
      */
     public IContext loadContext(String fileName) throws SMatchException;
 }

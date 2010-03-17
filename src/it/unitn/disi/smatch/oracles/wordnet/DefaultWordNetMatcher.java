@@ -100,13 +100,13 @@ public class DefaultWordNetMatcher implements IWordNetMatcher {
 
     /**
      * Method which returns whether particular type of relation between
-     * two senses holds(according to oracle)
-     * It uses cache to store already obtained relations in order to improve performance
+     * two senses holds(according to oracle).
+     * It uses cache to store already obtained relations in order to improve performance.
      *
-     * @param source
-     * @param target
-     * @param rel
-     * @return whether particular type of relation between two senses holds according to oracle
+     * @param source the string of source
+     * @param target the string of target
+     * @param rel the relation between source and target
+     * @return whether particular type of relation holds between two senses according to oracle
      */
     private boolean getRelationFromOracle(String source, String target, char rel) {
         char tmp;
@@ -201,14 +201,14 @@ public class DefaultWordNetMatcher implements IWordNetMatcher {
     }
 
     /**
-     * Checks whether source sence less general than target
+     * Checks whether source sense less general than target.
      * Currently used version of Java WordNet Interface Library finds more general relationships
      * (hypernymy and holonymy) faster than less general so this method
-     * just flip the parameters and call isSourceMoreGeneralThanTarget method
+     * just flip the parameters and call isSourceMoreGeneralThanTarget method.
      *
-     * @param source
-     * @param target
-     * @return
+     * @param source the string of source
+     * @param target the string of target
+     * @return true if source is less general than target
      */
     public boolean isSourceLessGeneralThanTarget(String source, String target) {
         return isSourceMoreGeneralThanTarget(target, source);
@@ -286,7 +286,7 @@ public class DefaultWordNetMatcher implements IWordNetMatcher {
     }
 
     /**
-     * Check unidirectionality of semantic relations in the list
+     * Check unidirectionality of semantic relations in the list.
      *
      * @param list
      * @return

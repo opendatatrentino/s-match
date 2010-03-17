@@ -8,8 +8,8 @@ package it.unitn.disi.smatch;
 public class SMatchException extends Exception {
 
     /**
-     * Constructor
-     * Creates a new Exception by using super(msg) method
+     * Constructor.
+     * Creates a new Exception by using super(msg) method.
      *
      * @param errorDescription the description of the error
      */
@@ -18,8 +18,8 @@ public class SMatchException extends Exception {
     }
 
     /**
-     * Constructor
-     * Creates a new Exception by using super(msg, cause) method
+     * Constructor.
+     * Creates a new Exception by using super(msg, cause) method.
      *
      * @param errorDescription the description of the error
      * @param cause            the cause

@@ -3,7 +3,7 @@ package it.unitn.disi.smatch.data;
 import java.util.Vector;
 
 /**
- * An interface for atomic concept of label implementations.
+ * An interface for implementation of atomic concept of label.
  *
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
  * @author Aliaksandr Autayeu avtaev@gmail.com
@@ -13,7 +13,7 @@ public interface IAtomicConceptOfLabel {
     //Set id in node
     void setIdToken(int idToken);
 
-    //Set logical id
+    //Set logical id of token
     void setTokenUID(String tokenUID);
 
     //Set token

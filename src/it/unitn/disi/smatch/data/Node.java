@@ -8,7 +8,7 @@ import javax.swing.tree.TreeNode;
 import java.util.*;
 
 /**
- * This class represent a node in the hierarchy.
+ * This class represents a node in the hierarchy.
  * It contains logical (cNode and cLab formulas);
  * linguistic (WN senses,tokens) and structural information
  * (parent and children of Node).
@@ -16,7 +16,7 @@ import java.util.*;
 public class Node implements INodeData, INode {
     //ConceptID
     private String nodeId;
-    //Sentence assotiated with the concept
+    //Sentence associated with the concept
     private String nodeName;
     //unique name
     private String nodeUniqueName;
@@ -90,6 +90,12 @@ public class Node implements INodeData, INode {
         setOfSenses = new Vector<IAtomicConceptOfLabel>();
     }
 
+    /**
+     * Constructor class which set the node name and id. Also sets unique node name with combination of node name and id.
+     *
+     * @param nodeName the name of the node
+     * @param nodeId the id of the node
+     */
     public Node(String nodeName, String nodeId) {
         this();
         this.nodeName = nodeName.trim();
@@ -106,7 +112,7 @@ public class Node implements INodeData, INode {
     }
 
     /**
-     * Set cLab formula to CNF and store in the concept
+     * Sets cLab formula to CNF and store in the concept.
      */
     public void setcLabFormulaToConjunciveForm(String formula) {
         if ((formula.contains("&") && formula.contains("|")) || formula.contains("~")) {
@@ -149,10 +155,7 @@ public class Node implements INodeData, INode {
         children.add(child);
     }
 
-    /**
-     * The returned list is orderd from the father node to the root.
-     */
-    public Vector<INode> getAncestors() {
+   public Vector<INode> getAncestors() {
         Vector<INode> result = ancestors;
         if (null == result) {
             result = new Vector<INode>();
@@ -392,9 +395,8 @@ public class Node implements INodeData, INode {
         return result;
     }
 
-
     /**
-     * Fill and get the Vector of all logical formula representations of all concepts
+     * Fill and get the Vector of all logical formula representations of all concepts.
      */
     public Vector<IAtomicConceptOfLabel> getNodeMatchingTaskACols() {
         if (null == nodeMatchingTaskACols) {
@@ -405,8 +407,12 @@ public class Node implements INodeData, INode {
     }
 
     /**
-     * fill the Vector with Atomic concepts identifiers
-     * they are used as propositional variables in the formula
+     * Fills the Vector with Atomic concepts identifiers.
+     * they are used as propositional variables in the formula.
+     *
+     * @param node the interface of node which acols will be added
+     * @param partialResult list of atomic concept of labels which are added so far without current node
+     * @return list of atomic concept of label with current node
      */
     private static Vector<IAtomicConceptOfLabel> getNodeMatchingTaskACols(INode node, Vector<IAtomicConceptOfLabel> partialResult) {
         if (!node.isRoot()) {

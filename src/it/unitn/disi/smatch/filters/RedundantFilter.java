@@ -76,6 +76,14 @@ public class RedundantFilter implements IFilter {
         return CnodMatrix;
     }
 
+    /**
+     * Checks the relation between source and target is redundant or not for minimal mapping.
+     *
+     * @param C interface of source node
+     * @param D interface of target node
+     * @param R relation between source and target node
+     * @return true for redundant relation
+     */
     private boolean isRedundant(INode C, INode D, char R) {
         switch (R) {
             case MatchManager.LESS_GENERAL_THAN: {
@@ -114,9 +122,11 @@ public class RedundantFilter implements IFilter {
     //because in filtering we have a matrix and we do not "discover" links
     //we need to check ancestors and descendants, and not only parents and children
     //otherwise, in case of series of redundant links we remove first by checking parent
-    //and then all the rest is not removed because of the "gap" 
+    //and then all the rest is not removed because of the "gap"
+
+
     protected boolean verifyCondition1(INode C, INode D) {
-        boolean result =
+       	boolean result =
                 findRelation(MatchManager.LESS_GENERAL_THAN, C.getAncestors(), D) ||
                         findRelation(MatchManager.LESS_GENERAL_THAN, C, D.getDescendants()) ||
                         findRelation(MatchManager.LESS_GENERAL_THAN, C.getAncestors(), D.getDescendants());

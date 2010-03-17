@@ -7,8 +7,8 @@ import java.util.Arrays;
 import java.util.HashSet;
 
 /**
- * implements Prefix matcher
- * see Element Level Semantic matchers paper for more details
+ * Implements Prefix matcher.
+ * See Element Level Semantic matchers paper for more details.
  *
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
  * @author Aliaksandr Autayeu avtaev@gmail.com
@@ -18,7 +18,13 @@ public class Prefix implements IStringBasedElementLevelSemanticMatcher {
     private static int relCount = 0;
     private static HashSet<String> hm = new HashSet<String>();
 
-
+    /**
+     * Computes the relation with prefix matcher.
+     *
+     * @param str1 the source string
+     * @param str2 the target string
+     * @return synonym, more general, less general or IDK relation
+     */
     public char match(String str1, String str2) {
         invocationCount++;
         char rel = MatchManager.IDK_RELATION;

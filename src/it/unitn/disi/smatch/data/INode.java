@@ -5,7 +5,7 @@ import javax.swing.tree.TreeNode;
 import java.util.Vector;
 
 /**
- * The interface to Node datastructure.
+ * The interface to data structure of node.
  *
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
  * @author Aliaksandr Autayeu avtaev@gmail.com
@@ -21,9 +21,9 @@ public interface INode extends MutableTreeNode {
 
     /**
      * Returns all ancestors of the given node.
-     * The returned list is orderd from the father node to the root.
+     * The returned list is ordered from the father node to the root.
      *
-     * @return ancestor list
+     * @return list of ancestors
      */
     Vector<INode> getAncestors();
 
@@ -31,18 +31,19 @@ public interface INode extends MutableTreeNode {
      * Returns all descendants of the node.
      * The returned list is order as in depth first traversal.
      *
-     * @return descendants
+     * @return list of descendants
      */
     Vector<INode> getDescendants();
 
     /**
      * Returns count of descendant nodes, including itself.
-     * @return count of descendant nodes, including itself
+     *
+     * @return the number of descendant nodes
      */
     int getDescendantCount();
 
     /**
-     * Retunrs true if the node is a root in the context and false otherwise.
+     * Returns true if the node is a root in the context and false otherwise.
      *
      * @return true if node is a root
      */
@@ -50,43 +51,35 @@ public interface INode extends MutableTreeNode {
 
     /**
      * Returns interface to the parent node.
-     *
-     * @return interface to the parent node
      */
     INode getParent();
 
     /**
-     * Retunrs node id.
-     *
-     * @return node id
+     * Returns id of a node.
      */
     String getNodeId();
 
     /**
-     * Returns node label.
-     *
-     * @return node label
+     * Returns label of node.
      */
     String getNodeName();
 
     /**
      * Returns children of the node.
      *
-     * @return node children
+     * @return list of children
      */
     Vector<INode> getChildren();
 
     /**
      * Removes child of the node.
      *
-     * @param child child node to remove
+     * @param child the child node which need to be removed
      */
     void removeChild(INode child);
 
     /**
-     * Returns interface to node metadata.
-     *
-     * @return interface to node metadata
+     * Returns interface to node of metadata.
      */
     public INodeData getNodeData();
 }

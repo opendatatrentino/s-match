@@ -3,7 +3,7 @@ package it.unitn.disi.smatch.data;
 import java.util.Vector;
 
 /**
- * This class represent atomic concept of label (ACoL) as a
+ * This class represents atomic concept of label (ACoL) as a
  * concept label and list of associated senses in WordNet.
  *
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
@@ -38,6 +38,14 @@ public class AtomicConceptOfLabel implements IAtomicConceptOfLabel {
         return new AtomicConceptOfLabel(idToken, token, lemma, pos);
     }
 
+    /**
+     * Constructor class wich sets the id, position of token, name of token and lemma.
+     *
+     * @param idToken Id of token
+     * @param token token name
+     * @param lemma lemma name
+     * @param pos position of token
+     */
     public AtomicConceptOfLabel(int idToken, String token, String lemma, String pos) {
         this.idToken = idToken;
         this.token = token;

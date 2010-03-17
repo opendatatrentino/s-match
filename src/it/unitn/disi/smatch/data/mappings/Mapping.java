@@ -49,7 +49,7 @@ public class Mapping implements IMapping {
         }
     }
 
-    //compare the mapping with the gold standart
+    //compare the mapping with the gold standard
     public void compare(IMapping m) {
         System.out.println("Mapping comparison...");
         double precision = 0;
@@ -221,7 +221,7 @@ public class Mapping implements IMapping {
         System.out.println("LG: " + lg);
         System.out.println("UN: " + un);
     }
-
+    // TODO more than one main function is confusing
     public static void main(String[] args) {
         if (2 > args.length) {
             System.out.println("Usage: Mapping stats|compare source target");

@@ -17,7 +17,7 @@ import java.util.ArrayList;
  */
 public class DefaultNodeMatcher extends BaseNodeMatcher implements INodeMatcher {
 
-    public char nodeMatch(IMatchMatrix cLabMatrix, INode sourceNode, INode targetNode) throws SMatchException {
+	public char nodeMatch(IMatchMatrix cLabMatrix, INode sourceNode, INode targetNode) throws SMatchException {
         char result = MatchManager.IDK_RELATION;
         String sourceCNodeFormula = sourceNode.getNodeData().getCNodeFormula();
         String targetCNodeFormula = targetNode.getNodeData().getCNodeFormula();

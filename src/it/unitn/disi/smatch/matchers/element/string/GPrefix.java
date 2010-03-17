@@ -14,10 +14,12 @@ import java.util.HashSet;
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
 public class GPrefix implements IStringBasedElementLevelSemanticMatcher {
-    
+
     private static int invocationCount = 0;
     private static int relCount = 0;
     private static HashSet<String> hm = new HashSet<String>();
+
+    // TODO Perhaps the commenting will be about prefix. Need revision.
 
     //suffix -> relation
     //based on http://en.wiktionary.org/wiki/Appendix:Suffixes:English
@@ -25,6 +27,8 @@ public class GPrefix implements IStringBasedElementLevelSemanticMatcher {
     //however may be > here in general case, because suffix specifies the meaning
     //also here http://en.wikipedia.org/wiki/List_of_English_suffixes
     //but not considered (yet)
+
+    // TODO variable name is suffix, but this is prefix matcher
     private static HashMap<String, Character> suffixes = new HashMap<String, Character>();
 
     static {
@@ -455,7 +459,7 @@ public class GPrefix implements IStringBasedElementLevelSemanticMatcher {
         suffixes.put("zyme", MatchManager.SYNOMYM);
 
         //"roots"
-        //e.g. fish is more general than parrot-fish 
+        //e.g. fish is more general than parrot-fish
         //or it is a fish? :)
         suffixes.put("fish", MatchManager.MORE_GENERAL_THAN);
         suffixes.put("fish's", MatchManager.MORE_GENERAL_THAN);
@@ -564,7 +568,6 @@ public class GPrefix implements IStringBasedElementLevelSemanticMatcher {
         suffixes.put("forces", MatchManager.MORE_GENERAL_THAN);
     }
 
-
     public char match(String str1, String str2) {
         invocationCount++;
         char rel;
@@ -595,12 +598,19 @@ public class GPrefix implements IStringBasedElementLevelSemanticMatcher {
         return rel;
     }
 
+    /**
+     * Computes relation with prefix matcher.
+     *
+     * @param str1 the source input
+     * @param str2 the target input
+     * @return synonym, more general, less general or IDK relation
+     */
     private char matchPrefix(String str1, String str2) {
         //here always str1.startsWith(str2) colorless!color
         char rel = MatchManager.IDK_RELATION;
         int spacePos1 = str1.indexOf(' ');
         String suffix = str1.substring(str2.length());
-        if (-1 < spacePos1 && !suffixes.containsKey(suffix)) {//check suffixes - pole vault=pole vaulter
+        if (-1 < spacePos1 && !suffixes.containsKey(suffix)) {//check suffixes - pole vault=pole vaulter // TODO the matcher is prefix not suffix. need revision
             if (str2.length() == spacePos1) {//plant part<plant
                 rel = MatchManager.LESS_GENERAL_THAN;
             } else {//plant part<plan

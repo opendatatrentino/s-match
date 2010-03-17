@@ -35,6 +35,14 @@ public class TaxMEMappingRenderer implements IMappingRenderer {
         return result;
     }
 
+    /**
+     * Converts the matrix intp mapping with path of the nodes.
+     *
+     * @param matrix the relational matrix
+     * @param sourceNodes interface of source node
+     * @param targetNodes interface of target node
+     * @return
+     */
     public IMapping fromMatrixToMapping(IMatchMatrix matrix, Vector<INode> sourceNodes, Vector<INode> targetNodes) {
         IMapping result = new Mapping();
         int x = sourceNodes.size();

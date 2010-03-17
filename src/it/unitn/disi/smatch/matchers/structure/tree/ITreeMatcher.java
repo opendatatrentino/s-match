@@ -13,12 +13,12 @@ import it.unitn.disi.smatch.SMatchException;
 public interface ITreeMatcher {
 
     /**
-     * Matches two contexts.
+     * Matches two tress.
      *
-     * @param sourceContext source context
-     * @param targetContext target context
+     * @param sourceContext interface of source context
+     * @param targetContext interface of target context
      * @param ClabMatrix    a matrix of relations between ACoLs of contexts
-     * @return a matrix of relations between contexts
+     * @return a matrix of relations between nodes
      */
     IMatchMatrix treeMatch(IContext sourceContext, IContext targetContext, IMatchMatrix ClabMatrix) throws SMatchException;
 }

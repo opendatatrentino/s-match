@@ -7,8 +7,8 @@ import it.unitn.disi.smatch.oracles.ISynset;
 import java.util.Vector;
 
 /**
- * implements WNHierarchy matcher
- * see Element Level Semantic matchers paper for more details
+ * Implements WNHierarchy matcher.
+ * see Element Level Semantic matchers paper for more details.
  *
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
  * @author Aliaksandr Autayeu avtaev@gmail.com
@@ -18,6 +18,13 @@ public class WNHierarchy implements ISenseGlossBasedElementLevelSemanticMatcher 
 
     static int depth = 2;
 
+    /**
+     * Match two string with WNHeirarchy matcher.
+     *
+     * @param source1 gloss of source label
+     * @param target1 gloss of target label
+     * @return synonym or IDk relation
+     */
     public char match(ISynset source1, ISynset target1) {
         Vector<ISynset> sourceVector = new Vector<ISynset>();
         Vector<ISynset> targetVector = new Vector<ISynset>();
@@ -33,7 +40,7 @@ public class WNHierarchy implements ISenseGlossBasedElementLevelSemanticMatcher 
     private Vector<ISynset> getAncestors(ISynset node, Vector<ISynset> ve, int depth) {
         return node.getParents(depth);
     }
-
+    // TODO more than one main is confusing.
     public static void main(String[] args) {
         WNHierarchy wnh = new WNHierarchy();
         ILO = MatchManager.getLinguisticOracle();

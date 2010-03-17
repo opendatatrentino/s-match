@@ -24,6 +24,7 @@ public class openSAT implements ISATSolver {
     private static final Logger log = Logger.getLogger(openSAT.class);
 
     public static int hits = 0;
+    // TODO Need comments
     private static final Dimacs parser = new Dimacs();
 
     public openSAT() {

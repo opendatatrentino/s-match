@@ -4,8 +4,8 @@ import it.unitn.disi.smatch.MatchManager;
 import it.unitn.disi.smatch.matchers.element.IStringBasedElementLevelSemanticMatcher;
 
 /**
- * implements Edit Distance matcher
- * see Element Level Semantic matchers paper for more details
+ * Implements Edit Distance matcher.
+ * See Element Level Semantic matchers paper for more details.
  *
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
  * @author Aliaksandr Autayeu avtaev@gmail.com
@@ -16,6 +16,13 @@ public class EditDistance implements IStringBasedElementLevelSemanticMatcher {
     private static int MISMATCH = 1;
     private static int GAP = 1; // treating gap = mismatch
 
+    /**
+     * Computes the relation with edit distance matcher.
+     *
+     * @param str1 one input string
+     * @param str2 another input string
+     * @return synonym or IDK relation
+     */
     public char match(String str1, String str2) {
         if (str1 == null || str2 == null || str1.length() == 0 || str2.length() == 0) {
             return MatchManager.IDK_RELATION;
@@ -57,12 +64,13 @@ public class EditDistance implements IStringBasedElementLevelSemanticMatcher {
     }
 
     /**
-     * Treats with online mismatch and gap
+     * Treats with online mismatch and gap.
      *
      * @param a
      * @param b
-     * @return
+     * @return match or mismatch
      */
+    // TODO need comments about parameters
     private static int distance(Character a, Character b) {
         if (null == a || null == b) return GAP;
         if (!a.equals(b)) return MISMATCH;

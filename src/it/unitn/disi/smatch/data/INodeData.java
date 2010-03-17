@@ -24,7 +24,7 @@ public interface INodeData {
     void setcNodeFormula(String cNodeFormula);
 
     /**
-     * Set cLab formula to CNF and store in the concept
+     * Sets cLab formula to CNF and store in the concept.
      */
     void setcLabFormulaToConjunciveForm(String formula);
 
@@ -33,7 +33,7 @@ public interface INodeData {
     void setParent(INode parent);
 
     /**
-     * returns atomic concepts of labels associated with the givem node
+     * Returns atomic concepts of labels associated with the given node.
      *
      * @return atomic concepts of labels
      */
@@ -41,7 +41,7 @@ public interface INodeData {
 
     /**
      * Returns vector of atomic concepts for the node matching task.
-     * Basically, all concepts including parent concepts with some filtering
+     * Basically, all concepts including parent concepts with some filtering.
      * Same filter is used in getAllContextACols, therefore it is needed here.
      *
      * @return vector of atomic concepts for the node matching task
@@ -57,7 +57,7 @@ public interface INodeData {
     IAtomicConceptOfLabel getNMTAColById(String tokenUID);
 
     /**
-     * Get node acol by Id.
+     * Gets node acol by Id.
      *
      * @param tokenUID token id
      * @return acol
@@ -73,47 +73,44 @@ public interface INodeData {
     public String getParentRelationType();
 
     /**
-     * adds atomic concepts of label to the node
+     * Adds atomic concepts of label to the node.
      *
      * @param sense
      */
+    // TODO need comments
     public void addAtomicConceptOfLabel(IAtomicConceptOfLabel sense);
 
     String getCNodeFormula();
 
     /**
-     * clears cLab formula
+     * clears cLab formula.
      */
     void resetLogicalFormula();
 
     /**
-     * clear sets of senses
+     * clears sets of senses.
      */
     void resetSetOfSenses();
 
     /**
-     * returns path to root string for the given node
+     * returns path to root string for the given node.
      *
      * @return path to root string
      */
     String getPathToRootString();
 
     /**
-     * returns depth of the node in the context
-     *
-     * @return depth of the node in the context
+     * returns depth of the node in the context.
      */
     int getDepth();
 
     /**
-     * Gets index in a Vector. This is to avoid hashtables.
-     *
-     * @return index in a Vector. 
+     * Gets index in a Vector. This is to avoid hash tables.
      */
     int getIndex();
 
     /**
-     * Sets index in a Vector. This is to avoid hashtables.
+     * Sets index in a Vector. This is to avoid hash tables.
      *
      * @param index
      */

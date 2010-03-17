@@ -17,7 +17,7 @@ public class openSATcached implements ISATSolver {
     private static final Logger log = Logger.getLogger(openSATcached.class);
 
     private static final openSAT opensat = new openSAT();
-
+    // TODO Need comments
     private static HashMap<String, Boolean> solutions = new HashMap<String, Boolean>();
     private static int cacheHits = 0;
     private static int hits = 0;
@@ -25,6 +25,7 @@ public class openSATcached implements ISATSolver {
     private static boolean saveCache = false;
     private static final String cacheFile = "sat.cache";
 
+    // TODO Need comments
     public openSATcached() {
         if (saveCache) {
             solutions = readCache(cacheFile);
@@ -36,6 +37,7 @@ public class openSATcached implements ISATSolver {
      *
      * @param input The String that contains sat problem in DIMACS's format
      * @return boolean True if the formula is satisfiable, false otherwise
+     * @throws SMatchException
      */
     public boolean isSatisfiable(String input) throws SMatchException {
         hits++;
@@ -61,7 +63,12 @@ public class openSATcached implements ISATSolver {
         }
     }
 
-
+    /**
+     * Writes OpenSAT caches to file.
+     *
+     * @param h HashMap for OpenSAT
+     * @param fileName the file where cache will be written
+     */
     public static void writeCache(HashMap<String, Boolean> h, String fileName) {
         if (saveCache && null != solutions && solutions.size() > 0) {
             log.info("Writing SAT cache to " + fileName);
@@ -76,6 +83,13 @@ public class openSATcached implements ISATSolver {
             }
         }
     }
+
+    /**
+     * Reads OpenSAT cache from a file.
+     *
+     * @param fileName the file from where the cache will be read
+     * @return a HaspMap for OpenSAT
+     */
 
     public static HashMap<String, Boolean> readCache(String fileName) {
         HashMap<String, Boolean> result = null;

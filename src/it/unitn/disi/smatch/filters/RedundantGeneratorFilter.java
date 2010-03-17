@@ -11,7 +11,7 @@ import org.apache.log4j.Logger;
 import java.util.Vector;
 
 /**
- * Generates entailed mappings according to pseudocode from minimal mappings paper.
+ * Generates entailed mappings according to pseudo code from minimal mappings paper.
  *
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
@@ -91,6 +91,7 @@ public class RedundantGeneratorFilter implements IFilter {
         return CnodMatrix;
     }
 
+    // TODO needs comments
     private char computeMapping(int i, int j) {
         if (MatchManager.OPPOSITE_MEANING == CnodMatrix.getElement(i, j)) {
             return MatchManager.OPPOSITE_MEANING;
@@ -129,6 +130,14 @@ public class RedundantGeneratorFilter implements IFilter {
         return isRedundant(sourceNodes.get(C), targetNodes.get(D), R);
     }
 
+    /**
+     * Checks the relation between source and target is redundant or not for minimal mapping.
+     *
+     * @param C interface of source node
+     * @param D interface of target node
+     * @param R relation between source and target node
+     * @return true for redundant relation
+     */
     private boolean isRedundant(INode C, INode D, char R) {
         switch (R) {
             case MatchManager.LESS_GENERAL_THAN: {

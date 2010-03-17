@@ -51,7 +51,7 @@ public class CNFClassifier implements IClassifier {
     }
 
     /**
-     * constructs cNode for the concept
+     * Constructs cNode for the concept.
      *
      * @param in node to process
      */
@@ -82,6 +82,13 @@ public class CNFClassifier implements IClassifier {
         nd.setcNodeFormula(path.toString());
     }
 
+    /**
+     * Converts the formula into CNF.
+     *
+     * @param in the owner of the formula
+     * @param formula the formula to convert
+     * @return formula in CNF form
+     */
     public String toCNF(INode in, String formula) {
         String result = formula;
         if ((formula.contains("&") && formula.contains("|")) || formula.contains("~")) {

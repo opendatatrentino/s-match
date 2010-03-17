@@ -27,6 +27,11 @@ public class GenerateWordNetCaches {
 
     private static final Logger log = Logger.getLogger(GenerateWordNetCaches.class);
 
+    /**
+     * Convert WordNet dictionary to binary structures and save them to caches.
+     *
+     * @throws SMatchException
+     */
     public void convert() throws SMatchException {
         log.info("Creating WordNet caches...");
         writeMultiwords();
@@ -447,7 +452,13 @@ public class GenerateWordNetCaches {
         }
     }
 
-
+    /**
+     * Writes specific WordNet cache such as multiwords to corresponding file.
+     *
+     * @param object the cache object
+     * @param fileName the file where the object will be written
+     * @throws SMatchException
+     */
     private void writeObject(Object object, String fileName) throws SMatchException {
         log.info("Writing " + fileName);
         try {

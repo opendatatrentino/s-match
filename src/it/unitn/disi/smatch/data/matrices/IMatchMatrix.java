@@ -9,7 +9,7 @@ package it.unitn.disi.smatch.data.matrices;
 public interface IMatchMatrix {
 
     /**
-     * Inits a matrix x rows per y columns.
+     * Initializes a matrix x rows per y columns.
      *
      * @param x rows count
      * @param y column count
@@ -17,7 +17,7 @@ public interface IMatchMatrix {
     void init(int x, int y);
 
     /**
-     * Inits a matrix x rows per y columns with a max of num_nz non-zero elements.
+     * Initializes a matrix x rows per y columns with a max of num_nz non-zero elements.
      *
      * @param x      rows count
      * @param y      column count
@@ -31,7 +31,7 @@ public interface IMatchMatrix {
     void endOfRow();
 
     /**
-     * Returns an element.
+     * Returns an element form a matrix.
      *
      * @param x row
      * @param y column
@@ -40,7 +40,7 @@ public interface IMatchMatrix {
     char getElement(int x, int y);
 
     /**
-     * Sets an element.
+     * Sets an element to a matrix.
      *
      * @param x     row
      * @param y     column
@@ -51,13 +51,14 @@ public interface IMatchMatrix {
     /**
      * Returns row count.
      *
-     * @return row count
+     * @return number of row
      */
     int getX();
 
     /**
      * Returns column count.
-     * @return column count
+     *
+     * @return number of column
      */
     int getY();
 }

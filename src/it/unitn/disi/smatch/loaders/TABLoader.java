@@ -11,7 +11,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 
-
 /**
  * Loads context from a tab-separated file.
  *
@@ -25,9 +24,9 @@ public class TABLoader implements ILoader {
 	 * refactored, deleted class level variables and changed rootPath from array[]
 	 * to allay list
 	 */
-	//TODO the loader could be made static, but this requires a change in the ILoader interface 
-	
-	
+	//TODO the loader could be made static, but this requires a change in the ILoader interface
+
+
     private static final Logger log = Logger.getLogger(TABLoader.class);
 
 
@@ -48,10 +47,11 @@ public class TABLoader implements ILoader {
         return result;
     }
 
-    
+
     /**
      * Processes the file loading the content. This content is supposed to be
      * formatted in tab indented format.
+     *
      * @param input		Reader for the input file
      * @return			the loaded IContext
      * @throws IOException
@@ -63,8 +63,8 @@ public class TABLoader implements ILoader {
     	//loads the root node
     	String fatherConceptId = result.newNode(input.readLine(), null);
         rootPath.add(fatherConceptId);
-        
-        
+
+
         String fatherId;
         int old_depth = 0;
         String line;
@@ -90,13 +90,14 @@ public class TABLoader implements ILoader {
                 old_depth = int_depth;
             }
         }
-        
+
         return result;
     }
-    
+
     /**
-     * counts the number of tabs in the line
-     * @param line	
+     * Counts the number of tabs in the line.
+     *
+     * @param line	the string of the each line of file
      * @return 	the number of tabs at the beginning of the line
      */
     private int numOfTabs(String line) {
@@ -106,11 +107,11 @@ public class TABLoader implements ILoader {
         }
         return close_counter;
     }
-    
-    
+
     /**
-     * sets the nodeID at a given position of the array.
-     * Changes the current value if there is one, if there is no value, add a new one
+     * Sets the nodeID at a given position of the array.
+     * Changes the current value if there is one, if there is no value, add a new one.
+     *
      * @param index		position to be filled
      * @param array		array to be modified
      * @param nodeID	value to be set
@@ -122,5 +123,5 @@ public class TABLoader implements ILoader {
         	array.add(index, nodeID);
         }
     }
-    
+
 }

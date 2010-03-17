@@ -11,5 +11,13 @@ import java.util.Vector;
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
 public interface IFilter {
+
+	/**
+     * Filters the semantic relation for minimal mapping.
+     *
+     * @param args a vector which have context of source, target and matrix of relation between labels. nodes
+     * @return minimal semantic relation
+     */
+	// TODO untyped variable in vector
     public IMatchMatrix filter(Vector args);
 }

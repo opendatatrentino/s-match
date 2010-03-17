@@ -15,6 +15,15 @@ import java.util.ArrayList;
  */
 public class OptimizedStageNodeMatcher extends BaseNodeMatcher {
 
+	/**
+	 * Checks source node and target node are disjoint or not for optimizing tree matcher.
+	 *
+	 * @param cLabMatrix interface of relational matrix with concept of labels
+	 * @param sourceNode interface of source node
+	 * @param targetNode interface of target node
+	 * @return true if the nodes are in disjoint relation
+	 * @throws SMatchException
+	 */
     public boolean nodeDisjoint(IMatchMatrix cLabMatrix, INode sourceNode, INode targetNode) throws SMatchException {
         boolean result = false;
         String sourceCNodeFormula = sourceNode.getNodeData().getCNodeFormula();
@@ -53,6 +62,7 @@ public class OptimizedStageNodeMatcher extends BaseNodeMatcher {
         return result;
     }
 
+    // TODO Needs comments
     public boolean nodeSubsumedBy(IMatchMatrix cLabMatrix, INode sourceNode, INode targetNode) throws SMatchException {
         boolean result = false;
         String sourceCNodeFormula = sourceNode.getNodeData().getCNodeFormula();
@@ -120,7 +130,7 @@ public class OptimizedStageNodeMatcher extends BaseNodeMatcher {
         }
         return result;
     }
-
+    // TODO nothing in this method
     public void clearAxiomsCache() {
     }
 }

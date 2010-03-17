@@ -103,7 +103,7 @@ public class CTXML extends DefaultHandler implements java.io.FileFilter {
         }
     }
 
-    // Starting of reimplementation of method from org.xml.sax.helpers.DefaulHandler
+    // Starting of re implementation of method from org.xml.sax.helpers.DefaulHandler
     public void startDocument() {
         ctx = Context.getInstance();
         elementsParsed = 1;

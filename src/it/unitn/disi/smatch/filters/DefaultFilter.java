@@ -8,7 +8,7 @@ import it.unitn.disi.smatch.data.INode;
 import java.util.Vector;
 
 /**
- * ???
+ * // TODO needs comment
  *
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
  */
@@ -27,6 +27,14 @@ public class DefaultFilter implements IFilter {
 
     }
 
+    /**
+	 * Filters the matrix which have relation between nodes for minimal mapping.
+	 *
+	 * @param matrix relational matrix between nodes
+	 * @param x number of source node
+	 * @param y number of target nodes
+	 * @return a matrix which have minimal relation
+	 */
     public IMatchMatrix filterMatrix(IMatchMatrix matrix, int x, int y) {
         for (int i = 0; i < x; i++) {
             for (int j = 0; j < y; j++) {

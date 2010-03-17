@@ -26,6 +26,9 @@ public class WordNet implements ILinguisticOracle {
 
     private static Dictionary wordNetDictionary;
 
+    /**
+     * Constructor class which initializes the wordnet dictionary.
+     */
     public WordNet() {
         wordNetDictionary = MatchManager.getWordNetDictionary();
     }

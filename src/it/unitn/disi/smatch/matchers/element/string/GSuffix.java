@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 /**
- * Implements GPrefix matcher.
+ * Implements GSuffix matcher.
  * Tries to use morphological knowledge (prefixes) to enhance relations returned.
  *
  * @author Aliaksandr Autayeu avtaev@gmail.com
@@ -19,8 +19,11 @@ public class GSuffix implements IStringBasedElementLevelSemanticMatcher {
     private static int relCount = 0;
     private static HashSet<String> hm = new HashSet<String>();
 
+    // TODO Perhaps the commenting will be about suffix. Need revision.
     //prefix -> relation
     //based on http://en.wiktionary.org/wiki/Appendix:Prefixes:English
+
+    // TODO variable name is prefix, but this is suffix matcher
     private static HashMap<String, Character> prefixes = new HashMap<String, Character>();
 
     //for roots
@@ -303,7 +306,7 @@ in-
 
           inbreed
           inbound
-        
+
          */
         prefixes.put("in", MatchManager.OPPOSITE_MEANING);
         prefixes.put("Indo", MatchManager.LESS_GENERAL_THAN);
@@ -449,7 +452,7 @@ un-
         prefixes.put("farm", MatchManager.LESS_GENERAL_THAN);
 
         //"roots"
-        //e.g. parrot-fish is less general than fish  
+        //e.g. parrot-fish is less general than fish
         //or it is a fish? :)
         //to handle cases like almond-tree, apple-tree
         suffixes.put("fish", MatchManager.LESS_GENERAL_THAN);
@@ -591,12 +594,19 @@ un-
         return rel;
     }
 
+    /**
+     * Computes the relation with suffix matcher.
+     *
+     * @param str1 the source input
+     * @param str2 the target input
+     * @return synonym, more general, less general or IDK relation
+     */
     private char matchSuffix(String str1, String str2) {
         //here always str1.endsWith(str2)
         char rel = MatchManager.IDK_RELATION;
         int spacePos1 = str1.lastIndexOf(' ');
         String prefix = str1.substring(0, str1.length() - str2.length());
-        if (-1 < spacePos1 && !prefixes.containsKey(prefix)) {//check prefixes - ordered set!unordered set
+        if (-1 < spacePos1 && !prefixes.containsKey(prefix)) {//check prefixes - ordered set!unordered set // TODO the matcher is suffix not prefix. need revision
             if (str1.length() == spacePos1 + str2.length() + 1) {//adhesive tape<tape   attention deficit disorder<disorder
                 rel = MatchManager.LESS_GENERAL_THAN;
             } else {//connective tissue<issue

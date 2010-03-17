@@ -36,9 +36,9 @@ import java.util.StringTokenizer;
 import java.util.Vector;
 
 /**
- * Class that control process of matching, load contexts and perform other
- * auxilary work. Also it contain all the global variables and properties from
- * the configuration file
+ * Class that controls the process of matching, loads contexts and performs other
+ * auxiliary work. Also it contains all the global variables and properties from
+ * the configuration file.
  *
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
  * @author Aliaksandr Autayeu avtaev@gmail.com
@@ -51,6 +51,10 @@ public class MatchManager implements IMatchManager {
 
     private static final Logger log = Logger.getLogger(MatchManager.class);
 
+    /**
+     * Which properties file is used for setting configuration. <br>
+     * The value of the variables change through command line parameter.
+     */
     public static String propFileName = "SMatch.properties";
 
     // Settings from the properties file
@@ -78,6 +82,7 @@ public class MatchManager implements IMatchManager {
     public static boolean useConjunctiveLabelsOptimization = false;
     // whether to use disjointness test optimization technique
     public static boolean useOppositeAxiomsOptimization = false;
+    // Needs comment.
     private static boolean oneSensePerLabel = true;
     // default value for the class which implements IWordNetMatcher interface
     private static String strWNmatcher = null;// "it.unitn.disi.smatch.oracles.wordnet.DefaultWordNetMatcher";
@@ -120,11 +125,11 @@ public class MatchManager implements IMatchManager {
     // "Wrong usage" string
     private static final String USAGE = "it.unitn.disi.smatch <preprocessors> source_dir target_dir";
     // Whether preprocessors part should be executed
-    private static boolean offline = false;
-    private static boolean online = false;
-    private static boolean convert = false;
-    private static boolean filterFlag = false;
-    private static boolean wntoflatFlag = false;
+    private static boolean offline = false; // Computing concept of labels and nodes.
+    private static boolean online = false; // Computing relation between concept of labels and nodes. Also compute minimal result.
+    private static boolean convert = false; // Convert input file to xml formated file.
+    private static boolean filterFlag = false; // filter the semantic relation for minimal result.
+    private static boolean wntoflatFlag = false; // Convert WordNet to binary caches for quick search.
 
     // Wordnet dictionary object
     private static Dictionary wordNetDictionary = null;
@@ -177,6 +182,11 @@ public class MatchManager implements IMatchManager {
     public static String nominalizationsFile = "nominalizations.arr";
     public static String adverbsAntonymFile = "adv_opp.arr";
 
+    /**
+     * Parses the settings form properties files and sets the property key to specific variable.
+     *
+     * @param properties the object of the properties files
+     */
     private void parseProperties(Properties properties) {
         if (properties.containsKey("MatchMatrixClassName")) {
             MatrixFactory.MATRIX_CLASS_NAME = properties.getProperty("MatchMatrixClassName");
@@ -302,17 +312,24 @@ public class MatchManager implements IMatchManager {
 		MatchManager.outputFile = outputFile;
 	}
 
-	// buffer size for input, output operations
+	// buffer size for input, output operations.
     public static int BUFFER_SIZE = 5000000;
-    // ELSMthreshold for element level semantic matchers
+    // ELSMthreshold for element level semantic matchers.
+    // Edit Distance, Optimized edit distance, NGram matchers are controlled by this value.
     public static double ELSMthreshold = 0.9;
-    // numer characters for linguistic preprocessing
+    // Number characters for linguistic preprocessing.
     public static String numberCharacters = "1234567890_ .,|\\/-";
 
     public MatchManager() throws SMatchException {
         this(propFileName);
     }
 
+    /**
+     * Constructor class to load properties files, initialize JWNL and creating components.
+     *
+     * @param propFileName the name of the properties file
+     * @throws SMatchException
+     */
     public MatchManager(String propFileName) throws SMatchException {
         // load properties
         loadProperties(propFileName);
@@ -326,6 +343,9 @@ public class MatchManager implements IMatchManager {
         return new MatchManager(propFileName);
     }
 
+    /**
+     * Configures the components such as classifier, loader etc for the program.
+     */
     private static void createComponents() {
 //        // create an Oracle
 //        if (wordNetDictionary == null) {
@@ -472,11 +492,19 @@ public class MatchManager implements IMatchManager {
         return Context.getInstance();
     }
 
+    /**
+     * Loads, parses, sets the value of properties from properties file.
+     *
+     * @param filename the properties file name
+     * @throws SMatchException
+     */
     private void loadProperties(String filename) throws SMatchException {
         log.info("Loading properties from " + filename);
         try {
             Properties properties = new Properties();
+            // Loads the value of properties to properties object.
             properties.load(new FileInputStream(filename));
+            // Sets the value of properties from properties files.
             parseProperties(properties);
         } catch (IOException e) {
             final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
@@ -490,6 +518,12 @@ public class MatchManager implements IMatchManager {
         createComponents();
     }
 
+    /**
+     * Creates object for specific class.
+     *
+     * @param className the class name to create the object
+     * @return object of corresponding class name
+     */
     public static Object getClassForName(String className) {
         Object object = null;
         try {
@@ -505,6 +539,13 @@ public class MatchManager implements IMatchManager {
         return object;
     }
 
+    /**
+     * Creates list of object of classes.
+     *
+     * @param str string of classes
+     * @param separator string to separate the name of class
+     * @return vector of objects of classes
+     */
     private static Vector<Object> fromStringToVectorOfClasses(String str,
                                                               String separator) {
         Vector<Object> tmp = new Vector<Object>();
@@ -521,6 +562,7 @@ public class MatchManager implements IMatchManager {
      * @param v     vector
      * @param value value
      */
+    // TODO Need comments about the parameters.
     public static void retainValue(Vector<String> v, String value) {
         if (oneSensePerLabel) {
             Vector<String> toSave = new Vector<String>();
@@ -533,7 +575,7 @@ public class MatchManager implements IMatchManager {
      * Performs JWNL and JWNL logger initialization routines.
      * Needs to be performed once before matching process.
      *
-     * @throws SMatchException SMatchException
+     * @throws SMatchException
      */
     static public void initJWNL() throws SMatchException {
         try {
@@ -556,7 +598,7 @@ public class MatchManager implements IMatchManager {
     }
 
     /**
-     * parses command line parameters
+     * Parses the commands from command line.
      *
      * @param args command line arguments
      */
@@ -660,12 +702,6 @@ public class MatchManager implements IMatchManager {
         return res;
     }
 
-    /**
-     * Performs linguistic preprocessing
-     *
-     * @param ctxSource      context to preprocessors
-     * @param ctxsSourceFile file to save preprocessed context
-     */
     public IContext offline(IContext ctxSource, String ctxsSourceFile) {
         log.info("Computing concept at label formulas...");
         IContext tmp = preprocess(ctxSource);
@@ -682,7 +718,9 @@ public class MatchManager implements IMatchManager {
     }
 
     public IMapping online(IContext sourceContext, IContext targetContext) throws SMatchException {
-        IMatchMatrix cLabMatrix = elementLevelMatching(sourceContext, targetContext);
+        // Performs element level matching which computes the relation between labels.
+    	IMatchMatrix cLabMatrix = elementLevelMatching(sourceContext, targetContext);
+    	// Performs structure level matching which computes the relation between nodes.
         IMatchMatrix cNodeMatrix = structureLevelMatching(sourceContext, targetContext, cLabMatrix);
 
         //temporary
@@ -695,6 +733,7 @@ public class MatchManager implements IMatchManager {
         args.insertElementAt(cLabMatrix, 2);
         args.insertElementAt(sourceContext, 3);
         args.insertElementAt(targetContext, 4);
+        // Filters the relational matrix for minimal mapping.
         cNodeMatrix = filter(args);
 
         return renderMapping(args);
@@ -707,12 +746,6 @@ public class MatchManager implements IMatchManager {
 
     }
 
-    /**
-     * Loads context
-     *
-     * @param fileName file to load
-     * @return instance of context
-     */
     public IContext loadContext(String fileName) throws SMatchException {
         log.info("Loading nodes from " + fileName);
         IContext context = loader.loadContext(fileName);
@@ -724,6 +757,12 @@ public class MatchManager implements IMatchManager {
         return context;
     }
 
+    /**
+     * Filtering contexts for minimal mapping.
+     *
+     * @param sourceContext concept of source nodes
+     * @param targetContext concept of target nodes
+     */
     private void filterContexts(IContext ctxSource, IContext ctxTarget) {
         IMatchMatrix cNodeMatrix;
         try {
@@ -745,6 +784,11 @@ public class MatchManager implements IMatchManager {
         }
     }
 
+    /**
+     * Converts WordNet dictionary to binary format for fast searching.
+     *
+     * @throws SMatchException
+     */
     private void convertWordNetToFlat() throws SMatchException {
         GenerateWordNetCaches gwnc = new GenerateWordNetCaches();
         gwnc.convert();

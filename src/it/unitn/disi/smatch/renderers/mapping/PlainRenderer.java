@@ -45,11 +45,15 @@ public class PlainRenderer implements IMappingRenderer {
     }
 
     /**
-     * Prints cLab and cNode Matrices into file
+     * Prints cLab and cNode Matrices into file.
      *
-     * @param fileName   File name
-     * @param ClabMatrix cLabMatrix
-     * @param CnodMatrix cNodeMatrix
+     * @param fileName   File name where the matrices will be written
+     * @param ClabMatrix matrix with concept of labels
+     * @param CnodMatrix matrix with concept of nodes
+     * @param sourceACoLs concept of source labels
+     * @param targetACoLs concept of target labels
+     * @param sourceNodes concept of source node
+     * @param targetNodes concept of target node
      */
     protected void printMatricesToFile(String fileName, IMatchMatrix ClabMatrix, IMatchMatrix CnodMatrix,
                                        Vector<IAtomicConceptOfLabel> sourceACoLs, Vector<IAtomicConceptOfLabel> targetACoLs,
@@ -109,7 +113,7 @@ public class PlainRenderer implements IMappingRenderer {
                                 sparent = sparent.getParent();
                             }
                         }
-                        
+
                         targetConceptName = "";
                         INode tparent = targetNodes.get(j);
                         while (null != tparent) {

@@ -10,7 +10,7 @@ import java.io.OutputStreamWriter;
 import java.util.Vector;
 
 /**
- * Renders a context into a CTXML file
+ * Renders a context into a CTXML file.
  *
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
  * @author Aliaksandr Autayeu avtaev@gmail.com
@@ -23,6 +23,9 @@ public class CTXMLContextRenderer implements IContextRenderer {
     }
 
     /**
+     * Save the context into a xml file.
+     *
+     * @param c the interface of the context
      * @param xmlFileName The name of the file where the contexts has to be saved
      */
     private void saveToXml(IContext c, String xmlFileName) {

@@ -13,7 +13,7 @@ public interface IMatchingContext {
     Vector<IAtomicConceptOfLabel> getAllContextACoLs();
 
     /**
-     * clear all data acquired in linguistic preprocessing phase
+     * Clears all data acquired in linguistic preprocessing phase.
      */
     void resetOldPreprocessing();
 

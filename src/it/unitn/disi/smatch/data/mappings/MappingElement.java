@@ -57,6 +57,13 @@ public class MappingElement implements IMappingElement, Comparable {
         }
     }
 
+    /**
+     * Constructor class which assigns source name. target name and their relation.
+     *
+     * @param sourceEntity the string of source name
+     * @param targetEntity the string of target name
+     * @param relation synonym, less general or more general relation between source and target
+     */
     public MappingElement(String sourceEntity, String targetEntity, char relation) {
         this.sourceEntity = sourceEntity;
         this.targetEntity = targetEntity;

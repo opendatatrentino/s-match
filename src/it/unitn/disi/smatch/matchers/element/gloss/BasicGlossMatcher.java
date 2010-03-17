@@ -23,6 +23,14 @@ public class BasicGlossMatcher {
     }
 
     //Next 4 method are used by element level matchers to calculate relations between words
+
+    /**
+     * Checks the source is more general than the target or not.
+     *
+     * @param source sense of source
+     * @param target sense of target
+     * @return true if the source is more general than target
+     */
     public boolean isWordMoreGeneral(String source, String target) {
         Vector<String> sSenses;
         Vector<String> tSenses;
@@ -42,6 +50,13 @@ public class BasicGlossMatcher {
         return false;
     }
 
+    /**
+     * Checks the source is less general than the target or not.
+     *
+     * @param source sense of source
+     * @param target sense of target
+     * @return true if the source is less general than target
+     */
     public boolean isWordLessGeneral(String source, String target) {
         Vector<String> sSenses;
         Vector<String> tSenses;
@@ -61,6 +76,13 @@ public class BasicGlossMatcher {
         return false;
     }
 
+    /**
+     * Checks the source and target is synonym or not.
+     *
+     * @param source sense of source
+     * @param target sense of target
+     * @return true if they are synonym
+     */
     public boolean isWordSynonym(String source, String target) {
         Vector<String> sSenses;
         Vector<String> tSenses;
@@ -81,6 +103,13 @@ public class BasicGlossMatcher {
         return false;
     }
 
+    /**
+     * Checks the source and target is opposite or not.
+     *
+     * @param source sense of source
+     * @param target sense of target
+     * @return true if they are in opposite relation
+     */
     public boolean isWordOpposite(String source, String target) {
         Vector<String> sSenses;
         Vector<String> tSenses;
@@ -98,6 +127,15 @@ public class BasicGlossMatcher {
         return false;
     }
 
+    /**
+     * Gets extended gloss i.e. the gloss of parents or children. <br>
+     * The direction and depth is according to requirement.
+     *
+     * @param original the original gloss of input string
+     * @param intSource how much depth the gloss should be taken
+     * @param Rel for less than relation get child gloss and vice versa
+     * @return the extended gloss
+     */
     public String getExtendedGloss(ISynset original, int intSource, char Rel) {
         Vector<ISynset> children = new Vector<ISynset>();
         String result = "";

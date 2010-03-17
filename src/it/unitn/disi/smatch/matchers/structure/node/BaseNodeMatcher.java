@@ -17,16 +17,25 @@ import java.util.ArrayList;
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
 public class BaseNodeMatcher {
-
+	// create an interface of SAT solver
     protected ISATSolver satSolver = (ISATSolver) MatchManager.getClassForName(MatchManager.satSolverClass);
 
+    /**
+     * Makes axioms for CNF formula.
+     *
+     * @param hashConceptNumber HashMap for atomic concept of labels with its id.
+     * @param cLabMatrix relation between atomic concept of labels
+     * @param sourceNode interface of source node
+     * @param targetNode interface of target node
+     * @return an object of axioms
+     */
     protected static Object[] mkAxioms(HashMap<IAtomicConceptOfLabel, Integer> hashConceptNumber, IMatchMatrix cLabMatrix, INode sourceNode, INode targetNode) {
         StringBuffer axioms = new StringBuffer();
         Integer numberOfClauses = 0;
         //create variables
         for (IAtomicConceptOfLabel sourceACoL : sourceNode.getNodeData().getNodeMatchingTaskACols()) {
             //create corresponding to id variable number
-            //and put it as a value of hashtable with key equal to ACoL id
+            //and put it as a value of hash table with key equal to ACoL id
             if (!hashConceptNumber.containsKey(sourceACoL)) {
                 Integer value = hashConceptNumber.size() + 1;
                 hashConceptNumber.put(sourceACoL, value);
@@ -103,6 +112,13 @@ public class BaseNodeMatcher {
         return new Object[]{axioms.toString(), numberOfClauses};
     }
 
+    /**
+     * Converts context of node into array list.
+     *
+     * @param hashConceptNumber HashMap for atomic concept of label with its id
+     * @param node interface of the node
+     * @return array list of context of node
+     */
     protected ArrayList<ArrayList<String>> parseFormula(HashMap<IAtomicConceptOfLabel, Integer> hashConceptNumber, INode node) {
         ArrayList<ArrayList<String>> representation = new ArrayList<ArrayList<String>>();
         boolean saved_negation = false;
@@ -138,6 +154,12 @@ public class BaseNodeMatcher {
         return representation;
     }
 
+    /**
+     * Converts array list of context of node into DIMACS form.
+     *
+     * @param tmp array list of context of a node
+     * @return nodes in DIMACS format
+     */
     protected static String DIMACSfromVector(ArrayList<ArrayList<String>> tmp) {
         StringBuffer DIMACS = new StringBuffer("");
         for (ArrayList<String> clause : tmp) {
@@ -148,7 +170,7 @@ public class BaseNodeMatcher {
         }
         return DIMACS.toString();
     }
-
+    // TODO Need comments
     protected static int negateFormulaInVector(HashMap<IAtomicConceptOfLabel, Integer> hashConceptNumber, ArrayList<ArrayList<String>> pivot, ArrayList<ArrayList<String>> result) {
         //ArrayList<ArrayList<String>> result = new ArrayList<ArrayList<String>>();
         result.clear();

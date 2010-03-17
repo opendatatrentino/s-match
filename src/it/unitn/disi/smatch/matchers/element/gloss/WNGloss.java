@@ -9,8 +9,8 @@ import java.util.StringTokenizer;
 import java.util.Vector;
 
 /**
- * implements WNGloss matcher
- * see Element Level Semantic matchers paper for more details
+ * Implements WNGloss matcher.
+ * See Element Level Semantic matchers paper for more details.
  *
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
  * @author Aliaksandr Autayeu avtaev@gmail.com
@@ -19,6 +19,13 @@ public class WNGloss implements ISenseGlossBasedElementLevelSemanticMatcher {
 
     static int threshold = 1;
 
+    /**
+     * Computes the relations with WordNet gloss matcher.
+     *
+     * @param source gloss of source
+     * @param target gloss of target
+     * @return more general, less general or IDK relation
+     */
     public char match(ISynset source, ISynset target) {
         String sSynset = source.getGloss();
         String tSynset = target.getGloss();
@@ -58,7 +65,7 @@ public class WNGloss implements ISenseGlossBasedElementLevelSemanticMatcher {
         }
         return MatchManager.IDK_RELATION;
     }
-
+    // TODO more than one main function. It is confusing
     public static void main(String[] args) {
         WNSemanticGlossComparison wng = new WNSemanticGlossComparison();
         ILinguisticOracle ILO = MatchManager.getLinguisticOracle();

@@ -11,7 +11,10 @@ import java.util.Vector;
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
 public interface IMappingRenderer {
+
     /**
+     * Save the relational matrices into a file.
+     *
      * 0th element of the Vector is filename to save mappings
      * 1st element is char[][] CnodMatrix
      * 2nd element is char[][] CLabMatrix

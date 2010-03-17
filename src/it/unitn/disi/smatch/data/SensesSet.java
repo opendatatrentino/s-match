@@ -55,7 +55,7 @@ public class SensesSet implements ISensesSet {
                 else
                     intSenses[i] = 0;
             }
-            //remove this line after scalability test
+            //remove this line after scalability  test
             senseList = new Vector<String>();
         }
     }

@@ -27,6 +27,13 @@ public class MatcherLibrary implements IMatcherLibrary {
 
     private static boolean cachecLabsMatrix = false;
 
+    /**
+     * Returns a semantic relation between two concept of labels.
+     *
+     * @param sourceACoL interface of source label concept
+     * @param targetACoL interface of target label concept
+     * @return relation between concept of labels
+     */
     public char getRelation(IAtomicConceptOfLabel sourceACoL, IAtomicConceptOfLabel targetACoL) {
         sourceACoL.getSenses().convertSenses();
         targetACoL.getSenses().convertSenses();
@@ -55,10 +62,10 @@ public class MatcherLibrary implements IMatcherLibrary {
     }
 
     /**
-     * Return semantic relation holding between two labels as computed by string based matchers.
+     * Returns semantic relation holding between two labels as computed by string based matchers.
      *
-     * @param sourceLabel sourceLabel
-     * @param targetLabel targetLabel
+     * @param sourceLabel the string of the source label
+     * @param targetLabel the string of the target label
      * @return semantic relation holding between two labels as computed by string based matchers
      */
     private char getRelationFromStringMatchers(String sourceLabel, String targetLabel) {
@@ -73,11 +80,11 @@ public class MatcherLibrary implements IMatcherLibrary {
     }
 
     /**
-     * Returns semantic relation between two ACoLs (represented by Vectors of WN senses).
+     * Returns semantic relation between two ACoLs (represented by Vectors of WN senses) by WN sense based matchers.
      *
-     * @param sourceSenses sourceSenses
-     * @param targetSenses targetSenses
-     * @return semantic relation between two ACoLs (represented by Vectors of WN senses)
+     * @param sourceSenses the string of sense of source label
+     * @param targetSenses the string of sense of target label
+     * @return semantic relation between two ACoLs of labels computed by WN sense based matchers
      */
     private char getRelationFromSenseGlossMatchers(Vector<String> sourceSenses, Vector<String> targetSenses) {
         String synSource;
@@ -108,9 +115,12 @@ public class MatcherLibrary implements IMatcherLibrary {
     }
 
     /**
-     * Performs Step 3 of semantic matching algorithm
+     * Performs Step 3 of semantic matching algorithm.
      *
-     * @return matrix of semantic relatons between nodes in both contexts
+     *@param sourceContext interface of source label context
+     *@param targetContext interface of target label context
+     * @return matrix of semantic relations between labels in both contexts
+     * @throws SMatchException
      */
     public IMatchMatrix elementLevelMatching(IContext sourceContext, IContext targetContext) throws SMatchException {
         IMatchMatrix ClabMatrix = null;
@@ -168,6 +178,12 @@ public class MatcherLibrary implements IMatcherLibrary {
         return ClabMatrix;
     }
 
+    /**
+     * Writes resulting matrix in a file.
+     *
+     * @param h the interface of matrix of matching result
+     * @param fileName the output file name where the matrix will be written
+     */
     public static void writeMatrix(IMatchMatrix h, String fileName) {
         log.info("Writing cLabMatrix to " + fileName);
         try {
@@ -185,6 +201,12 @@ public class MatcherLibrary implements IMatcherLibrary {
         }
     }
 
+    /**
+     * Reading matrix from file.
+     *
+     * @param fileName the name of the file which contains matrix
+     * @return an interface of the matrix
+     */
     public static IMatchMatrix readMatrix(String fileName) {
         log.info("Reading cLabMatrix from " + fileName);
         IMatchMatrix result = null;

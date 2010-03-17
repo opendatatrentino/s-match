@@ -6,14 +6,22 @@ import java.util.StringTokenizer;
 import java.util.Vector;
 
 /**
- * implements TextCorpus matcher
- * see Element Level Semantic matchers paper for more details
+ * Implements TextCorpus matcher.
+ * see Element Level Semantic matchers paper for more details.
  *
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
 public class TextCorpus {
 
+	/**
+	 * Matches between two string using TextCorpus matcher.
+	 *
+	 * @param source the string of source label
+	 * @param target the string of target label
+	 * @param corpus the sentence which is used for matching.
+	 * @return synonym or IDK relation
+	 */
     public static char match(String source, String target, String corpus) {
         int threshold = 4;
         Vector<Integer> s = new Vector<Integer>();

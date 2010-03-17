@@ -9,7 +9,7 @@ import java.util.Hashtable;
 import java.util.Vector;
 
 /**
- * ??? 
+ * // TODO Need comments
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
  */
 public class IntegrationFilter implements IFilter {
@@ -79,6 +79,14 @@ public class IntegrationFilter implements IFilter {
         return CnodMatrix;
     }
 
+    /**
+	 * Filters the matrix which have relation between nodes for minimal mapping.
+	 *
+	 * @param matrix relational matrix between nodes
+	 * @param x number of source node
+	 * @param y number of target nodes
+	 * @return a matrix which have minimal relation
+	 */
     public IMatchMatrix filterMatrix(IMatchMatrix matrix, int x, int y) {
         for (int i = 0; i < x; i++) {
             for (int j = 0; j < y; j++) {
@@ -114,6 +122,13 @@ public class IntegrationFilter implements IFilter {
         return hash;
     }
 
+    /**
+     * Gets the position of all descendants of the given node.
+     *
+     * @param node the interface of node for which the descendants will be found
+     * @param hash hashtable for nodes
+     * @return a vector which have the all positions of descendants
+     */
     Vector<Integer> getDescendantsPos(INode node, Hashtable<INode, Integer> hash) {
         Vector<Integer> result = new Vector<Integer>();
         Vector<INode> descendants = node.getChildren();

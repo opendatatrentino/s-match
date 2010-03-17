@@ -3,51 +3,52 @@ package it.unitn.disi.smatch.data;
 import java.util.Vector;
 
 /**
- * The interface to Context datastructure
+ * The interface to data structure of context.
  *
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
 public interface IContext {
-    /**
-     * Returns an interface to context metadata
+
+	/**
+     * Returns an interface to context of metadata.
      *
-     * @return an interface to context metadata
+     * @return an interface to context of metadata
      */
     IContextData getContextData();
 
     /**
-     * returns interface to context level functionalities
-     * of matching engine
+     * Returns interface to context level functionalities
+     * of matching engine.
      *
      * @return interface to context level
      */
     IMatchingContext getMatchingContext();
 
     /**
-     * Returns all the nodes in the tree
-     * The returned list is ordered as in depth first traversal
+     * Returns all the nodes in the tree.
+     * The returned list is ordered as in depth first traversal.
      *
      * @return all the nodes in the tree
      */
     Vector<INode> getAllNodes();
 
     /**
-     * Sets a new root for the context
+     * Sets a new root for the context.
      *
      * @param root a new root
      */
     void setRoot(INode root);
 
     /**
-     * returns the root of the context
+     * Returns the root of the context.
      *
      * @return the root of the context
      */
     INode getRoot();
 
     /**
-     * inserts a new node in the context
+     * Inserts a new node in the context.
      *
      * @param NodeLabel label of the node
      * @param fatherId  id of the father node
@@ -56,19 +57,19 @@ public interface IContext {
     String newNode(String NodeLabel, String fatherId);
 
     /**
-     * change the name of the node with given id
+     * changes the name of the node with given id.
      *
-     * @param NodeId
-     * @param newLabel
+     * @param NodeId the id of the node which needs to change
+     * @param newLabel the new name of the node
      * @return new name
      */
     String renameNode(String NodeId, String newLabel);
 
     /**
-     * removes node to the other place in the tree
+     * Moves node to the other place in the tree.
      *
-     * @param NodeId
-     * @param newFatherNodeId
+     * @param NodeId the id of the node which need to be moved
+     * @param newFatherNodeId the father id of the node where it needs to be removed
      */
     void moveNode(String NodeId, String newFatherNodeId);
 
@@ -82,17 +83,17 @@ public interface IContext {
     void removeNode(String NodeId);
 
     /**
-     * This method can be used to find a concept in the hierarchy using its Concept Id
+     * This method can be used to find a concept in the hierarchy using its Concept Id.
      */
     INode getNode(String conceptId);
 
     /**
      * Returns string of the labels of all the nodes in the context.
-     * Labels are separated by separator
-     * The returned string is ordered as in depth first traversal
-     * Each name is followed by the specified separator
+     * Labels are separated by separator.
+     * The returned string is ordered as in depth first traversal.
+     * Each name is followed by the specified separator.
      *
-     * @param separator
+     * @param separator the string which separates the node names
      * @return string of the labels of all the nodes in the context
      */
     String getAllNodeNames(String separator);

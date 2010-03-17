@@ -6,12 +6,19 @@ import it.unitn.disi.smatch.matchers.element.IStringBasedElementLevelSemanticMat
 /**
  * Optimized edit distance.
  * http://www.merriampark.com/ldjava.htm
- * Levenshtein Distance Algorithm: Java Implementation by Chas Emerick
+ * Levenshtein Distance Algorithm: Java Implementation by Chas Emerick.
  *
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
 public class EditDistanceOptimized implements IStringBasedElementLevelSemanticMatcher {
 
+	/**
+	 * Computes the relation with optimized edit distance matcher.
+	 *
+	 * @param str1 source input string
+	 * @param str2 target input string
+	 * @return synonym or IDK relation
+	 */
     public char match(String str1, String str2) {
         if (null == str1 || null == str2 || 0 == str1.length() || 0 == str2.length()) {
             return MatchManager.IDK_RELATION;
@@ -42,8 +49,8 @@ public class EditDistanceOptimized implements IStringBasedElementLevelSemanticMa
            cause an out of memory condition when calculating the LD over two very large strings.
         */
 
-        int n = s.length(); // length of s
-        int m = t.length(); // length of t
+        int n = s.length(); // length of input string 1
+        int m = t.length(); // length of input string 2
 
         if (n == 0) {
             return m;

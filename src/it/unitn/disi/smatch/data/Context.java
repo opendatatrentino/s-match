@@ -4,8 +4,8 @@ import java.util.HashSet;
 import java.util.Vector;
 
 /**
- * A Context contains datastructure of ctxml file and some methods
- * applyed to concept as whole.
+ * A Context contains data structure of ctxml file and some methods
+ * that applied to concept as whole.
  *
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
  * @author Aliaksandr Autayeu avtaev@gmail.com
@@ -79,7 +79,9 @@ public class Context implements IMatchingContext, IContextData, IContext {
     }
 
     /**
-     * The returned list is ordered as in depth first traversal
+     * Retrieves the list of nodes which are in depth first traversal.
+     *
+     * @return the list of interfaces of nodes which is depth first traversal orders.
      */
     public Vector<INode> getAllNodes() {
 //        if (allNodes == null) {
@@ -100,10 +102,6 @@ public class Context implements IMatchingContext, IContextData, IContext {
 //            return allNodes;
     }
 
-    /**
-     * The returned string is ordered as in depth first traversal
-     * Each name is followed by the specified separator
-     */
     public String getAllNodeNames(String separator) {
         separator = " " + separator + " ";
         StringBuffer allConceptNames = new StringBuffer();
@@ -148,9 +146,6 @@ public class Context implements IMatchingContext, IContextData, IContext {
         return partialResult;
     }
 
-    /**
-     * clear all data acquired in linguistic preprocessing phase
-     */
     public void resetOldPreprocessing() {
         Vector<INode> allNodes = new Vector<INode>(root.getDescendants());
         allNodes.add(root);
@@ -311,10 +306,9 @@ public class Context implements IMatchingContext, IContextData, IContext {
 
     //Context staff
     /**
-     * This method can be used to add a given Node to the Node
-     * hierarchy.
+     * This method adds a given Node to the Node hierarchy.
      *
-     * @param Node The Node to be added
+     * @param Node The interface of the node to be added
      */
     private void addNode(INode Node) {
         INode father = Node.getParent();
@@ -327,7 +321,7 @@ public class Context implements IMatchingContext, IContextData, IContext {
      * This method can be used to remove a given Node from the Node hierarchy.
      * Note that if you remove a node that is not a leaf, all its children will be
      * removed from the hierarchy. So, if this method is called from the editor, the
-     * editor must "conserv" the children node and if the user decide to connect one
+     * editor must "conserve" the children node and if the user decide to connect one
      * of them (for example C) to another node of the hierarchy the editor must
      * re-add the Node C to the Node hierarchy (using the addNode(C) method)
      * otherwise the Node will be lost.
@@ -363,7 +357,7 @@ public class Context implements IMatchingContext, IContextData, IContext {
     }
 
     /**
-     * This method can be used to find a concept in the sub-hierarchy starting
+     * This method finds a concept in the sub-hierarchy starting
      * form the specified node, by the using its Node Id
      *
      * @param nodeId The Id of the concept to be returned

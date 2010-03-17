@@ -132,7 +132,12 @@ public class PlainMappingLoader implements IMappingLoader {
         return cNodeMatrix;
     }
 
-    
+    /**
+     * Get the path of a node from root for hash mapping.
+     *
+     * @param node the interface of data structure of input node
+     * @return the string of the path from root to node
+     */
     //TODO move this method to the INode interface
     public String getNodePath(INode node) {
         String result = "";
@@ -145,6 +150,12 @@ public class PlainMappingLoader implements IMappingLoader {
         return result;
     }
 
+    /**
+     * Creates hash map for nodes which contains path from root to node for each node.
+     *
+     * @param nodes list of interfaces of all nodes of source or target tree
+     * @return a hash table which contains path from root to node for each node
+     */
     public HashMap<String, Integer> createHash(Vector<INode> nodes) {
         if (log.isEnabledFor(Level.INFO)) {
             log.info("Creating hash for " + nodes.size() + " nodes...");

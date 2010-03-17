@@ -11,7 +11,7 @@ import it.unitn.disi.smatch.data.IContext;
 public interface IContextRenderer {
 
     /**
-     * Renders context into file or database
+     * Renders context into file or database.
      *
      * @param context  context to save
      * @param fileName file name or connection string to DB

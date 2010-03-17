@@ -14,11 +14,11 @@ import it.unitn.disi.smatch.SMatchException;
 public interface IMatcherLibrary {
 
     /**
-     * Performs Step 3 of semantic matching algorithm
+     * Performs Step 3 of semantic matching algorithm.
      *
-     * @param sourceContext source context
-     * @param targetContext target context
-     * @return matrix of semantic relatons between nodes in both contexts
+     * @param sourceContext interface of source context
+     * @param targetContext interface of target context
+     * @return matrix of semantic relations between labels in both contexts
      */
     public IMatchMatrix elementLevelMatching(IContext sourceContext, IContext targetContext) throws SMatchException;
 }

@@ -12,6 +12,9 @@ import org.sat4j.tools.ModelIterator;
 import java.io.BufferedReader;
 import java.io.LineNumberReader;
 import java.io.StringReader;
+/**
+ * // TODO Need comments.
+ */
 
 public class SAT4J implements ISATSolver {
     static String test = "p cnf 2 2\n1 2 0\n-1 0\n";
@@ -93,7 +96,7 @@ public class SAT4J implements ISATSolver {
 
     }
 
-
+    // TODO It is confusing more than one main function. remove it.
     public static void main(String[] args) {
         SAT4J s4j = new SAT4J();
         s4j.model(test3);

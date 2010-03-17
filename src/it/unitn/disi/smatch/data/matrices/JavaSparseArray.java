@@ -79,7 +79,7 @@ public class JavaSparseArray implements IMatchMatrix {
                 value[x][0] = aValue;
             }
         } else {
-            //check and remove it 
+            //check and remove it
             if (null != index[x]) {//row exists
                 int idx = Arrays.binarySearch(index[x], y);
                 if (-1 < idx) {//element exists
@@ -100,7 +100,7 @@ public class JavaSparseArray implements IMatchMatrix {
                         index[x] = newIndexRow;
                         value[x] = newValueRow;
                     } else {
-                        if (1 == index[x].length) { 
+                        if (1 == index[x].length) {
                             //remove entire row
                             index[x] = null;
                             value[x] = null;

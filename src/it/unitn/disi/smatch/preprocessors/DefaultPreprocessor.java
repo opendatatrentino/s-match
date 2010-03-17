@@ -34,7 +34,10 @@ public class DefaultPreprocessor implements IPreprocessor {
 
     private HashSet<String> unrecognizedWords = new HashSet<String>();
 
-    //constructor
+    /**
+     * Construct class.
+     * Get WN matcher and linguistic oracle.
+     */
     public DefaultPreprocessor() {
         IWNM = MatchManager.getIWNMatcher();
         ILO = MatchManager.getLinguisticOracle();
@@ -47,6 +50,7 @@ public class DefaultPreprocessor implements IPreprocessor {
      * - sense filtering (elimination of irrelevant to context structure senses)
      *
      * @param context context to be prepocessed
+     * @return preprocessed context with logical formula
      */
     public IContext preprocess(IContext context) {
         loadHashses();
@@ -69,12 +73,11 @@ public class DefaultPreprocessor implements IPreprocessor {
         }
     }
 
-
     /**
-     * Constructs cLabs for all nodes of the context
+     * Constructs cLabs for all nodes of the context.
      *
-     * @param context context
-     * @return context
+     * @param context context of node which cLab to be build
+     * @return context with cLabs
      */
     private IContext buildCLabs(IContext context) {
         Vector<INode> allNodes = context.getAllNodes();
@@ -101,6 +104,11 @@ public class DefaultPreprocessor implements IPreprocessor {
         return context;
     }
 
+    /**
+     * process node to construct cLabs of context.
+     *
+     * @param node interface of node which will be processed
+     */
     private void processNode(INode node) {
         int id_tok = 0;
         boolean isEmpty = true;
@@ -273,6 +281,12 @@ public class DefaultPreprocessor implements IPreprocessor {
         buildComplexConcept(node, tokensOfNodeLabel, meaningfulTokens);
     }
 
+    /**
+     * Check the token is meaningful or not for processing the node.
+     *
+     * @param token the lemma of input string
+     * @return true if it is meaningful
+     */
     private boolean isTokenMeaningful(String token) {
         token = token.trim();
         if ((MatchManager.andWords.indexOf(token) > -1) || ((MatchManager.orWords.indexOf(token)) > -1))
@@ -286,7 +300,12 @@ public class DefaultPreprocessor implements IPreprocessor {
         }
         return true;
     }
-
+    /**
+     * Finds out the input token is complex word or not using WordNet senses.
+     *
+     * @param token lemma of input string
+     * @return a vector which contains parts of the complex word.
+     */
     private Vector<String> complexWordsRecognition(String token) {
         Vector<String> senses = null;
         int i = 0;
@@ -337,7 +356,7 @@ public class DefaultPreprocessor implements IPreprocessor {
     }
 
     /**
-     * The method constructs the logical formula for the complex concept of label
+     * The method constructs the logical formula for the complex concept of label.
      *
      * @param node              node to build complex concept
      * @param tokensOfNodeLabel Vector of tokens in the node label
@@ -477,10 +496,10 @@ public class DefaultPreprocessor implements IPreprocessor {
     }
 
     /**
-     * The method replaces puntuation signes by spaces
+     * The method replaces punctuation signs by spaces.
      *
-     * @param lemma lemma
-     * @return lemma
+     * @param lemma lemma of the input string
+     * @return processed lemma with spaces in place of punctuation
      */
     private static String replacePunctuation(String lemma) {
         lemma = lemma.replace(",", " , ");
@@ -511,6 +530,12 @@ public class DefaultPreprocessor implements IPreprocessor {
         sensesSet.addNewSenses(wnSenses);
     }
 
+    /**
+     * Computes all multiwords in input data structure.
+     *
+     * @param context data structure of input label
+     * @return context with multiwords
+     */
     private IContext findMultiwordsInContextStructure(IContext context) {
         //all context nodes
         Vector<INode> allNode = context.getAllNodes();
@@ -550,15 +575,11 @@ public class DefaultPreprocessor implements IPreprocessor {
         return context;
     }
 
-
     /**
-     * This method performs elimination the senses which do not suit to
-     * overall context meaning
-     */
-    /**
+     * This method performs elimination the senses which do not suit to overall context meaning.
      * Performs sense filtering in two steps
-     * -filtering whithin complex node label
-     * -filtering whithin context structure
+     * -filtering within complex node label
+     * -filtering within context structure
      *
      * @param context context to perform sense filtering
      * @return sense-filtered context
@@ -758,10 +779,10 @@ public class DefaultPreprocessor implements IPreprocessor {
     }
 
     /**
-     * Check hether input string contain a number
+     * Check whether input string contain a number or not.
      *
-     * @param in1
-     * @return
+     * @param in1 input string
+     * @return false if it contains a number
      */
     private static boolean isNumber(String in1) {
         for (StringTokenizer stringTokenizer = new StringTokenizer(in1, MatchManager.numberCharacters); stringTokenizer.hasMoreTokens();) {
@@ -795,12 +816,12 @@ public class DefaultPreprocessor implements IPreprocessor {
     /**
      * Takes as an input Vector of words and returns the Vector consisting the multiwords
      * which are in WN and can be derived from the input
-     * For example having [Earth, and, Atmosferic, Sciences] as the input returns
-     * [Earth Sciences, and, Atmosferic, Sciences] because Earth Sciences is a WN concept
-     * and Atmosferic Sciences is not a WN concept
+     * For example having [Earth, and, Atmospheric, Sciences] as the input returns
+     * [Earth Sciences, and, Atmospheric, Sciences] because Earth Sciences is a WN concept
+     * and Atmospheric Sciences is not a WN concept
      *
-     * @param tokens
-     * @return
+     * @param tokens input token
+     * @return a vector which contains multiwords
      */
     private Vector<String> multiwordRecognition(Vector<String> tokens) {
         String subLemma;

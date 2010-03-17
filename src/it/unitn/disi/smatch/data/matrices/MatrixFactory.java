@@ -12,7 +12,7 @@ public class MatrixFactory {
 
     private static final Logger log = Logger.getLogger(MatrixFactory.class);
 
-    //also loaded via MatchManager 
+    //also loaded via MatchManager
     public static String MATRIX_CLASS_NAME = "it.unitn.disi.smatch.data.matrices.MatchMatrix";
 //    public static String MATRIX_CLASS_NAME = "it.unitn.disi.smatch.data.matrices.JavaSparseArray";
 

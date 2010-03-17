@@ -17,6 +17,7 @@ import java.io.StringReader;
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
 public class JSAT implements ISATSolver {
+
     /**
      * This method can be used to call the JSAT library.
      *

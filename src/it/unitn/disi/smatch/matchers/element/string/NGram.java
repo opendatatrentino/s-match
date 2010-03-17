@@ -6,8 +6,8 @@ import it.unitn.disi.smatch.matchers.element.IStringBasedElementLevelSemanticMat
 import java.util.ArrayList;
 
 /**
- * implements NGram matcher
- * see Element Level Semantic matchers paper for more details
+ * Implements NGram matcher.
+ * See Element Level Semantic matchers paper for more details.
  *
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
  * @author Aliaksandr Autayeu avtaev@gmail.com
@@ -15,6 +15,13 @@ import java.util.ArrayList;
 public class NGram implements IStringBasedElementLevelSemanticMatcher {
     private static int gramlength = 3;
 
+    /**
+     * Computes the relation with NGram matcher.
+     *
+     * @param str1 the source input
+     * @param str2 the target input
+     * @return synonym or IDK relation
+     */
     public char match(String str1, String str2) {
         if (null == str1 || null == str2 || 0 == str1.length() || 0 == str2.length()) {
             return MatchManager.IDK_RELATION;
@@ -38,7 +45,7 @@ public class NGram implements IStringBasedElementLevelSemanticMatcher {
     }
 
     /**
-     * produces nGrams for nGram matcher
+     * Produces nGrams for nGram matcher.
      *
      * @param str source string
      * @param gramlength gram length

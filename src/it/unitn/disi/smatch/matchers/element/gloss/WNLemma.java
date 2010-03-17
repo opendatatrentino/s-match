@@ -7,15 +7,23 @@ import it.unitn.disi.smatch.oracles.ISynset;
 import java.util.Vector;
 
 /**
- * implements WNLemma matcher
- * see Element Level Semantic matchers paper for more details
+ * Implements WNLemma matcher.
+ * See Element Level Semantic matchers paper for more details.
  *
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
+
 public class WNLemma implements ISenseGlossBasedElementLevelSemanticMatcher {
 
-    public char match(ISynset source, ISynset target) {
+	/**
+	 * Computes the relation with WordNet lemma matcher.
+	 *
+	 * @param source the gloss of source
+	 * @param target the gloss of target
+	 * @return synonym or IDk relation
+	 */
+	public char match(ISynset source, ISynset target) {
         Vector<String> sourceLemmas = source.getLemmas();
         Vector<String> targetLemmas = target.getLemmas();
         for (int i = 0; i < sourceLemmas.size(); i++) {

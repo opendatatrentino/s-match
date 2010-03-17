@@ -37,7 +37,9 @@ public class OptimizedStageTreeMatcher implements ITreeMatcher {
 
     private boolean direction;
 
-
+    /**
+     * Constructor class which initializes the optimized node matcher.
+     */
     public OptimizedStageTreeMatcher() {
         smatchMatcher = new OptimizedStageNodeMatcher();
     }

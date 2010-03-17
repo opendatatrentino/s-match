@@ -14,7 +14,7 @@ import org.apache.log4j.Level;
 
 /**
  * Matches acols of formulas for evaluation.
- * Expects the source and target to be the same context, preprocessed in a different way.
+ * Expects the source and target to be the same context, pre-processed in a different way.
  * To be used with EvalTLMatcher for formulas evaluation.
  *
  * @author Aliaksandr Autayeu avtaev@gmail.com
@@ -46,7 +46,8 @@ public class EvalELMatcher implements IMatcherLibrary {
      *
      * @param sourceContext context to be evaluated
      * @param targetContext golden context
-     * @return cLabMatrix
+     * @return relational matrix of concept of labels
+     * @throws SMatchException
      */
     public IMatchMatrix elementLevelMatching(IContext sourceContext, IContext targetContext) throws SMatchException {
         IMatchMatrix ClabMatrix = null;
@@ -109,6 +110,13 @@ public class EvalELMatcher implements IMatcherLibrary {
         return ClabMatrix;
     }
 
+    /**
+     * Returns a semantic relation between two concept of labels.
+     *
+     * @param sourceACoL concept of source label
+     * @param targetACoL concept of target label
+     * @return relation between concept of labels
+     */
     public char getRelation(IAtomicConceptOfLabel sourceACoL, IAtomicConceptOfLabel targetACoL) {
         char result = MatchManager.IDK_RELATION;
 

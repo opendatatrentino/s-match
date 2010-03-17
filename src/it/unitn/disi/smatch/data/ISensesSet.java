@@ -33,7 +33,7 @@ public interface ISensesSet {
 
     void setSenseList(Vector<String> senseList);
 
-    //Add new senses exept repeated ones
+    //Add new senses except repeated ones
     void addNewSenses(Vector<String> newSenses);
 
     //Is empty?
