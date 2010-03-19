@@ -91,7 +91,7 @@ public class Node implements INodeData, INode {
     }
 
     /**
-     * Constructor class which set the node name and id. Also sets unique node name with combination of node name and id.
+     * Constructor class which sets the node name and id. Also sets unique node name with combination of node name and id.
      *
      * @param nodeName the name of the node
      * @param nodeId the id of the node
@@ -112,7 +112,7 @@ public class Node implements INodeData, INode {
     }
 
     /**
-     * Sets cLab formula to CNF and store in the concept.
+     * Sets cLab formula to CNF and stores in the concept.
      */
     public void setcLabFormulaToConjunciveForm(String formula) {
         if ((formula.contains("&") && formula.contains("|")) || formula.contains("~")) {
@@ -396,7 +396,7 @@ public class Node implements INodeData, INode {
     }
 
     /**
-     * Fill and get the Vector of all logical formula representations of all concepts.
+     * Fills and gets the Vector of all logical formula representations of all concepts.
      */
     public Vector<IAtomicConceptOfLabel> getNodeMatchingTaskACols() {
         if (null == nodeMatchingTaskACols) {
@@ -408,7 +408,7 @@ public class Node implements INodeData, INode {
 
     /**
      * Fills the Vector with Atomic concepts identifiers.
-     * they are used as propositional variables in the formula.
+     * They are used as propositional variables in the formula.
      *
      * @param node the interface of node which acols will be added
      * @param partialResult list of atomic concept of labels which are added so far without current node

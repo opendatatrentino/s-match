@@ -4,7 +4,7 @@ import java.util.HashSet;
 import java.util.Vector;
 
 /**
- * A Context contains data structure of ctxml file and some methods
+ * A Context that contains data structure of ctxml file and some methods
  * that applied to concept as whole.
  *
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
@@ -321,7 +321,7 @@ public class Context implements IMatchingContext, IContextData, IContext {
      * This method can be used to remove a given Node from the Node hierarchy.
      * Note that if you remove a node that is not a leaf, all its children will be
      * removed from the hierarchy. So, if this method is called from the editor, the
-     * editor must "conserve" the children node and if the user decide to connect one
+     * editor must "conserve" the children node and if the user decides to connect one
      * of them (for example C) to another node of the hierarchy the editor must
      * re-add the Node C to the Node hierarchy (using the addNode(C) method)
      * otherwise the Node will be lost.
@@ -346,7 +346,7 @@ public class Context implements IMatchingContext, IContextData, IContext {
     }
 
     /**
-     * This method can be used to find a concept in the hierarchy using its Concept Id
+     * This method can be used to find a concept in the hierarchy using its Concept Id.
      */
     public INode getNode(String conceptId) {
         INode result = getNode(conceptId, root);
@@ -358,7 +358,7 @@ public class Context implements IMatchingContext, IContextData, IContext {
 
     /**
      * This method finds a concept in the sub-hierarchy starting
-     * form the specified node, by the using its Node Id
+     * form the specified node, by the using its Node Id.
      *
      * @param nodeId The Id of the concept to be returned
      * @param node   The root of the sub-hierarchy

@@ -13,7 +13,7 @@ import it.unitn.disi.smatch.matchers.element.IStringBasedElementLevelSemanticMat
 public class Synonym implements IStringBasedElementLevelSemanticMatcher {
 
 	/**
-     * Compute relation with synonym matcher
+     * Computes relation with synonym matcher
      *
      * @param str1 the source string
 	 * @param str2 the target string

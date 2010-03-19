@@ -282,7 +282,7 @@ public class DefaultPreprocessor implements IPreprocessor {
     }
 
     /**
-     * Check the token is meaningful or not for processing the node.
+     * Checks the token is meaningful or not for processing the node.
      *
      * @param token the lemma of input string
      * @return true if it is meaningful
@@ -779,7 +779,7 @@ public class DefaultPreprocessor implements IPreprocessor {
     }
 
     /**
-     * Check whether input string contain a number or not.
+     * Checks whether input string contains a number or not.
      *
      * @param in1 input string
      * @return false if it contains a number
@@ -792,7 +792,7 @@ public class DefaultPreprocessor implements IPreprocessor {
     }
 
     /**
-     * extension of Vector indexOf which use approximate comparison of the words as
+     * extension of Vector indexOf which uses approximate comparison of the words as
      * elements of the Vector
      */
     private int extendedIndexOf(Vector<String> vec, String str, int init_pos) {

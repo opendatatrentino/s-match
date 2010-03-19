@@ -58,7 +58,7 @@ public class MappingElement implements IMappingElement, Comparable {
     }
 
     /**
-     * Constructor class which assigns source name. target name and their relation.
+     * Constructor class which assigns source name, target name and their relation.
      *
      * @param sourceEntity the string of source name
      * @param targetEntity the string of target name

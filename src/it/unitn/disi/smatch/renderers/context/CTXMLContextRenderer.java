@@ -23,7 +23,7 @@ public class CTXMLContextRenderer implements IContextRenderer {
     }
 
     /**
-     * Save the context into a xml file.
+     * Saves the context into a xml file.
      *
      * @param c the interface of the context
      * @param xmlFileName The name of the file where the contexts has to be saved

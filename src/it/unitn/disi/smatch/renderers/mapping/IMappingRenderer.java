@@ -13,7 +13,7 @@ import java.util.Vector;
 public interface IMappingRenderer {
 
     /**
-     * Save the relational matrices into a file.
+     * Saves the relational matrices into a file.
      *
      * 0th element of the Vector is filename to save mappings
      * 1st element is char[][] CnodMatrix

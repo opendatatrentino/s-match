@@ -49,7 +49,7 @@ public interface INodeData {
     Vector<IAtomicConceptOfLabel> getNodeMatchingTaskACols();
 
     /**
-     * Get node matching task acol by Id.
+     * Gets node matching task acol by Id.
      *
      * @param tokenUID token id
      * @return acol

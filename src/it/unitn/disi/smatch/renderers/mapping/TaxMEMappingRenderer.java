@@ -36,7 +36,7 @@ public class TaxMEMappingRenderer implements IMappingRenderer {
     }
 
     /**
-     * Converts the matrix intp mapping with path of the nodes.
+     * Converts the matrix into mapping with path of the nodes.
      *
      * @param matrix the relational matrix
      * @param sourceNodes interface of source node

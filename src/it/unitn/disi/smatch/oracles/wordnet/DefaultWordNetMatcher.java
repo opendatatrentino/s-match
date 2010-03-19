@@ -258,7 +258,7 @@ public class DefaultWordNetMatcher implements IWordNetMatcher {
     }
 
     /**
-     * traverses PointerTargetTree
+     * traverses PointerTargetTree.
      *
      * @param syn
      * @param ptnl
@@ -286,7 +286,7 @@ public class DefaultWordNetMatcher implements IWordNetMatcher {
     }
 
     /**
-     * Check unidirectionality of semantic relations in the list.
+     * Checks unidirectionality of semantic relations in the list.
      *
      * @param list
      * @return

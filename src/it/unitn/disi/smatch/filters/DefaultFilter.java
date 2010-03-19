@@ -28,7 +28,7 @@ public class DefaultFilter implements IFilter {
     }
 
     /**
-	 * Filters the matrix which have relation between nodes for minimal mapping.
+	 * Filters the matrix which has relation between nodes.
 	 *
 	 * @param matrix relational matrix between nodes
 	 * @param x number of source node

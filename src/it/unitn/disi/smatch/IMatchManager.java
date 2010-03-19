@@ -18,7 +18,7 @@ import java.util.Vector;
 public interface IMatchManager {
 
     /**
-     * Set up the matching properties.
+     * Sets up the matching properties.
      * A list of parameters which influence on the matching process work flow.<br>
      * <br>
      * Name of the class which implements IWordNetMatcher interface.<br>

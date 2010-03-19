@@ -82,7 +82,7 @@ public class MatchManager implements IMatchManager {
     public static boolean useConjunctiveLabelsOptimization = false;
     // whether to use disjointness test optimization technique
     public static boolean useOppositeAxiomsOptimization = false;
-    // Needs comment.
+    // TODO Need comment.
     private static boolean oneSensePerLabel = true;
     // default value for the class which implements IWordNetMatcher interface
     private static String strWNmatcher = null;// "it.unitn.disi.smatch.oracles.wordnet.DefaultWordNetMatcher";
@@ -114,7 +114,7 @@ public class MatchManager implements IMatchManager {
     public static String orWords = " or | ";
     // the words which are treated as logical not (~)
     public static String notWords = " except ";
-    // the words which are cutted off from the area of discource
+    // the words which are cut off from the area of discourse
     public static String meaninglessWords = "of on to from by in at is are have has the a as - ~ ? ! @ # $ % * = . [ ] { } ( ) genre alfabet region topic q w e r t y u i IWNM p a s d f g h j k l z x c v b n m ";
     // the multiwords file name
     public static String multiwordsFileName = "..\\data\\multiwords.hash";

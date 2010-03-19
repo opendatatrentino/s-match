@@ -13,7 +13,7 @@ import java.util.Vector;
 public interface IFilter {
 
 	/**
-     * Filters the semantic relation for minimal mapping.
+     * Filters the semantic relation.
      *
      * @param args a vector which have context of source, target and matrix of relation between labels. nodes
      * @return minimal semantic relation

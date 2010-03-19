@@ -39,7 +39,7 @@ public class AtomicConceptOfLabel implements IAtomicConceptOfLabel {
     }
 
     /**
-     * Constructor class wich sets the id, position of token, name of token and lemma.
+     * Constructor class which sets the id, position of token, name of token and lemma.
      *
      * @param idToken Id of token
      * @param token token name

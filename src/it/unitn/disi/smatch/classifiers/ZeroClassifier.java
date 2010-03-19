@@ -8,7 +8,7 @@ import it.unitn.disi.smatch.data.IContext;
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
-//TODO This class implements the classifier component and build cNode formulas. So why does nothing?
+
 public class ZeroClassifier implements IClassifier {
 
     public IContext buildCNodeFormulas(IContext context) {

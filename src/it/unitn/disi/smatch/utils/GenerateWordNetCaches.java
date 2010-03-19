@@ -28,7 +28,7 @@ public class GenerateWordNetCaches {
     private static final Logger log = Logger.getLogger(GenerateWordNetCaches.class);
 
     /**
-     * Convert WordNet dictionary to binary structures and save them to caches.
+     * Converts WordNet dictionary to binary structures and save them to caches.
      *
      * @throws SMatchException
      */

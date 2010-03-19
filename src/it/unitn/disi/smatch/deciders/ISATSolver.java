@@ -3,7 +3,7 @@ package it.unitn.disi.smatch.deciders;
 import it.unitn.disi.smatch.SMatchException;
 
 /**
- * Each SAT solver need to implement only one method,
+ * Each SAT solver needs to implement only one method,
  * which takes as an input DIMACS string and returns true if it is satisfiable.
  *
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk

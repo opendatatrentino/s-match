@@ -19,7 +19,7 @@ public class WNHierarchy implements ISenseGlossBasedElementLevelSemanticMatcher 
     static int depth = 2;
 
     /**
-     * Match two string with WNHeirarchy matcher.
+     * Matches two strings with WNHeirarchy matcher.
      *
      * @param source1 gloss of source label
      * @param target1 gloss of target label

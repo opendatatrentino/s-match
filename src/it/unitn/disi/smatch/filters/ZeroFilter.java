@@ -10,7 +10,7 @@ import java.util.Vector;
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
-//TODO commenting needed. This class is assigned for filter component. but here in class description does nothing.
+
 public class ZeroFilter implements IFilter {
 
     public IMatchMatrix filter(Vector args) {

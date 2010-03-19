@@ -133,7 +133,7 @@ public class PlainMappingLoader implements IMappingLoader {
     }
 
     /**
-     * Get the path of a node from root for hash mapping.
+     * Gets the path of a node from root for hash mapping.
      *
      * @param node the interface of data structure of input node
      * @return the string of the path from root to node
