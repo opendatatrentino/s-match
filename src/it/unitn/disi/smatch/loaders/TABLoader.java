@@ -13,6 +13,7 @@ import java.util.ArrayList;
 
 /**
  * Loads context from a tab-separated file.
+ * Expects a single-rooted hierarchy, otherwise adds an artificial "Top" node.
  *
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
  * @author Aliaksandr Autayeu avtaev@gmail.com
@@ -20,14 +21,9 @@ import java.util.ArrayList;
  */
 public class TABLoader implements ILoader {
 
-	/*
-	 * refactored, deleted class level variables and changed rootPath from array[]
-	 * to allay list
-	 */
-	//TODO the loader could be made static, but this requires a change in the ILoader interface
-
-
     private static final Logger log = Logger.getLogger(TABLoader.class);
+    
+	//TODO the loader could be made static, but this requires a change in the ILoader interface
 
 
     public IContext loadContext(String fileName) {
@@ -54,7 +50,7 @@ public class TABLoader implements ILoader {
      *
      * @param input		Reader for the input file
      * @return			the loaded IContext
-     * @throws IOException
+     * @throws IOException IOException
      */
     private IContext process(BufferedReader input) throws IOException {
     	IContext result = new Context();
@@ -64,7 +60,7 @@ public class TABLoader implements ILoader {
     	String fatherConceptId = result.newNode(input.readLine(), null);
         rootPath.add(fatherConceptId);
 
-
+        int artificialLevel = 0;//flags that we added Top and need an increment in level
         String fatherId;
         int old_depth = 0;
         String line;
@@ -74,6 +70,7 @@ public class TABLoader implements ILoader {
 
             int int_depth = numOfTabs(line);
             String name = line.substring(int_depth);
+            int_depth = int_depth + artificialLevel;
             if (int_depth == old_depth) {
                 fatherId = rootPath.get(old_depth - 1);
                 String newCID = result.newNode(name, fatherId);
@@ -84,6 +81,12 @@ public class TABLoader implements ILoader {
                 setArrayNodeID(int_depth, rootPath, newCID);
                 old_depth = int_depth;
             } else if (int_depth < old_depth) {
+                if (0 == int_depth) {//looks like we got multiple roots in the input
+                    artificialLevel = 1;
+                    fatherId = result.newNode("Top", null);
+                    rootPath.add(0, fatherId);
+                    int_depth = 1;
+                }
                 fatherId = rootPath.get(int_depth - 1);
                 String newCID = result.newNode(name, fatherId);
                 setArrayNodeID(int_depth, rootPath, newCID);
