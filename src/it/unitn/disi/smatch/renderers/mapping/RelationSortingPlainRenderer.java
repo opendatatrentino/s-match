@@ -3,7 +3,6 @@ package it.unitn.disi.smatch.renderers.mapping;
 import it.unitn.disi.smatch.MatchManager;
 import it.unitn.disi.smatch.SMatchConstants;
 import it.unitn.disi.smatch.SMatchException;
-import it.unitn.disi.smatch.data.INode;
 import it.unitn.disi.smatch.data.mappings.IMapping;
 import it.unitn.disi.smatch.data.mappings.IMappingElement;
 import org.apache.log4j.Level;
@@ -15,15 +14,13 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 
 /**
- * Renders the mapping in a plain text file.
- * Format: source-node tab relation target-node.
- * Source and target nodes are rendered with \ separating path to root levels.
+ * Writes the mapping sorting it by relation: disjointness, equivalent, less and more generality.
  *
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
-public class PlainRenderer implements IMappingRenderer {
+public class RelationSortingPlainRenderer extends PlainRenderer {
 
-    private static final Logger log = Logger.getLogger(PlainRenderer.class);
+    private static final Logger log = Logger.getLogger(RelationSortingPlainRenderer.class);
 
     public void render(IMapping mapping, String outputFile) throws SMatchException {
         try {
@@ -38,38 +35,55 @@ public class PlainRenderer implements IMappingRenderer {
             long total = mapping.size();
             long reportInt = (total / 20) + 1;//i.e. report every 5%
 
-            for (IMappingElement mappingElement : mapping) {
-                String sourceConceptName = getNodePathToRoot(mappingElement.getSourceNode());
-                String targetConceptName = getNodePathToRoot(mappingElement.getTargetNode());
-                char relation = mappingElement.getRelation();
+            char[] relations = {MatchManager.OPPOSITE_MEANING, MatchManager.SYNOMYM, MatchManager.LESS_GENERAL_THAN, MatchManager.MORE_GENERAL_THAN};
 
-                out.write(sourceConceptName + "\t" + relation + "\t" + targetConceptName + "\n");
+            for (char relation : relations) {
+                int relationsRendered = 0;
+                if (log.isEnabledFor(Level.INFO)) {
+                    log.info("Rendering: " + relation);
+                }
+
+                for (IMappingElement mappingElement : mapping) {
+                    if (mappingElement.getRelation() == relation) {
+                        String sourceConceptName = getNodePathToRoot(mappingElement.getSourceNode());
+                        String targetConceptName = getNodePathToRoot(mappingElement.getTargetNode());
+
+                        out.write(sourceConceptName + "\t" + relation + "\t" + targetConceptName + "\n");
+                        relationsRendered++;
+
+                        counter++;
+                        if ((SMatchConstants.LARGE_TASK < total) && (0 == (counter % reportInt)) && log.isEnabledFor(Level.INFO)) {
+                            log.info(100 * counter / total + "%");
+                        }
+                    }
+                }
+
                 switch (relation) {
                     case MatchManager.LESS_GENERAL_THAN: {
-                        lg++;
+                        lg = relationsRendered;
                         break;
                     }
                     case MatchManager.MORE_GENERAL_THAN: {
-                        mg++;
+                        mg = relationsRendered;
                         break;
                     }
                     case MatchManager.SYNOMYM: {
-                        eq++;
+                        eq = relationsRendered;
                         break;
                     }
                     case MatchManager.OPPOSITE_MEANING: {
-                        dj++;
+                        dj = relationsRendered;
                         break;
                     }
                     default:
                         break;
                 }
 
-                counter++;
-                if ((SMatchConstants.LARGE_TASK < total) && (0 == (counter % reportInt)) && log.isEnabledFor(Level.INFO)) {
-                    log.info(100 * counter / total + "%");
+                if (0 < relationsRendered) {
+                    out.write("\n");//relation separator
                 }
-            }
+            }//for relation
+
             out.close();
             if (log.isEnabledFor(Level.INFO)) {
                 log.info("rendered links: " + mapping.size());
@@ -84,20 +98,5 @@ public class PlainRenderer implements IMappingRenderer {
             log.error(errMessage, e);
             throw new SMatchException(errMessage, e);
         }
-    }
-
-    protected String getNodePathToRoot(INode node) {
-        StringBuilder sb = new StringBuilder();
-        INode parent = node;
-        while (null != parent) {
-            if (parent.getNodeName().contains("\\")) {
-                log.debug("source: replacing \\ in: " + parent.getNodeName());
-                sb.insert(0, "\\" + parent.getNodeName().replaceAll("\\\\", "/"));
-            } else {
-                sb.insert(0, "\\" + parent.getNodeName());
-            }
-            parent = parent.getParent();
-        }
-        return sb.toString();
     }
 }

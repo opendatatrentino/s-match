@@ -1,8 +1,6 @@
 package it.unitn.disi.smatch.filters;
 
-import it.unitn.disi.smatch.data.matrices.IMatchMatrix;
-
-import java.util.Vector;
+import it.unitn.disi.smatch.data.mappings.IMapping;
 
 /**
  * Does nothing.
@@ -13,7 +11,7 @@ import java.util.Vector;
 
 public class ZeroFilter implements IFilter {
 
-    public IMatchMatrix filter(Vector args) {
-        return (IMatchMatrix) args.get(1);
+    public IMapping filter(IMapping mapping) {
+        return mapping;
     }
 }

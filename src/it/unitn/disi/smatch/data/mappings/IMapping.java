@@ -1,6 +1,8 @@
 package it.unitn.disi.smatch.data.mappings;
 
-import java.util.Vector;
+import it.unitn.disi.smatch.data.IContext;
+
+import java.util.Set;
 
 /**
  * Interface for mappings.
@@ -8,28 +10,13 @@ import java.util.Vector;
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
-public interface IMapping {
+public interface IMapping extends Set<IMappingElement> {
 
-    boolean contains(IMappingElement me);
+    IContext getSourceContext();
 
-    Vector<IMappingElement> getMapping();
+    IContext getTargetContext();
 
-    void setMapping(Vector<IMappingElement> map);
+    void setSourceContext(IContext newContext);
 
-    void add(IMappingElement m);
-
-    void add(IMapping m);
-
-    //compare the mapping with the gold standard
-    void compare(IMapping m);
-
-    int getSize();
-
-    void toFile(String fileName);
-
-    void loadFromFile(String fileName);
-
-    String compareWORel(IMapping m);
-
-    void reportStats();
+    void setTargetContext(IContext newContext);
 }

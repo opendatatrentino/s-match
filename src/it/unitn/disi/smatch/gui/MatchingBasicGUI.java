@@ -5,6 +5,8 @@ import it.unitn.disi.smatch.MatchManager;
 import it.unitn.disi.smatch.SMatchException;
 import it.unitn.disi.smatch.data.IContext;
 import it.unitn.disi.smatch.data.INode;
+import it.unitn.disi.smatch.data.mappings.IMapping;
+import it.unitn.disi.smatch.data.mappings.IMappingElement;
 import it.unitn.disi.smatch.data.mappings.MappingElement;
 import it.unitn.disi.smatch.data.matrices.IMatchMatrix;
 import it.unitn.disi.smatch.loaders.PlainMappingLoader;
@@ -66,14 +68,14 @@ public class MatchingBasicGUI extends JPanel
     JTextField mappingFileTxt;
 
     //hashes for paths with the index of the tree element
-    HashMap<String, Integer> sourceRowForPath;
-    HashMap<String, Integer> targetRowForPath;
+    HashMap<INode, Integer> sourceRowForPath;
+    HashMap<INode, Integer> targetRowForPath;
 
     //offsets to draw the lines when things mode around
     private Point leftOffset = new Point(); //for source tree
     private Point rightOffset = new Point(); //for target tree
 
-    ArrayList<MappingElement> mappings = null;
+    IMapping mappings = null;
 
 
     public MatchingBasicGUI() {
@@ -85,8 +87,8 @@ public class MatchingBasicGUI extends JPanel
         sourceTree = new JTree(new DefaultMutableTreeNode("Load source"));
         targetTree = new JTree(new DefaultMutableTreeNode("Load target"));
 
-        sourceRowForPath = new HashMap<String, Integer>();
-        targetRowForPath = new HashMap<String, Integer>();
+        sourceRowForPath = new HashMap<INode, Integer>();
+        targetRowForPath = new HashMap<INode, Integer>();
 
 
         //Create the scroll pane and add the tree to it.
@@ -174,42 +176,17 @@ public class MatchingBasicGUI extends JPanel
      * @return
      * @throws IOException
      */
-    private ArrayList<MappingElement> loadMappingsFromFile(
+    private IMapping loadMappingsFromFile(
             IContext sourceContext2, IContext targetContext2,
-            String mappingFile) throws IOException {
+            String mappingFile) throws SMatchException {
 
         mappingFileTxt.setText(mappingFile);
 
         PlainMappingLoader mappingLoader = new PlainMappingLoader();
-        IMatchMatrix matchmatrix = mappingLoader.loadMapping(sourceContext2, targetContext2, mappingFile);
-
-
-        ArrayList<MappingElement> mappingsElems = new ArrayList<MappingElement>();
-        Vector<INode> sourceNodes = sourceContext2.getAllNodes();
-        Vector<INode> targetNodes = targetContext2.getAllNodes();
-
-        //TODO refactor the loaders, change get path to INode
-        char relation = ' ';
-        String sourcePath = "";
-        String targetPath = "";
-
-        for (int sourceIndex = 0; sourceIndex < matchmatrix.getX(); sourceIndex++) {
-            for (int targetIndex = 0; targetIndex < matchmatrix.getY(); targetIndex++) {
-                relation = matchmatrix.getElement(sourceIndex, targetIndex);
-                if (relation == MatchManager.SYNOMYM ||
-                        relation == MatchManager.LESS_GENERAL_THAN ||
-                        relation == MatchManager.MORE_GENERAL_THAN) {
-                    sourcePath = mappingLoader.getNodePath(sourceNodes.get(sourceIndex));
-                    targetPath = mappingLoader.getNodePath(targetNodes.get(targetIndex));
-                    MappingElement mappingElem = new MappingElement(sourcePath, targetPath, relation);
-                    mappingsElems.add(mappingElem);
-                }
-
-            }
-        }
+        IMapping mapping = mappingLoader.loadMapping(sourceContext2, targetContext2, mappingFile);
 
         repaint();
-        return mappingsElems;
+        return mapping;
     }
 
 
@@ -219,7 +196,7 @@ public class MatchingBasicGUI extends JPanel
      * @param fileName File name in a tab indented format
      * @return the JTree representing the content of the tab indented file
      */
-    private IContext createTree(String fileName, JTree jTree, HashMap<String, Integer> rowForPathHash) {
+    private IContext createTree(String fileName, JTree jTree, HashMap<INode, Integer> rowForPathHash) {
         //Create the nodes.
 
         TABLoader loader = new TABLoader();
@@ -238,7 +215,7 @@ public class MatchingBasicGUI extends JPanel
         for (int i = 0; i < jTree.getRowCount(); i++) {
             jTree.expandRow(i);
             TreePath rowPath = jTree.getPathForRow(i);
-            rowForPathHash.put(getPathForTreePath(rowPath), i);
+            rowForPathHash.put((INode) rowPath.getLastPathComponent(), i);
         }
 
         return context;
@@ -294,9 +271,9 @@ public class MatchingBasicGUI extends JPanel
             Rectangle splitBound = splitPane.getBounds();
             g2.setClip(0, 0, splitBound.width, splitBound.height - 5);
             computeOffset();
-            for (MappingElement mapping : mappings) {
-                int source = sourceRowForPath.get(mapping.getSourceEntity());
-                int target = targetRowForPath.get(mapping.getTargetEntity());
+            for (IMappingElement mapping : mappings) {
+                int source = sourceRowForPath.get(mapping.getSourceNode());
+                int target = targetRowForPath.get(mapping.getTargetNode());
 
                 if (source >= 0 && target >= 0) {
                     Line2D line2 = drawBoundingLine(sourceTree.getRowBounds(source), targetTree.getRowBounds(target));
@@ -340,7 +317,7 @@ public class MatchingBasicGUI extends JPanel
      * @param g2
      * @param mapping
      */
-    private void changeColorOfRelation(Graphics2D g2, MappingElement mapping) {
+    private void changeColorOfRelation(Graphics2D g2, IMappingElement mapping) {
         char rel = mapping.getRelation();
         switch (rel) {
             case MatchManager.LESS_GENERAL_THAN: {
@@ -650,24 +627,19 @@ public class MatchingBasicGUI extends JPanel
         //TODO remove static variables from MatchManager
         MatchManager defaultMatcher = new MatchManager(defaultConfigFile);
 
-
-        // directories of files to online
-        MatchManager.ctxsSourceFile = sourceFileName + ".xml";
-        MatchManager.ctxsTargetFile = targetFileName + ".xml";
-
         //linguistic pre-processing
-        defaultMatcher.offline(sourceContext, MatchManager.ctxsSourceFile);
-        defaultMatcher.offline(targetContext, MatchManager.ctxsTargetFile);
+        defaultMatcher.offline(sourceContext);
+        defaultMatcher.offline(targetContext);
 
         //match
-        MatchManager.setOutputFile(outputFolder + "resultDefault.txt");
-        defaultMatcher.online(sourceContext, targetContext);
+        IMapping mapping = defaultMatcher.online(sourceContext, targetContext);
+        defaultMatcher.renderMapping(mapping, outputFolder + "resultDefault.txt");
 
-
+        //match
         MatchManager minimalMatcher = new MatchManager(minimalConfigFile);
-        //match
-        MatchManager.setOutputFile(outputFolder + "resultMinimal.txt");
-        minimalMatcher.online(sourceContext, targetContext);
+        mapping = minimalMatcher.online(sourceContext, targetContext);
+        minimalMatcher.renderMapping(mapping, outputFolder + "resultMinimal.txt");
+
 
         return outputFolder + "resultDefault.txt";
     }
@@ -709,7 +681,7 @@ public class MatchingBasicGUI extends JPanel
                 try {
                     mappings = loadMappingsFromFile(sourceContext, targetContext, file.getAbsolutePath());
 
-                } catch (IOException e1) {
+                } catch (SMatchException e1) {
                     // TODO Auto-generated catch block
                     e1.printStackTrace();
                 }

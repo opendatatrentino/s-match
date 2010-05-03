@@ -135,7 +135,9 @@ public class MatcherLibrary implements IMatcherLibrary {
             MatchManager.printMemoryUsage();
 
             //Initialization of matrix
-            String matrixFileName = MatchManager.ctxsSourceFile + ".cLabMatrix";
+            // TODO fix caching
+            // String matrixFileName = MatchManager.sourceFile + ".cLabMatrix";
+            String matrixFileName = "cache.cLabMatrix";
             File matrixFile = new File(matrixFileName);
             if (cachecLabsMatrix && matrixFile.exists()) {
                 ClabMatrix = readMatrix(matrixFileName);

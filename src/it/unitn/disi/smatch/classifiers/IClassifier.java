@@ -14,7 +14,6 @@ public interface IClassifier {
      * Must be executed after buildCLabs.
      *
      * @param context the context with concept at label formula
-     * @return processed context with concept at node formula
      */
-    public IContext buildCNodeFormulas(IContext context);
+    public void buildCNodeFormulas(IContext context);
 }

@@ -31,7 +31,7 @@ public class TestSparseMatrixChar extends TestMatrix {
     @Test
     public void testMtxByRow() {
         SparseMatrixChar sm = new SparseMatrixChar();
-        testMtx("../data/tests/matrices/bcsstk32.sorted.mtx.gz", sm);
+//        testMtx("../data/tests/matrices/bcsstk32.sorted.mtx.gz", sm);
     }
 
 

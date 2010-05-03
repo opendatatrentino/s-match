@@ -38,50 +38,24 @@ public class MappingNodeElement implements IMappingElement {
         return sourceNode;
     }
 
+    public void setSourceNode(INode newSource) {
+        sourceNode = newSource;
+    }
+
     public INode getTargetNode() {
         return targetNode;
+    }
+
+    public void setTargetNode(INode newTarget) {
+        targetNode = newTarget;
     }
 
     public char getRelation() {
         return relation;
     }
 
-    public String getSourceEntity() {
-        return null;
-    }
-
-    public void setSourceEntity(String sourceEntity) {
-    }
-
-    public String getTargetEntity() {
-        return null;
-    }
-
-    public void setTargetEntity(String targetEntity) {
-    }
-
-    public void setRelation(char relation) {
-        this.relation = relation;
-    }
-
-    public boolean weakEquals(Object o) {
-        return false;
-    }
-
-    public double getEq() {
-        return 0;
-    }
-
-    public double getLg() {
-        return 0;
-    }
-
-    public double getMg() {
-        return 0;
-    }
-
-    public int compareTo(Object o) {
-        return 0;
+    public void setRelation(char newRelation) {
+        relation = newRelation;
     }
 
     public int hashCode() {
@@ -118,5 +92,4 @@ public class MappingNodeElement implements IMappingElement {
     public String toString() {
         return sourceNode.getNodeData().getNodeUniqueName() + "\t" + targetNode.getNodeData().getNodeUniqueName() + "\t" + relation;
     }
-
 }

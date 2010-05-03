@@ -20,7 +20,7 @@ public class CNFClassifier implements IClassifier {
 
     private static final Logger log = Logger.getLogger(CNFClassifier.class);
 
-    public IContext buildCNodeFormulas(IContext context) {
+    public void buildCNodeFormulas(IContext context) {
         ArrayList<INode> queue = new ArrayList<INode>();
         queue.add(context.getRoot());
 
@@ -46,8 +46,6 @@ public class CNFClassifier implements IClassifier {
                 }
             }
         }
-
-        return context;
     }
 
     /**

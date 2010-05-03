@@ -4,11 +4,12 @@ import it.unitn.disi.smatch.classifiers.IClassifier;
 import it.unitn.disi.smatch.data.Context;
 import it.unitn.disi.smatch.data.IContext;
 import it.unitn.disi.smatch.data.IMatchingContext;
+import it.unitn.disi.smatch.data.INode;
 import it.unitn.disi.smatch.data.mappings.IMapping;
+import it.unitn.disi.smatch.data.mappings.Mapping;
+import it.unitn.disi.smatch.data.mappings.MappingElement;
 import it.unitn.disi.smatch.data.matrices.IMatchMatrix;
 import it.unitn.disi.smatch.data.matrices.MatrixFactory;
-import it.unitn.disi.smatch.deciders.openSAT;
-import it.unitn.disi.smatch.deciders.openSATcached;
 import it.unitn.disi.smatch.filters.IFilter;
 import it.unitn.disi.smatch.loaders.ILoader;
 import it.unitn.disi.smatch.loaders.IMappingLoader;
@@ -17,10 +18,10 @@ import it.unitn.disi.smatch.matchers.element.IMatcherLibrary;
 import it.unitn.disi.smatch.matchers.structure.tree.ITreeMatcher;
 import it.unitn.disi.smatch.oracles.ILinguisticOracle;
 import it.unitn.disi.smatch.oracles.IWordNetMatcher;
+import it.unitn.disi.smatch.oracles.wordnet.InMemoryWordNetBinaryArray;
 import it.unitn.disi.smatch.preprocessors.IPreprocessor;
 import it.unitn.disi.smatch.renderers.context.IContextRenderer;
 import it.unitn.disi.smatch.renderers.mapping.IMappingRenderer;
-import it.unitn.disi.smatch.utils.GenerateWordNetCaches;
 import it.unitn.disi.smatch.utils.SMatchUtils;
 import net.didion.jwnl.JWNL;
 import net.didion.jwnl.JWNLException;
@@ -28,17 +29,15 @@ import net.didion.jwnl.dictionary.Dictionary;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.*;
+import java.util.ArrayList;
 import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
 /**
- * Class that controls the process of matching, loads contexts and performs other
- * auxiliary work. Also it contains all the global variables and properties from
- * the configuration file.
+ * MatchManager controls the process of matching, loads contexts and performs other
+ * auxiliary work.
  *
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
  * @author Aliaksandr Autayeu avtaev@gmail.com
@@ -52,23 +51,30 @@ public class MatchManager implements IMatchManager {
     private static final Logger log = Logger.getLogger(MatchManager.class);
 
     /**
-     * Which properties file is used for setting configuration. <br>
-     * The value of the variables change through command line parameter.
+     * Default configuration file name.
      */
-    public static String propFileName = "SMatch.properties";
+    private static final String DEFAULT_CONFIG_FILE_NAME = ".." + File.separator + "conf" + File.separator + "S-Match.properties";
+    // config file command line key
+    private static final String propFileCmdLineKey = "-prop=";
+
+    // usage string
+    private static final String USAGE = "Usage: MatchManager <command> <arguments> [options]\n" +
+            " Commands: \n" +
+            " wntoflat                                  create cached WordNet files for fast matching\n" +
+            " convert <input> <output>                  read input file and write it into output file\n" +
+            " offline <input> <output>                  read input file, preprocess it and write it into output file\n" +
+            " online <source> <target> <output>         read source and target files, run matching and write the output file\n" +
+            " filter <source> <target> <input> <output> read source and target files, input mapping, run filtering and write the output mapping\n" +
+            "\n" +
+            " Options: \n" +
+            " -prop=file.properties                     read configuration from file.properties instead of default S-Match.properties";
+
 
     // Settings from the properties file
     // whether to use element level semantic matchers library or exploit the
     // only WordNet
     public static boolean useWeakSemanticsElementLevelMatchersLibrary = true;
-    // html file to print the matching results
-    private static String outputFile = "..\\test\\result.htm";
 
-    //mapping file for reading mapping
-    private static String mappingFile = "..\\test\\result.txt";
-
-    // the path to JWNL library properties file
-    private static String JWNLpropertiesPath = "..\\conf\\file_properties.xml";
     // which Sat solver to use
     public static String satSolverClass = null;// "it.unitn.disi.smatch.deciders.openSAT";
     // contains the classes of string matchers (Implementations of
@@ -82,31 +88,30 @@ public class MatchManager implements IMatchManager {
     public static boolean useConjunctiveLabelsOptimization = false;
     // whether to use disjointness test optimization technique
     public static boolean useOppositeAxiomsOptimization = false;
-    // TODO Need comment.
+    // leave one sense per label (WSD) or leave many (WSF)
     private static boolean oneSensePerLabel = true;
     // default value for the class which implements IWordNetMatcher interface
     private static String strWNmatcher = null;// "it.unitn.disi.smatch.oracles.wordnet.DefaultWordNetMatcher";
     // default value for the class which implements ILinguisticOracle interface
     private static String strLinguisticOracle = null;// "it.unitn.disi.smatch.oracles.wordnet.WordNet";
     // default value for the class which implements IClassifier interface
-    private static String strClassifier = null;// "it.unitn.disi.smatch.classifiers.DefaultClassifier";
+    private String strClassifier = null;// "it.unitn.disi.smatch.classifiers.DefaultClassifier";
     // default value for the class which implements IPreprocessor interface
-    private static String strPreprocessor = null;// "it.unitn.disi.smatch.preprocessors.DefaultPreprocessor";
+    private String strPreprocessor = null;// "it.unitn.disi.smatch.preprocessors.DefaultPreprocessor";
     // default value for the class which implements IMatcherLibrary interface
-    private static String strMatcherLibrary = null;// "it.unitn.disi.smatch.matchers.element.MatcherLibrary";
-    // //add New
+    private String strMatcherLibrary = null;// "it.unitn.disi.smatch.matchers.element.MatcherLibrary";
     // default value for the class which implements ILoader interface
-    private static String strLoader = null;// "it.unitn.disi.smatch.loaders.CTXMLLoader";
+    private String strLoader = null;// "it.unitn.disi.smatch.loaders.CTXMLLoader";
     // default value for the class which implements IMappingRenderer interface
-    private static String strMappingRenderer = null;// "it.unitn.disi.smatch.renderers.mapping.TaxMEMappingRenderer";
+    private String strMappingRenderer = null;// "it.unitn.disi.smatch.renderers.mapping.TaxMEMappingRenderer";
     // default value for the class which implements IContextRenderer interface
-    private static String strContextRenderer = null;// "it.unitn.disi.smatch.renderers.context.CTXMLContextRenderer";
+    private String strContextRenderer = null;// "it.unitn.disi.smatch.renderers.context.CTXMLContextRenderer";
     // default value for the class which implements IFilter interface
-    private static String strFilter = null;// "it.unitn.disi.smatch.filters.ZeroFilter";
+    private String strFilter = null;// "it.unitn.disi.smatch.filters.ZeroFilter";
     // default value for the class which implements IContext interface
-    private static String strContext = null;// "it.unitn.disi.smatch.data.Context";
+    private String strContext = null;// "it.unitn.disi.smatch.data.Context";
     // default value for the class which implements ITreeMatcher interface
-    private static String strTreeMatcher = null;// "it.unitn.disi.smatch.matchers.structure.tree.DefaultTreeMatcher";
+    private String strTreeMatcher = null;// "it.unitn.disi.smatch.matchers.structure.tree.DefaultTreeMatcher";
 
     // the words which are treated as logical and (&)
     public static String andWords = " and + & ^ of , for . ";
@@ -119,18 +124,6 @@ public class MatchManager implements IMatchManager {
     // the multiwords file name
     public static String multiwordsFileName = "..\\data\\multiwords.hash";
 
-    // Default files for matching
-    public static String ctxsSourceFile;
-    public static String ctxsTargetFile;
-    // "Wrong usage" string
-    private static final String USAGE = "it.unitn.disi.smatch <preprocessors> source_dir target_dir";
-    // Whether preprocessors part should be executed
-    private static boolean offline = false; // Computing concept of labels and nodes.
-    private static boolean online = false; // Computing relation between concept of labels and nodes. Also compute minimal result.
-    private static boolean convert = false; // Convert input file to xml formated file.
-    private static boolean filterFlag = false; // filter the semantic relation for minimal result.
-    private static boolean wntoflatFlag = false; // Convert WordNet to binary caches for quick search.
-
     // Wordnet dictionary object
     private static Dictionary wordNetDictionary = null;
     // WordNet matcher interface
@@ -138,24 +131,24 @@ public class MatchManager implements IMatchManager {
     // Linguistic Oracle interface
     private static ILinguisticOracle linguisticOracle = null;
     // Classification engine interface
-    private static IClassifier classifier = null;
+    private IClassifier classifier = null;
     // Linguistic Oracle interface
-    private static IPreprocessor preprocessor = null;
+    private IPreprocessor preprocessor = null;
     // Matcher Library interface
-    private static IMatcherLibrary matcherLibrary = null;
+    private IMatcherLibrary matcherLibrary = null;
     // Loader interface
-    private static ILoader loader = null;
+    private ILoader loader = null;
     // Mapping renderer interface
-    private static IMappingRenderer mappingRenderer = null;
+    private IMappingRenderer mappingRenderer = null;
     // Context renderer interface
-    private static IContextRenderer contextRenderer = null;
+    private IContextRenderer contextRenderer = null;
     // Filter interface
-    private static IFilter filter = null;
+    private IFilter filter = null;
     // Tree matcher interface
-    private static ITreeMatcher treeMatcher = null;
+    private ITreeMatcher treeMatcher = null;
 
     //mapping loader
-    private static IMappingLoader mappingLoader = null;
+    private IMappingLoader mappingLoader = null;
 
     // Relations abbreviations
     public static final char SYNOMYM = '=';
@@ -182,12 +175,209 @@ public class MatchManager implements IMatchManager {
     public static String nominalizationsFile = "nominalizations.arr";
     public static String adverbsAntonymFile = "adv_opp.arr";
 
+    // buffer size for input, output operations.
+    public static int BUFFER_SIZE = 5000000;
+    // ELSMthreshold for element level semantic matchers.
+    // Edit Distance, Optimized edit distance, NGram matchers are controlled by this value.
+    public static double ELSMthreshold = 0.9;
+    // Number characters for linguistic preprocessing.
+    public static String numberCharacters = "1234567890_ .,|\\/-";
+
+    public MatchManager() throws SMatchException {
+    }
+
     /**
-     * Parses the settings form properties files and sets the property key to specific variable.
+     * Constructor class with initialization.
      *
-     * @param properties the object of the properties files
+     * @param propFileName the name of the properties file
+     * @throws SMatchException SMatchException
      */
-    private void parseProperties(Properties properties) {
+    public MatchManager(String propFileName) throws SMatchException {
+        this();
+
+        // update properties
+        setProperties(loadProperties(propFileName));
+    }
+
+    public static IMatchManager getInstance() throws SMatchException {
+        return new MatchManager();
+    }
+
+    /**
+     * Creates the components such as classifier, loader and others.
+     */
+    private void createComponents() {
+//        // create an Oracle
+//        if (wordNetDictionary == null) {
+//            wordNetDictionary = Dictionary.getInstance();
+//        }
+//        // get WN matcher and Linguistic oracle interfaces
+//        if ((strWNmatcher != null) && (strWNmatcher.trim().length() > 0)) {
+//            WNMatcher = (IWordNetMatcher) getClassForName(strWNmatcher);
+//        }
+//        if ((strLinguisticOracle != null)
+//                && (strLinguisticOracle.trim().length() > 0)) {
+//            linguisticOracle = (ILinguisticOracle) getClassForName(strLinguisticOracle);
+//        }
+        if ((strClassifier != null) && (strClassifier.trim().length() > 0)) {
+            classifier = (IClassifier) getClassForName(strClassifier);
+        }
+//        if ((strPreprocessor != null) && (strPreprocessor.trim().length() > 0)) {
+//            preprocessor = (IPreprocessor) getClassForName(strPreprocessor);
+//        }
+//        if ((strMatcherLibrary != null)
+//                && (strMatcherLibrary.trim().length() > 0)) {
+//            matcherLibrary = (IMatcherLibrary) getClassForName(strMatcherLibrary);
+//        }
+        if ((strLoader != null) && (strLoader.trim().length() > 0)) {
+            loader = (ILoader) getClassForName(strLoader);
+        }
+        if ((strMappingRenderer != null)
+                && (strMappingRenderer.trim().length() > 0)) {
+            mappingRenderer = (IMappingRenderer) getClassForName(strMappingRenderer);
+        }
+        if ((strContextRenderer != null)
+                && (strContextRenderer.trim().length() > 0)) {
+            contextRenderer = (IContextRenderer) getClassForName(strContextRenderer);
+        }
+        if ((strFilter != null) && (strFilter.trim().length() > 0)) {
+            filter = (IFilter) getClassForName(strFilter);
+        }
+        if ((strTreeMatcher != null) && (strTreeMatcher.trim().length() > 0)) {
+            treeMatcher = (ITreeMatcher) getClassForName(strTreeMatcher);
+        }
+
+        mappingLoader = new PlainMappingLoader();
+    }
+
+    public void setSatSolver(String satSolverClass) {
+        this.satSolverClass = satSolverClass;
+    }
+
+    public void setWNMatcher(String WNMatcher) {
+        strWNmatcher = WNMatcher;
+        this.WNMatcher = (IWordNetMatcher) getClassForName(strWNmatcher);
+    }
+
+    public void setLinguisticOracle(String linguisticOracle) {
+        strLinguisticOracle = linguisticOracle;
+        this.linguisticOracle = (ILinguisticOracle) getClassForName(strLinguisticOracle);
+    }
+
+    public void setClassifier(String classifier) {
+        strClassifier = classifier;
+        this.classifier = (IClassifier) getClassForName(strClassifier);
+    }
+
+    public void setPreprocessor(String preprocessor) {
+        strPreprocessor = preprocessor;
+        this.preprocessor = (IPreprocessor) getClassForName(strPreprocessor);
+    }
+
+    public void setMatcherLibrary(String matcherLibrary) {
+        strMatcherLibrary = matcherLibrary;
+        this.matcherLibrary = (IMatcherLibrary) getClassForName(strMatcherLibrary);
+    }
+
+    public void setLoader(String loader) {
+        strLoader = loader;
+        this.loader = (ILoader) getClassForName(strLoader);
+    }
+
+    public void setMappingRenderer(String mappingRenderer) {
+        strMappingRenderer = mappingRenderer;
+        this.mappingRenderer = (IMappingRenderer) getClassForName(strMappingRenderer);
+    }
+
+    public void setContextRenderer(String contextRenderer) {
+        strContextRenderer = contextRenderer;
+        this.contextRenderer = (IContextRenderer) getClassForName(strContextRenderer);
+    }
+
+    public void setFilter(String filter) {
+        strFilter = filter;
+        this.filter = (IFilter) getClassForName(strFilter);
+    }
+
+    public void setTreeMatcher(String treeMatcher) {
+        strTreeMatcher = treeMatcher;
+        this.treeMatcher = (ITreeMatcher) getClassForName(strTreeMatcher);
+    }
+
+    public static Dictionary getWordNetDictionary() {
+        // create an Oracle
+        if (null == wordNetDictionary) {
+            wordNetDictionary = Dictionary.getInstance();
+        }
+
+        return wordNetDictionary;
+    }
+
+    public static IWordNetMatcher getIWNMatcher() {
+        // get WN matcher and Linguistic oracle interfaces
+        if ((null == WNMatcher) && (null != strWNmatcher) && (strWNmatcher.trim().length() > 0)) {
+            WNMatcher = (IWordNetMatcher) getClassForName(strWNmatcher);
+        }
+
+        return WNMatcher;
+    }
+
+    public static ILinguisticOracle getLinguisticOracle() {
+        if ((null == linguisticOracle) && (null != strLinguisticOracle) && (strLinguisticOracle.trim().length() > 0)) {
+            linguisticOracle = (ILinguisticOracle) getClassForName(strLinguisticOracle);
+        }
+
+        return linguisticOracle;
+    }
+
+
+    public IPreprocessor getPreprocessor() {
+        if ((null == preprocessor) && (null != strPreprocessor) && (strPreprocessor.trim().length() > 0)) {
+            preprocessor = (IPreprocessor) getClassForName(strPreprocessor);
+        }
+
+        return preprocessor;
+    }
+
+
+    public IMatcherLibrary getMatcherLibrary() {
+        if ((null == matcherLibrary) && (strMatcherLibrary != null) && (strMatcherLibrary.trim().length() > 0)) {
+            matcherLibrary = (IMatcherLibrary) getClassForName(strMatcherLibrary);
+        }
+
+        return matcherLibrary;
+    }
+
+    public IContext createContext() {
+        return Context.getInstance();
+    }
+
+    /**
+     * Loads the properties from the properties file.
+     *
+     * @param filename the properties file name
+     * @throws SMatchException SMatchException
+     * @return Properties instance
+     */
+    private Properties loadProperties(String filename) throws SMatchException {
+        log.info("Loading properties from " + filename);
+        Properties properties = new Properties();
+        try {
+            properties.load(new FileInputStream(filename));
+        } catch (IOException e) {
+            final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
+            log.error(errMessage, e);
+            throw new SMatchException(errMessage, e);
+        }
+
+        return properties;
+    }
+
+    public void setProperties(Properties properties) throws SMatchException {
+        //TODO support for properties update: components recreation on properties modification  
+
+        String JWNLPropertiesPath = ".." + File.separator + "conf" + File.separator + "file_properties.xml";
+
         if (properties.containsKey("MatchMatrixClassName")) {
             MatrixFactory.MATRIX_CLASS_NAME = properties.getProperty("MatchMatrixClassName");
         }
@@ -215,11 +405,8 @@ public class MatchManager implements IMatchManager {
         if (properties.containsKey("satSolverClass")) {
             satSolverClass = properties.getProperty("satSolverClass");
         }
-        if (properties.containsKey("outputFile")) {
-            outputFile = properties.getProperty("outputFile");
-        }
         if (properties.containsKey("JWNLpropertiesPath")) {
-            JWNLpropertiesPath = properties.getProperty("JWNLpropertiesPath");
+            JWNLPropertiesPath = properties.getProperty("JWNLpropertiesPath");
         }
         if (properties.containsKey("andWords")) {
             andWords = " " + properties.getProperty("andWords") + " ";
@@ -302,219 +489,20 @@ public class MatchManager implements IMatchManager {
         if (properties.containsKey("ContextClass")) {
             strContext = properties.getProperty("ContextClass");
         }
-    }
 
-    public static String getOutputFile() {
-		return outputFile;
-	}
-
-	public static void setOutputFile(String outputFile) {
-		MatchManager.outputFile = outputFile;
-	}
-
-	// buffer size for input, output operations.
-    public static int BUFFER_SIZE = 5000000;
-    // ELSMthreshold for element level semantic matchers.
-    // Edit Distance, Optimized edit distance, NGram matchers are controlled by this value.
-    public static double ELSMthreshold = 0.9;
-    // Number characters for linguistic preprocessing.
-    public static String numberCharacters = "1234567890_ .,|\\/-";
-
-    public MatchManager() throws SMatchException {
-        this(propFileName);
-    }
-
-    /**
-     * Constructor class to load properties files, initialize JWNL and creating components.
-     *
-     * @param propFileName the name of the properties file
-     * @throws SMatchException
-     */
-    public MatchManager(String propFileName) throws SMatchException {
-        // load properties
-        loadProperties(propFileName);
         // initialize JWNL (this must be done before JWNL library can be used)
-        initJWNL();
-        // create components
-        createComponents();
-    }
-
-    public static IMatchManager getInstance() throws SMatchException {
-        return new MatchManager(propFileName);
-    }
-
-    /**
-     * Configures the components such as classifier, loader etc for the program.
-     */
-    private static void createComponents() {
-//        // create an Oracle
-//        if (wordNetDictionary == null) {
-//            wordNetDictionary = Dictionary.getInstance();
-//        }
-//        // get WN matcher and Linguistic oracle interfaces
-//        if ((strWNmatcher != null) && (strWNmatcher.trim().length() > 0)) {
-//            WNMatcher = (IWordNetMatcher) getClassForName(strWNmatcher);
-//        }
-//        if ((strLinguisticOracle != null)
-//                && (strLinguisticOracle.trim().length() > 0)) {
-//            linguisticOracle = (ILinguisticOracle) getClassForName(strLinguisticOracle);
-//        }
-        if ((strClassifier != null) && (strClassifier.trim().length() > 0)) {
-            classifier = (IClassifier) getClassForName(strClassifier);
-        }
-//        if ((strPreprocessor != null) && (strPreprocessor.trim().length() > 0)) {
-//            preprocessor = (IPreprocessor) getClassForName(strPreprocessor);
-//        }
-//        if ((strMatcherLibrary != null)
-//                && (strMatcherLibrary.trim().length() > 0)) {
-//            matcherLibrary = (IMatcherLibrary) getClassForName(strMatcherLibrary);
-//        }
-        if ((strLoader != null) && (strLoader.trim().length() > 0)) {
-            loader = (ILoader) getClassForName(strLoader);
-        }
-        if ((strMappingRenderer != null)
-                && (strMappingRenderer.trim().length() > 0)) {
-            mappingRenderer = (IMappingRenderer) getClassForName(strMappingRenderer);
-        }
-        if ((strContextRenderer != null)
-                && (strContextRenderer.trim().length() > 0)) {
-            contextRenderer = (IContextRenderer) getClassForName(strContextRenderer);
-        }
-        if ((strFilter != null) && (strFilter.trim().length() > 0)) {
-            filter = (IFilter) getClassForName(strFilter);
-        }
-        if ((strTreeMatcher != null) && (strTreeMatcher.trim().length() > 0)) {
-            treeMatcher = (ITreeMatcher) getClassForName(strTreeMatcher);
-        }
-
-        mappingLoader = new PlainMappingLoader();
-    }
-
-    public static void setSatSolver(String satSolverClass) {
-        MatchManager.satSolverClass = satSolverClass;
-    }
-
-    public static void setWNMatcher(String WNMatcher) {
-        strWNmatcher = WNMatcher;
-        MatchManager.WNMatcher = (IWordNetMatcher) getClassForName(strWNmatcher);
-    }
-
-    public static void setLinguisticOracle(String linguisticOracle) {
-        strLinguisticOracle = linguisticOracle;
-        MatchManager.linguisticOracle = (ILinguisticOracle) getClassForName(strLinguisticOracle);
-    }
-
-    public static void setClassifier(String classifier) {
-        strClassifier = classifier;
-        MatchManager.classifier = (IClassifier) getClassForName(strClassifier);
-    }
-
-    public static void setPreprocessor(String preprocessor) {
-        strPreprocessor = preprocessor;
-        MatchManager.preprocessor = (IPreprocessor) getClassForName(strPreprocessor);
-    }
-
-    public static void setMatcherLibrary(String matcherLibrary) {
-        strMatcherLibrary = matcherLibrary;
-        MatchManager.matcherLibrary = (IMatcherLibrary) getClassForName(strMatcherLibrary);
-    }
-
-    public static void setLoader(String loader) {
-        strLoader = loader;
-        MatchManager.loader = (ILoader) getClassForName(strLoader);
-    }
-
-    public static void setMappingRenderer(String mappingRenderer) {
-        strMappingRenderer = mappingRenderer;
-        MatchManager.mappingRenderer = (IMappingRenderer) getClassForName(strMappingRenderer);
-    }
-
-    public static void setContextRenderer(String contextRenderer) {
-        strContextRenderer = contextRenderer;
-        MatchManager.contextRenderer = (IContextRenderer) getClassForName(strContextRenderer);
-    }
-
-    public static void setFilter(String filter) {
-        strFilter = filter;
-        MatchManager.filter = (IFilter) getClassForName(strFilter);
-    }
-
-    public static void setTreeMatcher(String treeMatcher) {
-        strTreeMatcher = treeMatcher;
-        MatchManager.treeMatcher = (ITreeMatcher) getClassForName(strTreeMatcher);
-    }
-
-    public static Dictionary getWordNetDictionary() {
-        // create an Oracle
-        if (null == wordNetDictionary) {
-            wordNetDictionary = Dictionary.getInstance();
-        }
-
-        return wordNetDictionary;
-    }
-
-    public static IWordNetMatcher getIWNMatcher() {
-        // get WN matcher and Linguistic oracle interfaces
-        if ((null == WNMatcher) && (null != strWNmatcher) && (strWNmatcher.trim().length() > 0)) {
-            WNMatcher = (IWordNetMatcher) getClassForName(strWNmatcher);
-        }
-
-        return WNMatcher;
-    }
-
-    public static ILinguisticOracle getLinguisticOracle() {
-        if ((null == linguisticOracle) && (null != strLinguisticOracle) && (strLinguisticOracle.trim().length() > 0)) {
-            linguisticOracle = (ILinguisticOracle) getClassForName(strLinguisticOracle);
-        }
-
-        return linguisticOracle;
-    }
-
-
-    public IPreprocessor getPreprocessor() {
-        if ((null == preprocessor) && (null != strPreprocessor) && (strPreprocessor.trim().length() > 0)) {
-            preprocessor = (IPreprocessor) getClassForName(strPreprocessor);
-        }
-
-        return preprocessor;
-    }
-
-
-    public IMatcherLibrary getMatcherLibrary() {
-        if ((null == matcherLibrary) && (strMatcherLibrary != null) && (strMatcherLibrary.trim().length() > 0)) {
-            matcherLibrary = (IMatcherLibrary) getClassForName(strMatcherLibrary);
-        }
-
-        return matcherLibrary;
-    }
-
-    public static IContext getIContext() {
-        return Context.getInstance();
-    }
-
-    /**
-     * Loads, parses, sets the value of properties from properties file.
-     *
-     * @param filename the properties file name
-     * @throws SMatchException
-     */
-    private void loadProperties(String filename) throws SMatchException {
-        log.info("Loading properties from " + filename);
         try {
-            Properties properties = new Properties();
-            // Loads the value of properties to properties object.
-            properties.load(new FileInputStream(filename));
-            // Sets the value of properties from properties files.
-            parseProperties(properties);
-        } catch (IOException e) {
+            JWNL.initialize(new FileInputStream(JWNLPropertiesPath));
+        } catch (JWNLException e) {
+            final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
+            log.error(errMessage, e);
+            throw new SMatchException(errMessage, e);
+        } catch (FileNotFoundException e) {
             final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
             log.error(errMessage, e);
             throw new SMatchException(errMessage, e);
         }
-    }
 
-    public void setProperties(Properties properites) {
-        parseProperties(properites);
         createComponents();
     }
 
@@ -542,7 +530,7 @@ public class MatchManager implements IMatchManager {
     /**
      * Creates list of object of classes.
      *
-     * @param str string of classes
+     * @param str       string of classes
      * @param separator string to separate the name of class
      * @return vector of objects of classes
      */
@@ -571,93 +559,28 @@ public class MatchManager implements IMatchManager {
         }
     }
 
-    /**
-     * Performs JWNL and JWNL logger initialization routines.
-     * Needs to be performed once before matching process.
-     *
-     * @throws SMatchException
-     */
-    static public void initJWNL() throws SMatchException {
-        try {
-            FileInputStream fis = new FileInputStream(JWNLpropertiesPath);
-            JWNL.initialize(fis);
-        } catch (JWNLException e) {
-            final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
-            log.error(errMessage, e);
-            throw new SMatchException(errMessage, e);
-        } catch (FileNotFoundException e) {
-            final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
-            log.error(errMessage, e);
-            throw new SMatchException(errMessage, e);
-        }
-    }
-
     public static void printMemoryUsage() {
         Runtime tw = Runtime.getRuntime();
         log.debug((tw.totalMemory() - tw.freeMemory()) / 1024 + " Kb used");
     }
 
-    /**
-     * Parses the commands from command line.
-     *
-     * @param args command line arguments
-     */
-    private void parseCommandPromtParameters(String[] args) {
-        // Is everything right with input parameters
-        if (args.length < 2) {
-            log.info(USAGE);
-            System.exit(-1);
-        }
-        if (args[0].indexOf("wntoflat") > -1) {
-            wntoflatFlag = true;
-        } else if (args[0].indexOf("filter") > -1) {
-            filterFlag = true;
-            ctxsSourceFile = args[1];
-            ctxsTargetFile = args[2];
-            if (args.length >= 4) {
-                mappingFile = args[3];
-            }
-        } else if (args[0].indexOf("convert") > -1) {
-            convert = true;
-            ctxsSourceFile = args[1];
-            outputFile = args[2];
-        } else {
-            // Whether preprocessors part should be executed
-            if (args[0].indexOf("offline") > -1) {
-                offline = true;
-            } else if (args[0].indexOf("online") > -1) {
-                online = true;
-            }
-
-            // directories of files to online
-            ctxsSourceFile = args[1];
-            if (2 < args.length) {
-                if (!args[2].startsWith("-")) {
-                    ctxsTargetFile = args[2];
-                }
-            }
-        }
-    }
-
-    public IContext preprocess(IContext ctxSource) {
-        IMatchingContext imc = ctxSource.getMatchingContext();
+    public void preprocess(IContext context) {
+        IMatchingContext imc = context.getMatchingContext();
         log.info("Computing concepts at label...");
         //preprocessors source context
         imc.resetOldPreprocessing();
-        ctxSource = getPreprocessor().preprocess(ctxSource);
+        getPreprocessor().preprocess(context);
         log.info("Computing concepts at label finished");
 
         printMemoryUsage();
-        return ctxSource;
     }
 
-    public IContext classify(IContext ctxSource) {
+    public void classify(IContext context) {
         log.info("Computing concepts at node...");
-        ctxSource = classifier.buildCNodeFormulas(ctxSource);
+        classifier.buildCNodeFormulas(context);
         log.info("Computing concepts at node finished");
 
         printMemoryUsage();
-        return ctxSource;
     }
 
     public void renderContext(IContext ctxSource, String fileName) {
@@ -684,72 +607,64 @@ public class MatchManager implements IMatchManager {
         return CnodMatrix;
     }
 
-    public IMatchMatrix filter(Vector args) {
-        log.info("Filtering...");
-        IMatchMatrix CnodMatrix = filter.filter(args);
-        log.info("Filtering finished");
-
-        printMemoryUsage();
-        return CnodMatrix;
+    public void renderMapping(IMapping mapping, String outputFile) throws SMatchException {
+        mappingRenderer.render(mapping, outputFile);
     }
 
-    public IMapping renderMapping(Vector args) {
-        log.info("Rendering results to " + args.get(0));
-        IMapping res = mappingRenderer.render(args);
-        log.info("Rendering results finished");
-
-        printMemoryUsage();
-        return res;
+    public IMapping loadMapping(IContext ctxSource, IContext ctxTarget, String inputFile) throws SMatchException {
+        return mappingLoader.loadMapping(ctxSource, ctxTarget, inputFile);
     }
 
-    public IContext offline(IContext ctxSource, String ctxsSourceFile) {
+    public void offline(IContext context) {
         log.info("Computing concept at label formulas...");
-        IContext tmp = preprocess(ctxSource);
+        preprocess(context);
         log.info("Computing concept at label formulas finished");
 
         log.info("Computing concept at node formulas...");
-        tmp = classify(tmp);
+        classify(context);
         log.info("Computing concept at node formulas finished");
-
-        if (null != ctxsSourceFile) {
-            renderContext(tmp, ctxsSourceFile);
-        }
-        return tmp;
     }
 
     public IMapping online(IContext sourceContext, IContext targetContext) throws SMatchException {
+        //TODO get rid of matrices?
         // Performs element level matching which computes the relation between labels.
-    	IMatchMatrix cLabMatrix = elementLevelMatching(sourceContext, targetContext);
-    	// Performs structure level matching which computes the relation between nodes.
+        IMatchMatrix cLabMatrix = elementLevelMatching(sourceContext, targetContext);
+        // Performs structure level matching which computes the relation between nodes.
         IMatchMatrix cNodeMatrix = structureLevelMatching(sourceContext, targetContext, cLabMatrix);
 
-        //temporary
-        openSAT.reportStats();
-        openSATcached.reportStats();
+        Vector<INode> sourceNodes = sourceContext.getAllNodes();
+        Vector<INode> targetNodes = targetContext.getAllNodes();
 
-        Vector args = new Vector();
-        args.insertElementAt(outputFile, 0);
-        args.insertElementAt(cNodeMatrix, 1);
-        args.insertElementAt(cLabMatrix, 2);
-        args.insertElementAt(sourceContext, 3);
-        args.insertElementAt(targetContext, 4);
-        // Filters the relational matrix for minimal mapping.
-        cNodeMatrix = filter(args);
+        IMapping mapping = new Mapping(sourceContext, targetContext);
+        for (int i = 0; i < sourceNodes.size(); i++) {
+            INode sourceNode = sourceNodes.get(i);
+            for (int j = 0; j < targetNodes.size(); j++) {
+                INode targetNode = targetNodes.get(j);
+                char relation = cNodeMatrix.getElement(i , j);
+                if (MatchManager.IDK_RELATION != relation) {
+                    mapping.add(new MappingElement(sourceNode, targetNode, relation));
+                }
+            }
+        }
 
-        return renderMapping(args);
+        return mapping;
     }
 
     public IMapping match(IContext sourceContext, IContext targetContext) throws SMatchException {
-        sourceContext = offline(sourceContext, null);
-        targetContext = offline(targetContext, null);
-        return online(sourceContext, targetContext);
-
+        log.info("Matching started...");
+        offline(sourceContext);
+        offline(targetContext);
+        IMapping result = online(sourceContext, targetContext);
+        log.info("Matching finished");
+        return result;
     }
 
     public IContext loadContext(String fileName) throws SMatchException {
-        log.info("Loading nodes from " + fileName);
+        if (log.isEnabledFor(Level.INFO)) {
+            log.info("Loading nodes from " + fileName);
+        }
         IContext context = loader.loadContext(fileName);
-        //TODO move into sorting loader
+        //TODO move into sorting loader or renderer
         context.getContextData().sort();
         if (log.isEnabledFor(Level.INFO)) {
             log.info("Loaded nodes (" + fileName + "): " + context.getRoot().getDescendantCount());
@@ -757,83 +672,110 @@ public class MatchManager implements IMatchManager {
         return context;
     }
 
-    /**
-     * Filtering contexts for minimal mapping.
-     *
-     * @param sourceContext concept of source nodes
-     * @param targetContext concept of target nodes
-     */
-    private void filterContexts(IContext ctxSource, IContext ctxTarget) {
-        IMatchMatrix cNodeMatrix;
-        try {
-            cNodeMatrix = mappingLoader.loadMapping(ctxSource, ctxTarget, mappingFile);
+    public IMapping filterMapping(IMapping sourceMapping) {
+        log.info("Filtering...");
+        IMapping result = filter.filter(sourceMapping);
+        log.info("Filtering finished");
 
-            Vector argsV = new Vector();
-            argsV.insertElementAt(outputFile, 0);
-            argsV.insertElementAt(cNodeMatrix, 1);
-            argsV.insertElementAt(null, 2);
-            argsV.insertElementAt(ctxSource, 3);
-            argsV.insertElementAt(ctxTarget, 4);
-
-            cNodeMatrix = filter(argsV);
-            renderMapping(argsV);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        return result;
     }
 
     /**
      * Converts WordNet dictionary to binary format for fast searching.
      *
-     * @throws SMatchException
+     * @throws SMatchException SMatchException
      */
     private void convertWordNetToFlat() throws SMatchException {
-        GenerateWordNetCaches gwnc = new GenerateWordNetCaches();
-        gwnc.convert();
+        InMemoryWordNetBinaryArray.createWordNetCaches();
     }
 
+    /**
+     * Provides a command line interface to match manager.
+     *
+     * @param args command line arguments
+     * @throws SMatchException SMatchException
+     */
     public static void main(String[] args) throws SMatchException {
-        IContext ctxSource;
-        IContext ctxTarget = null;
-        final String propKey = "-prop=";
+        // initialize property file
+        String propFile = DEFAULT_CONFIG_FILE_NAME;
+        ArrayList<String> cleanArgs = new ArrayList<String>();
         for (String arg : args) {
-            if (arg.startsWith(propKey)) {
-                propFileName = arg.substring(propKey.length());
-                break;
+            if (arg.startsWith(propFileCmdLineKey)) {
+                propFile = arg.substring(propFileCmdLineKey.length());
+            } else {
+                cleanArgs.add(arg);
             }
         }
-        MatchManager mm = new MatchManager(propFileName);
-        mm.parseCommandPromtParameters(args);
 
-        if (wntoflatFlag) {
-            mm.convertWordNetToFlat();
+        args = cleanArgs.toArray(new String[cleanArgs.size()]);
+        
+        // check input parameters
+        if (args.length < 1) {
+            System.out.println(USAGE);
         } else {
-            if (convert) {
-                ctxSource = mm.loadContext(ctxsSourceFile);
-            } else {
-                ctxSource = mm.loadContext(ctxsSourceFile);
-                if (null != ctxsTargetFile) {
-                    ctxTarget = mm.loadContext(ctxsTargetFile);
-                }
-            }
-            printMemoryUsage();
-            if (convert) {
-                mm.renderContext(ctxSource, outputFile);
-            } else {
-                if (filterFlag) {
-                    mm.filterContexts(ctxSource, ctxTarget);
-                } else {
-                    if (offline) {
-                        mm.offline(ctxSource, ctxsSourceFile);
-                        if (null != ctxTarget) {
-                            mm.offline(ctxTarget, ctxsTargetFile);
-                        }
-                        //mm.online(ctxSource, ctxTarget);
+
+            MatchManager mm = new MatchManager();
+
+            // read properties
+            Properties config = new Properties();
+            try {
+                config.load(new FileInputStream(propFile));
+                mm.setProperties(config);
+
+                if ("wntoflat".equals(args[0])) {
+                    mm.convertWordNetToFlat();
+                } else if ("convert".equals(args[0])) {
+                    if (2 < args.length) {
+                        String inputFile = args[1];
+                        String outputFile = args[2];
+                        IContext ctxSource = mm.loadContext(inputFile);
+                        mm.renderContext(ctxSource, outputFile);
                     } else {
-                        mm.online(ctxSource, ctxTarget);
+                        System.out.println("Not enough arguments for convert command.");
                     }
+                } else if ("offline".equals(args[0])) {
+                    if (2 < args.length) {
+                        String inputFile = args[1];
+                        String outputFile = args[2];
+                        IContext ctxSource = mm.loadContext(inputFile);
+                        mm.offline(ctxSource);
+                        mm.renderContext(ctxSource, outputFile);
+                    } else {
+                        System.out.println("Not enough arguments for offline command.");
+                    }
+                } else if ("online".equals(args[0])) {
+                    if (3 < args.length) {
+                        String sourceFile = args[1];
+                        String targetFile = args[2];
+                        String outputFile = args[3];
+                        IContext ctxSource = mm.loadContext(sourceFile);
+                        IContext ctxTarget = mm.loadContext(targetFile);
+                        IMapping result = mm.online(ctxSource, ctxTarget);
+                        mm.renderMapping(result, outputFile);
+                    } else {
+                        System.out.println("Not enough arguments for online command.");
+                    }
+                } else if ("filter".equals(args[0])) {
+                    if (4 < args.length) {
+                        String sourceFile = args[1];
+                        String targetFile = args[2];
+                        String inputFile = args[3];
+                        String outputFile = args[4];
+
+                        IContext ctxSource = mm.loadContext(sourceFile);
+                        IContext ctxTarget = mm.loadContext(targetFile);
+                        IMapping mapInput = mm.loadMapping(ctxSource, ctxTarget, inputFile);
+                        IMapping mapOutput = mm.filterMapping(mapInput);
+                        mm.renderMapping(mapOutput, outputFile);
+                    } else {
+                        System.out.println("Not enough arguments for filter command.");
+                    }
+                } else {
+                    System.out.println("Unrecognized command.");
+                }
+            } catch (IOException e) {
+                if (log.isEnabledFor(Level.ERROR)) {
+                    log.error("IOException: " + e.getMessage(), e);
                 }
             }
         }

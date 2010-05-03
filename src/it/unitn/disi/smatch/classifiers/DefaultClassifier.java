@@ -14,7 +14,7 @@ import java.util.Vector;
  */
 public class DefaultClassifier implements IClassifier {
 
-    public IContext buildCNodeFormulas(IContext context) {
+    public void buildCNodeFormulas(IContext context) {
         Vector<INode> allNodes = context.getAllNodes();
         //for all nodes in the context
         for (int i = 0; i < allNodes.size(); i++) {
@@ -26,7 +26,6 @@ public class DefaultClassifier implements IClassifier {
             // Sets concept at node formula.
             nd.setcNodeFormula(cNode);
         }
-        return context;
     }
 
     /**

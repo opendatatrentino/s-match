@@ -37,13 +37,13 @@ public class TestJavaSparseArray extends TestMatrix {
     @Test
     public void testMtxUnordered() {
         JavaSparseArray sm = new JavaSparseArray();
-        testMtx("../data/tests/matrices/bcsstk32.mtx.gz", sm);
+//        testMtx("../data/tests/matrices/bcsstk32.mtx.gz", sm);
     }
 
     @Test
     public void testMtxByRow() {
         JavaSparseArray sm = new JavaSparseArray();
-        testMtx("../data/tests/matrices/bcsstk32.sorted.mtx.gz", sm);
+//        testMtx("../data/tests/matrices/bcsstk32.sorted.mtx.gz", sm);
     }
 
     public static void main(String args[]) {

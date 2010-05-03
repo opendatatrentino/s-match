@@ -4,7 +4,12 @@ import it.unitn.disi.smatch.MatchManager;
 import it.unitn.disi.smatch.SMatchConstants;
 import it.unitn.disi.smatch.data.IContext;
 import it.unitn.disi.smatch.data.INode;
+import it.unitn.disi.smatch.data.mappings.IMapping;
+import it.unitn.disi.smatch.data.mappings.IMappingElement;
+import it.unitn.disi.smatch.data.mappings.Mapping;
+import it.unitn.disi.smatch.data.mappings.MappingElement;
 import it.unitn.disi.smatch.data.matrices.IMatchMatrix;
+import it.unitn.disi.smatch.data.matrices.MatrixFactory;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
@@ -19,21 +24,18 @@ public class RedundantGeneratorFilter implements IFilter {
 
     private static final Logger log = Logger.getLogger(RedundantGeneratorFilter.class);
 
-    protected static IMatchMatrix CnodMatrix;
+    protected IMatchMatrix CnodMatrix;
     Vector<INode> sourceNodes;
     Vector<INode> targetNodes;
 
-    public IMatchMatrix filter(Vector args) {
+    public IMapping filter(IMapping mapping) {
         if (log.isEnabledFor(Level.INFO)) {
             log.info("Filtering started...");
         }
         long start = System.currentTimeMillis();
 
-        //String fileName = (String) args.get(0);
-        CnodMatrix = (IMatchMatrix) args.get(1);
-        //IMatchMatrix ClabMatrix = (IMatchMatrix) args.get(2);
-        IContext sourceContext = (IContext) args.get(3);
-        IContext targetContext = (IContext) args.get(4);
+        IContext sourceContext = mapping.getSourceContext();
+        IContext targetContext = mapping.getTargetContext();
 
         // get the nodes of the contexts
         sourceNodes = sourceContext.getAllNodes();
@@ -45,6 +47,12 @@ public class RedundantGeneratorFilter implements IFilter {
         }
         for (int i = 0; i < targetNodes.size(); i++) {
             targetNodes.get(i).getNodeData().setIndex(i);
+        }
+
+        //TODO rewrite algorithm to use mapping
+        CnodMatrix = MatrixFactory.getInstance(sourceNodes.size(), targetNodes.size());
+        for (IMappingElement e : mapping) {
+            CnodMatrix.setElement(e.getSourceNode().getNodeData().getIndex(), e.getTargetNode().getNodeData().getIndex(), e.getRelation());
         }
 
         long counter = 0;
@@ -85,13 +93,27 @@ public class RedundantGeneratorFilter implements IFilter {
             }
         }
 
+        IMapping result = new Mapping(sourceContext, targetContext);
+        for (int i = 0; i < sourceNodes.size(); i++) {
+            INode sourceNode = sourceNodes.get(i);
+            for (int j = 0; j < targetNodes.size(); j++) {
+                INode targetNode = targetNodes.get(j);
+                char relation = CnodMatrix.getElement(i, j);
+                if (MatchManager.IDK_RELATION != relation) {
+                    result.add(new MappingElement(sourceNode, targetNode, relation));
+                }
+            }
+        }
+
         if (log.isEnabledFor(Level.INFO)) {
             log.info("Filtering finished: " + (System.currentTimeMillis() - start) + " ms");
         }
-        return CnodMatrix;
+
+        return result;
     }
 
     // TODO needs comments
+
     private char computeMapping(int i, int j) {
         if (MatchManager.OPPOSITE_MEANING == CnodMatrix.getElement(i, j)) {
             return MatchManager.OPPOSITE_MEANING;
@@ -177,6 +199,7 @@ public class RedundantGeneratorFilter implements IFilter {
     //we need to check ancestors and descendants, and not only parents and children
     //otherwise, in case of series of redundant links we remove first by checking parent
     //and then all the rest is not removed because of the "gap"
+
     protected boolean verifyCondition1(INode C, INode D) {
         return findRelation(MatchManager.LESS_GENERAL_THAN, C.getAncestors(), D) ||
                 findRelation(MatchManager.LESS_GENERAL_THAN, C, D.getDescendants()) ||
@@ -203,11 +226,11 @@ public class RedundantGeneratorFilter implements IFilter {
                 findRelation(MatchManager.OPPOSITE_MEANING, C.getAncestors(), D.getAncestors());
     }
 
-    public static boolean findRelation(char relation, INode sourceNode, INode targetNode) {
+    public boolean findRelation(char relation, INode sourceNode, INode targetNode) {
         return (null != sourceNode) && (null != targetNode) && (getRelation(sourceNode, targetNode) == relation);
     }
 
-    public static boolean findRelation(char relation, Vector<INode> sourceNodes, INode targetNode) {
+    public boolean findRelation(char relation, Vector<INode> sourceNodes, INode targetNode) {
         for (INode sourceNode : sourceNodes) {
             if (relation == getRelation(sourceNode, targetNode)) {
                 return true;
@@ -216,7 +239,7 @@ public class RedundantGeneratorFilter implements IFilter {
         return false;
     }
 
-    public static boolean findRelation(char relation, INode sourceNode, Vector<INode> targetNodes) {
+    public boolean findRelation(char relation, INode sourceNode, Vector<INode> targetNodes) {
         for (INode targetNode : targetNodes) {
             if (relation == getRelation(sourceNode, targetNode)) {
                 return true;
@@ -225,7 +248,7 @@ public class RedundantGeneratorFilter implements IFilter {
         return false;
     }
 
-    public static boolean findRelation(char relation, Vector<INode> sourceNodes, Vector<INode> targetNodes) {
+    public boolean findRelation(char relation, Vector<INode> sourceNodes, Vector<INode> targetNodes) {
         for (INode sourceNode : sourceNodes) {
             for (INode targetNode : targetNodes) {
                 if (relation == getRelation(sourceNode, targetNode)) {
@@ -236,7 +259,7 @@ public class RedundantGeneratorFilter implements IFilter {
         return false;
     }
 
-    protected static char getRelation(INode a, INode b) {
+    protected char getRelation(INode a, INode b) {
         return CnodMatrix.getElement(a.getNodeData().getIndex(), b.getNodeData().getIndex());
     }
 }

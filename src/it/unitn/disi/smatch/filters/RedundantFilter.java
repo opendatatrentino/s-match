@@ -4,7 +4,12 @@ import it.unitn.disi.smatch.MatchManager;
 import it.unitn.disi.smatch.SMatchConstants;
 import it.unitn.disi.smatch.data.IContext;
 import it.unitn.disi.smatch.data.INode;
+import it.unitn.disi.smatch.data.mappings.IMapping;
+import it.unitn.disi.smatch.data.mappings.IMappingElement;
+import it.unitn.disi.smatch.data.mappings.Mapping;
+import it.unitn.disi.smatch.data.mappings.MappingElement;
 import it.unitn.disi.smatch.data.matrices.IMatchMatrix;
+import it.unitn.disi.smatch.data.matrices.MatrixFactory;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
@@ -21,22 +26,14 @@ public class RedundantFilter implements IFilter {
 
     protected IMatchMatrix CnodMatrix;
 
-    protected int condition1 = 0;
-    protected int condition2 = 0;
-    protected int condition3 = 0;
-    protected int condition4 = 0;
-
-    public IMatchMatrix filter(Vector args) {
+    public IMapping filter(IMapping mapping) {
         if (log.isEnabledFor(Level.INFO)) {
             log.info("Filtering started...");
         }
         long start = System.currentTimeMillis();
 
-        //String fileName = (String) args.get(0);
-        CnodMatrix = (IMatchMatrix) args.get(1);
-        //IMatchMatrix ClabMatrix = (IMatchMatrix) args.get(2);
-        IContext sourceContext = (IContext) args.get(3);
-        IContext targetContext = (IContext) args.get(4);
+        IContext sourceContext = mapping.getSourceContext();
+        IContext targetContext = mapping.getTargetContext();
 
         // get the nodes of the contexts
         Vector<INode> sourceNodes = sourceContext.getAllNodes();
@@ -47,6 +44,12 @@ public class RedundantFilter implements IFilter {
         }
         for (int i = 0; i < targetNodes.size(); i++) {
             targetNodes.get(i).getNodeData().setIndex(i);
+        }
+
+        //TODO rewrite algorithm to use mapping
+        CnodMatrix = MatrixFactory.getInstance(sourceNodes.size(), targetNodes.size());
+        for (IMappingElement e : mapping) {
+            CnodMatrix.setElement(e.getSourceNode().getNodeData().getIndex(), e.getTargetNode().getNodeData().getIndex(), e.getRelation());
         }
 
         long counter = 0;
@@ -70,10 +73,23 @@ public class RedundantFilter implements IFilter {
             }
         }
 
+        IMapping result = new Mapping(sourceContext, targetContext);
+        for (int i = 0; i < sourceNodes.size(); i++) {
+            INode sourceNode = sourceNodes.get(i);
+            for (int j = 0; j < targetNodes.size(); j++) {
+                INode targetNode = targetNodes.get(j);
+                char relation = CnodMatrix.getElement(i, j);
+                if (MatchManager.IDK_RELATION != relation) {
+                    result.add(new MappingElement(sourceNode, targetNode, relation));
+                }
+            }
+        }
+
+
         if (log.isEnabledFor(Level.INFO)) {
             log.info("Filtering finished: " + (System.currentTimeMillis() - start) + " ms");
         }
-        return CnodMatrix;
+        return result;
     }
 
     /**
@@ -130,10 +146,6 @@ public class RedundantFilter implements IFilter {
                 findRelation(MatchManager.LESS_GENERAL_THAN, C.getAncestors(), D) ||
                         findRelation(MatchManager.LESS_GENERAL_THAN, C, D.getDescendants()) ||
                         findRelation(MatchManager.LESS_GENERAL_THAN, C.getAncestors(), D.getDescendants());
-        if (result) {
-            condition1++;
-        }
-
         return result;
     }
 
@@ -142,10 +154,6 @@ public class RedundantFilter implements IFilter {
                 findRelation(MatchManager.MORE_GENERAL_THAN, C, D.getAncestors()) ||
                         findRelation(MatchManager.MORE_GENERAL_THAN, C.getDescendants(), D) ||
                         findRelation(MatchManager.MORE_GENERAL_THAN, C.getDescendants(), D.getAncestors());
-        if (result) {
-            condition2++;
-        }
-
         return result;
     }
 
@@ -154,10 +162,6 @@ public class RedundantFilter implements IFilter {
                 findRelation(MatchManager.OPPOSITE_MEANING, C, D.getAncestors()) ||
                         findRelation(MatchManager.OPPOSITE_MEANING, C.getAncestors(), D) ||
                         findRelation(MatchManager.OPPOSITE_MEANING, C.getAncestors(), D.getAncestors());
-        if (result) {
-            condition3++;
-        }
-
         return result;
     }
 
@@ -171,10 +175,6 @@ public class RedundantFilter implements IFilter {
                         ||
                         (findRelation(MatchManager.SYNOMYM, C.getAncestors(), D.getDescendants()) &&
                                 findRelation(MatchManager.SYNOMYM, C.getDescendants(), D.getAncestors()));
-        if (result) {
-            condition4++;
-        }
-
         return result;
     }
 

@@ -50,20 +50,17 @@ public class DefaultPreprocessor implements IPreprocessor {
      * - sense filtering (elimination of irrelevant to context structure senses)
      *
      * @param context context to be prepocessed
-     * @return preprocessed context with logical formula
      */
-    public IContext preprocess(IContext context) {
+    public void preprocess(IContext context) {
         loadHashses();
         //construct cLabs
         context = buildCLabs(context);
         //sense filtering
         context = findMultiwordsInContextStructure(context);
-        context = senseFiltering(context);
+        senseFiltering(context);
 
         //unrecognized words
         log.info("Unrecognized words: " + unrecognizedWords.size());
-
-        return context;
     }
 
     private void loadHashses() {
@@ -584,7 +581,7 @@ public class DefaultPreprocessor implements IPreprocessor {
      * @param context context to perform sense filtering
      * @return sense-filtered context
      */
-    private IContext senseFiltering(IContext context) {
+    private void senseFiltering(IContext context) {
         IContextData icd = context.getContextData();
         //all context nodes
         Vector<INode> allNode = context.getAllNodes();
@@ -757,7 +754,6 @@ public class DefaultPreprocessor implements IPreprocessor {
                 }
             }
         }
-        return context;
     }
 
     private void fillIntraAxiomsHash(IContextData context, IAtomicConceptOfLabel sourceACoL, IAtomicConceptOfLabel targetACoL) {

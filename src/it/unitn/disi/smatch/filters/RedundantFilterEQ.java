@@ -24,10 +24,6 @@ public class RedundantFilterEQ extends RedundantFilter {
 
                         findRelation(MatchManager.LESS_GENERAL_THAN, C.getAncestors(), D.getDescendants()) ||
                         findRelation(MatchManager.SYNOMYM, C.getAncestors(), D.getDescendants());
-        if (result) {
-            condition1++;
-        }
-
         return result;
     }
 
@@ -41,10 +37,6 @@ public class RedundantFilterEQ extends RedundantFilter {
 
                         findRelation(MatchManager.MORE_GENERAL_THAN, C.getDescendants(), D.getAncestors()) ||
                         findRelation(MatchManager.SYNOMYM, C.getDescendants(), D.getAncestors());
-        if (result) {
-            condition2++;
-        }
-
         return result;
     }
 

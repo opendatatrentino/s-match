@@ -11,7 +11,6 @@ import it.unitn.disi.smatch.data.IContext;
 
 public class ZeroClassifier implements IClassifier {
 
-    public IContext buildCNodeFormulas(IContext context) {
-        return context;
+    public void buildCNodeFormulas(IContext context) {
     }
 }

@@ -8,30 +8,18 @@ import it.unitn.disi.smatch.data.INode;
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
-public interface IMappingElement extends Comparable {
-    String getSourceEntity();
+public interface IMappingElement {
 
-    void setSourceEntity(String sourceEntity);
+    INode getSourceNode();
 
-    String getTargetEntity();
+    void setSourceNode(INode newSource);
 
-    void setTargetEntity(String targetEntity);
+    INode getTargetNode();
+
+    void setTargetNode(INode newTarget);
 
     char getRelation();
 
-    void setRelation(char relation);
+    void setRelation(char newRelation);
 
-    boolean weakEquals(Object o);
-
-//    public boolean equals(Object o);
-
-    public double getEq();
-
-    public double getLg();
-
-    public double getMg();
-
-    public INode getSourceNode();
-
-    public INode getTargetNode();
 }

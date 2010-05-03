@@ -15,7 +15,6 @@ public interface IPreprocessor {
      * a logical formulas.
      *
      * @param context context to be prepocessed
-     * @return preprocessed context with logical formula
      */
-    public IContext preprocess(IContext context);
+    public void preprocess(IContext context);
 }
