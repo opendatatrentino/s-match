@@ -1,5 +1,6 @@
 package it.unitn.disi.smatch.matchers.element;
 
+import it.unitn.disi.smatch.components.IConfigurable;
 import it.unitn.disi.smatch.oracles.ISynset;
 
 /**
@@ -8,7 +9,7 @@ import it.unitn.disi.smatch.oracles.ISynset;
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
-public interface ISenseGlossBasedElementLevelSemanticMatcher {
+public interface ISenseGlossBasedElementLevelSemanticMatcher extends IConfigurable {
 
     /**
      * Returns a relation between source and target synsets.

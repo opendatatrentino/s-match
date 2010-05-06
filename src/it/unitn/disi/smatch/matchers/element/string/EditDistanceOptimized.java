@@ -1,7 +1,11 @@
 package it.unitn.disi.smatch.matchers.element.string;
 
-import it.unitn.disi.smatch.MatchManager;
+import it.unitn.disi.smatch.components.Configurable;
+import it.unitn.disi.smatch.components.ConfigurableException;
+import it.unitn.disi.smatch.data.mappings.IMappingElement;
 import it.unitn.disi.smatch.matchers.element.IStringBasedElementLevelSemanticMatcher;
+
+import java.util.Properties;
 
 /**
  * Optimized edit distance.
@@ -10,24 +14,38 @@ import it.unitn.disi.smatch.matchers.element.IStringBasedElementLevelSemanticMat
  *
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
-public class EditDistanceOptimized implements IStringBasedElementLevelSemanticMatcher {
+public class EditDistanceOptimized extends Configurable implements IStringBasedElementLevelSemanticMatcher {
 
-	/**
-	 * Computes the relation with optimized edit distance matcher.
-	 *
-	 * @param str1 source input string
-	 * @param str2 target input string
-	 * @return synonym or IDK relation
-	 */
+    private static final String THRESHOLD_KEY = "threshold";
+    private double threshold = 0.9;
+
+    @Override
+    public void setProperties(Properties newProperties) throws ConfigurableException {
+        if (!newProperties.equals(properties)) {
+            if (newProperties.containsKey(THRESHOLD_KEY)) {
+                threshold = Double.parseDouble(newProperties.getProperty(THRESHOLD_KEY));
+            }
+
+            properties = newProperties;
+        }
+    }
+
+    /**
+     * Computes the relation with optimized edit distance matcher.
+     *
+     * @param str1 source input string
+     * @param str2 target input string
+     * @return synonym or IDK relation
+     */
     public char match(String str1, String str2) {
         if (null == str1 || null == str2 || 0 == str1.length() || 0 == str2.length()) {
-            return MatchManager.IDK_RELATION;
+            return IMappingElement.IDK;
         }
         float sim = 1 - (float) getLevenshteinDistance(str1, str2) / java.lang.Math.max(str1.length(), str2.length());
-        if (MatchManager.ELSMthreshold <= sim) {
-            return MatchManager.SYNOMYM;
+        if (threshold <= sim) {
+            return IMappingElement.EQUIVALENCE;
         } else {
-            return MatchManager.IDK_RELATION;
+            return IMappingElement.IDK;
         }
     }
 

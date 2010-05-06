@@ -1,5 +1,6 @@
 package it.unitn.disi.smatch.deciders;
 
+import it.unitn.disi.smatch.components.Configurable;
 import org.sat4j.minisat.SolverFactory;
 import org.sat4j.reader.DimacsReader;
 import org.sat4j.reader.ParseFormatException;
@@ -16,7 +17,7 @@ import java.io.StringReader;
  * // TODO Need comments.
  */
 
-public class SAT4J implements ISATSolver {
+public class SAT4J extends Configurable implements ISATSolver {
     static String test = "p cnf 2 2\n1 2 0\n-1 0\n";
     static String test1 = "p cnf 6 6\n-1 3 0\n1 2 0\n-3 0\n-4 0\n5 0\n6 0\n";
     static String test2 = "p cnf 8 13\n-1 5 0\n" +

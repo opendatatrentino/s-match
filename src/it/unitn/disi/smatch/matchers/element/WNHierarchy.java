@@ -1,9 +1,13 @@
 package it.unitn.disi.smatch.matchers.element;
 
-import it.unitn.disi.smatch.MatchManager;
+import it.unitn.disi.smatch.components.Configurable;
+import it.unitn.disi.smatch.components.ConfigurableException;
+import it.unitn.disi.smatch.data.mappings.IMappingElement;
 import it.unitn.disi.smatch.oracles.ILinguisticOracle;
 import it.unitn.disi.smatch.oracles.ISynset;
+import org.apache.log4j.Logger;
 
+import java.util.Properties;
 import java.util.Vector;
 
 /**
@@ -13,41 +17,47 @@ import java.util.Vector;
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
-public class WNHierarchy implements ISenseGlossBasedElementLevelSemanticMatcher {
-    private static ILinguisticOracle ILO;
+public class WNHierarchy extends Configurable implements ISenseGlossBasedElementLevelSemanticMatcher {
 
-    static int depth = 2;
+    private static final Logger log = Logger.getLogger(WNHierarchy.class);
+
+    // depth
+    private static final String DEPTH_KEY = "depth";
+    private int depth = 2;
+
+    @Override
+    public void setProperties(Properties newProperties) throws ConfigurableException {
+        if (!newProperties.equals(properties)) {
+            if (newProperties.containsKey(DEPTH_KEY)) {
+                depth = Integer.parseInt(newProperties.getProperty(DEPTH_KEY)) ;
+            } else {
+                final String errMessage = "Cannot find configuration key " + DEPTH_KEY;
+                log.error(errMessage);
+                throw new ConfigurableException(errMessage);
+            }
+
+            properties = newProperties;
+        }
+    }
 
     /**
      * Matches two strings with WNHeirarchy matcher.
      *
-     * @param source1 gloss of source label
-     * @param target1 gloss of target label
+     * @param source gloss of source label
+     * @param target gloss of target label
      * @return synonym or IDk relation
      */
-    public char match(ISynset source1, ISynset target1) {
-        Vector<ISynset> sourceVector = new Vector<ISynset>();
-        Vector<ISynset> targetVector = new Vector<ISynset>();
-        sourceVector = getAncestors(source1, sourceVector, depth);
-        targetVector = getAncestors(target1, targetVector, depth);
+    public char match(ISynset source, ISynset target) {
+        Vector<ISynset> sourceVector = getAncestors(source, depth);
+        Vector<ISynset> targetVector = getAncestors(target, depth);
         targetVector.retainAll(sourceVector);
         if (targetVector.size() > 0)
-            return MatchManager.SYNOMYM;
+            return IMappingElement.EQUIVALENCE;
         else
-            return MatchManager.IDK_RELATION;
+            return IMappingElement.IDK;
     }
 
-    private Vector<ISynset> getAncestors(ISynset node, Vector<ISynset> ve, int depth) {
+    private Vector<ISynset> getAncestors(ISynset node, int depth) {
         return node.getParents(depth);
-    }
-    // TODO more than one main is confusing.
-    public static void main(String[] args) {
-        WNHierarchy wnh = new WNHierarchy();
-        ILO = MatchManager.getLinguisticOracle();
-
-        ISynset sourceSynset = ILO.getISynset("n#434536");
-        ISynset targetSynset = ILO.getISynset("n#490571");
-
-        System.out.println(wnh.match(sourceSynset, targetSynset));
     }
 }

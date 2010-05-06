@@ -1,37 +1,32 @@
 package it.unitn.disi.smatch.matchers.structure.tree;
 
-import it.unitn.disi.smatch.data.IContext;
-import it.unitn.disi.smatch.data.matrices.IMatchMatrix;
-import it.unitn.disi.smatch.data.INode;
-import it.unitn.disi.smatch.data.matrices.MatrixFactory;
-import it.unitn.disi.smatch.matchers.structure.node.EvalNodeMatcher;
-import it.unitn.disi.smatch.matchers.structure.node.INodeMatcher;
-import it.unitn.disi.smatch.SMatchException;
 import it.unitn.disi.smatch.SMatchConstants;
+import it.unitn.disi.smatch.data.IContext;
+import it.unitn.disi.smatch.data.INode;
+import it.unitn.disi.smatch.data.matrices.IMatchMatrix;
+import it.unitn.disi.smatch.data.matrices.MatrixFactory;
+import it.unitn.disi.smatch.matchers.structure.node.NodeMatcherException;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 
 import java.util.Vector;
-
-import org.apache.log4j.Logger;
-import org.apache.log4j.Level;
 
 /**
  * For formula evaluation.
  *
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
-public class EvalTLMatcher implements ITreeMatcher {
+public class EvalTLMatcher extends BaseTreeMatcher implements ITreeMatcher {
 
     private static final Logger log = Logger.getLogger(EvalTLMatcher.class);
 
-    private final INodeMatcher smatchMatcher = new EvalNodeMatcher();
-
-    public IMatchMatrix treeMatch(IContext sourceContext, IContext targetContext, IMatchMatrix ClabMatrix) throws SMatchException {
+    public IMatchMatrix treeMatch(IContext sourceContext, IContext targetContext, IMatchMatrix ClabMatrix) throws NodeMatcherException {
         //get the nodes of the contexts, should be equal
         Vector<INode> sourceNodes = sourceContext.getAllNodes();
         Vector<INode> targetNodes = targetContext.getAllNodes();
 
         //initialize CnodMatrix to keep comparison results
-        //should be filled with MatchManager.SYNOMYM (as a positive flag)
+        //should be filled with MatchManager.EQUIVALENCE (as a positive flag)
         //0 row shows equality of the formulas
         IMatchMatrix CnodMatrix = MatrixFactory.getInstance(sourceNodes.size(), 1);
 
@@ -56,7 +51,7 @@ public class EvalTLMatcher implements ITreeMatcher {
                 log.warn(t);
             }
 
-            relation = smatchMatcher.nodeMatch(ClabMatrix, sourceNode, targetNode);
+            relation = nodeMatcher.nodeMatch(ClabMatrix, sourceNode, targetNode);
             CnodMatrix.setElement(i, 0, relation);
 
             counter++;

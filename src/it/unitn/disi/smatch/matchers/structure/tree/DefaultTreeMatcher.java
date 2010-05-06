@@ -1,5 +1,6 @@
 package it.unitn.disi.smatch.matchers.structure.tree;
 
+import it.unitn.disi.smatch.components.Configurable;
 import it.unitn.disi.smatch.data.IContext;
 import it.unitn.disi.smatch.data.matrices.IMatchMatrix;
 import it.unitn.disi.smatch.data.INode;
@@ -9,18 +10,17 @@ import it.unitn.disi.smatch.matchers.structure.node.INodeMatcher;
 import it.unitn.disi.smatch.SMatchException;
 import it.unitn.disi.smatch.SMatchConstants;
 
+import java.util.Properties;
 import java.util.Vector;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.Level;
 
-public class DefaultTreeMatcher implements ITreeMatcher {
+public class DefaultTreeMatcher extends BaseTreeMatcher implements ITreeMatcher {
 
     private static final Logger log = Logger.getLogger(DefaultTreeMatcher.class);
 
-    private final INodeMatcher smatchMatcher = new DefaultNodeMatcher();
-
-    public IMatchMatrix treeMatch(IContext sourceContext, IContext targetContext, IMatchMatrix ClabMatrix) throws SMatchException {
+    public IMatchMatrix treeMatch(IContext sourceContext, IContext targetContext, IMatchMatrix ClabMatrix) throws TreeMatcherException {
         // get the nodes of the contexts
         Vector<INode> sourceNodes = sourceContext.getAllNodes();
         Vector<INode> targetNodes = targetContext.getAllNodes();
@@ -41,7 +41,7 @@ public class DefaultTreeMatcher implements ITreeMatcher {
             for (int j = 0; j < targetNodes.size(); j++) {
                 INode targetNode = targetNodes.get(j);
 
-                relation = smatchMatcher.nodeMatch(ClabMatrix, sourceNode, targetNode);
+                relation = nodeMatcher.nodeMatch(ClabMatrix, sourceNode, targetNode);
 
                 counter++;
                 if ((SMatchConstants.LARGE_TASK < total) && (0 == (counter % reportInt)) && log.isEnabledFor(Level.INFO)) {

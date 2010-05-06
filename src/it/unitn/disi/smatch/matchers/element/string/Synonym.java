@@ -1,6 +1,7 @@
 package it.unitn.disi.smatch.matchers.element.string;
 
-import it.unitn.disi.smatch.MatchManager;
+import it.unitn.disi.smatch.components.Configurable;
+import it.unitn.disi.smatch.data.mappings.IMappingElement;
 import it.unitn.disi.smatch.matchers.element.IStringBasedElementLevelSemanticMatcher;
 
 /**
@@ -10,7 +11,7 @@ import it.unitn.disi.smatch.matchers.element.IStringBasedElementLevelSemanticMat
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
-public class Synonym implements IStringBasedElementLevelSemanticMatcher {
+public class Synonym extends Configurable implements IStringBasedElementLevelSemanticMatcher {
 
 	/**
      * Computes relation with synonym matcher
@@ -21,10 +22,10 @@ public class Synonym implements IStringBasedElementLevelSemanticMatcher {
      */
 	public char match(String str1, String str2) {
         if (str1 == null || str2 == null)
-            return MatchManager.IDK_RELATION;
+            return IMappingElement.IDK;
         if (str1.equals(str2)) {
-            return MatchManager.SYNOMYM;
+            return IMappingElement.EQUIVALENCE;
         } else
-            return MatchManager.IDK_RELATION;
+            return IMappingElement.IDK;
     }
 }

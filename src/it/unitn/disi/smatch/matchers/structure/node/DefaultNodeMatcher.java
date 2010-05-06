@@ -1,13 +1,12 @@
 package it.unitn.disi.smatch.matchers.structure.node;
 
-import it.unitn.disi.smatch.MatchManager;
-import it.unitn.disi.smatch.SMatchException;
 import it.unitn.disi.smatch.data.IAtomicConceptOfLabel;
-import it.unitn.disi.smatch.data.matrices.IMatchMatrix;
 import it.unitn.disi.smatch.data.INode;
+import it.unitn.disi.smatch.data.mappings.IMappingElement;
+import it.unitn.disi.smatch.data.matrices.IMatchMatrix;
 
-import java.util.HashMap;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Default node matcher.
@@ -17,8 +16,8 @@ import java.util.ArrayList;
  */
 public class DefaultNodeMatcher extends BaseNodeMatcher implements INodeMatcher {
 
-	public char nodeMatch(IMatchMatrix cLabMatrix, INode sourceNode, INode targetNode) throws SMatchException {
-        char result = MatchManager.IDK_RELATION;
+    public char nodeMatch(IMatchMatrix cLabMatrix, INode sourceNode, INode targetNode) throws NodeMatcherException {
+        char result = IMappingElement.IDK;
         String sourceCNodeFormula = sourceNode.getNodeData().getCNodeFormula();
         String targetCNodeFormula = targetNode.getNodeData().getCNodeFormula();
         String sourceCLabFormula = sourceNode.getNodeData().getcLabFormula();

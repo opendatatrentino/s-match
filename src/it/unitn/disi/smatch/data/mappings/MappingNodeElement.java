@@ -1,6 +1,5 @@
 package it.unitn.disi.smatch.data.mappings;
 
-import it.unitn.disi.smatch.MatchManager;
 import it.unitn.disi.smatch.data.INode;
 
 /**
@@ -22,11 +21,11 @@ public class MappingNodeElement implements IMappingElement {
         } else {
             this.sourceNode = targetNode;
             this.targetNode = sourceNode;
-            if (MatchManager.LESS_GENERAL_THAN == relation) {
-                this.relation = MatchManager.MORE_GENERAL_THAN;
+            if (LESS_GENERAL == relation) {
+                this.relation = MORE_GENERAL;
             } else {
-                if (MatchManager.MORE_GENERAL_THAN == relation) {
-                    this.relation = MatchManager.LESS_GENERAL_THAN;
+                if (MORE_GENERAL == relation) {
+                    this.relation = LESS_GENERAL;
                 } else {
                     this.relation = relation;
                 }

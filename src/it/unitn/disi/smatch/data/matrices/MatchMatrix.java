@@ -1,6 +1,6 @@
 package it.unitn.disi.smatch.data.matrices;
 
-import it.unitn.disi.smatch.MatchManager;
+import it.unitn.disi.smatch.data.mappings.IMappingElement;
 
 import java.util.Arrays;
 
@@ -22,7 +22,7 @@ public class MatchMatrix implements IMatchMatrix {
         this.y = y;
 
         for (char[] row : matrix) {
-            Arrays.fill(row, MatchManager.IDK_RELATION);
+            Arrays.fill(row, IMappingElement.IDK);
         }
     }
 

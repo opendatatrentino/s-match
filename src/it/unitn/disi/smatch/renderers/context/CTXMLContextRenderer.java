@@ -1,7 +1,8 @@
 package it.unitn.disi.smatch.renderers.context;
 
+import it.unitn.disi.smatch.components.Configurable;
 import it.unitn.disi.smatch.data.*;
-import it.unitn.disi.smatch.loaders.CTXML;
+import it.unitn.disi.smatch.loaders.context.CTXML;
 
 import java.io.BufferedWriter;
 import java.io.FileOutputStream;
@@ -15,7 +16,10 @@ import java.util.Vector;
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
-public class CTXMLContextRenderer implements IContextRenderer {
+public class CTXMLContextRenderer extends Configurable implements IContextRenderer {
+
+    //TODO rewrite with proper exceptions
+    //TODO rewrite for generation via interfaces
 
     public void render(IContext context, String fileName) {
         context.getContextData().sort();

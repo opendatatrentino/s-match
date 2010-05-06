@@ -1,6 +1,6 @@
 package it.unitn.disi.smatch.data.matrices;
 
-import it.unitn.disi.smatch.MatchManager;
+import it.unitn.disi.smatch.data.mappings.IMappingElement;
 
 import java.util.Arrays;
 
@@ -41,7 +41,7 @@ public class SparseMatrixChar implements IMatchMatrix {
         columnIndex = new int[counter];
         rowPointer = new int[x + 1];
         buffer = new char[columns];
-        Arrays.fill(buffer, MatchManager.IDK_RELATION);
+        Arrays.fill(buffer, IMappingElement.IDK);
     }
 
     public char getElement(int x, int y) {
@@ -65,7 +65,7 @@ public class SparseMatrixChar implements IMatchMatrix {
         this.y = y;
         for (char[] chars : in) {
             for (char aShort : chars) {
-                if (aShort != MatchManager.IDK_RELATION) {
+                if (aShort != IMappingElement.IDK) {
                     counter++;
                 }
             }
@@ -79,7 +79,7 @@ public class SparseMatrixChar implements IMatchMatrix {
             rowPointer[i] = columnIndexCounter;
             for (int j = 0; j < chars.length; j++) {
                 char aShort = chars[j];
-                if (aShort != MatchManager.IDK_RELATION) {
+                if (aShort != IMappingElement.IDK) {
                     columnIndex[columnIndexCounter] = j;
                     data[columnIndexCounter] = aShort;
                     columnIndexCounter++;
@@ -98,7 +98,7 @@ public class SparseMatrixChar implements IMatchMatrix {
         columnIndex = new int[counter];
         rowPointer = new int[x + 1];
         buffer = new char[columns];
-        Arrays.fill(buffer, MatchManager.IDK_RELATION);
+        Arrays.fill(buffer, IMappingElement.IDK);
     }
 
     private void setElement(int pos, char data) {
@@ -107,14 +107,14 @@ public class SparseMatrixChar implements IMatchMatrix {
 
     public void endOfRow() {
         addRow(buffer);
-        Arrays.fill(buffer, MatchManager.IDK_RELATION);
+        Arrays.fill(buffer, IMappingElement.IDK);
     }
 
     private void addRow(char[] chars) {
         rowPointer[rowCounter] = columnIndexCounter;
         for (int j = 0; j < chars.length; j++) {
             char aShort = chars[j];
-            if (aShort != MatchManager.IDK_RELATION) {
+            if (aShort != IMappingElement.IDK) {
                 columnIndex[columnIndexCounter] = j;
                 data[columnIndexCounter] = aShort;
                 columnIndexCounter++;
@@ -132,13 +132,13 @@ public class SparseMatrixChar implements IMatchMatrix {
         if (index >= 0) {
             return data[index];
         } else {
-            return MatchManager.IDK_RELATION;
+            return IMappingElement.IDK;
         }
     }
 
     private char[] getVector(int row) {
         char[] out = new char[y];
-        Arrays.fill(out, MatchManager.IDK_RELATION);
+        Arrays.fill(out, IMappingElement.IDK);
         return getVector(row, out);
     }
 

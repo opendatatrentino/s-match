@@ -1,11 +1,11 @@
 package it.unitn.disi.smatch.data;
 
-import it.unitn.disi.smatch.MatchManager;
+import it.unitn.disi.smatch.data.mappings.IMappingElement;
 import it.unitn.disi.smatch.utils.SMatchUtils;
 import it.unitn.disi.smatch.data.matrices.IMatchMatrix;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
+
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -28,10 +28,10 @@ public abstract class TestMatrix {
 
     public void testMatrix(IMatchMatrix sm) {
         char[][] test = {
-                {MatchManager.IDK_RELATION, MatchManager.IDK_RELATION,
-                        MatchManager.SYNOMYM, MatchManager.IDK_RELATION, MatchManager.IDK_RELATION},
-                {MatchManager.MORE_GENERAL_THAN, MatchManager.LESS_GENERAL_THAN,
-                        MatchManager.IDK_RELATION, MatchManager.IDK_RELATION, MatchManager.IDK_RELATION}};
+                {IMappingElement.IDK, IMappingElement.IDK,
+                        IMappingElement.EQUIVALENCE, IMappingElement.IDK, IMappingElement.IDK},
+                {IMappingElement.MORE_GENERAL, IMappingElement.LESS_GENERAL,
+                        IMappingElement.IDK, IMappingElement.IDK, IMappingElement.IDK}};
 
         log.info("Init");
         sm.init(2, 5, 10);
@@ -56,10 +56,10 @@ public abstract class TestMatrix {
 
     public void testReverseMatrix(IMatchMatrix sm) {
         char[][] test = {
-                {MatchManager.IDK_RELATION, MatchManager.IDK_RELATION,
-                        MatchManager.SYNOMYM, MatchManager.IDK_RELATION, MatchManager.IDK_RELATION},
-                {MatchManager.MORE_GENERAL_THAN, MatchManager.LESS_GENERAL_THAN,
-                        MatchManager.IDK_RELATION, MatchManager.IDK_RELATION, MatchManager.IDK_RELATION}};
+                {IMappingElement.IDK, IMappingElement.IDK,
+                        IMappingElement.EQUIVALENCE, IMappingElement.IDK, IMappingElement.IDK},
+                {IMappingElement.MORE_GENERAL, IMappingElement.LESS_GENERAL,
+                        IMappingElement.IDK, IMappingElement.IDK, IMappingElement.IDK}};
 
 
         sm.init(2, 5, 10);
@@ -79,8 +79,8 @@ public abstract class TestMatrix {
 
 
     public void testRow1(IMatchMatrix sm) {
-        char[] test = {MatchManager.IDK_RELATION, MatchManager.IDK_RELATION,
-                MatchManager.SYNOMYM, MatchManager.IDK_RELATION, MatchManager.IDK_RELATION};
+        char[] test = {IMappingElement.IDK, IMappingElement.IDK,
+                IMappingElement.EQUIVALENCE, IMappingElement.IDK, IMappingElement.IDK};
 
         sm.init(1, 5, 10);
         for (int i = 0; i < test.length; i++) {
@@ -94,8 +94,8 @@ public abstract class TestMatrix {
     }
 
     public void testRow2(IMatchMatrix sm) {
-        char[] test = {MatchManager.MORE_GENERAL_THAN, MatchManager.LESS_GENERAL_THAN,
-                MatchManager.IDK_RELATION, MatchManager.IDK_RELATION, MatchManager.IDK_RELATION};
+        char[] test = {IMappingElement.MORE_GENERAL, IMappingElement.LESS_GENERAL,
+                IMappingElement.IDK, IMappingElement.IDK, IMappingElement.IDK};
 
         sm.init(1, 5, 10);
         for (int i = 0; i < test.length; i++) {
@@ -142,9 +142,9 @@ public abstract class TestMatrix {
                     if (lastRow != row) {
                         sm.endOfRow();
                     }
-                    el = MatchManager.SYNOMYM;
+                    el = IMappingElement.EQUIVALENCE;
                     if (0 != (row % 2) * (col % 2)) {
-                        el = MatchManager.OPPOSITE_MEANING;
+                        el = IMappingElement.DISJOINT;
                     }
                     sm.setElement(row, col, el);
                     lastRow = row;
@@ -181,9 +181,9 @@ public abstract class TestMatrix {
                     pieces = line.split(" ");
                     row = Integer.parseInt(pieces[0]) - 1;
                     col = Integer.parseInt(pieces[1]) - 1;
-                    el = MatchManager.SYNOMYM;
+                    el = IMappingElement.EQUIVALENCE;
                     if (0 != (row % 2) * (col % 2)) {
-                        el = MatchManager.OPPOSITE_MEANING;
+                        el = IMappingElement.DISJOINT;
                     }
                     assertThat(sm.getElement(row, col), equalTo(el));
                 }

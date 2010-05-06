@@ -1,21 +1,25 @@
 package it.unitn.disi.smatch.oracles.wordnet;
 
-import it.unitn.disi.smatch.MatchManager;
 import it.unitn.disi.smatch.SMatchException;
+import it.unitn.disi.smatch.components.Configurable;
+import it.unitn.disi.smatch.components.ConfigurableException;
 import it.unitn.disi.smatch.data.IAtomicConceptOfLabel;
-import it.unitn.disi.smatch.oracles.IWordNetMatcher;
-
-import java.io.*;
-import java.util.*;
-
+import it.unitn.disi.smatch.data.mappings.IMappingElement;
+import it.unitn.disi.smatch.oracles.ISenseMatcher;
+import it.unitn.disi.smatch.utils.SMatchUtils;
+import net.didion.jwnl.JWNL;
 import net.didion.jwnl.JWNLException;
 import net.didion.jwnl.data.*;
 import net.didion.jwnl.data.list.PointerTargetNode;
 import net.didion.jwnl.data.list.PointerTargetNodeList;
 import net.didion.jwnl.data.list.PointerTargetTree;
 import net.didion.jwnl.dictionary.Dictionary;
-import org.apache.log4j.Logger;
 import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.util.*;
 
 /**
  * Implements version of WN matcher which use a fast internal data structure.
@@ -23,12 +27,25 @@ import org.apache.log4j.Level;
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
-public class InMemoryWordNetBinaryArray implements IWordNetMatcher {
+public class InMemoryWordNetBinaryArray extends Configurable implements ISenseMatcher {
 
     private static final Logger log = Logger.getLogger(InMemoryWordNetBinaryArray.class);
 
-    private long relsReturned = 0;
+    // configuration keys for WordNet cache files
+    private static final String ADJ_SYN_KEY = "adjectiveSynonymFile";
+    private static final String ADJ_ANT_KEY = "adjectiveAntonymFile";
+    private static final String NOUN_MG_KEY = "nounMGFile";
+    private static final String NOUN_ANT_KEY = "nounAntonymFile";
+    private static final String VERB_MG_KEY = "verbMGFile";
+    private static final String NOMINALIZATION_KEY = "nominalizationsFile";
+    private static final String ADV_ANT_KEY = "adverbsAntonymFile";
 
+    private static final String JWNL_PROPERTIES_PATH_KEY = "JWNLPropertiesPath";
+
+    // controls loading of arrays, used to skip loading before conversion
+    private static final String LOAD_ARRAYS_KEY = "loadArrays";
+
+    // array with WordNet keys
     private long[] adj_syn = null;
     private long[] adj_opp = null;
     private long[] noun_mg = null;
@@ -37,97 +54,64 @@ public class InMemoryWordNetBinaryArray implements IWordNetMatcher {
     private long[] verb_mg = null;
     private long[] nominalizations = null;
 
-    public InMemoryWordNetBinaryArray() throws SMatchException {
-        log.info("Loading WordNet to memory...");
-        //Reading WN into memory
-        if (adj_syn == null) {
-            adj_syn = readHash(MatchManager.adjectiveSynonymFile);
-            log.debug("Read adjectives adj_syn: " + adj_syn.length);
-        }
-        if (adj_opp == null) {
-            adj_opp = readHash(MatchManager.adjectiveAntonymFile);
-            log.debug("Read adjectives adj_opp: " + adj_opp.length);
-        }
+    @Override
+    public void setProperties(Properties newProperties) throws ConfigurableException {
+        if (!newProperties.equals(properties)) {
+            boolean loadArrays = true;
+            if (newProperties.containsKey(LOAD_ARRAYS_KEY)) {
+                loadArrays = Boolean.parseBoolean(newProperties.getProperty(LOAD_ARRAYS_KEY));
+            }
 
-        if (noun_mg == null) {
-            noun_mg = readHash(MatchManager.nounMGFile);
-            log.debug("Read nouns noun_mg: " + noun_mg.length);
+            if (loadArrays) {
+                log.info("Loading WordNet cache to memory...");
+                adj_syn = readArray(newProperties, ADJ_SYN_KEY, "adjective synonyms");
+                adj_opp = readArray(newProperties, ADJ_ANT_KEY, "adjective antonyms");
+                noun_mg = readArray(newProperties, NOUN_MG_KEY, "noun hypernyms");
+                noun_opp = readArray(newProperties, NOUN_ANT_KEY, "noun antonyms");
+                verb_mg = readArray(newProperties, VERB_MG_KEY, "verb hypernyms");
+                adv_opp = readArray(newProperties, ADV_ANT_KEY, "adverb antonyms");
+                nominalizations = readArray(newProperties, NOMINALIZATION_KEY, "nominalizations");
+                log.info("Loading WordNet cache to memory finished");
+            }
+            
+            properties = newProperties;
         }
-        if (noun_opp == null) {
-            noun_opp = readHash(MatchManager.nounAntonymFile);
-            log.debug("Read nouns noun_opp: " + noun_opp.length);
-        }
-
-        if (verb_mg == null) {
-            verb_mg = readHash(MatchManager.verbMGFile);
-            log.debug("Read verbs verb_mg: " + verb_mg.length);
-        }
-        if (adv_opp == null) {
-            adv_opp = readHash(MatchManager.adverbsAntonymFile);
-            log.debug("Read adverbs adv_opp: " + adv_opp.length);
-        }
-        if (nominalizations == null) {
-            nominalizations = readHash(MatchManager.nominalizationsFile);
-            log.debug("Read nominalizations nom: " + nominalizations.length);
-        }
-
-        log.info("Loading WordNet to memory finished");
     }
 
     public char getRelation(Vector<String> sourceSenses, Vector<String> targetSenses) {
         // Check for synonymy
-        for (int i = 0; i < sourceSenses.size(); i++) {
-            String sourceSense = sourceSenses.get(i);
-            for (int j = 0; j < targetSenses.size(); j++) {
-                String targetSense = targetSenses.get(j);
+        for (String sourceSense : sourceSenses) {
+            for (String targetSense : targetSenses) {
                 if (isSourceSynonymTarget(sourceSense, targetSense)) {
-                    MatchManager.retainValue(sourceSenses, sourceSense);
-                    MatchManager.retainValue(targetSenses, targetSense);
-                    relsReturned++;
-                    return MatchManager.SYNOMYM;
+                    return IMappingElement.EQUIVALENCE;
                 }
             }
         }
         // Check for less general than
-        for (int i = 0; i < sourceSenses.size(); i++) {
-            String sourceSense = sourceSenses.get(i);
-            for (int j = 0; j < targetSenses.size(); j++) {
-                String targetSense = targetSenses.get(j);
+        for (String sourceSense : sourceSenses) {
+            for (String targetSense : targetSenses) {
                 if (isSourceLessGeneralThanTarget(sourceSense, targetSense)) {
-                    MatchManager.retainValue(sourceSenses, sourceSense);
-                    MatchManager.retainValue(targetSenses, targetSense);
-                    relsReturned++;
-                    return MatchManager.LESS_GENERAL_THAN;
+                    return IMappingElement.LESS_GENERAL;
                 }
             }
         }
         // Check for more general than
-        for (int i = 0; i < sourceSenses.size(); i++) {
-            String sourceSense = sourceSenses.get(i);
-            for (int j = 0; j < targetSenses.size(); j++) {
-                String targetSense = targetSenses.get(j);
+        for (String sourceSense : sourceSenses) {
+            for (String targetSense : targetSenses) {
                 if (isSourceMoreGeneralThanTarget(sourceSense, targetSense)) {
-                    MatchManager.retainValue(sourceSenses, sourceSense);
-                    MatchManager.retainValue(targetSenses, targetSense);
-                    relsReturned++;
-                    return MatchManager.MORE_GENERAL_THAN;
+                    return IMappingElement.MORE_GENERAL;
                 }
             }
         }
         // Check for opposite meaning
-        for (int i = 0; i < sourceSenses.size(); i++) {
-            String sourceSense = sourceSenses.get(i);
-            for (int j = 0; j < targetSenses.size(); j++) {
-                String targetSense = (targetSenses.get(j));
+        for (String sourceSense : sourceSenses) {
+            for (String targetSense : targetSenses) {
                 if (isSourceOppositeToTarget(sourceSense, targetSense)) {
-                    MatchManager.retainValue(sourceSenses, sourceSense);
-                    MatchManager.retainValue(targetSenses, targetSense);
-                    relsReturned++;
-                    return MatchManager.OPPOSITE_MEANING;
+                    return IMappingElement.DISJOINT;
                 }
             }
         }
-        return MatchManager.IDK_RELATION;
+        return IMappingElement.IDK;
     }
 
     public char getRelationACoL(IAtomicConceptOfLabel source, IAtomicConceptOfLabel target) {
@@ -145,8 +129,7 @@ public class InMemoryWordNetBinaryArray implements IWordNetMatcher {
                 for (int j = 0; j < targetSenses.length; j++) {
                     long targetSense = targetSenses[j];
                     if (isSourceSynonymTargetInt(sourceSense, targetSense, POSSensesSource[i], POSSensesTarget[j])) {
-                        relsReturned++;
-                        return MatchManager.SYNOMYM;
+                        return IMappingElement.EQUIVALENCE;
                     }
                 }
             }
@@ -156,8 +139,7 @@ public class InMemoryWordNetBinaryArray implements IWordNetMatcher {
                 for (int j = 0; j < targetSenses.length; j++) {
                     long targetSense = targetSenses[j];
                     if (isSourceLessGeneralThanTargetInt(sourceSense, targetSense, POSSensesSource[i], POSSensesTarget[j])) {
-                        relsReturned++;
-                        return MatchManager.LESS_GENERAL_THAN;
+                        return IMappingElement.LESS_GENERAL;
                     }
                 }
             }
@@ -167,8 +149,7 @@ public class InMemoryWordNetBinaryArray implements IWordNetMatcher {
                 for (int j = 0; j < targetSenses.length; j++) {
                     long targetSense = targetSenses[j];
                     if (isSourceMoreGeneralThanTargetInt(sourceSense, targetSense, POSSensesSource[i], POSSensesTarget[j])) {
-                        relsReturned++;
-                        return MatchManager.MORE_GENERAL_THAN;
+                        return IMappingElement.MORE_GENERAL;
                     }
                 }
             }
@@ -178,14 +159,13 @@ public class InMemoryWordNetBinaryArray implements IWordNetMatcher {
                 for (int j = 0; j < targetSenses.length; j++) {
                     long targetSense = targetSenses[j];
                     if (isSourceOppositeToTargetInt(sourceSense, targetSense, POSSensesSource[i], POSSensesTarget[j])) {
-                        relsReturned++;
-                        return MatchManager.OPPOSITE_MEANING;
+                        return IMappingElement.DISJOINT;
                     }
                 }
             }
         }
 
-        return MatchManager.IDK_RELATION;
+        return IMappingElement.IDK;
     }
 
     private boolean isSourceOppositeToTargetInt(long sourceSense, long targetSense, char sourcePOS, char targetPOS) {
@@ -270,38 +250,21 @@ public class InMemoryWordNetBinaryArray implements IWordNetMatcher {
         return false;
     }
 
-    private static long[] readHash(String fileName) throws SMatchException {
-        long[] result = null;
-        try {
-            FileInputStream fos = new FileInputStream(fileName);
-            BufferedInputStream bis = new BufferedInputStream(fos);
-            ObjectInputStream oos = new ObjectInputStream(bis);
-            try {
-                result = (long[]) oos.readObject();
-            } catch (IOException e) {
-                if (log.isEnabledFor(Level.ERROR)) {
-                    final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
-                    log.error(errMessage, e);
-                    throw new SMatchException(errMessage, e);
-                }
-            } catch (ClassNotFoundException e) {
-                if (log.isEnabledFor(Level.ERROR)) {
-                    final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
-                    log.error(errMessage, e);
-                    throw new SMatchException(errMessage, e);
-                }
-            }
-            oos.close();
-            bis.close();
-            fos.close();
-        } catch (IOException e) {
-            if (log.isEnabledFor(Level.ERROR)) {
-                final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
-                log.error(errMessage, e);
-                throw new SMatchException(errMessage, e);
-            }
+    private static long[] readArray(Properties properties, String key, String name) throws ConfigurableException {
+        long[] result;
+        if (properties.containsKey(key)) {
+            result = readHash(properties.getProperty(key));
+            log.debug("Read " + name + ": " + result.length);
+        } else {
+            final String errMessage = "Cannot find configuration key " + key;
+            log.error(errMessage);
+            throw new ConfigurableException(errMessage);
         }
         return result;
+    }
+
+    private static long[] readHash(String fileName) throws SMatchException {
+        return (long[]) SMatchUtils.readObject(fileName);
     }
 
     public boolean isSourceMoreGeneralThanTarget(String source, String target) {
@@ -341,72 +304,48 @@ public class InMemoryWordNetBinaryArray implements IWordNetMatcher {
         return false;
     }
 
-    public void reportUsage() {
-        log.info("Wordnet returned relationships: " + relsReturned);
-    }
-
     /**
      * Create caches of WordNet to speed up matching.
+     *
+     * @param componentKey a key to the component in the configuration
+     * @param properties   configuration
      * @throws SMatchException SMatchException
      */
-    public static void createWordNetCaches() throws SMatchException {
-        log.info("Creating WordNet caches...");
-        writeMultiwords();
-        writeNominalizations();
-        writeSynonymsAdj();
-        writeOppAdverbs();
-        writeOppAdjectives();
-        writeOppNouns();
-        writeNounMG();
-        writeVerbMG();
-        log.info("Finished.");
-    }
-
-    private static void writeMultiwords() throws SMatchException {
-        log.info("Creating multiword hash...");
-        Hashtable<String, Vector<Vector<String>>> multiwords = new Hashtable<String, Vector<Vector<String>>>();
-        POS[] parts = new POS[]{POS.NOUN, POS.ADJECTIVE, POS.VERB, POS.ADVERB};
-        for (POS pos : parts) {
-            collectMultiwords(multiwords, pos);
-        }
-        log.info("Multiwords: " + multiwords.size());
-        writeObject(multiwords, MatchManager.multiwordsFileName);
-    }
-
-    private static void collectMultiwords(Hashtable<String, Vector<Vector<String>>> multiwords, POS pos) throws SMatchException {
-        try {
-            int count = 0;
-            Iterator i = Dictionary.getInstance().getIndexWordIterator(pos);
-            while (i.hasNext()) {
-                IndexWord iw = (IndexWord) i.next();
-                String lemma = iw.getLemma();
-                if (-1 < lemma.indexOf(' ')) {
-                    count++;
-                    if (0 == count % 10000) {
-                        log.info(count);
-                    }
-                    String[] tokens = lemma.split(" ");
-                    Vector<Vector<String>> mwEnds = multiwords.get(tokens[0]);
-                    if (null == mwEnds) {
-                        mwEnds = new Vector<Vector<String>>();
-                    }
-                    Vector<String> currentMWEnd = new Vector<String>(Arrays.asList(tokens));
-                    currentMWEnd.remove(0);
-                    mwEnds.add(currentMWEnd);
-                    multiwords.put(tokens[0], mwEnds);
-                }
-            }
-            log.info(pos.getKey() + " multiwords: " + count);
-        } catch (JWNLException e) {
-            if (log.isEnabledFor(Level.ERROR)) {
+    public static void createWordNetCaches(String componentKey, Properties properties) throws SMatchException {
+        properties = getComponentProperties(makeComponentPrefix(componentKey, InMemoryWordNetBinaryArray.class.getSimpleName()), properties);
+        if (properties.containsKey(JWNL_PROPERTIES_PATH_KEY)) {
+            // initialize JWNL (this must be done before JWNL library can be used)
+            try {
+                final String configPath = properties.getProperty(JWNL_PROPERTIES_PATH_KEY);
+                log.info("Initializing JWNL from " + configPath);
+                JWNL.initialize(new FileInputStream(configPath));
+            } catch (JWNLException e) {
+                final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
+                log.error(errMessage, e);
+                throw new SMatchException(errMessage, e);
+            } catch (FileNotFoundException e) {
                 final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
                 log.error(errMessage, e);
                 throw new SMatchException(errMessage, e);
             }
+        } else {
+            final String errMessage = "Cannot find configuration key " + JWNL_PROPERTIES_PATH_KEY;
+            log.error(errMessage);
+            throw new SMatchException(errMessage);
         }
+
+        log.info("Creating WordNet caches...");
+        writeNominalizations(properties);
+        writeSynonymsAdj(properties);
+        writeOppAdverbs(properties);
+        writeOppAdjectives(properties);
+        writeOppNouns(properties);
+        writeNounMG(properties);
+        writeVerbMG(properties);
+        log.info("Done");
     }
 
-    public static void writeNominalizations() throws SMatchException {
+    public static void writeNominalizations(Properties properties) throws SMatchException {
         log.info("Creating nominalizations array...");
         HashSet<Long> keys = new HashSet<Long>();
         int count = 0;
@@ -434,7 +373,7 @@ public class InMemoryWordNetBinaryArray implements IWordNetMatcher {
                 i++;
             }
             Arrays.sort(keysArr);
-            writeObject(keysArr, MatchManager.nominalizationsFile);
+            SMatchUtils.writeObject(keysArr, properties.getProperty(NOMINALIZATION_KEY));
         } catch (JWNLException e) {
             if (log.isEnabledFor(Level.ERROR)) {
                 final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
@@ -444,7 +383,7 @@ public class InMemoryWordNetBinaryArray implements IWordNetMatcher {
         }
     }
 
-    public static void writeSynonymsAdj() throws SMatchException {
+    public static void writeSynonymsAdj(Properties properties) throws SMatchException {
         log.info("Creating adjective synonyms array...");
         HashSet<Long> keys = new HashSet<Long>();
         int count = 0;
@@ -478,7 +417,7 @@ public class InMemoryWordNetBinaryArray implements IWordNetMatcher {
                 i++;
             }
             Arrays.sort(keysArr);
-            writeObject(keysArr, MatchManager.adjectiveSynonymFile);
+            SMatchUtils.writeObject(keysArr, properties.getProperty(ADJ_SYN_KEY));
         } catch (JWNLException e) {
             if (log.isEnabledFor(Level.ERROR)) {
                 final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
@@ -488,7 +427,7 @@ public class InMemoryWordNetBinaryArray implements IWordNetMatcher {
         }
     }
 
-    public static void writeOppAdverbs() throws SMatchException {
+    public static void writeOppAdverbs(Properties properties) throws SMatchException {
         log.info("Creating adverb antonyms array...");
         HashSet<Long> keys = new HashSet<Long>();
 
@@ -523,7 +462,7 @@ public class InMemoryWordNetBinaryArray implements IWordNetMatcher {
                 i++;
             }
             Arrays.sort(keysArr);
-            writeObject(keysArr, MatchManager.adverbsAntonymFile);
+            SMatchUtils.writeObject(keysArr, properties.getProperty(ADV_ANT_KEY));
         } catch (JWNLException e) {
             if (log.isEnabledFor(Level.ERROR)) {
                 final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
@@ -533,7 +472,7 @@ public class InMemoryWordNetBinaryArray implements IWordNetMatcher {
         }
     }
 
-    public static void writeOppAdjectives() throws SMatchException {
+    public static void writeOppAdjectives(Properties properties) throws SMatchException {
         log.info("Creating adjective antonyms array...");
         HashSet<Long> keys = new HashSet<Long>();
 
@@ -559,7 +498,7 @@ public class InMemoryWordNetBinaryArray implements IWordNetMatcher {
                 i++;
             }
             Arrays.sort(keysArr);
-            writeObject(keysArr, MatchManager.adjectiveAntonymFile);
+            SMatchUtils.writeObject(keysArr, properties.getProperty(ADJ_ANT_KEY));
         } catch (JWNLException e) {
             if (log.isEnabledFor(Level.ERROR)) {
                 final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
@@ -569,7 +508,7 @@ public class InMemoryWordNetBinaryArray implements IWordNetMatcher {
         }
     }
 
-    public static void writeOppNouns() throws SMatchException {
+    public static void writeOppNouns(Properties properties) throws SMatchException {
         log.info("Creating noun antonyms array...");
         HashSet<Long> keys = new HashSet<Long>();
 
@@ -597,7 +536,7 @@ public class InMemoryWordNetBinaryArray implements IWordNetMatcher {
                 i++;
             }
             Arrays.sort(keysArr);
-            writeObject(keysArr, MatchManager.nounAntonymFile);
+            SMatchUtils.writeObject(keysArr, properties.getProperty(NOUN_ANT_KEY));
         } catch (JWNLException e) {
             if (log.isEnabledFor(Level.ERROR)) {
                 final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
@@ -607,7 +546,7 @@ public class InMemoryWordNetBinaryArray implements IWordNetMatcher {
         }
     }
 
-    public static void writeNounMG() throws SMatchException {
+    public static void writeNounMG(Properties properties) throws SMatchException {
         log.info("Creating noun mg array...");
         HashSet<Long> keys = new HashSet<Long>();
 
@@ -641,7 +580,7 @@ public class InMemoryWordNetBinaryArray implements IWordNetMatcher {
                 i++;
             }
             Arrays.sort(keysArr);
-            writeObject(keysArr, MatchManager.nounMGFile);
+            SMatchUtils.writeObject(keysArr, properties.getProperty(NOUN_MG_KEY));
         } catch (JWNLException e) {
             if (log.isEnabledFor(Level.ERROR)) {
                 final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
@@ -651,7 +590,7 @@ public class InMemoryWordNetBinaryArray implements IWordNetMatcher {
         }
     }
 
-    public static void writeVerbMG() throws SMatchException {
+    public static void writeVerbMG(Properties properties) throws SMatchException {
         log.info("Creating verb mg array...");
         HashSet<Long> keys = new HashSet<Long>();
 
@@ -677,7 +616,7 @@ public class InMemoryWordNetBinaryArray implements IWordNetMatcher {
                 i++;
             }
             Arrays.sort(keysArr);
-            writeObject(keysArr, MatchManager.verbMGFile);
+            SMatchUtils.writeObject(keysArr, properties.getProperty(VERB_MG_KEY));
         } catch (JWNLException e) {
             if (log.isEnabledFor(Level.ERROR)) {
                 final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
@@ -765,30 +704,6 @@ public class InMemoryWordNetBinaryArray implements IWordNetMatcher {
                     }
                     keys.add(key);
                 }
-            }
-        }
-    }
-
-    /**
-     * Writes Java object to a file.
-     *
-     * @param object   the object
-     * @param fileName the file where the object will be written
-     * @throws SMatchException SMatchException
-     */
-    private static void writeObject(Object object, String fileName) throws SMatchException {
-        log.info("Writing " + fileName);
-        try {
-            FileOutputStream fos = new FileOutputStream(fileName);
-            ObjectOutputStream oos = new ObjectOutputStream(fos);
-            oos.writeObject(object);
-            oos.close();
-            fos.close();
-        } catch (IOException e) {
-            if (log.isEnabledFor(Level.ERROR)) {
-                final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
-                log.error(errMessage, e);
-                throw new SMatchException(errMessage, e);
             }
         }
     }

@@ -1,6 +1,7 @@
 package it.unitn.disi.smatch.matchers.element.string;
 
-import it.unitn.disi.smatch.MatchManager;
+import it.unitn.disi.smatch.components.Configurable;
+import it.unitn.disi.smatch.data.mappings.IMappingElement;
 import it.unitn.disi.smatch.matchers.element.IStringBasedElementLevelSemanticMatcher;
 
 import java.util.Arrays;
@@ -14,7 +15,7 @@ import java.util.HashSet;
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
 
-public class GSuffix implements IStringBasedElementLevelSemanticMatcher {
+public class GSuffix extends Configurable implements IStringBasedElementLevelSemanticMatcher {
     private static int invocationCount = 0;
     private static int relCount = 0;
     private static HashSet<String> hm = new HashSet<String>();
@@ -30,254 +31,254 @@ public class GSuffix implements IStringBasedElementLevelSemanticMatcher {
     private static HashMap<String, Character> suffixes = new HashMap<String, Character>();
 
     static {
-        prefixes.put("a", MatchManager.SYNOMYM);
-        prefixes.put("ab", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("abs", MatchManager.SYNOMYM);
-        prefixes.put("ac", MatchManager.SYNOMYM);
-        prefixes.put("acet", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("aceto", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("acr", MatchManager.SYNOMYM);
-        prefixes.put("acro", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("actin", MatchManager.SYNOMYM);
-        prefixes.put("actino", MatchManager.SYNOMYM);
-        prefixes.put("ad", MatchManager.SYNOMYM);
-        prefixes.put("aden", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("adeno", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("ae", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("aer", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("aero", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("af", MatchManager.SYNOMYM);
-        prefixes.put("afro", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("ag", MatchManager.SYNOMYM);
-        prefixes.put("agr", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("agri", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("agro", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("al", MatchManager.SYNOMYM);
-        prefixes.put("allo", MatchManager.OPPOSITE_MEANING);
-        prefixes.put("ambi", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("amphi", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("an", MatchManager.OPPOSITE_MEANING);
-        prefixes.put("ana", MatchManager.OPPOSITE_MEANING);
-        prefixes.put("and", MatchManager.SYNOMYM);
-        prefixes.put("andr", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("andro", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("anemo", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("angio", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("anglo", MatchManager.LESS_GENERAL_THAN);//was Anglo
-        prefixes.put("ano", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("antho", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("anthrop", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("anthropo", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("ante", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("ant", MatchManager.OPPOSITE_MEANING);//variation of anti
-        prefixes.put("anth", MatchManager.OPPOSITE_MEANING);//variation of anti
-        prefixes.put("anti", MatchManager.OPPOSITE_MEANING);
-        prefixes.put("ap", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("apo", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("aqua", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("aque", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("aqui", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("arc", MatchManager.OPPOSITE_MEANING);
-        prefixes.put("arch", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("archi", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("archaeo", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("archeo", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("arithmo", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("arterio", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("arthr", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("arthro", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("astr", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("astro", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("atto", MatchManager.LESS_GENERAL_THAN);//10^-18 from danish "atten"
-        prefixes.put("audio", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("aut", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("auto", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("azo", MatchManager.LESS_GENERAL_THAN);
-        //prefixes.put("b", MatchManager.SYNOMYM);//was B
-        prefixes.put("bacter", MatchManager.SYNOMYM);
-        prefixes.put("bacteri", MatchManager.SYNOMYM);
-        prefixes.put("bacterio", MatchManager.SYNOMYM);
-        prefixes.put("bar", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("baro", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("bathy", MatchManager.LESS_GENERAL_THAN);//greek deep
-        prefixes.put("be", MatchManager.SYNOMYM);
-        prefixes.put("benz", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("benzo", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("bi", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("bin", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("biblio", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("bio", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("blast", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("blasto", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("brachy", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("brady", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("brom", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("bromo", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("bronch", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("bronchi", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("broncho", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("bry", MatchManager.SYNOMYM);
-        prefixes.put("bryo", MatchManager.SYNOMYM);
-        prefixes.put("by", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("bye", MatchManager.SYNOMYM);
-        //prefixes.put("c", MatchManager.SYNOMYM);//was C
-        prefixes.put("caco", MatchManager.OPPOSITE_MEANING);//From Ancient Greek ????? (kakos), an adjective that means bad.
-        prefixes.put("carb", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("carbo", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("cardi", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("cardio", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("cel", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("celo", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("cen", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("ceno", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("cent", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("centi", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("centr", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("centri", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("cephal", MatchManager.LESS_GENERAL_THAN);//   1. (biology) relating to the brain or head
-        prefixes.put("cephalo", MatchManager.LESS_GENERAL_THAN);//   1. (biology) relating to the brain or head
-        prefixes.put("chalco", MatchManager.LESS_GENERAL_THAN);//copper, brass etc
-        prefixes.put("cheiro", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("chem", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("chemi", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("chemico", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("chemo", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("chino", MatchManager.LESS_GENERAL_THAN);//was Chino
-        prefixes.put("chiro", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("chlor", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("chloro", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("choan", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("choano", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("chol", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("chole", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("christo", MatchManager.LESS_GENERAL_THAN);//was Christo
-        prefixes.put("chron", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("chrono", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("chrys", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("chryso", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("cine", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("circum", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("cis", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("co", MatchManager.SYNOMYM);
-        prefixes.put("coel", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("coelo", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("coen", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("coeno", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("col", MatchManager.SYNOMYM);//con
-        prefixes.put("com", MatchManager.SYNOMYM);//con
-        prefixes.put("copr", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("copro", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("con", MatchManager.SYNOMYM);
-        prefixes.put("contra", MatchManager.OPPOSITE_MEANING);
-        prefixes.put("cor", MatchManager.SYNOMYM);//con
-        prefixes.put("cosmo", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("counter", MatchManager.OPPOSITE_MEANING);
-        prefixes.put("cryo", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("crypto", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("cyan", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("cyano", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("cyber", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("cycl", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("cyclo", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("cyn", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("cyno", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("cyt", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("cyto", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("de", MatchManager.OPPOSITE_MEANING);
-        prefixes.put("dec", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("deca", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("deci", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("deka", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("demi", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("deoxy", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("deuter", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("deutero", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("di", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("dia", MatchManager.LESS_GENERAL_THAN);
-        //prefixes.put("di", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("dichlor", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("dichloro", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("dinitro", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("dino", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("dipl", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("diplo", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("dis", MatchManager.OPPOSITE_MEANING);
-        //prefixes.put("di", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("dodeca", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("dys", MatchManager.OPPOSITE_MEANING);
-        prefixes.put("eco", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("ecto", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("eigen", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("electro", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("em", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("en", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("endo", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("ennea", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("ento", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("epi", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("equi", MatchManager.SYNOMYM);
-        prefixes.put("ethno", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("eu", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("eur", MatchManager.LESS_GENERAL_THAN);//Eur
-        prefixes.put("euro", MatchManager.LESS_GENERAL_THAN);//was Euro
-        prefixes.put("ex", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("exa", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("exbi", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("exo", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("extra", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("femto", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("ferro", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("fluor", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("fluoro", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("for", MatchManager.OPPOSITE_MEANING);//   1. Meaning from.    2. Meaning against.
-        prefixes.put("fore", MatchManager.OPPOSITE_MEANING);//   1. Meaning from.    2. Meaning against.
-        prefixes.put("franco", MatchManager.LESS_GENERAL_THAN);//was Franco
-        prefixes.put("gastr", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("gastro", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("genito", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("geo", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("gibi", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("giga", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("geno", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("gymno", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("gyn", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("gyno", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("gyro", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("haem", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("haemat", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("haemo", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("hagi", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("hagio", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("half", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("hect", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("hecto", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("helio", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("hem", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("hemat", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("hemi", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("hemo", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("hendeca", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("hept", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("hepta", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("hetero", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("hex", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("hexa", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("hipp", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("hippo", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("hispano", MatchManager.LESS_GENERAL_THAN);//was Hispano
-        prefixes.put("hist", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("histio", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("histo", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("holo", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("homeo", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("homo", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("homoeo", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("hydro", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("hyper", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("hypno", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("hypo", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("il", MatchManager.OPPOSITE_MEANING);//in
-        prefixes.put("im", MatchManager.OPPOSITE_MEANING);//in
+        prefixes.put("a", IMappingElement.EQUIVALENCE);
+        prefixes.put("ab", IMappingElement.LESS_GENERAL);
+        prefixes.put("abs", IMappingElement.EQUIVALENCE);
+        prefixes.put("ac", IMappingElement.EQUIVALENCE);
+        prefixes.put("acet", IMappingElement.LESS_GENERAL);
+        prefixes.put("aceto", IMappingElement.LESS_GENERAL);
+        prefixes.put("acr", IMappingElement.EQUIVALENCE);
+        prefixes.put("acro", IMappingElement.LESS_GENERAL);
+        prefixes.put("actin", IMappingElement.EQUIVALENCE);
+        prefixes.put("actino", IMappingElement.EQUIVALENCE);
+        prefixes.put("ad", IMappingElement.EQUIVALENCE);
+        prefixes.put("aden", IMappingElement.LESS_GENERAL);
+        prefixes.put("adeno", IMappingElement.LESS_GENERAL);
+        prefixes.put("ae", IMappingElement.LESS_GENERAL);
+        prefixes.put("aer", IMappingElement.LESS_GENERAL);
+        prefixes.put("aero", IMappingElement.LESS_GENERAL);
+        prefixes.put("af", IMappingElement.EQUIVALENCE);
+        prefixes.put("afro", IMappingElement.LESS_GENERAL);
+        prefixes.put("ag", IMappingElement.EQUIVALENCE);
+        prefixes.put("agr", IMappingElement.LESS_GENERAL);
+        prefixes.put("agri", IMappingElement.LESS_GENERAL);
+        prefixes.put("agro", IMappingElement.LESS_GENERAL);
+        prefixes.put("al", IMappingElement.EQUIVALENCE);
+        prefixes.put("allo", IMappingElement.DISJOINT);
+        prefixes.put("ambi", IMappingElement.LESS_GENERAL);
+        prefixes.put("amphi", IMappingElement.LESS_GENERAL);
+        prefixes.put("an", IMappingElement.DISJOINT);
+        prefixes.put("ana", IMappingElement.DISJOINT);
+        prefixes.put("and", IMappingElement.EQUIVALENCE);
+        prefixes.put("andr", IMappingElement.LESS_GENERAL);
+        prefixes.put("andro", IMappingElement.LESS_GENERAL);
+        prefixes.put("anemo", IMappingElement.LESS_GENERAL);
+        prefixes.put("angio", IMappingElement.LESS_GENERAL);
+        prefixes.put("anglo", IMappingElement.LESS_GENERAL);//was Anglo
+        prefixes.put("ano", IMappingElement.LESS_GENERAL);
+        prefixes.put("antho", IMappingElement.LESS_GENERAL);
+        prefixes.put("anthrop", IMappingElement.LESS_GENERAL);
+        prefixes.put("anthropo", IMappingElement.LESS_GENERAL);
+        prefixes.put("ante", IMappingElement.LESS_GENERAL);
+        prefixes.put("ant", IMappingElement.DISJOINT);//variation of anti
+        prefixes.put("anth", IMappingElement.DISJOINT);//variation of anti
+        prefixes.put("anti", IMappingElement.DISJOINT);
+        prefixes.put("ap", IMappingElement.LESS_GENERAL);
+        prefixes.put("apo", IMappingElement.LESS_GENERAL);
+        prefixes.put("aqua", IMappingElement.LESS_GENERAL);
+        prefixes.put("aque", IMappingElement.LESS_GENERAL);
+        prefixes.put("aqui", IMappingElement.LESS_GENERAL);
+        prefixes.put("arc", IMappingElement.DISJOINT);
+        prefixes.put("arch", IMappingElement.LESS_GENERAL);
+        prefixes.put("archi", IMappingElement.LESS_GENERAL);
+        prefixes.put("archaeo", IMappingElement.LESS_GENERAL);
+        prefixes.put("archeo", IMappingElement.LESS_GENERAL);
+        prefixes.put("arithmo", IMappingElement.LESS_GENERAL);
+        prefixes.put("arterio", IMappingElement.LESS_GENERAL);
+        prefixes.put("arthr", IMappingElement.LESS_GENERAL);
+        prefixes.put("arthro", IMappingElement.LESS_GENERAL);
+        prefixes.put("astr", IMappingElement.LESS_GENERAL);
+        prefixes.put("astro", IMappingElement.LESS_GENERAL);
+        prefixes.put("atto", IMappingElement.LESS_GENERAL);//10^-18 from danish "atten"
+        prefixes.put("audio", IMappingElement.LESS_GENERAL);
+        prefixes.put("aut", IMappingElement.LESS_GENERAL);
+        prefixes.put("auto", IMappingElement.LESS_GENERAL);
+        prefixes.put("azo", IMappingElement.LESS_GENERAL);
+        //prefixes.put("b", MatchManager.EQUIVALENCE);//was B
+        prefixes.put("bacter", IMappingElement.EQUIVALENCE);
+        prefixes.put("bacteri", IMappingElement.EQUIVALENCE);
+        prefixes.put("bacterio", IMappingElement.EQUIVALENCE);
+        prefixes.put("bar", IMappingElement.LESS_GENERAL);
+        prefixes.put("baro", IMappingElement.LESS_GENERAL);
+        prefixes.put("bathy", IMappingElement.LESS_GENERAL);//greek deep
+        prefixes.put("be", IMappingElement.EQUIVALENCE);
+        prefixes.put("benz", IMappingElement.LESS_GENERAL);
+        prefixes.put("benzo", IMappingElement.LESS_GENERAL);
+        prefixes.put("bi", IMappingElement.LESS_GENERAL);
+        prefixes.put("bin", IMappingElement.LESS_GENERAL);
+        prefixes.put("biblio", IMappingElement.LESS_GENERAL);
+        prefixes.put("bio", IMappingElement.LESS_GENERAL);
+        prefixes.put("blast", IMappingElement.LESS_GENERAL);
+        prefixes.put("blasto", IMappingElement.LESS_GENERAL);
+        prefixes.put("brachy", IMappingElement.LESS_GENERAL);
+        prefixes.put("brady", IMappingElement.LESS_GENERAL);
+        prefixes.put("brom", IMappingElement.LESS_GENERAL);
+        prefixes.put("bromo", IMappingElement.LESS_GENERAL);
+        prefixes.put("bronch", IMappingElement.LESS_GENERAL);
+        prefixes.put("bronchi", IMappingElement.LESS_GENERAL);
+        prefixes.put("broncho", IMappingElement.LESS_GENERAL);
+        prefixes.put("bry", IMappingElement.EQUIVALENCE);
+        prefixes.put("bryo", IMappingElement.EQUIVALENCE);
+        prefixes.put("by", IMappingElement.LESS_GENERAL);
+        prefixes.put("bye", IMappingElement.EQUIVALENCE);
+        //prefixes.put("c", MatchManager.EQUIVALENCE);//was C
+        prefixes.put("caco", IMappingElement.DISJOINT);//From Ancient Greek ????? (kakos), an adjective that means bad.
+        prefixes.put("carb", IMappingElement.LESS_GENERAL);
+        prefixes.put("carbo", IMappingElement.LESS_GENERAL);
+        prefixes.put("cardi", IMappingElement.LESS_GENERAL);
+        prefixes.put("cardio", IMappingElement.LESS_GENERAL);
+        prefixes.put("cel", IMappingElement.LESS_GENERAL);
+        prefixes.put("celo", IMappingElement.LESS_GENERAL);
+        prefixes.put("cen", IMappingElement.LESS_GENERAL);
+        prefixes.put("ceno", IMappingElement.LESS_GENERAL);
+        prefixes.put("cent", IMappingElement.LESS_GENERAL);
+        prefixes.put("centi", IMappingElement.LESS_GENERAL);
+        prefixes.put("centr", IMappingElement.LESS_GENERAL);
+        prefixes.put("centri", IMappingElement.LESS_GENERAL);
+        prefixes.put("cephal", IMappingElement.LESS_GENERAL);//   1. (biology) relating to the brain or head
+        prefixes.put("cephalo", IMappingElement.LESS_GENERAL);//   1. (biology) relating to the brain or head
+        prefixes.put("chalco", IMappingElement.LESS_GENERAL);//copper, brass etc
+        prefixes.put("cheiro", IMappingElement.LESS_GENERAL);
+        prefixes.put("chem", IMappingElement.LESS_GENERAL);
+        prefixes.put("chemi", IMappingElement.LESS_GENERAL);
+        prefixes.put("chemico", IMappingElement.LESS_GENERAL);
+        prefixes.put("chemo", IMappingElement.LESS_GENERAL);
+        prefixes.put("chino", IMappingElement.LESS_GENERAL);//was Chino
+        prefixes.put("chiro", IMappingElement.LESS_GENERAL);
+        prefixes.put("chlor", IMappingElement.LESS_GENERAL);
+        prefixes.put("chloro", IMappingElement.LESS_GENERAL);
+        prefixes.put("choan", IMappingElement.LESS_GENERAL);
+        prefixes.put("choano", IMappingElement.LESS_GENERAL);
+        prefixes.put("chol", IMappingElement.LESS_GENERAL);
+        prefixes.put("chole", IMappingElement.LESS_GENERAL);
+        prefixes.put("christo", IMappingElement.LESS_GENERAL);//was Christo
+        prefixes.put("chron", IMappingElement.LESS_GENERAL);
+        prefixes.put("chrono", IMappingElement.LESS_GENERAL);
+        prefixes.put("chrys", IMappingElement.LESS_GENERAL);
+        prefixes.put("chryso", IMappingElement.LESS_GENERAL);
+        prefixes.put("cine", IMappingElement.LESS_GENERAL);
+        prefixes.put("circum", IMappingElement.LESS_GENERAL);
+        prefixes.put("cis", IMappingElement.LESS_GENERAL);
+        prefixes.put("co", IMappingElement.EQUIVALENCE);
+        prefixes.put("coel", IMappingElement.LESS_GENERAL);
+        prefixes.put("coelo", IMappingElement.LESS_GENERAL);
+        prefixes.put("coen", IMappingElement.LESS_GENERAL);
+        prefixes.put("coeno", IMappingElement.LESS_GENERAL);
+        prefixes.put("col", IMappingElement.EQUIVALENCE);//con
+        prefixes.put("com", IMappingElement.EQUIVALENCE);//con
+        prefixes.put("copr", IMappingElement.LESS_GENERAL);
+        prefixes.put("copro", IMappingElement.LESS_GENERAL);
+        prefixes.put("con", IMappingElement.EQUIVALENCE);
+        prefixes.put("contra", IMappingElement.DISJOINT);
+        prefixes.put("cor", IMappingElement.EQUIVALENCE);//con
+        prefixes.put("cosmo", IMappingElement.LESS_GENERAL);
+        prefixes.put("counter", IMappingElement.DISJOINT);
+        prefixes.put("cryo", IMappingElement.LESS_GENERAL);
+        prefixes.put("crypto", IMappingElement.LESS_GENERAL);
+        prefixes.put("cyan", IMappingElement.LESS_GENERAL);
+        prefixes.put("cyano", IMappingElement.LESS_GENERAL);
+        prefixes.put("cyber", IMappingElement.LESS_GENERAL);
+        prefixes.put("cycl", IMappingElement.LESS_GENERAL);
+        prefixes.put("cyclo", IMappingElement.LESS_GENERAL);
+        prefixes.put("cyn", IMappingElement.LESS_GENERAL);
+        prefixes.put("cyno", IMappingElement.LESS_GENERAL);
+        prefixes.put("cyt", IMappingElement.LESS_GENERAL);
+        prefixes.put("cyto", IMappingElement.LESS_GENERAL);
+        prefixes.put("de", IMappingElement.DISJOINT);
+        prefixes.put("dec", IMappingElement.LESS_GENERAL);
+        prefixes.put("deca", IMappingElement.LESS_GENERAL);
+        prefixes.put("deci", IMappingElement.LESS_GENERAL);
+        prefixes.put("deka", IMappingElement.LESS_GENERAL);
+        prefixes.put("demi", IMappingElement.LESS_GENERAL);
+        prefixes.put("deoxy", IMappingElement.LESS_GENERAL);
+        prefixes.put("deuter", IMappingElement.LESS_GENERAL);
+        prefixes.put("deutero", IMappingElement.LESS_GENERAL);
+        prefixes.put("di", IMappingElement.LESS_GENERAL);
+        prefixes.put("dia", IMappingElement.LESS_GENERAL);
+        //prefixes.put("di", MatchManager.LESS_GENERAL);
+        prefixes.put("dichlor", IMappingElement.LESS_GENERAL);
+        prefixes.put("dichloro", IMappingElement.LESS_GENERAL);
+        prefixes.put("dinitro", IMappingElement.LESS_GENERAL);
+        prefixes.put("dino", IMappingElement.LESS_GENERAL);
+        prefixes.put("dipl", IMappingElement.LESS_GENERAL);
+        prefixes.put("diplo", IMappingElement.LESS_GENERAL);
+        prefixes.put("dis", IMappingElement.DISJOINT);
+        //prefixes.put("di", MatchManager.LESS_GENERAL);
+        prefixes.put("dodeca", IMappingElement.LESS_GENERAL);
+        prefixes.put("dys", IMappingElement.DISJOINT);
+        prefixes.put("eco", IMappingElement.LESS_GENERAL);
+        prefixes.put("ecto", IMappingElement.LESS_GENERAL);
+        prefixes.put("eigen", IMappingElement.LESS_GENERAL);
+        prefixes.put("electro", IMappingElement.LESS_GENERAL);
+        prefixes.put("em", IMappingElement.LESS_GENERAL);
+        prefixes.put("en", IMappingElement.LESS_GENERAL);
+        prefixes.put("endo", IMappingElement.LESS_GENERAL);
+        prefixes.put("ennea", IMappingElement.LESS_GENERAL);
+        prefixes.put("ento", IMappingElement.LESS_GENERAL);
+        prefixes.put("epi", IMappingElement.LESS_GENERAL);
+        prefixes.put("equi", IMappingElement.EQUIVALENCE);
+        prefixes.put("ethno", IMappingElement.LESS_GENERAL);
+        prefixes.put("eu", IMappingElement.LESS_GENERAL);
+        prefixes.put("eur", IMappingElement.LESS_GENERAL);//Eur
+        prefixes.put("euro", IMappingElement.LESS_GENERAL);//was Euro
+        prefixes.put("ex", IMappingElement.LESS_GENERAL);
+        prefixes.put("exa", IMappingElement.LESS_GENERAL);
+        prefixes.put("exbi", IMappingElement.LESS_GENERAL);
+        prefixes.put("exo", IMappingElement.LESS_GENERAL);
+        prefixes.put("extra", IMappingElement.LESS_GENERAL);
+        prefixes.put("femto", IMappingElement.LESS_GENERAL);
+        prefixes.put("ferro", IMappingElement.LESS_GENERAL);
+        prefixes.put("fluor", IMappingElement.LESS_GENERAL);
+        prefixes.put("fluoro", IMappingElement.LESS_GENERAL);
+        prefixes.put("for", IMappingElement.DISJOINT);//   1. Meaning from.    2. Meaning against.
+        prefixes.put("fore", IMappingElement.DISJOINT);//   1. Meaning from.    2. Meaning against.
+        prefixes.put("franco", IMappingElement.LESS_GENERAL);//was Franco
+        prefixes.put("gastr", IMappingElement.LESS_GENERAL);
+        prefixes.put("gastro", IMappingElement.LESS_GENERAL);
+        prefixes.put("genito", IMappingElement.LESS_GENERAL);
+        prefixes.put("geo", IMappingElement.LESS_GENERAL);
+        prefixes.put("gibi", IMappingElement.LESS_GENERAL);
+        prefixes.put("giga", IMappingElement.LESS_GENERAL);
+        prefixes.put("geno", IMappingElement.LESS_GENERAL);
+        prefixes.put("gymno", IMappingElement.LESS_GENERAL);
+        prefixes.put("gyn", IMappingElement.LESS_GENERAL);
+        prefixes.put("gyno", IMappingElement.LESS_GENERAL);
+        prefixes.put("gyro", IMappingElement.LESS_GENERAL);
+        prefixes.put("haem", IMappingElement.LESS_GENERAL);
+        prefixes.put("haemat", IMappingElement.LESS_GENERAL);
+        prefixes.put("haemo", IMappingElement.LESS_GENERAL);
+        prefixes.put("hagi", IMappingElement.LESS_GENERAL);
+        prefixes.put("hagio", IMappingElement.LESS_GENERAL);
+        prefixes.put("half", IMappingElement.LESS_GENERAL);
+        prefixes.put("hect", IMappingElement.LESS_GENERAL);
+        prefixes.put("hecto", IMappingElement.LESS_GENERAL);
+        prefixes.put("helio", IMappingElement.LESS_GENERAL);
+        prefixes.put("hem", IMappingElement.LESS_GENERAL);
+        prefixes.put("hemat", IMappingElement.LESS_GENERAL);
+        prefixes.put("hemi", IMappingElement.LESS_GENERAL);
+        prefixes.put("hemo", IMappingElement.LESS_GENERAL);
+        prefixes.put("hendeca", IMappingElement.LESS_GENERAL);
+        prefixes.put("hept", IMappingElement.LESS_GENERAL);
+        prefixes.put("hepta", IMappingElement.LESS_GENERAL);
+        prefixes.put("hetero", IMappingElement.LESS_GENERAL);
+        prefixes.put("hex", IMappingElement.LESS_GENERAL);
+        prefixes.put("hexa", IMappingElement.LESS_GENERAL);
+        prefixes.put("hipp", IMappingElement.LESS_GENERAL);
+        prefixes.put("hippo", IMappingElement.LESS_GENERAL);
+        prefixes.put("hispano", IMappingElement.LESS_GENERAL);//was Hispano
+        prefixes.put("hist", IMappingElement.LESS_GENERAL);
+        prefixes.put("histio", IMappingElement.LESS_GENERAL);
+        prefixes.put("histo", IMappingElement.LESS_GENERAL);
+        prefixes.put("holo", IMappingElement.LESS_GENERAL);
+        prefixes.put("homeo", IMappingElement.LESS_GENERAL);
+        prefixes.put("homo", IMappingElement.LESS_GENERAL);
+        prefixes.put("homoeo", IMappingElement.LESS_GENERAL);
+        prefixes.put("hydro", IMappingElement.LESS_GENERAL);
+        prefixes.put("hyper", IMappingElement.LESS_GENERAL);
+        prefixes.put("hypno", IMappingElement.LESS_GENERAL);
+        prefixes.put("hypo", IMappingElement.LESS_GENERAL);
+        prefixes.put("il", IMappingElement.DISJOINT);//in
+        prefixes.put("im", IMappingElement.DISJOINT);//in
         /*
 , "not", or "in", "into".
 
@@ -308,111 +309,111 @@ in-
           inbound
 
          */
-        prefixes.put("in", MatchManager.OPPOSITE_MEANING);
-        prefixes.put("Indo", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("inter", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("intra", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("ir", MatchManager.OPPOSITE_MEANING);//in
-        prefixes.put("iso", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("italo", MatchManager.LESS_GENERAL_THAN);//was Italo
-        prefixes.put("kibi", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("kilo", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("lip", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("lipo", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("lith", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("litho", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("macro", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("mal", MatchManager.OPPOSITE_MEANING);
-        prefixes.put("mebi", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("mega", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("meso", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("meta", MatchManager.MORE_GENERAL_THAN);//-metasearch<search
-        prefixes.put("metro", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("micro", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("midi", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("milli", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("mini", MatchManager.LESS_GENERAL_THAN);
+        prefixes.put("in", IMappingElement.DISJOINT);
+        prefixes.put("Indo", IMappingElement.LESS_GENERAL);
+        prefixes.put("inter", IMappingElement.LESS_GENERAL);
+        prefixes.put("intra", IMappingElement.LESS_GENERAL);
+        prefixes.put("ir", IMappingElement.DISJOINT);//in
+        prefixes.put("iso", IMappingElement.LESS_GENERAL);
+        prefixes.put("italo", IMappingElement.LESS_GENERAL);//was Italo
+        prefixes.put("kibi", IMappingElement.LESS_GENERAL);
+        prefixes.put("kilo", IMappingElement.LESS_GENERAL);
+        prefixes.put("lip", IMappingElement.LESS_GENERAL);
+        prefixes.put("lipo", IMappingElement.LESS_GENERAL);
+        prefixes.put("lith", IMappingElement.LESS_GENERAL);
+        prefixes.put("litho", IMappingElement.LESS_GENERAL);
+        prefixes.put("macro", IMappingElement.LESS_GENERAL);
+        prefixes.put("mal", IMappingElement.DISJOINT);
+        prefixes.put("mebi", IMappingElement.LESS_GENERAL);
+        prefixes.put("mega", IMappingElement.LESS_GENERAL);
+        prefixes.put("meso", IMappingElement.LESS_GENERAL);
+        prefixes.put("meta", IMappingElement.MORE_GENERAL);//-metasearch<search
+        prefixes.put("metro", IMappingElement.LESS_GENERAL);
+        prefixes.put("micro", IMappingElement.LESS_GENERAL);
+        prefixes.put("midi", IMappingElement.LESS_GENERAL);
+        prefixes.put("milli", IMappingElement.LESS_GENERAL);
+        prefixes.put("mini", IMappingElement.LESS_GENERAL);
         /*
 mis-
 
    1. bad, badly, wrong, wrongly
    2. lack or failure
          */
-        prefixes.put("mis", MatchManager.OPPOSITE_MEANING);
-        prefixes.put("miso", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("mono", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("multi", MatchManager.MORE_GENERAL_THAN);//-genre>multi-genre
-        prefixes.put("myria", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("myxo", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("nano", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("naso", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("necro", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("neo", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("non", MatchManager.OPPOSITE_MEANING);//   1. A prefix used in the sense of not to negate the meaning of the word to which it is attached, as in nonattention (or non-attention), nonconformity, nonmetallic and nonsuit.
-        prefixes.put("nona", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("oct", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("octa", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("olig", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("oligo", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("omni", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("ortho", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("out", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("over", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("ovi", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("palaeo", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("paleo", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("para", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("pebi", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("pent", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("penta", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("peta", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("phono", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("photo", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("pico", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("poly", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("praeter", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("pre", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("preter", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("proto", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("pseud", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("pseudo", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("psycho", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("ptero", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("pyro", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("quadr", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("quadri", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("quin", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("quinqu", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("quinque", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("radio", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("re", MatchManager.SYNOMYM);//Added to a noun or verb to make a new noun or verb being made again or done again (sometimes implying an undoing first, as "reintegrate"); as renew, revisit, remake etc.
-        prefixes.put("robo", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("schizo", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("semi", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("sept", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("septa", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("septem", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("septi", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("sex", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("sexa", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("sino", MatchManager.LESS_GENERAL_THAN);//was Sino
-        prefixes.put("step", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("sub", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("sui", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("super", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("supra", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("sym", MatchManager.SYNOMYM);
-        prefixes.put("syn", MatchManager.SYNOMYM);
-        prefixes.put("syl", MatchManager.SYNOMYM);
-        prefixes.put("tebi", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("tele", MatchManager.SYNOMYM);
-        prefixes.put("ter", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("tera", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("tetr", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("tetra", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("thermo", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("tri", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("ultra", MatchManager.LESS_GENERAL_THAN);
+        prefixes.put("mis", IMappingElement.DISJOINT);
+        prefixes.put("miso", IMappingElement.LESS_GENERAL);
+        prefixes.put("mono", IMappingElement.LESS_GENERAL);
+        prefixes.put("multi", IMappingElement.MORE_GENERAL);//-genre>multi-genre
+        prefixes.put("myria", IMappingElement.LESS_GENERAL);
+        prefixes.put("myxo", IMappingElement.LESS_GENERAL);
+        prefixes.put("nano", IMappingElement.LESS_GENERAL);
+        prefixes.put("naso", IMappingElement.LESS_GENERAL);
+        prefixes.put("necro", IMappingElement.LESS_GENERAL);
+        prefixes.put("neo", IMappingElement.LESS_GENERAL);
+        prefixes.put("non", IMappingElement.DISJOINT);//   1. A prefix used in the sense of not to negate the meaning of the word to which it is attached, as in nonattention (or non-attention), nonconformity, nonmetallic and nonsuit.
+        prefixes.put("nona", IMappingElement.LESS_GENERAL);
+        prefixes.put("oct", IMappingElement.LESS_GENERAL);
+        prefixes.put("octa", IMappingElement.LESS_GENERAL);
+        prefixes.put("olig", IMappingElement.LESS_GENERAL);
+        prefixes.put("oligo", IMappingElement.LESS_GENERAL);
+        prefixes.put("omni", IMappingElement.LESS_GENERAL);
+        prefixes.put("ortho", IMappingElement.LESS_GENERAL);
+        prefixes.put("out", IMappingElement.LESS_GENERAL);
+        prefixes.put("over", IMappingElement.LESS_GENERAL);
+        prefixes.put("ovi", IMappingElement.LESS_GENERAL);
+        prefixes.put("palaeo", IMappingElement.LESS_GENERAL);
+        prefixes.put("paleo", IMappingElement.LESS_GENERAL);
+        prefixes.put("para", IMappingElement.LESS_GENERAL);
+        prefixes.put("pebi", IMappingElement.LESS_GENERAL);
+        prefixes.put("pent", IMappingElement.LESS_GENERAL);
+        prefixes.put("penta", IMappingElement.LESS_GENERAL);
+        prefixes.put("peta", IMappingElement.LESS_GENERAL);
+        prefixes.put("phono", IMappingElement.LESS_GENERAL);
+        prefixes.put("photo", IMappingElement.LESS_GENERAL);
+        prefixes.put("pico", IMappingElement.LESS_GENERAL);
+        prefixes.put("poly", IMappingElement.LESS_GENERAL);
+        prefixes.put("praeter", IMappingElement.LESS_GENERAL);
+        prefixes.put("pre", IMappingElement.LESS_GENERAL);
+        prefixes.put("preter", IMappingElement.LESS_GENERAL);
+        prefixes.put("proto", IMappingElement.LESS_GENERAL);
+        prefixes.put("pseud", IMappingElement.LESS_GENERAL);
+        prefixes.put("pseudo", IMappingElement.LESS_GENERAL);
+        prefixes.put("psycho", IMappingElement.LESS_GENERAL);
+        prefixes.put("ptero", IMappingElement.LESS_GENERAL);
+        prefixes.put("pyro", IMappingElement.LESS_GENERAL);
+        prefixes.put("quadr", IMappingElement.LESS_GENERAL);
+        prefixes.put("quadri", IMappingElement.LESS_GENERAL);
+        prefixes.put("quin", IMappingElement.LESS_GENERAL);
+        prefixes.put("quinqu", IMappingElement.LESS_GENERAL);
+        prefixes.put("quinque", IMappingElement.LESS_GENERAL);
+        prefixes.put("radio", IMappingElement.LESS_GENERAL);
+        prefixes.put("re", IMappingElement.EQUIVALENCE);//Added to a noun or verb to make a new noun or verb being made again or done again (sometimes implying an undoing first, as "reintegrate"); as renew, revisit, remake etc.
+        prefixes.put("robo", IMappingElement.LESS_GENERAL);
+        prefixes.put("schizo", IMappingElement.LESS_GENERAL);
+        prefixes.put("semi", IMappingElement.LESS_GENERAL);
+        prefixes.put("sept", IMappingElement.LESS_GENERAL);
+        prefixes.put("septa", IMappingElement.LESS_GENERAL);
+        prefixes.put("septem", IMappingElement.LESS_GENERAL);
+        prefixes.put("septi", IMappingElement.LESS_GENERAL);
+        prefixes.put("sex", IMappingElement.LESS_GENERAL);
+        prefixes.put("sexa", IMappingElement.LESS_GENERAL);
+        prefixes.put("sino", IMappingElement.LESS_GENERAL);//was Sino
+        prefixes.put("step", IMappingElement.LESS_GENERAL);
+        prefixes.put("sub", IMappingElement.LESS_GENERAL);
+        prefixes.put("sui", IMappingElement.LESS_GENERAL);
+        prefixes.put("super", IMappingElement.LESS_GENERAL);
+        prefixes.put("supra", IMappingElement.LESS_GENERAL);
+        prefixes.put("sym", IMappingElement.EQUIVALENCE);
+        prefixes.put("syn", IMappingElement.EQUIVALENCE);
+        prefixes.put("syl", IMappingElement.EQUIVALENCE);
+        prefixes.put("tebi", IMappingElement.LESS_GENERAL);
+        prefixes.put("tele", IMappingElement.EQUIVALENCE);
+        prefixes.put("ter", IMappingElement.LESS_GENERAL);
+        prefixes.put("tera", IMappingElement.LESS_GENERAL);
+        prefixes.put("tetr", IMappingElement.LESS_GENERAL);
+        prefixes.put("tetra", IMappingElement.LESS_GENERAL);
+        prefixes.put("thermo", IMappingElement.LESS_GENERAL);
+        prefixes.put("tri", IMappingElement.LESS_GENERAL);
+        prefixes.put("ultra", IMappingElement.LESS_GENERAL);
         /*
 From Old English un-, from Germanic, related to Latin in-
 [edit] Prefix
@@ -429,139 +430,139 @@ un-
 [edit] Usage notes
     * Some words formed in this way also have counterparts using in- or non-.
          */
-        prefixes.put("un", MatchManager.OPPOSITE_MEANING);
-        prefixes.put("under", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("uni", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("up", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("ur", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("uro", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("vice", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("vid", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("xeno", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("xero", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("xylo", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("y", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("yocto", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("yotta", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("zepto", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("zetta", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("zo", MatchManager.LESS_GENERAL_THAN);
-        prefixes.put("zoo", MatchManager.LESS_GENERAL_THAN);
+        prefixes.put("un", IMappingElement.DISJOINT);
+        prefixes.put("under", IMappingElement.LESS_GENERAL);
+        prefixes.put("uni", IMappingElement.LESS_GENERAL);
+        prefixes.put("up", IMappingElement.LESS_GENERAL);
+        prefixes.put("ur", IMappingElement.LESS_GENERAL);
+        prefixes.put("uro", IMappingElement.LESS_GENERAL);
+        prefixes.put("vice", IMappingElement.LESS_GENERAL);
+        prefixes.put("vid", IMappingElement.LESS_GENERAL);
+        prefixes.put("xeno", IMappingElement.LESS_GENERAL);
+        prefixes.put("xero", IMappingElement.LESS_GENERAL);
+        prefixes.put("xylo", IMappingElement.LESS_GENERAL);
+        prefixes.put("y", IMappingElement.LESS_GENERAL);
+        prefixes.put("yocto", IMappingElement.LESS_GENERAL);
+        prefixes.put("yotta", IMappingElement.LESS_GENERAL);
+        prefixes.put("zepto", IMappingElement.LESS_GENERAL);
+        prefixes.put("zetta", IMappingElement.LESS_GENERAL);
+        prefixes.put("zo", IMappingElement.LESS_GENERAL);
+        prefixes.put("zoo", IMappingElement.LESS_GENERAL);
 
         //"roots"
-        prefixes.put("farm", MatchManager.LESS_GENERAL_THAN);
+        prefixes.put("farm", IMappingElement.LESS_GENERAL);
 
         //"roots"
         //e.g. parrot-fish is less general than fish
         //or it is a fish? :)
         //to handle cases like almond-tree, apple-tree
-        suffixes.put("fish", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("fish's", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("fishes", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("way", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("ways", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("bird", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("bird's", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("birds", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("room", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("rooms", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("grass", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("grasses", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("boat", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("boats", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("bush", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("bushes", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("bone", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("bones", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("band", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("bands", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("cake", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("cakes", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("shop", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("shops", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("mill", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("mills", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("paper", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("papers", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("worship", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("snake", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("snake's", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("snakes", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("road", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("roads", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("hound", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("hound's", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("hounds", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("care", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("cares", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("virus", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("virus'", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("viruses", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("storm", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("storms", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("sail", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("sail's", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("sails", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("boot", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("boots", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("bee", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("bee's", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("bees", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("ache", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("aches", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("wear", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("wears", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("tit", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("tits", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("tax", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("tree", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("trees", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("taxes", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("spoon", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("spoons", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("song", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("songs", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("builder", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("builder's", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("builders", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("vine", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("vines", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("saddle", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("saddles", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("plant", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("plants", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("knife", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("knives", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("frog", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("frog's", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("frogs", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("chop", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("chops", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("writer", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("writer's", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("writers", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("wright", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("wrights", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("person", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("person's", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("persons", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("owner", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("owner's", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("owners", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("mint", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("rack", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("racks", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("name", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("names", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("mast", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("in-law", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("fruit", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("fruits", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("pox", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("poxes", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("hide", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("force", MatchManager.LESS_GENERAL_THAN);
-        suffixes.put("forces", MatchManager.LESS_GENERAL_THAN);
+        suffixes.put("fish", IMappingElement.LESS_GENERAL);
+        suffixes.put("fish's", IMappingElement.LESS_GENERAL);
+        suffixes.put("fishes", IMappingElement.LESS_GENERAL);
+        suffixes.put("way", IMappingElement.LESS_GENERAL);
+        suffixes.put("ways", IMappingElement.LESS_GENERAL);
+        suffixes.put("bird", IMappingElement.LESS_GENERAL);
+        suffixes.put("bird's", IMappingElement.LESS_GENERAL);
+        suffixes.put("birds", IMappingElement.LESS_GENERAL);
+        suffixes.put("room", IMappingElement.LESS_GENERAL);
+        suffixes.put("rooms", IMappingElement.LESS_GENERAL);
+        suffixes.put("grass", IMappingElement.LESS_GENERAL);
+        suffixes.put("grasses", IMappingElement.LESS_GENERAL);
+        suffixes.put("boat", IMappingElement.LESS_GENERAL);
+        suffixes.put("boats", IMappingElement.LESS_GENERAL);
+        suffixes.put("bush", IMappingElement.LESS_GENERAL);
+        suffixes.put("bushes", IMappingElement.LESS_GENERAL);
+        suffixes.put("bone", IMappingElement.LESS_GENERAL);
+        suffixes.put("bones", IMappingElement.LESS_GENERAL);
+        suffixes.put("band", IMappingElement.LESS_GENERAL);
+        suffixes.put("bands", IMappingElement.LESS_GENERAL);
+        suffixes.put("cake", IMappingElement.LESS_GENERAL);
+        suffixes.put("cakes", IMappingElement.LESS_GENERAL);
+        suffixes.put("shop", IMappingElement.LESS_GENERAL);
+        suffixes.put("shops", IMappingElement.LESS_GENERAL);
+        suffixes.put("mill", IMappingElement.LESS_GENERAL);
+        suffixes.put("mills", IMappingElement.LESS_GENERAL);
+        suffixes.put("paper", IMappingElement.LESS_GENERAL);
+        suffixes.put("papers", IMappingElement.LESS_GENERAL);
+        suffixes.put("worship", IMappingElement.LESS_GENERAL);
+        suffixes.put("snake", IMappingElement.LESS_GENERAL);
+        suffixes.put("snake's", IMappingElement.LESS_GENERAL);
+        suffixes.put("snakes", IMappingElement.LESS_GENERAL);
+        suffixes.put("road", IMappingElement.LESS_GENERAL);
+        suffixes.put("roads", IMappingElement.LESS_GENERAL);
+        suffixes.put("hound", IMappingElement.LESS_GENERAL);
+        suffixes.put("hound's", IMappingElement.LESS_GENERAL);
+        suffixes.put("hounds", IMappingElement.LESS_GENERAL);
+        suffixes.put("care", IMappingElement.LESS_GENERAL);
+        suffixes.put("cares", IMappingElement.LESS_GENERAL);
+        suffixes.put("virus", IMappingElement.LESS_GENERAL);
+        suffixes.put("virus'", IMappingElement.LESS_GENERAL);
+        suffixes.put("viruses", IMappingElement.LESS_GENERAL);
+        suffixes.put("storm", IMappingElement.LESS_GENERAL);
+        suffixes.put("storms", IMappingElement.LESS_GENERAL);
+        suffixes.put("sail", IMappingElement.LESS_GENERAL);
+        suffixes.put("sail's", IMappingElement.LESS_GENERAL);
+        suffixes.put("sails", IMappingElement.LESS_GENERAL);
+        suffixes.put("boot", IMappingElement.LESS_GENERAL);
+        suffixes.put("boots", IMappingElement.LESS_GENERAL);
+        suffixes.put("bee", IMappingElement.LESS_GENERAL);
+        suffixes.put("bee's", IMappingElement.LESS_GENERAL);
+        suffixes.put("bees", IMappingElement.LESS_GENERAL);
+        suffixes.put("ache", IMappingElement.LESS_GENERAL);
+        suffixes.put("aches", IMappingElement.LESS_GENERAL);
+        suffixes.put("wear", IMappingElement.LESS_GENERAL);
+        suffixes.put("wears", IMappingElement.LESS_GENERAL);
+        suffixes.put("tit", IMappingElement.LESS_GENERAL);
+        suffixes.put("tits", IMappingElement.LESS_GENERAL);
+        suffixes.put("tax", IMappingElement.LESS_GENERAL);
+        suffixes.put("tree", IMappingElement.LESS_GENERAL);
+        suffixes.put("trees", IMappingElement.LESS_GENERAL);
+        suffixes.put("taxes", IMappingElement.LESS_GENERAL);
+        suffixes.put("spoon", IMappingElement.LESS_GENERAL);
+        suffixes.put("spoons", IMappingElement.LESS_GENERAL);
+        suffixes.put("song", IMappingElement.LESS_GENERAL);
+        suffixes.put("songs", IMappingElement.LESS_GENERAL);
+        suffixes.put("builder", IMappingElement.LESS_GENERAL);
+        suffixes.put("builder's", IMappingElement.LESS_GENERAL);
+        suffixes.put("builders", IMappingElement.LESS_GENERAL);
+        suffixes.put("vine", IMappingElement.LESS_GENERAL);
+        suffixes.put("vines", IMappingElement.LESS_GENERAL);
+        suffixes.put("saddle", IMappingElement.LESS_GENERAL);
+        suffixes.put("saddles", IMappingElement.LESS_GENERAL);
+        suffixes.put("plant", IMappingElement.LESS_GENERAL);
+        suffixes.put("plants", IMappingElement.LESS_GENERAL);
+        suffixes.put("knife", IMappingElement.LESS_GENERAL);
+        suffixes.put("knives", IMappingElement.LESS_GENERAL);
+        suffixes.put("frog", IMappingElement.LESS_GENERAL);
+        suffixes.put("frog's", IMappingElement.LESS_GENERAL);
+        suffixes.put("frogs", IMappingElement.LESS_GENERAL);
+        suffixes.put("chop", IMappingElement.LESS_GENERAL);
+        suffixes.put("chops", IMappingElement.LESS_GENERAL);
+        suffixes.put("writer", IMappingElement.LESS_GENERAL);
+        suffixes.put("writer's", IMappingElement.LESS_GENERAL);
+        suffixes.put("writers", IMappingElement.LESS_GENERAL);
+        suffixes.put("wright", IMappingElement.LESS_GENERAL);
+        suffixes.put("wrights", IMappingElement.LESS_GENERAL);
+        suffixes.put("person", IMappingElement.LESS_GENERAL);
+        suffixes.put("person's", IMappingElement.LESS_GENERAL);
+        suffixes.put("persons", IMappingElement.LESS_GENERAL);
+        suffixes.put("owner", IMappingElement.LESS_GENERAL);
+        suffixes.put("owner's", IMappingElement.LESS_GENERAL);
+        suffixes.put("owners", IMappingElement.LESS_GENERAL);
+        suffixes.put("mint", IMappingElement.LESS_GENERAL);
+        suffixes.put("rack", IMappingElement.LESS_GENERAL);
+        suffixes.put("racks", IMappingElement.LESS_GENERAL);
+        suffixes.put("name", IMappingElement.LESS_GENERAL);
+        suffixes.put("names", IMappingElement.LESS_GENERAL);
+        suffixes.put("mast", IMappingElement.LESS_GENERAL);
+        suffixes.put("in-law", IMappingElement.LESS_GENERAL);
+        suffixes.put("fruit", IMappingElement.LESS_GENERAL);
+        suffixes.put("fruits", IMappingElement.LESS_GENERAL);
+        suffixes.put("pox", IMappingElement.LESS_GENERAL);
+        suffixes.put("poxes", IMappingElement.LESS_GENERAL);
+        suffixes.put("hide", IMappingElement.LESS_GENERAL);
+        suffixes.put("force", IMappingElement.LESS_GENERAL);
+        suffixes.put("forces", IMappingElement.LESS_GENERAL);
     }
 
     public char match(String str1, String str2) {
@@ -569,25 +570,25 @@ un-
         char rel;
 
         if (str1 == null || str2 == null) {
-            rel = MatchManager.IDK_RELATION;
+            rel = IMappingElement.IDK;
         } else {
             if ((str1.length() > 3) && (str2.length() > 3)) {
                 if (str1.equals(str2)) {
-                    rel = MatchManager.SYNOMYM;
+                    rel = IMappingElement.EQUIVALENCE;
                 } else if (str1.endsWith(str2)) {
                     rel = matchSuffix(str1, str2);
                 } else if (str2.endsWith(str1)) {
                     rel = match(str2, str1);
                     rel = reverseRelation(rel);
                 } else {
-                    rel = MatchManager.IDK_RELATION;
+                    rel = IMappingElement.IDK;
                 }
             } else {
-                rel = MatchManager.IDK_RELATION;
+                rel = IMappingElement.IDK;
             }//if ((str1.length() > 3) && (str2.length() > 3)) {
         }//null
 
-        if (rel != MatchManager.IDK_RELATION) {
+        if (rel != IMappingElement.IDK) {
             relCount++;
             addCase(str1, str2, rel);
         }
@@ -603,18 +604,18 @@ un-
      */
     private char matchSuffix(String str1, String str2) {
         //here always str1.endsWith(str2)
-        char rel = MatchManager.IDK_RELATION;
+        char rel = IMappingElement.IDK;
         int spacePos1 = str1.lastIndexOf(' ');
         String prefix = str1.substring(0, str1.length() - str2.length());
         if (-1 < spacePos1 && !prefixes.containsKey(prefix)) {//check prefixes - ordered set!unordered set // TODO the matcher is suffix not prefix. need revision
             if (str1.length() == spacePos1 + str2.length() + 1) {//adhesive tape<tape   attention deficit disorder<disorder
-                rel = MatchManager.LESS_GENERAL_THAN;
+                rel = IMappingElement.LESS_GENERAL;
             } else {//connective tissue<issue
                 String left = str1.substring(spacePos1 + 1, str1.length());
                 char secondRel = match(left, str2);
-                if (MatchManager.MORE_GENERAL_THAN == secondRel ||
-                        MatchManager.SYNOMYM == secondRel) {
-                    rel = MatchManager.LESS_GENERAL_THAN;
+                if (IMappingElement.MORE_GENERAL == secondRel ||
+                        IMappingElement.EQUIVALENCE == secondRel) {
+                    rel = IMappingElement.LESS_GENERAL;
                 } else { //?,<,!
                     rel = secondRel;
                 }
@@ -627,7 +628,7 @@ un-
                 //prefix = prefix.substring(0, prefix.length() - 1);
                 //smth like cajun-creole, parrot-fish
                 //but anti-virus
-                rel = MatchManager.LESS_GENERAL_THAN;
+                rel = IMappingElement.LESS_GENERAL;
             } else {
                 if (prefixes.containsKey(prefix)) {
                     rel = prefixes.get(prefix);
@@ -637,14 +638,14 @@ un-
             }
 
             //another approximation = Gversion4
-//            if (rel == MatchManager.LESS_GENERAL_THAN || rel == MatchManager.MORE_GENERAL_THAN) {
-//                rel = MatchManager.SYNOMYM;
+//            if (rel == MatchManager.LESS_GENERAL || rel == MatchManager.MORE_GENERAL) {
+//                rel = MatchManager.EQUIVALENCE;
 //            }
         }
 
         //filter = Gversion3
-//        if (MatchManager.LESS_GENERAL_THAN == rel || MatchManager.MORE_GENERAL_THAN == rel) {
-//            rel = MatchManager.SYNOMYM;
+//        if (MatchManager.LESS_GENERAL == rel || MatchManager.MORE_GENERAL == rel) {
+//            rel = MatchManager.EQUIVALENCE;
 //        }
 
         return rel;
@@ -652,11 +653,11 @@ un-
 
     private char reverseRelation(char rel) {
         char res = rel;
-        if (rel == MatchManager.MORE_GENERAL_THAN) {
-            res = MatchManager.LESS_GENERAL_THAN;
+        if (rel == IMappingElement.MORE_GENERAL) {
+            res = IMappingElement.LESS_GENERAL;
         }
-        if (rel == MatchManager.LESS_GENERAL_THAN) {
-            res = MatchManager.MORE_GENERAL_THAN;
+        if (rel == IMappingElement.LESS_GENERAL) {
+            res = IMappingElement.MORE_GENERAL;
         }
         return res;
     }
@@ -681,11 +682,11 @@ un-
                 hm.add(lstr1 + rel + lstr2);
             }
         } else {
-            if (rel == MatchManager.MORE_GENERAL_THAN) {
-                rel = MatchManager.LESS_GENERAL_THAN;
+            if (rel == IMappingElement.MORE_GENERAL) {
+                rel = IMappingElement.LESS_GENERAL;
             } else {
-                if (rel == MatchManager.LESS_GENERAL_THAN) {
-                    rel = MatchManager.MORE_GENERAL_THAN;
+                if (rel == IMappingElement.LESS_GENERAL) {
+                    rel = IMappingElement.MORE_GENERAL;
                 }
             }
             if (!hm.contains(lstr2 + rel + lstr1)) {

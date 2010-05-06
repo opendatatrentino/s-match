@@ -1,9 +1,11 @@
 package it.unitn.disi.smatch.matchers.element.gloss;
 
-import it.unitn.disi.smatch.MatchManager;
+import it.unitn.disi.smatch.components.ConfigurableException;
+import it.unitn.disi.smatch.data.mappings.IMappingElement;
 import it.unitn.disi.smatch.matchers.element.ISenseGlossBasedElementLevelSemanticMatcher;
 import it.unitn.disi.smatch.oracles.ISynset;
 
+import java.util.Properties;
 import java.util.StringTokenizer;
 
 /**
@@ -15,7 +17,22 @@ import java.util.StringTokenizer;
  */
 public class WNExtendedSemanticGlossComparison extends BasicGlossMatcher implements ISenseGlossBasedElementLevelSemanticMatcher {
 
-	/**
+    // the words which are cut off from the area of discourse
+    public static String MEANINGLESS_WORDS_KEY = "meaninglessWords";
+    private String meaninglessWords = "of on to their than from for by in at is are have has the a as with your etc our into its his her which him among those against ";
+
+    @Override
+    public void setProperties(Properties newProperties) throws ConfigurableException {
+        if (!newProperties.equals(properties)) {
+            if (newProperties.containsKey(MEANINGLESS_WORDS_KEY)) {
+                meaninglessWords = newProperties.getProperty(MEANINGLESS_WORDS_KEY) + " ";
+            }
+
+            properties = newProperties;
+        }
+    }
+
+    /**
      * Computes the relation for extended semantic gloss matcher.
      *
      * @param source1 the gloss of source
@@ -27,23 +44,23 @@ public class WNExtendedSemanticGlossComparison extends BasicGlossMatcher impleme
         String tSynset = target1.getGloss();
 
         // get gloss of Immediate ancestor of target node
-        String tLGExtendedGloss = getExtendedGloss(target1, 1, MatchManager.LESS_GENERAL_THAN);
+        String tLGExtendedGloss = getExtendedGloss(target1, 1, IMappingElement.LESS_GENERAL);
         // get relation frequently occur between gloss of source and extended gloss of target
         char LGRel = getDominantRelation(sSynset, tLGExtendedGloss);
         // get final relation
-        char LGFinal = getRelationFromRels(MatchManager.LESS_GENERAL_THAN, LGRel);
+        char LGFinal = getRelationFromRels(IMappingElement.LESS_GENERAL, LGRel);
         // get gloss of Immediate descendant of target node
-        String tMGExtendedGloss = getExtendedGloss(target1, 1, MatchManager.MORE_GENERAL_THAN);
+        String tMGExtendedGloss = getExtendedGloss(target1, 1, IMappingElement.MORE_GENERAL);
         char MGRel = getDominantRelation(sSynset, tMGExtendedGloss);
-        char MGFinal = getRelationFromRels(MatchManager.MORE_GENERAL_THAN, MGRel);
+        char MGFinal = getRelationFromRels(IMappingElement.MORE_GENERAL, MGRel);
         // Compute final relation
         if (MGFinal == LGFinal)
             return MGFinal;
-        if (MGFinal == MatchManager.IDK_RELATION)
+        if (MGFinal == IMappingElement.IDK)
             return LGFinal;
-        if (LGFinal == MatchManager.IDK_RELATION)
+        if (LGFinal == IMappingElement.IDK)
             return MGFinal;
-        return MatchManager.IDK_RELATION;
+        return IMappingElement.IDK;
     }
 
     /**
@@ -60,14 +77,13 @@ public class WNExtendedSemanticGlossComparison extends BasicGlossMatcher impleme
         int Opposite = 0;
         StringTokenizer stSource = new StringTokenizer(sExtendedGloss, " ,.\"'()");
         String lemmaS, lemmaT;
-        int counter = 0;
         while (stSource.hasMoreTokens()) {
             StringTokenizer stTarget = new StringTokenizer(tExtendedGloss, " ,.\"'()");
             lemmaS = stSource.nextToken();
-            if (MatchManager.meaninglessWords.indexOf(lemmaS) == -1)
+            if (meaninglessWords.indexOf(lemmaS) == -1)
                 while (stTarget.hasMoreTokens()) {
                     lemmaT = stTarget.nextToken();
-                    if (MatchManager.meaninglessWords.indexOf(lemmaT) == -1) {
+                    if (meaninglessWords.indexOf(lemmaT) == -1) {
                         if (isWordLessGeneral(lemmaS, lemmaT))
                             lessGeneral++;
                         else if (isWordMoreGeneral(lemmaS, lemmaT))
@@ -93,35 +109,32 @@ public class WNExtendedSemanticGlossComparison extends BasicGlossMatcher impleme
      */
     private char getRelationFromInts(int lg, int mg, int syn, int opp) {
         if ((lg >= mg) && (lg >= syn) && (lg >= opp) && (lg > 0))
-            return MatchManager.LESS_GENERAL_THAN;
+            return IMappingElement.LESS_GENERAL;
         if ((mg >= lg) && (mg >= syn) && (mg >= opp) && (mg > 0))
-            return MatchManager.MORE_GENERAL_THAN;
+            return IMappingElement.MORE_GENERAL;
         if ((syn >= mg) && (syn >= lg) && (syn >= opp) && (syn > 0))
-            return MatchManager.LESS_GENERAL_THAN;
+            return IMappingElement.LESS_GENERAL;
         if ((opp >= mg) && (opp >= syn) && (opp >= lg) && (opp > 0))
-            return MatchManager.LESS_GENERAL_THAN;
-        return MatchManager.IDK_RELATION;
+            return IMappingElement.LESS_GENERAL;
+        return IMappingElement.IDK;
     }
 
     /**
      * Decides which relation to return as a function of relation for which extended gloss was built.
      *
-     * @param builtForRel
-     * @param glossRel
+     * @param builtForRel relation for which the gloss was built
+     * @param glossRel relation
      * @return less general, more general or IDK relation
      */
-    // TODO Need comments about parameters
     private char getRelationFromRels(char builtForRel, char glossRel) {
-        if (builtForRel == MatchManager.SYNOMYM)
+        if (builtForRel == IMappingElement.EQUIVALENCE)
             return glossRel;
-        if (builtForRel == MatchManager.LESS_GENERAL_THAN)
-            if ((glossRel == MatchManager.LESS_GENERAL_THAN) || (glossRel == MatchManager.SYNOMYM))
-                return MatchManager.LESS_GENERAL_THAN;
-        if (builtForRel == MatchManager.MORE_GENERAL_THAN)
-            if ((glossRel == MatchManager.MORE_GENERAL_THAN) || (glossRel == MatchManager.SYNOMYM))
-                return MatchManager.MORE_GENERAL_THAN;
-        return MatchManager.IDK_RELATION;
+        if (builtForRel == IMappingElement.LESS_GENERAL)
+            if ((glossRel == IMappingElement.LESS_GENERAL) || (glossRel == IMappingElement.EQUIVALENCE))
+                return IMappingElement.LESS_GENERAL;
+        if (builtForRel == IMappingElement.MORE_GENERAL)
+            if ((glossRel == IMappingElement.MORE_GENERAL) || (glossRel == IMappingElement.EQUIVALENCE))
+                return IMappingElement.MORE_GENERAL;
+        return IMappingElement.IDK;
     }
-
-
 }

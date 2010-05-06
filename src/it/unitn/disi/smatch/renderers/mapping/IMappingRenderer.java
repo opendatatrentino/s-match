@@ -1,6 +1,6 @@
 package it.unitn.disi.smatch.renderers.mapping;
 
-import it.unitn.disi.smatch.SMatchException;
+import it.unitn.disi.smatch.components.IConfigurable;
 import it.unitn.disi.smatch.data.mappings.IMapping;
 
 /**
@@ -8,14 +8,14 @@ import it.unitn.disi.smatch.data.mappings.IMapping;
  *
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
-public interface IMappingRenderer {
+public interface IMappingRenderer extends IConfigurable {
 
     /**
      * Saves the mapping into a file.
      *
      * @param mapping    a mapping to render
      * @param outputFile an output file
-     * @throws SMatchException SMatchException
+     * @throws MappingRendererException MappingRendererException
      */
-    public void render(IMapping mapping, String outputFile) throws SMatchException;
+    void render(IMapping mapping, String outputFile) throws MappingRendererException;
 }

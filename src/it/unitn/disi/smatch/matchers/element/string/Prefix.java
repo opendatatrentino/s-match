@@ -1,6 +1,7 @@
 package it.unitn.disi.smatch.matchers.element.string;
 
-import it.unitn.disi.smatch.MatchManager;
+import it.unitn.disi.smatch.components.Configurable;
+import it.unitn.disi.smatch.data.mappings.IMappingElement;
 import it.unitn.disi.smatch.matchers.element.IStringBasedElementLevelSemanticMatcher;
 
 import java.util.Arrays;
@@ -13,7 +14,7 @@ import java.util.HashSet;
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
-public class Prefix implements IStringBasedElementLevelSemanticMatcher {
+public class Prefix extends Configurable implements IStringBasedElementLevelSemanticMatcher {
     private static int invocationCount = 0;
     private static int relCount = 0;
     private static HashSet<String> hm = new HashSet<String>();
@@ -27,31 +28,31 @@ public class Prefix implements IStringBasedElementLevelSemanticMatcher {
      */
     public char match(String str1, String str2) {
         invocationCount++;
-        char rel = MatchManager.IDK_RELATION;
+        char rel = IMappingElement.IDK;
 
         if (str1 == null || str2 == null) {
-            rel = MatchManager.IDK_RELATION;
+            rel = IMappingElement.IDK;
         } else {
             if ((str1.length() > 3) && (str2.length() > 3)) {
                 if (str1.startsWith(str2)) {
                     if (str1.indexOf(" ") > -1) {
-                        rel = MatchManager.LESS_GENERAL_THAN;
+                        rel = IMappingElement.LESS_GENERAL;
                     } else {
-                        rel = MatchManager.SYNOMYM;
+                        rel = IMappingElement.EQUIVALENCE;
                     }
                 } else {
                     if (str2.startsWith(str1)) {
                         if (str2.indexOf(" ") > -1) {
-                            rel = MatchManager.MORE_GENERAL_THAN;
+                            rel = IMappingElement.MORE_GENERAL;
                         } else {
-                            rel = MatchManager.SYNOMYM;
+                            rel = IMappingElement.EQUIVALENCE;
                         }
                     }
                 }
             }//if ((str1.length() > 3) && (str2.length() > 3)) {
         }
 
-        if (rel != MatchManager.IDK_RELATION) {
+        if (rel != IMappingElement.IDK) {
             relCount++;
             addCase(str1, str2, rel);
         }
@@ -79,11 +80,11 @@ public class Prefix implements IStringBasedElementLevelSemanticMatcher {
                 hm.add(lstr1 + rel + lstr2);
             }
         } else {
-            if (rel == MatchManager.MORE_GENERAL_THAN) {
-                rel = MatchManager.LESS_GENERAL_THAN;
+            if (rel == IMappingElement.MORE_GENERAL) {
+                rel = IMappingElement.LESS_GENERAL;
             } else {
-                if (rel == MatchManager.LESS_GENERAL_THAN) {
-                    rel = MatchManager.MORE_GENERAL_THAN;
+                if (rel == IMappingElement.LESS_GENERAL) {
+                    rel = IMappingElement.MORE_GENERAL;
                 }
             }
             if (!hm.contains(lstr2 + rel + lstr1)) {

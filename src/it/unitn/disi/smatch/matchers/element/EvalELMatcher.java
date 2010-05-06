@@ -2,13 +2,15 @@ package it.unitn.disi.smatch.matchers.element;
 
 import it.unitn.disi.smatch.MatchManager;
 import it.unitn.disi.smatch.SMatchConstants;
-import it.unitn.disi.smatch.SMatchException;
+import it.unitn.disi.smatch.components.Configurable;
 import it.unitn.disi.smatch.data.*;
+import it.unitn.disi.smatch.data.mappings.IMappingElement;
 import it.unitn.disi.smatch.data.matrices.IMatchMatrix;
 import it.unitn.disi.smatch.data.matrices.MatrixFactory;
 
 import java.util.Vector;
 
+import it.unitn.disi.smatch.oracles.ILinguisticOracle;
 import org.apache.log4j.Logger;
 import org.apache.log4j.Level;
 
@@ -19,7 +21,7 @@ import org.apache.log4j.Level;
  *
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
-public class EvalELMatcher implements IMatcherLibrary {
+public class EvalELMatcher extends Configurable implements IMatcherLibrary {
 
     private static final Logger log = Logger.getLogger(EvalELMatcher.class);
 
@@ -47,9 +49,9 @@ public class EvalELMatcher implements IMatcherLibrary {
      * @param sourceContext context to be evaluated
      * @param targetContext golden context
      * @return relational matrix of concept of labels
-     * @throws SMatchException
+     * @throws MatcherLibraryException MatcherLibraryException
      */
-    public IMatchMatrix elementLevelMatching(IContext sourceContext, IContext targetContext) throws SMatchException {
+    public IMatchMatrix elementLevelMatching(IContext sourceContext, IContext targetContext) throws MatcherLibraryException {
         IMatchMatrix ClabMatrix = null;
         try {
             //compare each pair of nodes
@@ -58,12 +60,8 @@ public class EvalELMatcher implements IMatcherLibrary {
             Vector<IAtomicConceptOfLabel> sourceACoLs = sourceContext.getMatchingContext().getAllContextACoLs();
             Vector<IAtomicConceptOfLabel> targetACoLs = targetContext.getMatchingContext().getAllContextACoLs();
 
-            MatchManager.printMemoryUsage();
-
             //Initialization of matrix
             ClabMatrix = MatrixFactory.getInstance(sourceACoLs.size(), targetACoLs.size());
-
-            MatchManager.printMemoryUsage();
 
             Vector<INode> sourceNodes = sourceContext.getAllNodes();
             Vector<INode> targetNodes = targetContext.getAllNodes();
@@ -105,7 +103,7 @@ public class EvalELMatcher implements IMatcherLibrary {
                 log.error("Exception: " + e.getMessage(), e);
                 log.error("The cLab matrix is not complete due to an exception");
             }
-            throw new SMatchException("The cLab matrix is not complete due to an exception", e);
+            throw new MatcherLibraryException("The cLab matrix is not complete due to an exception", e);
         }
         return ClabMatrix;
     }
@@ -118,7 +116,7 @@ public class EvalELMatcher implements IMatcherLibrary {
      * @return relation between concept of labels
      */
     public char getRelation(IAtomicConceptOfLabel sourceACoL, IAtomicConceptOfLabel targetACoL) {
-        char result = MatchManager.IDK_RELATION;
+        char result = IMappingElement.IDK;
 
         //if all target (golden) senses are present in source and nothing more - exact match
         //if more are in source - approximate match
@@ -210,7 +208,7 @@ public class EvalELMatcher implements IMatcherLibrary {
     private void removeUnknownSenses(Vector<String> senses) {
         int i = 0;
         while (i < senses.size()) {
-            if (senses.get(i).startsWith(MatchManager.UNKNOWN_MEANING)) {
+            if (senses.get(i).startsWith(ILinguisticOracle.UNKNOWN_MEANING)) {
                 senses.remove(i);
             } else {
                 i++;

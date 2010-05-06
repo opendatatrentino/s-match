@@ -1,11 +1,13 @@
 package it.unitn.disi.smatch;
 
+import it.unitn.disi.smatch.components.ConfigurableException;
+
 /**
- * Main component exception.
+ * Main S-Match exception.
  *
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
-public class SMatchException extends Exception {
+public class SMatchException extends ConfigurableException {
 
     /**
      * Constructor.

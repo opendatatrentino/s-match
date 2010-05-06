@@ -39,7 +39,11 @@ public class SMatchAPIDemo {
         config.load(new FileInputStream(CONFIG_FILE_PREFIX + "SMatchTab2XML.properties"));
 
         System.out.println("Configuring MatchManager from " + CONFIG_FILE_PREFIX + "SMatchTab2XML.properties" + "...");
-        mm.setProperties(config);
+        try {
+            mm.setProperties(config);
+        } catch (it.unitn.disi.smatch.components.ConfigurableException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
 
         System.out.println("Loading source context...");
         IContext s = mm.loadContext("../test-data/cw/c.txt");
@@ -77,7 +81,11 @@ public class SMatchAPIDemo {
         config.load(new FileInputStream(CONFIG_FILE_PREFIX + "S-Match.properties"));
 
         System.out.println("Configuring MatchManager from " + CONFIG_FILE_PREFIX + "S-Match.properties" + "...");
-        mm.setProperties(config);
+        try {
+            mm.setProperties(config);
+        } catch (it.unitn.disi.smatch.components.ConfigurableException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
 
         String example = "Courses";
         System.out.println("Creating source context...");

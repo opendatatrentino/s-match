@@ -1,5 +1,6 @@
 package it.unitn.disi.smatch.deciders;
 
+import it.unitn.disi.smatch.components.Configurable;
 import org.satlive.jsat.algos.DPLL;
 import org.satlive.jsat.algos.SatisfiabilityAlgorithm;
 import org.satlive.jsat.gen.DIMACS;
@@ -16,7 +17,7 @@ import java.io.StringReader;
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
-public class JSAT implements ISATSolver {
+public class JSAT extends Configurable implements ISATSolver {
 
     /**
      * This method can be used to call the JSAT library.
@@ -24,7 +25,7 @@ public class JSAT implements ISATSolver {
      * @param input The String that contains sat problem in DIMACS's format
      * @return boolean True if the formula is satisfiable, false otherwise
      */
-    public boolean isSatisfiable(String input) {
+    public boolean isSatisfiable(String input) throws SATSolverException {
         //Create a SAT solver instance
         SatisfiabilityAlgorithm sat = new DPLL();
         //Create a base instance

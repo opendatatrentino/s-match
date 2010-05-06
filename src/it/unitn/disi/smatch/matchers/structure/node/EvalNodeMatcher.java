@@ -1,8 +1,7 @@
 package it.unitn.disi.smatch.matchers.structure.node;
 
-import it.unitn.disi.smatch.MatchManager;
-import it.unitn.disi.smatch.SMatchException;
 import it.unitn.disi.smatch.data.IAtomicConceptOfLabel;
+import it.unitn.disi.smatch.data.mappings.IMappingElement;
 import it.unitn.disi.smatch.data.matrices.IMatchMatrix;
 import it.unitn.disi.smatch.data.INode;
 import it.unitn.disi.smatch.matchers.element.EvalELMatcher;
@@ -18,8 +17,8 @@ import java.util.*;
  */
 public class EvalNodeMatcher extends BaseNodeMatcher implements INodeMatcher {
 
-    public char nodeMatch(IMatchMatrix cLabMatrix, INode sourceNode, INode targetNode) throws SMatchException {
-        char result = MatchManager.IDK_RELATION;
+    public char nodeMatch(IMatchMatrix cLabMatrix, INode sourceNode, INode targetNode) throws NodeMatcherException {
+        char result = IMappingElement.IDK;
         String sourceCLabFormula = sourceNode.getNodeData().getcLabFormula();
         String targetCLabFormula = targetNode.getNodeData().getcLabFormula();
 
@@ -84,7 +83,7 @@ public class EvalNodeMatcher extends BaseNodeMatcher implements INodeMatcher {
             result = getRelationString(isContains, isContained, false);
         } else {
             if (null == sourceCLabFormula && null == targetCLabFormula || "".equals(sourceCLabFormula) && "".equals(targetCLabFormula)) {
-                result = MatchManager.SYNOMYM;
+                result = IMappingElement.EQUIVALENCE;
             }
         }
         return result;
@@ -129,7 +128,7 @@ public class EvalNodeMatcher extends BaseNodeMatcher implements INodeMatcher {
             for (IAtomicConceptOfLabel targetACoL : targetNodeACols) {
                 //if there are semantic relation between ACoLS in relMatrix
                 char relation = cLabMatrix.getElement(sourceACoL.getIndex(), targetACoL.getIndex());
-                if (MatchManager.IDK_RELATION != relation) {
+                if (IMappingElement.IDK != relation) {
                     //get the numbers of DIMACS variables corresponding to ACoLs
                     String sourceVarNumber = (hashConceptNumber.get(sourceACoL)).toString();
                     String targetVarNumber = (hashConceptNumber.get(targetACoL)).toString();

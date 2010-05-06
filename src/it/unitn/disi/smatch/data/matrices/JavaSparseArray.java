@@ -1,6 +1,6 @@
 package it.unitn.disi.smatch.data.matrices;
 
-import it.unitn.disi.smatch.MatchManager;
+import it.unitn.disi.smatch.data.mappings.IMappingElement;
 
 import java.util.Arrays;
 
@@ -38,7 +38,7 @@ public class JavaSparseArray implements IMatchMatrix {
     }
 
     public char getElement(int x, int y) {
-        char result = MatchManager.IDK_RELATION;
+        char result = IMappingElement.IDK;
         if (null != index[x]) {
             int idx = Arrays.binarySearch(index[x], y);
             if (-1 < idx) {
@@ -49,7 +49,7 @@ public class JavaSparseArray implements IMatchMatrix {
     }
 
     public void setElement(int x, int y, char aValue) {
-        if (MatchManager.IDK_RELATION != aValue) {
+        if (IMappingElement.IDK != aValue) {
             if (null != index[x]) {//row exists
                 int idx = Arrays.binarySearch(index[x], y);
                 if (-1 < idx) {//element exists

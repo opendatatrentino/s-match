@@ -1,11 +1,11 @@
 package it.unitn.disi.smatch.matchers.element.gloss;
 
-import it.unitn.disi.smatch.MatchManager;
+import it.unitn.disi.smatch.components.ConfigurableException;
+import it.unitn.disi.smatch.data.mappings.IMappingElement;
 import it.unitn.disi.smatch.matchers.element.ISenseGlossBasedElementLevelSemanticMatcher;
-import it.unitn.disi.smatch.oracles.ILinguisticOracle;
 import it.unitn.disi.smatch.oracles.ISynset;
-import it.unitn.disi.smatch.oracles.IWordNetMatcher;
 
+import java.util.Properties;
 import java.util.StringTokenizer;
 
 /**
@@ -16,13 +16,20 @@ import java.util.StringTokenizer;
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
 public class WNSemanticGlossComparison extends BasicGlossMatcher implements ISenseGlossBasedElementLevelSemanticMatcher {
-    private static ILinguisticOracle ILO = null;
-    private static IWordNetMatcher IWNM = null;
 
-    public WNSemanticGlossComparison() {
-        super();
-        ILO = MatchManager.getLinguisticOracle();
-        IWNM = MatchManager.getIWNMatcher();
+    // the words which are cut off from the area of discourse
+    public static String MEANINGLESS_WORDS_KEY = "meaninglessWords";
+    private String meaninglessWords = "of on to their than from for by in at is are have has the a as with your etc our into its his her which him among those against ";
+
+    @Override
+    public void setProperties(Properties newProperties) throws ConfigurableException {
+        if (!newProperties.equals(properties)) {
+            if (newProperties.containsKey(MEANINGLESS_WORDS_KEY)) {
+                meaninglessWords = newProperties.getProperty(MEANINGLESS_WORDS_KEY) + " ";
+            }
+
+            properties = newProperties;
+        }
     }
 
     /**
@@ -41,14 +48,13 @@ public class WNSemanticGlossComparison extends BasicGlossMatcher implements ISen
         String tSynset = target.getGloss();
         StringTokenizer stSource = new StringTokenizer(sSynset, " ,.\"'()");
         String lemmaS, lemmaT;
-        int counter = 0;
         while (stSource.hasMoreTokens()) {
             StringTokenizer stTarget = new StringTokenizer(tSynset, " ,.\"'()");
             lemmaS = stSource.nextToken();
-            if (MatchManager.meaninglessWords.indexOf(lemmaS) == -1)
+            if (meaninglessWords.indexOf(lemmaS) == -1)
                 while (stTarget.hasMoreTokens()) {
                     lemmaT = stTarget.nextToken();
-                    if (MatchManager.meaninglessWords.indexOf(lemmaT) == -1) {
+                    if (meaninglessWords.indexOf(lemmaT) == -1) {
                         if (isWordLessGeneral(lemmaS, lemmaT))
                             lessGeneral++;
                         else if (isWordMoreGeneral(lemmaS, lemmaT))
@@ -66,21 +72,21 @@ public class WNSemanticGlossComparison extends BasicGlossMatcher implements ISen
     /**
      * Decides which relation to return.
      *
-     * @param lg number of less general words between two extended gloss
-     * @param mg number of more general words between two extended gloss
+     * @param lg  number of less general words between two extended gloss
+     * @param mg  number of more general words between two extended gloss
      * @param syn number of synonym words between two extended gloss
      * @param opp number of opposite words between two extended gloss
      * @return the more frequent relation between two extended glosses.
      */
     private char getRelationFromInts(int lg, int mg, int syn, int opp) {
         if ((lg >= mg) && (lg >= syn) && (lg >= opp) && (lg > 0))
-            return MatchManager.LESS_GENERAL_THAN;
+            return IMappingElement.LESS_GENERAL;
         if ((mg >= lg) && (mg >= syn) && (mg >= opp) && (mg > 0))
-            return MatchManager.MORE_GENERAL_THAN;
+            return IMappingElement.MORE_GENERAL;
         if ((syn >= mg) && (syn >= lg) && (syn >= opp) && (syn > 0))
-            return MatchManager.LESS_GENERAL_THAN;
+            return IMappingElement.LESS_GENERAL;
         if ((opp >= mg) && (opp >= syn) && (opp >= lg) && (opp > 0))
-            return MatchManager.LESS_GENERAL_THAN;
-        return MatchManager.IDK_RELATION;
+            return IMappingElement.LESS_GENERAL;
+        return IMappingElement.IDK;
     }
 }

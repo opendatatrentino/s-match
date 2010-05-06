@@ -6,6 +6,9 @@ import java.io.*;
 import java.util.Hashtable;
 import java.util.Vector;
 
+import it.unitn.disi.smatch.SMatchException;
+import it.unitn.disi.smatch.oracles.wordnet.InMemoryWordNetBinaryArray;
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 
@@ -16,37 +19,7 @@ import org.apache.log4j.PropertyConfigurator;
  */
 public class SMatchUtils {
 
-    /**
-     * Loads the hashtable with multiwords
-     * the multiwords are stored in the following format
-     * Key-the first word in the multiwords
-     * Value-Vector of Vectors, which contain the other words in the all the multiwords
-     * starting from the word in Key.
-     *
-     * @param fileName the file name from where the hash table will be read
-     * @return multiwords hastable
-     */
-    public static Hashtable<String, Vector<Vector<String>>> readHash(String fileName) {
-        Hashtable<String, Vector<Vector<String>>> result = new Hashtable<String, Vector<Vector<String>>>();
-        try {
-            FileInputStream fos = new FileInputStream(fileName);
-            BufferedInputStream bis = new BufferedInputStream(fos, MatchManager.BUFFER_SIZE);
-            ObjectInputStream oos = new ObjectInputStream(bis);
-            try {
-                result = (Hashtable<String, Vector<Vector<String>>>) oos.readObject();
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (ClassNotFoundException e) {
-                e.printStackTrace();
-            }
-            oos.close();
-            bis.close();
-            fos.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return result;
-    }
+    private static final Logger log = Logger.getLogger(SMatchUtils.class);
 
     /**
      * Configures properties file for logging information.
@@ -59,4 +32,70 @@ public class SMatchUtils {
             System.err.println("No log4j.configuration property specified.");
         }
     }
+
+    /**
+     * Writes Java object to a file.
+     *
+     * @param object   the object
+     * @param fileName the file where the object will be written
+     * @throws SMatchException SMatchException
+     */
+    public static void writeObject(Object object, String fileName) throws SMatchException {
+        log.info("Writing " + fileName);
+        try {
+            FileOutputStream fos = new FileOutputStream(fileName);
+            ObjectOutputStream oos = new ObjectOutputStream(fos);
+            oos.writeObject(object);
+            oos.close();
+            fos.close();
+        } catch (IOException e) {
+            if (log.isEnabledFor(Level.ERROR)) {
+                final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
+                log.error(errMessage, e);
+                throw new SMatchException(errMessage, e);
+            }
+        }
+    }
+
+    /**
+     * Reads Java object to a file.
+     *
+     * @param fileName the file where the object is stored
+     * @throws SMatchException SMatchException
+     * @return the object
+     */
+    public static Object readObject(String fileName) throws SMatchException {
+        Object result = null;
+        try {
+            FileInputStream fos = new FileInputStream(fileName);
+            BufferedInputStream bis = new BufferedInputStream(fos);
+            ObjectInputStream oos = new ObjectInputStream(bis);
+            try {
+                result = oos.readObject();
+            } catch (IOException e) {
+                if (log.isEnabledFor(Level.ERROR)) {
+                    final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
+                    log.error(errMessage, e);
+                    throw new SMatchException(errMessage, e);
+                }
+            } catch (ClassNotFoundException e) {
+                if (log.isEnabledFor(Level.ERROR)) {
+                    final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
+                    log.error(errMessage, e);
+                    throw new SMatchException(errMessage, e);
+                }
+            }
+            oos.close();
+            bis.close();
+            fos.close();
+        } catch (IOException e) {
+            if (log.isEnabledFor(Level.ERROR)) {
+                final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
+                log.error(errMessage, e);
+                throw new SMatchException(errMessage, e);
+            }
+        }
+        return result;
+    }
+
 }

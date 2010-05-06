@@ -1,11 +1,21 @@
 package it.unitn.disi.smatch.oracles;
 
+import it.unitn.disi.smatch.components.IConfigurable;
+
 import java.util.Vector;
 
 /**
- * Interface to Linguistic Oracle.
+ * Interface to Linguistic Oracle, such as WordNet.
+ *
+ * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
+ * @author Aliaksandr Autayeu avtaev@gmail.com
  */
-public interface ILinguisticOracle {
+public interface ILinguisticOracle extends IConfigurable {
+
+    /**
+     * Represents the words whos meaning is unknown. The ones that are out of vocabulary (WordNet).
+     */
+    String UNKNOWN_MEANING = "n#000000";
 
     /**
      * Returns a synset given its id.
@@ -35,9 +45,8 @@ public interface ILinguisticOracle {
     /**
      * Returns base form (lemma) of a word.
      *
-     * @param deriviation the word need to deriviate as lemma
+     * @param derivation the word to get a base form for
      * @return base form of a derivation
      */
-    public String getBaseForm(String deriviation);
-
+    public String getBaseForm(String derivation);
 }

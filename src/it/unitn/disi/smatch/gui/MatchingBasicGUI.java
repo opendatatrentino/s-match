@@ -3,14 +3,13 @@ package it.unitn.disi.smatch.gui;
 
 import it.unitn.disi.smatch.MatchManager;
 import it.unitn.disi.smatch.SMatchException;
+import it.unitn.disi.smatch.components.ConfigurableException;
 import it.unitn.disi.smatch.data.IContext;
 import it.unitn.disi.smatch.data.INode;
 import it.unitn.disi.smatch.data.mappings.IMapping;
 import it.unitn.disi.smatch.data.mappings.IMappingElement;
-import it.unitn.disi.smatch.data.mappings.MappingElement;
-import it.unitn.disi.smatch.data.matrices.IMatchMatrix;
-import it.unitn.disi.smatch.loaders.PlainMappingLoader;
-import it.unitn.disi.smatch.loaders.TABLoader;
+import it.unitn.disi.smatch.loaders.mapping.PlainMappingLoader;
+import it.unitn.disi.smatch.loaders.context.TabContextLoader;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
@@ -27,10 +26,11 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Vector;
+import java.util.Properties;
 
 /**
  * Provides basic S-Match GUI.
@@ -199,25 +199,28 @@ public class MatchingBasicGUI extends JPanel
     private IContext createTree(String fileName, JTree jTree, HashMap<INode, Integer> rowForPathHash) {
         //Create the nodes.
 
-        TABLoader loader = new TABLoader();
-        IContext context = loader.loadContext(fileName);
-        TreeNode rootNode = context.getRoot();
+        IContext context = null;
+        try {
+            TabContextLoader loader = new TabContextLoader();
+            context = loader.loadContext(fileName);
+            TreeNode rootNode = context.getRoot();
+            //Create a tree that allows one selection at a time.
+            DefaultTreeModel treeModel = new DefaultTreeModel(rootNode);
+            jTree.setModel(treeModel);
 
-        //Create a tree that allows one selection at a time.
-        DefaultTreeModel treeModel = new DefaultTreeModel(rootNode);
-        jTree.setModel(treeModel);
+            jTree.getSelectionModel().setSelectionMode
+                    (TreeSelectionModel.SINGLE_TREE_SELECTION);
+            jTree.addTreeExpansionListener(this);
 
-        jTree.getSelectionModel().setSelectionMode
-                (TreeSelectionModel.SINGLE_TREE_SELECTION);
-        jTree.addTreeExpansionListener(this);
-
-        //expand all the nodes initially
-        for (int i = 0; i < jTree.getRowCount(); i++) {
-            jTree.expandRow(i);
-            TreePath rowPath = jTree.getPathForRow(i);
-            rowForPathHash.put((INode) rowPath.getLastPathComponent(), i);
+            //expand all the nodes initially
+            for (int i = 0; i < jTree.getRowCount(); i++) {
+                jTree.expandRow(i);
+                TreePath rowPath = jTree.getPathForRow(i);
+                rowForPathHash.put((INode) rowPath.getLastPathComponent(), i);
+            }
+        } catch (it.unitn.disi.smatch.loaders.context.ContextLoaderException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
-
         return context;
     }
 
@@ -320,19 +323,19 @@ public class MatchingBasicGUI extends JPanel
     private void changeColorOfRelation(Graphics2D g2, IMappingElement mapping) {
         char rel = mapping.getRelation();
         switch (rel) {
-            case MatchManager.LESS_GENERAL_THAN: {
+            case IMappingElement.LESS_GENERAL: {
                 g2.setColor(Color.ORANGE);
                 break;
             }
-            case MatchManager.MORE_GENERAL_THAN: {
+            case IMappingElement.MORE_GENERAL: {
                 g2.setColor(Color.BLUE);
                 break;
             }
-            case MatchManager.SYNOMYM: {
+            case IMappingElement.EQUIVALENCE: {
                 g2.setColor(Color.GREEN);
                 break;
             }
-            case MatchManager.OPPOSITE_MEANING: {
+            case IMappingElement.DISJOINT: {
                 g2.setColor(Color.RED);
                 break;
             }
@@ -614,34 +617,33 @@ public class MatchingBasicGUI extends JPanel
      * @return
      * @throws SMatchException
      */
-    private String runMatcher() throws SMatchException {
+    private String runMatcher() throws ConfigurableException {
 
         String sourceFileName = sourceFileTxt.getText();
         String targetFileName = targetFileTxt.getText();
 
-        String defaultConfigFile = ".." + File.separator + "conf" + File.separator + "SMatchDefault.properties";
-        String minimalConfigFile = ".." + File.separator + "conf" + File.separator + "SMatchDefaultMinimal.properties";
         String outputFolder = sourceFileName.substring(0, sourceFileName.lastIndexOf(File.separator) + 1);
 
+        String defaultConfigFile = ".." + File.separator + "conf" + File.separator + "s-match.properties";
+        MatchManager mm = new MatchManager(defaultConfigFile);
 
-        //TODO remove static variables from MatchManager
-        MatchManager defaultMatcher = new MatchManager(defaultConfigFile);
+        // linguistic pre-processing
+        mm.offline(sourceContext);
+        mm.offline(targetContext);
 
-        //linguistic pre-processing
-        defaultMatcher.offline(sourceContext);
-        defaultMatcher.offline(targetContext);
+        // match
+        IMapping mapping = mm.online(sourceContext, targetContext);
+        mm.renderMapping(mapping, outputFolder + "result-default.txt");
 
-        //match
-        IMapping mapping = defaultMatcher.online(sourceContext, targetContext);
-        defaultMatcher.renderMapping(mapping, outputFolder + "resultDefault.txt");
+        // match minimal
+        String minimalConfigFile = ".." + File.separator + "conf" + File.separator + "s-match-minimal.properties";
 
-        //match
-        MatchManager minimalMatcher = new MatchManager(minimalConfigFile);
-        mapping = minimalMatcher.online(sourceContext, targetContext);
-        minimalMatcher.renderMapping(mapping, outputFolder + "resultMinimal.txt");
+        // reconfigures the matcher
+        mm.setProperties(minimalConfigFile);
+        mapping = mm.online(sourceContext, targetContext);
+        mm.renderMapping(mapping, outputFolder + "result-minimal.txt");
 
-
-        return outputFolder + "resultDefault.txt";
+        return outputFolder + "result-default.txt";
     }
 
     /**

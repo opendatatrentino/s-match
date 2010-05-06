@@ -1,32 +1,48 @@
 package it.unitn.disi.smatch.matchers.structure.node;
 
-import it.unitn.disi.smatch.MatchManager;
-import it.unitn.disi.smatch.SMatchException;
+import it.unitn.disi.smatch.components.Configurable;
+import it.unitn.disi.smatch.components.ConfigurableException;
 import it.unitn.disi.smatch.data.IAtomicConceptOfLabel;
 import it.unitn.disi.smatch.data.INode;
+import it.unitn.disi.smatch.data.mappings.IMappingElement;
 import it.unitn.disi.smatch.data.matrices.IMatchMatrix;
 import it.unitn.disi.smatch.deciders.ISATSolver;
+import it.unitn.disi.smatch.deciders.SATSolverException;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 
-import java.util.HashMap;
-import java.util.StringTokenizer;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Properties;
+import java.util.StringTokenizer;
 
 /**
  * Contains routines used by many other matchers.
  *
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
-public class BaseNodeMatcher {
-	// create an interface of SAT solver
-    protected ISATSolver satSolver = (ISATSolver) MatchManager.getClassForName(MatchManager.satSolverClass);
+public class BaseNodeMatcher extends Configurable {
+
+    private static final Logger log = Logger.getLogger(BaseNodeMatcher.class);
+
+    private static final String SAT_SOLVER_KEY = "SATSolver";
+    protected ISATSolver satSolver = null;
+
+    @Override
+    public void setProperties(Properties newProperties) throws ConfigurableException {
+        if (!newProperties.equals(properties)) {
+            satSolver = (ISATSolver) configureComponent(satSolver, properties, newProperties, "SAT solver", SAT_SOLVER_KEY, ISATSolver.class);
+        }
+        properties = newProperties;
+    }
 
     /**
      * Makes axioms for CNF formula.
      *
      * @param hashConceptNumber HashMap for atomic concept of labels with its id.
-     * @param cLabMatrix relation between atomic concept of labels
-     * @param sourceNode interface of source node
-     * @param targetNode interface of target node
+     * @param cLabMatrix        relation between atomic concept of labels
+     * @param sourceNode        interface of source node
+     * @param targetNode        interface of target node
      * @return an object of axioms
      */
     protected static Object[] mkAxioms(HashMap<IAtomicConceptOfLabel, Integer> hashConceptNumber, IMatchMatrix cLabMatrix, INode sourceNode, INode targetNode) {
@@ -57,12 +73,12 @@ public class BaseNodeMatcher {
             for (IAtomicConceptOfLabel targetACoL : targetNode.getNodeData().getNodeMatchingTaskACols()) {
                 //if there are semantic relation between ACoLS in relMatrix
                 char relation = cLabMatrix.getElement(sourceACoL.getIndex(), targetACoL.getIndex());
-                if (MatchManager.IDK_RELATION != relation) {
+                if (IMappingElement.IDK != relation) {
                     //get the numbers of DIMACS variables corresponding to ACoLs
                     String sourceVarNumber = (hashConceptNumber.get(sourceACoL)).toString();
                     String targetVarNumber = (hashConceptNumber.get(targetACoL)).toString();
                     //if LG
-                    if (MatchManager.LESS_GENERAL_THAN == relation) {
+                    if (IMappingElement.LESS_GENERAL == relation) {
                         //create corresponding clause
                         String tmp = "-" + sourceVarNumber + " " + targetVarNumber + " 0\n";
                         //if not already present add to axioms
@@ -71,7 +87,7 @@ public class BaseNodeMatcher {
                             //increment number of clauses
                             numberOfClauses++;
                         }
-                    } else if (MatchManager.MORE_GENERAL_THAN == relation) {
+                    } else if (IMappingElement.MORE_GENERAL == relation) {
                         //if MG
                         //create corresponding clause
                         String tmp = sourceVarNumber + " -" + targetVarNumber + " 0\n";
@@ -81,7 +97,7 @@ public class BaseNodeMatcher {
                             //increment number of clauses
                             numberOfClauses++;
                         }
-                    } else if (MatchManager.SYNOMYM == relation) {
+                    } else if (IMappingElement.EQUIVALENCE == relation) {
                         //if equal
                         if (!sourceVarNumber.equals(targetVarNumber)) {
                             //add clauses for less and more generality
@@ -96,7 +112,7 @@ public class BaseNodeMatcher {
                                 numberOfClauses++;
                             }
                         }
-                    } else if (MatchManager.OPPOSITE_MEANING == relation) {
+                    } else if (IMappingElement.DISJOINT == relation) {
                         //if disjointness
                         //create corresponding clause
                         String tmp = "-" + sourceVarNumber + " -" + targetVarNumber + " 0\n";
@@ -116,7 +132,7 @@ public class BaseNodeMatcher {
      * Converts context of node into array list.
      *
      * @param hashConceptNumber HashMap for atomic concept of label with its id
-     * @param node interface of the node
+     * @param node              interface of the node
      * @return array list of context of node
      */
     protected ArrayList<ArrayList<String>> parseFormula(HashMap<IAtomicConceptOfLabel, Integer> hashConceptNumber, INode node) {
@@ -171,6 +187,7 @@ public class BaseNodeMatcher {
         return DIMACS.toString();
     }
     // TODO Need comments
+
     protected static int negateFormulaInVector(HashMap<IAtomicConceptOfLabel, Integer> hashConceptNumber, ArrayList<ArrayList<String>> pivot, ArrayList<ArrayList<String>> result) {
         //ArrayList<ArrayList<String>> result = new ArrayList<ArrayList<String>>();
         result.clear();
@@ -205,8 +222,15 @@ public class BaseNodeMatcher {
         return numberOfVariables;
     }
 
-    protected boolean isUnsatisfiable(String satProblem) throws SMatchException {
-        boolean satResult = satSolver.isSatisfiable(satProblem);
+    protected boolean isUnsatisfiable(String satProblem) throws NodeMatcherException {
+        boolean satResult = false;
+        try {
+            satResult = satSolver.isSatisfiable(satProblem);
+        } catch (SATSolverException e) {
+            final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
+            log.error(errMessage, e);
+            throw new NodeMatcherException(errMessage, e);
+        }
         return !satResult;
     }
 
@@ -214,21 +238,21 @@ public class BaseNodeMatcher {
         //return the tests results
         if (isOpposite) {
             //The concepts have opposite menaning
-            return MatchManager.OPPOSITE_MEANING;
+            return IMappingElement.DISJOINT;
         }
         if (isContains && isContained) {
             //The concepts are equivalent
-            return MatchManager.SYNOMYM;
+            return IMappingElement.EQUIVALENCE;
         }
         if (isContained) {
             //The source concept is LG the target concept
-            return MatchManager.LESS_GENERAL_THAN;
+            return IMappingElement.LESS_GENERAL;
         }
         if (isContains) {
             //The target concept is LG the source concept
-            return MatchManager.MORE_GENERAL_THAN;
+            return IMappingElement.MORE_GENERAL;
         }
-        return MatchManager.IDK_RELATION;
+        return IMappingElement.IDK;
     }
 
     protected static String changeSign(String strClause) {

@@ -1,5 +1,6 @@
 package it.unitn.disi.smatch.deciders;
 
+import it.unitn.disi.smatch.components.Configurable;
 import org.apache.log4j.Logger;
 
 import java.io.*;
@@ -12,7 +13,7 @@ import it.unitn.disi.smatch.SMatchException;
  *
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
-public class openSATcached implements ISATSolver {
+public class openSATcached extends Configurable implements ISATSolver {
 
     private static final Logger log = Logger.getLogger(openSATcached.class);
 
@@ -37,9 +38,9 @@ public class openSATcached implements ISATSolver {
      *
      * @param input The String that contains sat problem in DIMACS's format
      * @return boolean True if the formula is satisfiable, false otherwise
-     * @throws SMatchException
+     * @throws SATSolverException SATSolverException
      */
-    public boolean isSatisfiable(String input) throws SMatchException {
+    public boolean isSatisfiable(String input) throws SATSolverException {
         hits++;
         Boolean result = solutions.get(input);
         if (null == result) {

@@ -1,9 +1,11 @@
 package it.unitn.disi.smatch.matchers.element.gloss;
 
-import it.unitn.disi.smatch.MatchManager;
+import it.unitn.disi.smatch.components.ConfigurableException;
+import it.unitn.disi.smatch.data.mappings.IMappingElement;
 import it.unitn.disi.smatch.matchers.element.ISenseGlossBasedElementLevelSemanticMatcher;
 import it.unitn.disi.smatch.oracles.ISynset;
 
+import java.util.Properties;
 import java.util.StringTokenizer;
 
 /**
@@ -15,7 +17,28 @@ import java.util.StringTokenizer;
  */
 public class WNExtendedGlossComparison extends BasicGlossMatcher implements ISenseGlossBasedElementLevelSemanticMatcher {
 
-    static int threshold = 5;
+    private static final String THRESHOLD_KEY = "threshold";
+    private int threshold = 5;
+
+    // the words which are cut off from the area of discourse
+    public static String MEANINGLESS_WORDS_KEY = "meaninglessWords";
+    private String meaninglessWords = "of on to their than from for by in at is are have has the a as with your etc our into its his her which him among those against ";
+
+    @Override
+    public void setProperties(Properties newProperties) throws ConfigurableException {
+        if (!newProperties.equals(properties)) {
+            if (newProperties.containsKey(THRESHOLD_KEY)) {
+                threshold = Integer.parseInt(newProperties.getProperty(THRESHOLD_KEY));
+            }
+
+            if (newProperties.containsKey(MEANINGLESS_WORDS_KEY)) {
+                meaninglessWords = newProperties.getProperty(MEANINGLESS_WORDS_KEY) + " ";
+            }
+
+            properties = newProperties;
+        }
+    }
+
 
     /**
      * Computes the relation for extended gloss matcher.
@@ -25,8 +48,8 @@ public class WNExtendedGlossComparison extends BasicGlossMatcher implements ISen
      * @return synonym or IDK relation
      */
     public char match(ISynset source1, ISynset target1) {
-        String tExtendedGloss = getExtendedGloss(target1, 1, MatchManager.LESS_GENERAL_THAN);
-        String sExtendedGloss = getExtendedGloss(source1, 1, MatchManager.LESS_GENERAL_THAN);
+        String tExtendedGloss = getExtendedGloss(target1, 1, IMappingElement.LESS_GENERAL);
+        String sExtendedGloss = getExtendedGloss(source1, 1, IMappingElement.LESS_GENERAL);
         //variations of this matcher
         StringTokenizer stSource = new StringTokenizer(tExtendedGloss, " ,.\"'();");
         String lemmaS, lemmaT;
@@ -34,18 +57,18 @@ public class WNExtendedGlossComparison extends BasicGlossMatcher implements ISen
         while (stSource.hasMoreTokens()) {
             StringTokenizer stTarget = new StringTokenizer(sExtendedGloss, " ,.\"'();");
             lemmaS = stSource.nextToken();
-            if (MatchManager.meaninglessWords.indexOf(lemmaS) == -1)
+            if (meaninglessWords.indexOf(lemmaS) == -1)
                 while (stTarget.hasMoreTokens()) {
                     lemmaT = stTarget.nextToken();
-                    if (MatchManager.meaninglessWords.indexOf(lemmaT) == -1)
+                    if (meaninglessWords.indexOf(lemmaT) == -1)
                         if (lemmaS.equalsIgnoreCase(lemmaT))
                             counter++;
                 }
         }
         if (counter > threshold)
-            return MatchManager.SYNOMYM;
+            return IMappingElement.EQUIVALENCE;
         else
-            return MatchManager.IDK_RELATION;
+            return IMappingElement.IDK;
     }
 
 }

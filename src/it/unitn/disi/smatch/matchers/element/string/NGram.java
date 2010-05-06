@@ -1,9 +1,12 @@
 package it.unitn.disi.smatch.matchers.element.string;
 
-import it.unitn.disi.smatch.MatchManager;
+import it.unitn.disi.smatch.components.Configurable;
+import it.unitn.disi.smatch.components.ConfigurableException;
+import it.unitn.disi.smatch.data.mappings.IMappingElement;
 import it.unitn.disi.smatch.matchers.element.IStringBasedElementLevelSemanticMatcher;
 
 import java.util.ArrayList;
+import java.util.Properties;
 
 /**
  * Implements NGram matcher.
@@ -12,8 +15,29 @@ import java.util.ArrayList;
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
-public class NGram implements IStringBasedElementLevelSemanticMatcher {
-    private static int gramlength = 3;
+public class NGram extends Configurable implements IStringBasedElementLevelSemanticMatcher {
+
+    private static final String GRAM_LENGTH_KEY = "gramlength";
+    private int gramlength = 3;
+
+    private static final String THRESHOLD_KEY = "threshold";
+    private double threshold = 0.9;
+
+    @Override
+    public void setProperties(Properties newProperties) throws ConfigurableException {
+        if (!newProperties.equals(properties)) {
+            if (newProperties.containsKey(GRAM_LENGTH_KEY)) {
+                gramlength = Integer.parseInt(newProperties.getProperty(GRAM_LENGTH_KEY));
+            }
+
+            if (newProperties.containsKey(THRESHOLD_KEY)) {
+                threshold = Double.parseDouble(newProperties.getProperty(THRESHOLD_KEY));
+            }
+
+            properties = newProperties;
+        }
+    }
+
 
     /**
      * Computes the relation with NGram matcher.
@@ -24,7 +48,7 @@ public class NGram implements IStringBasedElementLevelSemanticMatcher {
      */
     public char match(String str1, String str2) {
         if (null == str1 || null == str2 || 0 == str1.length() || 0 == str2.length()) {
-            return MatchManager.IDK_RELATION;
+            return IMappingElement.IDK;
         }
         String[] grams1 = generateNGrams(str1, gramlength);
         String[] grams2 = generateNGrams(str2, gramlength);
@@ -37,17 +61,17 @@ public class NGram implements IStringBasedElementLevelSemanticMatcher {
                 }
             }
         float sim = (float) 2 * count / (grams1.length + grams2.length); // Dice-Coefficient
-        if (MatchManager.ELSMthreshold <= sim) {
-            return MatchManager.SYNOMYM;
+        if (threshold <= sim) {
+            return IMappingElement.EQUIVALENCE;
         } else {
-            return MatchManager.IDK_RELATION;
+            return IMappingElement.IDK;
         }
     }
 
     /**
      * Produces nGrams for nGram matcher.
      *
-     * @param str source string
+     * @param str        source string
      * @param gramlength gram length
      * @return ngrams
      */

@@ -1,33 +1,25 @@
 package it.unitn.disi.smatch;
 
+import it.unitn.disi.smatch.components.IConfigurable;
 import it.unitn.disi.smatch.data.IContext;
 import it.unitn.disi.smatch.data.mappings.IMapping;
 import it.unitn.disi.smatch.data.matrices.IMatchMatrix;
-
-import java.io.File;
-import java.util.Properties;
 
 /**
  * Interface for matching related functionalities.<br>
  * The following code can be used in order to obtain an instance of IMatchManager interface.<br>
  * IMatchManager mm=it.unitn.disi.smatch.MatchManager.getInstance();
+ * <p/>
+ * An S-Match.properties file contain an example configuration with documented properties names and values.
  *
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
-public interface IMatchManager {
-
-    /**
-     * Configures the matcher via the properties object. See a default configuration file S-Match.properties
-     * for a list of available properties.
-     *
-     * @param properties configuration properties
-     * @throws SMatchException SMatchException
-     */
-    void setProperties(Properties properties) throws SMatchException;
+public interface IMatchManager extends IConfigurable {
 
     /**
      * Creates a context instance.
+     *
      * @return a context instance
      */
     public IContext createContext();
@@ -46,8 +38,9 @@ public interface IMatchManager {
      *
      * @param ctxSource context to be rendered
      * @param fileName  a render destination passed to the context renderer
+     * @throws SMatchException SMatchException
      */
-    void renderContext(IContext ctxSource, String fileName);
+    void renderContext(IContext ctxSource, String fileName) throws SMatchException;
 
     /**
      * Loads the mapping between source and target contexts using the current mapping loader.
@@ -72,24 +65,27 @@ public interface IMatchManager {
     /**
      * Filters a mapping. For example, filtering could be a minimization.
      *
-     * @param sourceMapping a mapping to filter
+     * @param mapping a mapping to filter
      * @return a filtered mapping
+     * @throws SMatchException SMatchException
      */
-    IMapping filterMapping(IMapping sourceMapping);
+    IMapping filterMapping(IMapping mapping) throws SMatchException;
 
     /**
      * Performs the first step of the semantic matching algorithm.
      *
      * @param context interface to a context to be preprocessed
+     * @throws SMatchException SMatchException
      */
-    void preprocess(IContext context);
+    void preprocess(IContext context) throws SMatchException;
 
     /**
      * Performs the second step of the semantic matching algorithm.
      *
-     * @param context interface to the preprocessed context without concept at node formulas
+     * @param context interface to the preprocessed context
+     * @throws SMatchException SMatchException
      */
-    void classify(IContext context);
+    void classify(IContext context) throws SMatchException;
 
     /**
      * Performs the third step of semantic matching algorithm.
@@ -117,8 +113,9 @@ public interface IMatchManager {
      * Performs the first two steps of the semantic matching algorithm.
      *
      * @param context interface to context to be preprocessed
+     * @throws SMatchException SMatchException
      */
-    void offline(IContext context);
+    void offline(IContext context) throws SMatchException;
 
     /**
      * Performs the last two steps of the semantic matching algorithm.

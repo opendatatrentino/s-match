@@ -1,7 +1,11 @@
 package it.unitn.disi.smatch.matchers.element.string;
 
-import it.unitn.disi.smatch.MatchManager;
+import it.unitn.disi.smatch.components.Configurable;
+import it.unitn.disi.smatch.components.ConfigurableException;
+import it.unitn.disi.smatch.data.mappings.IMappingElement;
 import it.unitn.disi.smatch.matchers.element.IStringBasedElementLevelSemanticMatcher;
+
+import java.util.Properties;
 
 /**
  * Implements Edit Distance matcher.
@@ -10,11 +14,26 @@ import it.unitn.disi.smatch.matchers.element.IStringBasedElementLevelSemanticMat
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
-public class EditDistance implements IStringBasedElementLevelSemanticMatcher {
+public class EditDistance extends Configurable implements IStringBasedElementLevelSemanticMatcher {
 
     private static int MATCH = 0;
     private static int MISMATCH = 1;
     private static int GAP = 1; // treating gap = mismatch
+
+    private static final String THRESHOLD_KEY = "threshold";
+    private double threshold = 0.9;
+
+    @Override
+    public void setProperties(Properties newProperties) throws ConfigurableException {
+        if (!newProperties.equals(properties)) {
+            if (newProperties.containsKey(THRESHOLD_KEY)) {
+                threshold = Double.parseDouble(newProperties.getProperty(THRESHOLD_KEY));
+            }
+
+            properties = newProperties;
+        }
+    }
+
 
     /**
      * Computes the relation with edit distance matcher.
@@ -25,13 +44,13 @@ public class EditDistance implements IStringBasedElementLevelSemanticMatcher {
      */
     public char match(String str1, String str2) {
         if (str1 == null || str2 == null || str1.length() == 0 || str2.length() == 0) {
-            return MatchManager.IDK_RELATION;
+            return IMappingElement.IDK;
         }
         float sim = 1 - (float) levenshteinDistance(str1, str2) / java.lang.Math.max(str1.length(), str2.length());
-        if (MatchManager.ELSMthreshold <= sim) {
-            return MatchManager.SYNOMYM;
+        if (threshold <= sim) {
+            return IMappingElement.EQUIVALENCE;
         } else {
-            return MatchManager.IDK_RELATION;
+            return IMappingElement.IDK;
         }
     }
 
@@ -66,20 +85,13 @@ public class EditDistance implements IStringBasedElementLevelSemanticMatcher {
     /**
      * Treats with online mismatch and gap.
      *
-     * @param a
-     * @param b
+     * @param a a
+     * @param b b
      * @return match or mismatch
      */
-    // TODO need comments about parameters
     private static int distance(Character a, Character b) {
         if (null == a || null == b) return GAP;
         if (!a.equals(b)) return MISMATCH;
         return MATCH;
     }
-
-    //TODO move to unit test
-//    public static void main(String[] args) {
-//        EditDistance ed = new EditDistance();
-//        System.out.println(ed.match("Courses/Colledge of arts and sciencies/Earth and Atmospheric Sciencies", "Classes/Colledge of arts and sciencies/Earth Sciencies"));
-//    }
 }

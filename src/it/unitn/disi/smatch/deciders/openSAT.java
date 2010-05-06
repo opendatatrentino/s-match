@@ -1,5 +1,6 @@
 package it.unitn.disi.smatch.deciders;
 
+import it.unitn.disi.smatch.components.Configurable;
 import org.opensat.ContradictionException;
 import org.opensat.Dimacs;
 import org.opensat.ISolver;
@@ -19,7 +20,7 @@ import it.unitn.disi.smatch.SMatchException;
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
-public class openSAT implements ISATSolver {
+public class openSAT extends Configurable implements ISATSolver {
 
     private static final Logger log = Logger.getLogger(openSAT.class);
 
@@ -30,7 +31,7 @@ public class openSAT implements ISATSolver {
     public openSAT() {
     }
 
-    public boolean isSatisfiable(String input) throws SMatchException {
+    public boolean isSatisfiable(String input) throws SATSolverException {
         hits++;
         ISolver solver = SolverFactory.newMiniLearning();
         try {
@@ -41,14 +42,14 @@ public class openSAT implements ISATSolver {
             final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
             log.error(errMessage, e);
             log.error(input);
-            throw new SMatchException(errMessage, e);
+            throw new SATSolverException(errMessage, e);
         } catch (ContradictionException e) {
             return false;
         } catch (Exception e) {
             final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
             log.error(errMessage, e);
             log.error(input);
-            throw new SMatchException(errMessage, e);
+            throw new SATSolverException(errMessage, e);
         }
     }
 

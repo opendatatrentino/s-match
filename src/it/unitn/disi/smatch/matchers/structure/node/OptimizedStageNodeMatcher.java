@@ -1,30 +1,30 @@
 package it.unitn.disi.smatch.matchers.structure.node;
 
-import it.unitn.disi.smatch.SMatchException;
 import it.unitn.disi.smatch.data.IAtomicConceptOfLabel;
 import it.unitn.disi.smatch.data.INode;
+import it.unitn.disi.smatch.data.mappings.IMappingElement;
 import it.unitn.disi.smatch.data.matrices.IMatchMatrix;
 
-import java.util.HashMap;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Node matcher for StageTreeMatcher for minimal links matching.
  *
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
-public class OptimizedStageNodeMatcher extends BaseNodeMatcher {
+public class OptimizedStageNodeMatcher extends BaseNodeMatcher implements INodeMatcher {
 
-	/**
-	 * Checks source node and target node are disjoint or not for optimizing tree matcher.
-	 *
-	 * @param cLabMatrix interface of relational matrix with concept of labels
-	 * @param sourceNode interface of source node
-	 * @param targetNode interface of target node
-	 * @return true if the nodes are in disjoint relation
-	 * @throws SMatchException
-	 */
-    public boolean nodeDisjoint(IMatchMatrix cLabMatrix, INode sourceNode, INode targetNode) throws SMatchException {
+    /**
+     * Checks source node and target node are disjoint or not for optimizing tree matcher.
+     *
+     * @param cLabMatrix interface of relational matrix with concept of labels
+     * @param sourceNode interface of source node
+     * @param targetNode interface of target node
+     * @return true if the nodes are in disjoint relation
+     * @throws NodeMatcherException NodeMatcherException
+     */
+    public boolean nodeDisjoint(IMatchMatrix cLabMatrix, INode sourceNode, INode targetNode) throws NodeMatcherException {
         boolean result = false;
         String sourceCNodeFormula = sourceNode.getNodeData().getCNodeFormula();
         String targetCNodeFormula = targetNode.getNodeData().getCNodeFormula();
@@ -63,7 +63,8 @@ public class OptimizedStageNodeMatcher extends BaseNodeMatcher {
     }
 
     // TODO Needs comments
-    public boolean nodeSubsumedBy(IMatchMatrix cLabMatrix, INode sourceNode, INode targetNode) throws SMatchException {
+
+    public boolean nodeSubsumedBy(IMatchMatrix cLabMatrix, INode sourceNode, INode targetNode) throws NodeMatcherException {
         boolean result = false;
         String sourceCNodeFormula = sourceNode.getNodeData().getCNodeFormula();
         String targetCNodeFormula = targetNode.getNodeData().getCNodeFormula();
@@ -108,7 +109,7 @@ public class OptimizedStageNodeMatcher extends BaseNodeMatcher {
 
                 //convert contexts into ArrayLists
                 ArrayList<ArrayList<String>> contextAVector = parseFormula(hashConceptNumber, targetNode);
-                ArrayList<ArrayList<String>> contextBVector= parseFormula(hashConceptNumber, sourceNode);
+                ArrayList<ArrayList<String>> contextBVector = parseFormula(hashConceptNumber, sourceNode);
                 //create contexts in DIMACS format
                 //String contextAInDIMACSFormat = DIMACSfromVector(contextAVector);
                 String contextBInDIMACSFormat = DIMACSfromVector(contextBVector);
@@ -130,7 +131,9 @@ public class OptimizedStageNodeMatcher extends BaseNodeMatcher {
         }
         return result;
     }
-    // TODO nothing in this method
-    public void clearAxiomsCache() {
+
+    // stub to allow it to be created as node matcher.
+    public char nodeMatch(IMatchMatrix cLabMatrix, INode sourceNode, INode targetNode) throws NodeMatcherException {
+        return IMappingElement.IDK;  
     }
 }
