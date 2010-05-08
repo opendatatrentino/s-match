@@ -54,7 +54,10 @@ public class MatchManager extends Configurable implements IMatchManager {
      */
     private static final String DEFAULT_CONFIG_FILE_NAME = ".." + File.separator + "conf" + File.separator + "s-match.properties";
     // config file command line key
-    private static final String propFileCmdLineKey = "-prop=";
+    private static final String configFileCmdLineKey = "-config=";
+    // property command line key
+    private static final String propCmdLineKey = "-property=";
+
 
     // usage string
     private static final String USAGE = "Usage: MatchManager <command> <arguments> [options]\n" +
@@ -66,7 +69,8 @@ public class MatchManager extends Configurable implements IMatchManager {
             " filter <source> <target> <input> <output> read source and target files, input mapping, run filtering and write the output mapping\n" +
             "\n" +
             " Options: \n" +
-            " -prop=file.properties                     read configuration from file.properties instead of default S-Match.properties";
+            " -config=file.properties                     read configuration from file.properties instead of default S-Match.properties\n" +
+            " -property=key=value                         override the configuration key=value from the config file";
 
 
     private static final String CONTEXT_LOADER_KEY = "ContextLoader";
@@ -296,11 +300,32 @@ public class MatchManager extends Configurable implements IMatchManager {
      */
     public static void main(String[] args) {
         // initialize property file
-        String propFile = DEFAULT_CONFIG_FILE_NAME;
+        String configFileName = DEFAULT_CONFIG_FILE_NAME;
         ArrayList<String> cleanArgs = new ArrayList<String>();
         for (String arg : args) {
-            if (arg.startsWith(propFileCmdLineKey)) {
-                propFile = arg.substring(propFileCmdLineKey.length());
+            if (arg.startsWith(configFileCmdLineKey)) {
+                configFileName = arg.substring(configFileCmdLineKey.length());
+            } else {
+                cleanArgs.add(arg);
+            }
+        }
+
+        args = cleanArgs.toArray(new String[cleanArgs.size()]);
+        cleanArgs.clear();
+
+        // collect properties specified on command line
+        Properties commandProperties = new Properties();
+        for (String arg : args) {
+            if (arg.startsWith(propCmdLineKey)) {
+                String[] props = arg.substring(propCmdLineKey.length()).split("=");
+                if (0 < props.length) {
+                    String key = props[0];
+                    String value = "";
+                    if (1 < props.length) {
+                        value = props[1];
+                    }
+                    commandProperties.put(key, value);
+                }
             } else {
                 cleanArgs.add(arg);
             }
@@ -318,7 +343,17 @@ public class MatchManager extends Configurable implements IMatchManager {
                 // read properties
                 Properties config = new Properties();
 
-                config.load(new FileInputStream(propFile));
+                config.load(new FileInputStream(configFileName));
+
+                if (log.isEnabledFor(Level.DEBUG)) {
+                    for (String k : commandProperties.stringPropertyNames()) {
+                        log.debug("property override: " + k + "=" + commandProperties.getProperty(k));    
+                    }
+                }
+
+                // override from command line
+                config.putAll(commandProperties);
+
                 mm.setProperties(config);
 
                 if ("wntoflat".equals(args[0])) {

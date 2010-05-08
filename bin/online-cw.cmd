@@ -1,1 +1,0 @@
-call match-manager.cmd online ..\test-data\cw\c.xml ..\test-data\cw\w.xml ..\test-data\cw\result-%1-cw.txt -prop=..\conf\%1.properties
