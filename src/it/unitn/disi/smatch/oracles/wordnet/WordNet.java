@@ -67,9 +67,10 @@ public class WordNet extends Configurable implements ILinguisticOracle, ISenseMa
                 log.error(errMessage);
                 throw new ConfigurableException(errMessage);
             }
-        }
 
-        properties = newProperties;
+            properties.clear();
+            properties.putAll(newProperties);
+        }
     }
 
     public Vector<String> getSenses(String label) {

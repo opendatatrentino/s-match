@@ -73,8 +73,9 @@ public class InMemoryWordNetBinaryArray extends Configurable implements ISenseMa
                 nominalizations = readArray(newProperties, NOMINALIZATION_KEY, "nominalizations");
                 log.info("Loading WordNet cache to memory finished");
             }
-            
-            properties = newProperties;
+
+            properties.clear();
+            properties.putAll(newProperties);
         }
     }
 

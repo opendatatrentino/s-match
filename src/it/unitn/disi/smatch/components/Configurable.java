@@ -35,7 +35,8 @@ public abstract class Configurable implements IConfigurable {
     }
 
     public void setProperties(Properties newProperties) throws ConfigurableException {
-        properties = newProperties;
+        properties.clear();
+        properties.putAll(newProperties);
     }
 
     public void setProperties(String fileName) throws ConfigurableException {

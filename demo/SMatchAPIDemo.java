@@ -1,6 +1,7 @@
 import it.unitn.disi.smatch.IMatchManager;
 import it.unitn.disi.smatch.MatchManager;
 import it.unitn.disi.smatch.SMatchException;
+import it.unitn.disi.smatch.components.ConfigurableException;
 import it.unitn.disi.smatch.data.IContext;
 import it.unitn.disi.smatch.data.mappings.IMapping;
 import it.unitn.disi.smatch.data.mappings.IMappingElement;
@@ -19,7 +20,7 @@ public class SMatchAPIDemo {
 
     private final static String CONFIG_FILE_PREFIX = ".." + File.separator + "conf" + File.separator;
 
-    public static void main(String[] args) throws SMatchException, IOException {
+    public static void main(String[] args) throws ConfigurableException, IOException {
         example1();
         example2();
     }
@@ -30,26 +31,26 @@ public class SMatchAPIDemo {
      * @throws SMatchException SMatchException
      * @throws IOException     IOException
      */
-    public static void example1() throws SMatchException, IOException {
+    public static void example1() throws ConfigurableException, IOException {
         System.out.println("Starting example 1...");
         System.out.println("Creating MatchManager...");
         IMatchManager mm = MatchManager.getInstance();
 
         Properties config = new Properties();
-        config.load(new FileInputStream(CONFIG_FILE_PREFIX + "SMatchTab2XML.properties"));
+        config.load(new FileInputStream(CONFIG_FILE_PREFIX + "s-match-Tab2XML.properties"));
 
-        System.out.println("Configuring MatchManager from " + CONFIG_FILE_PREFIX + "SMatchTab2XML.properties" + "...");
-        try {
-            mm.setProperties(config);
-        } catch (it.unitn.disi.smatch.components.ConfigurableException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        }
+        System.out.println("Configuring MatchManager from " + CONFIG_FILE_PREFIX + "s-match-Tab2XML.properties" + "...");
+        mm.setProperties(config);
 
         System.out.println("Loading source context...");
         IContext s = mm.loadContext("../test-data/cw/c.txt");
 
         System.out.println("Loading target context...");
         IContext t = mm.loadContext("../test-data/cw/w.txt");
+
+        config.load(new FileInputStream(CONFIG_FILE_PREFIX + "s-match.properties"));
+        System.out.println("Configuring MatchManager from " + CONFIG_FILE_PREFIX + "s-match.properties" + "...");        
+        mm.setProperties(config);
 
         System.out.println("Preprocessing source context...");
         mm.offline(s);
@@ -72,20 +73,16 @@ public class SMatchAPIDemo {
      * @throws SMatchException SMatchException
      * @throws IOException     IOException
      */
-    public static void example2() throws SMatchException, IOException {
+    public static void example2() throws ConfigurableException, IOException {
         System.out.println("Starting example 2...");
         System.out.println("Creating MatchManager...");
         IMatchManager mm = MatchManager.getInstance();
 
         Properties config = new Properties();
-        config.load(new FileInputStream(CONFIG_FILE_PREFIX + "S-Match.properties"));
+        config.load(new FileInputStream(CONFIG_FILE_PREFIX + "s-match.properties"));
 
-        System.out.println("Configuring MatchManager from " + CONFIG_FILE_PREFIX + "S-Match.properties" + "...");
-        try {
-            mm.setProperties(config);
-        } catch (it.unitn.disi.smatch.components.ConfigurableException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        }
+        System.out.println("Configuring MatchManager from " + CONFIG_FILE_PREFIX + "s-match.properties" + "...");
+        mm.setProperties(config);
 
         String example = "Courses";
         System.out.println("Creating source context...");

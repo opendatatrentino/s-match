@@ -36,7 +36,8 @@ public class WNGlossComparison extends Configurable implements ISenseGlossBasedE
                 meaninglessWords = newProperties.getProperty(MEANINGLESS_WORDS_KEY) + " ";
             }
 
-            properties = newProperties;
+            properties.clear();
+            properties.putAll(newProperties);
         }
     }
 

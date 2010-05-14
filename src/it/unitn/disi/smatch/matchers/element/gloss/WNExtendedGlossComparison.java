@@ -35,7 +35,8 @@ public class WNExtendedGlossComparison extends BasicGlossMatcher implements ISen
                 meaninglessWords = newProperties.getProperty(MEANINGLESS_WORDS_KEY) + " ";
             }
 
-            properties = newProperties;
+            properties.clear();
+            properties.putAll(newProperties);
         }
     }
 

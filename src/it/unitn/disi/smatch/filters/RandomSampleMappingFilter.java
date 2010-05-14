@@ -32,7 +32,8 @@ public class RandomSampleMappingFilter extends Configurable implements IMappingF
                 sampleSize = Integer.parseInt(newProperties.getProperty(SAMPLE_SIZE_KEY));
             }
         }
-        properties = newProperties;
+        properties.clear();
+        properties.putAll(newProperties);
     }
 
     public IMapping filter(IMapping mapping) {

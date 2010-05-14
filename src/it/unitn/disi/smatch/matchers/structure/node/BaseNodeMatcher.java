@@ -8,7 +8,6 @@ import it.unitn.disi.smatch.data.mappings.IMappingElement;
 import it.unitn.disi.smatch.data.matrices.IMatchMatrix;
 import it.unitn.disi.smatch.deciders.ISATSolver;
 import it.unitn.disi.smatch.deciders.SATSolverException;
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
@@ -32,8 +31,10 @@ public class BaseNodeMatcher extends Configurable {
     public void setProperties(Properties newProperties) throws ConfigurableException {
         if (!newProperties.equals(properties)) {
             satSolver = (ISATSolver) configureComponent(satSolver, properties, newProperties, "SAT solver", SAT_SOLVER_KEY, ISATSolver.class);
+
+            properties.clear();
+            properties.putAll(newProperties);
         }
-        properties = newProperties;
     }
 
     /**

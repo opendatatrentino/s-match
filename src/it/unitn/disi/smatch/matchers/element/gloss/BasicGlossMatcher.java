@@ -47,7 +47,8 @@ public class BasicGlossMatcher extends Configurable {
                 throw new ConfigurableException(errMessage);
             }
 
-            properties = newProperties;
+            properties.clear();
+            properties.putAll(newProperties);
         }
     }
 

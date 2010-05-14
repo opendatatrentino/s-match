@@ -136,7 +136,8 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
                 numberCharacters = newProperties.getProperty(NUMBER_CHARACTERS_KEY);
             }
 
-            properties = newProperties;
+            properties.clear();
+            properties.putAll(newProperties);
         }
     }
 

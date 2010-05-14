@@ -37,7 +37,8 @@ public class WNGloss extends Configurable implements ISenseGlossBasedElementLeve
                 meaninglessWords = newProperties.getProperty(MEANINGLESS_WORDS_KEY) + " ";
             }
 
-            properties = newProperties;
+            properties.clear();
+            properties.putAll(newProperties);
         }
     }
 

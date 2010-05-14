@@ -36,7 +36,8 @@ public class WNExtendedGloss extends BasicGlossMatcher implements ISenseGlossBas
                 meaninglessWords = newProperties.getProperty(MEANINGLESS_WORDS_KEY) + " ";
             }
 
-            properties = newProperties;
+            properties.clear();
+            properties.putAll(newProperties);
         }
     }
 

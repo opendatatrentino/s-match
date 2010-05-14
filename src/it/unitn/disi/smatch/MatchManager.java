@@ -255,7 +255,8 @@ public class MatchManager extends Configurable implements IMatchManager {
             matcherLibrary = (IMatcherLibrary) configureComponent(matcherLibrary, properties, newProperties, "matching library", MATCHER_LIBRARY_KEY, IMatcherLibrary.class);
             treeMatcher = (ITreeMatcher) configureComponent(treeMatcher, properties, newProperties, "tree matcher", TREE_MATCHER_KEY, ITreeMatcher.class);
 
-            properties = newProperties;
+            properties.clear();
+            properties.putAll(newProperties);
         }
     }
 

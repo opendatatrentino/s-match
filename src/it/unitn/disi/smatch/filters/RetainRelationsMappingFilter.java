@@ -32,7 +32,8 @@ public class RetainRelationsMappingFilter extends Configurable implements IMappi
                 retainRelations = newProperties.getProperty(RETAIN_RELATIONS_KEY);
             }
         }
-        properties = newProperties;
+        properties.clear();
+        properties.putAll(newProperties);
     }
 
 

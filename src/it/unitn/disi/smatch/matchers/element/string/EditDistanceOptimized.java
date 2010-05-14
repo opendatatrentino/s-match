@@ -26,7 +26,8 @@ public class EditDistanceOptimized extends Configurable implements IStringBasedE
                 threshold = Double.parseDouble(newProperties.getProperty(THRESHOLD_KEY));
             }
 
-            properties = newProperties;
+            properties.clear();
+            properties.putAll(newProperties);
         }
     }
 

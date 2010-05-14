@@ -36,7 +36,8 @@ public class WNHierarchy extends Configurable implements ISenseGlossBasedElement
                 throw new ConfigurableException(errMessage);
             }
 
-            properties = newProperties;
+            properties.clear();
+            properties.putAll(newProperties);
         }
     }
 

@@ -30,7 +30,8 @@ public class EditDistance extends Configurable implements IStringBasedElementLev
                 threshold = Double.parseDouble(newProperties.getProperty(THRESHOLD_KEY));
             }
 
-            properties = newProperties;
+            properties.clear();
+            properties.putAll(newProperties);
         }
     }
 

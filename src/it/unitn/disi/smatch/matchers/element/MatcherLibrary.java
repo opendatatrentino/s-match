@@ -107,7 +107,8 @@ public class MatcherLibrary extends Configurable implements IMatcherLibrary {
                 }
             }
 
-            properties = newProperties;
+            properties.clear();
+            properties.putAll(newProperties);
         }
     }
 

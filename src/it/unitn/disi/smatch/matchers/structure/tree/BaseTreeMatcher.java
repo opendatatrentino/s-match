@@ -25,7 +25,9 @@ public class BaseTreeMatcher extends Configurable {
     public void setProperties(Properties newProperties) throws ConfigurableException {
         if (!newProperties.equals(properties)) {
             nodeMatcher = (INodeMatcher) configureComponent(nodeMatcher, properties, newProperties, "node matcher", NODE_MATCHER_KEY, INodeMatcher.class);
+
+            properties.clear();
+            properties.putAll(newProperties);
         }
-        properties = newProperties;
     }
 }

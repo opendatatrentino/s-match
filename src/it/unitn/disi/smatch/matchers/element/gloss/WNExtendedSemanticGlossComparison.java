@@ -28,7 +28,8 @@ public class WNExtendedSemanticGlossComparison extends BasicGlossMatcher impleme
                 meaninglessWords = newProperties.getProperty(MEANINGLESS_WORDS_KEY) + " ";
             }
 
-            properties = newProperties;
+            properties.clear();
+            properties.putAll(newProperties);
         }
     }
 

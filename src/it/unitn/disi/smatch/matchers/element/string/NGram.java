@@ -34,7 +34,8 @@ public class NGram extends Configurable implements IStringBasedElementLevelSeman
                 threshold = Double.parseDouble(newProperties.getProperty(THRESHOLD_KEY));
             }
 
-            properties = newProperties;
+            properties.clear();
+            properties.putAll(newProperties);
         }
     }
 
