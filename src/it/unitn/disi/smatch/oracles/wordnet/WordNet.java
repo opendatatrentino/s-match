@@ -97,12 +97,12 @@ public class WordNet extends Configurable implements ILinguisticOracle, ISenseMa
                     }
                 }
             }
-            return result;
         } catch (JWNLException e) {
             final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
             log.error(errMessage, e);
             throw new LinguisticOracleException(errMessage, e);
         }
+        return result;
     }
 
     public String getBaseForm(String derivation) throws LinguisticOracleException {
