@@ -8,8 +8,10 @@ import it.unitn.disi.smatch.data.IContext;
 import it.unitn.disi.smatch.data.INode;
 import it.unitn.disi.smatch.data.mappings.IMapping;
 import it.unitn.disi.smatch.data.mappings.IMappingElement;
-import it.unitn.disi.smatch.loaders.mapping.PlainMappingLoader;
+import it.unitn.disi.smatch.loaders.context.ContextLoaderException;
 import it.unitn.disi.smatch.loaders.context.TabContextLoader;
+import it.unitn.disi.smatch.loaders.mapping.PlainMappingLoader;
+import org.apache.log4j.Logger;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
@@ -26,11 +28,9 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Properties;
 
 /**
  * Provides basic S-Match GUI.
@@ -41,7 +41,7 @@ import java.util.Properties;
 public class MatchingBasicGUI extends JPanel
         implements ActionListener, ComponentListener, AdjustmentListener, TreeExpansionListener {
 
-    private static final long serialVersionUID = 1L;
+    private static final Logger log = Logger.getLogger(MatchingBasicGUI.class);
 
     private static final String OPEN_SOURCE_COMMAND = "open source";
     private static final String OPEN_TARGET_COMMAND = "open target";
@@ -196,30 +196,25 @@ public class MatchingBasicGUI extends JPanel
      * @param fileName File name in a tab indented format
      * @return the JTree representing the content of the tab indented file
      */
-    private IContext createTree(String fileName, JTree jTree, HashMap<INode, Integer> rowForPathHash) {
+    private IContext createTree(String fileName, JTree jTree, HashMap<INode, Integer> rowForPathHash) throws ContextLoaderException {
         //Create the nodes.
 
-        IContext context = null;
-        try {
-            TabContextLoader loader = new TabContextLoader();
-            context = loader.loadContext(fileName);
-            TreeNode rootNode = context.getRoot();
-            //Create a tree that allows one selection at a time.
-            DefaultTreeModel treeModel = new DefaultTreeModel(rootNode);
-            jTree.setModel(treeModel);
+        TabContextLoader loader = new TabContextLoader();
+        IContext context = loader.loadContext(fileName);
+        TreeNode rootNode = context.getRoot();
+        //Create a tree that allows one selection at a time.
+        DefaultTreeModel treeModel = new DefaultTreeModel(rootNode);
+        jTree.setModel(treeModel);
 
-            jTree.getSelectionModel().setSelectionMode
-                    (TreeSelectionModel.SINGLE_TREE_SELECTION);
-            jTree.addTreeExpansionListener(this);
+        jTree.getSelectionModel().setSelectionMode
+                (TreeSelectionModel.SINGLE_TREE_SELECTION);
+        jTree.addTreeExpansionListener(this);
 
-            //expand all the nodes initially
-            for (int i = 0; i < jTree.getRowCount(); i++) {
-                jTree.expandRow(i);
-                TreePath rowPath = jTree.getPathForRow(i);
-                rowForPathHash.put((INode) rowPath.getLastPathComponent(), i);
-            }
-        } catch (it.unitn.disi.smatch.loaders.context.ContextLoaderException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        //expand all the nodes initially
+        for (int i = 0; i < jTree.getRowCount(); i++) {
+            jTree.expandRow(i);
+            TreePath rowPath = jTree.getPathForRow(i);
+            rowForPathHash.put((INode) rowPath.getLastPathComponent(), i);
         }
         return context;
     }
@@ -653,52 +648,42 @@ public class MatchingBasicGUI extends JPanel
      */
     public void actionPerformed(ActionEvent e) {
         String command = e.getActionCommand();
+        try {
+            if (OPEN_SOURCE_COMMAND.equals(command)) {
+                int returnVal = fc.showOpenDialog(MatchingBasicGUI.this);
 
-        if (OPEN_SOURCE_COMMAND.equals(command)) {
-            int returnVal = fc.showOpenDialog(MatchingBasicGUI.this);
+                if (returnVal == JFileChooser.APPROVE_OPTION) {
+                    File file = fc.getSelectedFile();
+                    sourceFileTxt.setText(file.getAbsolutePath());
+                    System.out.println("Opening source: " + file.getAbsolutePath() + "");
 
-            if (returnVal == JFileChooser.APPROVE_OPTION) {
-                File file = fc.getSelectedFile();
-                sourceFileTxt.setText(file.getAbsolutePath());
-                System.out.println("Opening source: " + file.getAbsolutePath() + "");
-
-                sourceContext = createTree(file.getAbsolutePath(), sourceTree, sourceRowForPath);
-            }
-        } else if (OPEN_TARGET_COMMAND.equals(command)) {
-            int returnVal = fc.showOpenDialog(MatchingBasicGUI.this);
-
-            if (returnVal == JFileChooser.APPROVE_OPTION) {
-                File file = fc.getSelectedFile();
-                targetFileTxt.setText(file.getAbsolutePath());
-                System.out.println("Opening target: " + file.getAbsolutePath() + "");
-
-                targetContext = createTree(file.getAbsolutePath(), targetTree, targetRowForPath);
-            }
-        } else if (OPEN_MAPPING_COMMAND.equals(command)) {
-            int returnVal = fc.showOpenDialog(MatchingBasicGUI.this);
-
-            if (returnVal == JFileChooser.APPROVE_OPTION) {
-                File file = fc.getSelectedFile();
-
-                try {
-                    mappings = loadMappingsFromFile(sourceContext, targetContext, file.getAbsolutePath());
-
-                } catch (SMatchException e1) {
-                    // TODO Auto-generated catch block
-                    e1.printStackTrace();
+                    sourceContext = createTree(file.getAbsolutePath(), sourceTree, sourceRowForPath);
                 }
-            }
+            } else if (OPEN_TARGET_COMMAND.equals(command)) {
+                int returnVal = fc.showOpenDialog(MatchingBasicGUI.this);
 
-        } else if (RUN_MATCHER_COMMAND.equals(command)) {
+                if (returnVal == JFileChooser.APPROVE_OPTION) {
+                    File file = fc.getSelectedFile();
+                    targetFileTxt.setText(file.getAbsolutePath());
+                    System.out.println("Opening target: " + file.getAbsolutePath() + "");
 
-            try {
+                    targetContext = createTree(file.getAbsolutePath(), targetTree, targetRowForPath);
+                }
+            } else if (OPEN_MAPPING_COMMAND.equals(command)) {
+                int returnVal = fc.showOpenDialog(MatchingBasicGUI.this);
+
+                if (returnVal == JFileChooser.APPROVE_OPTION) {
+                    File file = fc.getSelectedFile();
+                    mappings = loadMappingsFromFile(sourceContext, targetContext, file.getAbsolutePath());
+                }
+
+            } else if (RUN_MATCHER_COMMAND.equals(command)) {
                 String mappingFile = runMatcher();
                 mappings = loadMappingsFromFile(sourceContext, targetContext, mappingFile);
-
-            } catch (Exception e1) {
-                // TODO Auto-generated catch block
-                e1.printStackTrace();
             }
+        } catch (ConfigurableException ex) {
+            final String errMessage = ex.getClass().getSimpleName() + ": " + ex.getMessage();
+            log.error(errMessage, ex);
         }
     }
 

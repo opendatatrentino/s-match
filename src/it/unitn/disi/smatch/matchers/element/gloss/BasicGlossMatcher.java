@@ -4,10 +4,7 @@ import it.unitn.disi.smatch.components.Configurable;
 import it.unitn.disi.smatch.components.ConfigurableException;
 import it.unitn.disi.smatch.data.mappings.IMappingElement;
 import it.unitn.disi.smatch.matchers.element.MatcherLibraryException;
-import it.unitn.disi.smatch.oracles.ILinguisticOracle;
-import it.unitn.disi.smatch.oracles.ISenseMatcher;
-import it.unitn.disi.smatch.oracles.ISynset;
-import it.unitn.disi.smatch.oracles.LinguisticOracleException;
+import it.unitn.disi.smatch.oracles.*;
 import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
@@ -80,6 +77,10 @@ public class BasicGlossMatcher extends Configurable {
             final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
             log.error(errMessage, e);
             throw new MatcherLibraryException(errMessage, e);
+        } catch (SenseMatcherException e) {
+            final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
+            log.error(errMessage, e);
+            throw new MatcherLibraryException(errMessage, e);
         }
     }
 
@@ -103,6 +104,10 @@ public class BasicGlossMatcher extends Configurable {
             }
             return false;
         } catch (LinguisticOracleException e) {
+            final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
+            log.error(errMessage, e);
+            throw new MatcherLibraryException(errMessage, e);
+        } catch (SenseMatcherException e) {
             final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
             log.error(errMessage, e);
             throw new MatcherLibraryException(errMessage, e);
@@ -132,6 +137,10 @@ public class BasicGlossMatcher extends Configurable {
             final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
             log.error(errMessage, e);
             throw new MatcherLibraryException(errMessage, e);
+        } catch (SenseMatcherException e) {
+            final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
+            log.error(errMessage, e);
+            throw new MatcherLibraryException(errMessage, e);
         }
     }
 
@@ -155,6 +164,10 @@ public class BasicGlossMatcher extends Configurable {
             }
             return false;
         } catch (LinguisticOracleException e) {
+            final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
+            log.error(errMessage, e);
+            throw new MatcherLibraryException(errMessage, e);
+        } catch (SenseMatcherException e) {
             final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
             log.error(errMessage, e);
             throw new MatcherLibraryException(errMessage, e);

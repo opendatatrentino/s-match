@@ -1,6 +1,7 @@
 package it.unitn.disi.smatch.deciders;
 
 import it.unitn.disi.smatch.components.Configurable;
+import org.apache.log4j.Logger;
 import org.sat4j.minisat.SolverFactory;
 import org.sat4j.reader.DimacsReader;
 import org.sat4j.reader.ParseFormatException;
@@ -18,89 +19,31 @@ import java.io.StringReader;
  */
 
 public class SAT4J extends Configurable implements ISATSolver {
-    static String test = "p cnf 2 2\n1 2 0\n-1 0\n";
-    static String test1 = "p cnf 6 6\n-1 3 0\n1 2 0\n-3 0\n-4 0\n5 0\n6 0\n";
-    static String test2 = "p cnf 8 13\n-1 5 0\n" +
-            "1 -5 0\n" +
-            "2 -6 0\n" +
-            "6 -2 0\n" +
-            "-7 3 0\n" +
-            "-3 7 0\n" +
-//            "8 -4 0\n" +
-//            "8 3 0\n" +
-            "4 -8 0\n" +
-            "1 2 0\n" +
-            "3 4 0\n" +
-            "-6 -8 0\n" +
-            "-8 -5 0\n" +
-            "-6 -7 0\n" +
-            "-7 -5 0\n";
 
-    static String test3 = "p cnf 6 8\n-1 4 0\n1 -4 0\n-3 6 0\n3 -6 0\n1 0\n2 0\n3 0\n-4 -5 -6 0\n";
+    private static final Logger log = Logger.getLogger(SAT4J.class);
 
-
-    public boolean isSatisfiable(String input) {
+    public boolean isSatisfiable(String input) throws SATSolverException {
         ISolver solver = new ModelIterator(SolverFactory.newMiniLearning());
         DimacsReader reader = new DimacsReader(solver);
-// CNF filename is given on the command line
+        boolean result;
         try {
             LineNumberReader lnr = new LineNumberReader(new BufferedReader(new StringReader(input)));
             reader.parseInstance(lnr);
-            return solver.isSatisfiable();
-
+            result = solver.isSatisfiable();
         } catch (ParseFormatException e) {
-            System.out.println("parse error");
-            e.printStackTrace();
+            final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
+            log.error(errMessage, e);
+            log.error(input);
+            throw new SATSolverException(errMessage, e);
         } catch (ContradictionException e) {
-            return false;
-//                System.out.println("Unsatisfiable (trivial)!");
+            result = false;
         } catch (TimeoutException e) {
-            System.out.println("Timeout, sorry!");
+            final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
+            log.error(errMessage, e);
+            log.error(input);
+            throw new SATSolverException(errMessage, e);
         }
-        return false;
+        return result;
 
     }
-
-    public void model(String input) {
-        ISolver solver = new ModelIterator(SolverFactory.newMiniLearning());
-        DimacsReader reader = new DimacsReader(solver);
-// CNF filename is given on the command line
-        try {
-            LineNumberReader lnr = new LineNumberReader(new BufferedReader(new StringReader(input)));
-            reader.parseInstance(lnr);
-      //      System.out.println(RemiUtils.backbone(solver));
-
-            while (solver.isSatisfiable()) {
-                int[] m = solver.model();
-                for (int i1 : m) {
-                    System.out.print(i1 + ",");
-                }
-                System.out.println();
-            }
-//            if (solver.isSatisfiable()) {
-            //System.out.println(RemiUtils.backbone(solver));
-//                return true;
-//            } else {
-//                return false;
-//            }
-
-        } catch (ParseFormatException e) {
-            System.out.println("parse error");
-            e.printStackTrace();
-        } catch (ContradictionException e) {
-            //return false;
-//                System.out.println("Unsatisfiable (trivial)!");
-        } catch (TimeoutException e) {
-            System.out.println("Timeout, sorry!");
-        }
-        //return false;
-
-    }
-
-    // TODO It is confusing more than one main function. remove it.
-    public static void main(String[] args) {
-        SAT4J s4j = new SAT4J();
-        s4j.model(test3);
-    }
-
 }

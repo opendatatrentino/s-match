@@ -3,6 +3,7 @@ package it.unitn.disi.smatch.renderers.context;
 import it.unitn.disi.smatch.components.Configurable;
 import it.unitn.disi.smatch.data.*;
 import it.unitn.disi.smatch.loaders.context.CTXML;
+import org.apache.log4j.Logger;
 
 import java.io.BufferedWriter;
 import java.io.FileOutputStream;
@@ -18,10 +19,12 @@ import java.util.List;
  */
 public class CTXMLContextRenderer extends Configurable implements IContextRenderer {
 
+    private static final Logger log = Logger.getLogger(CTXMLContextRenderer.class);
+
     //TODO rewrite with proper exceptions
     //TODO rewrite for generation via interfaces
 
-    public void render(IContext context, String fileName) {
+    public void render(IContext context, String fileName) throws ContextRendererException {
         context.getContextData().sort();
         saveToXml(context, fileName);
     }
@@ -31,77 +34,64 @@ public class CTXMLContextRenderer extends Configurable implements IContextRender
      *
      * @param c           the interface of the context
      * @param xmlFileName The name of the file where the contexts has to be saved
+     * @throws ContextRendererException ContextRendererException
      */
-    private void saveToXml(IContext c, String xmlFileName) {
-        IContextData cd = c.getContextData();
+    private void saveToXml(IContext c, String xmlFileName) throws ContextRendererException {
         try {
-            if (c.getRoot() == null) {
-                System.out.println("ERROR: no root defined for the input context");
+            IContextData cd = c.getContextData();
+            if (null == c.getRoot()) {
+                throw new ContextRendererException("No root defined for the context");
             }
-            BufferedWriter ctxmlFile = null;
-            try {
-                ctxmlFile = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(xmlFileName), "UTF-8"));
-            } catch (IOException ioex) {
-                System.out.println("Problems creating xml output file");
-                System.out.println(ioex.toString());
-            }
-            try {
-                // write the head of the xml document
-                ctxmlFile.write("<?xml version = \"1.0\" encoding = \"UTF-8\"?>\n");
-                ctxmlFile.write("<datastructures xmlns:xsi = \"" + Context.INSTANCE_NAMESPACE_URI + "\"");
-                ctxmlFile.write(" xsi:noNamespaceSchemaLocation = \"" + Context.getSCHEMA_LOCATION() + "\">\n");
+            BufferedWriter ctxmlFile = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(xmlFileName), "UTF-8"));
+            // write the head of the xml document
+            ctxmlFile.write("<?xml version = \"1.0\" encoding = \"UTF-8\"?>\n");
+            ctxmlFile.write("<datastructures xmlns:xsi = \"" + Context.INSTANCE_NAMESPACE_URI + "\"");
+            ctxmlFile.write(" xsi:noNamespaceSchemaLocation = \"" + Context.getSCHEMA_LOCATION() + "\">\n");
 
-                // write the header of the context
-                ctxmlFile.write("<ctxHeader ctxId = \"" + cd.getCtxId() + "\"");
-                if (cd.getLabel() == null || (cd.getLabel()).equals("")) {
-                    INode root = c.getRoot();
-                    cd.setLabel("Context-" + root.getNodeName());
-                }
-                ctxmlFile.write(" label = \"" + cd.getLabel() + "\"");
-                ctxmlFile.write(" status =\"" + cd.getStatus() + "\"");
-                ctxmlFile.write(" normalized =\"" + cd.isNormalized() + "\">\n");
-                ctxmlFile.write("<owner>\n");
-                ctxmlFile.write("<agentId>" + cd.getOwner() + "</agentId>\n");
-                ctxmlFile.write("</owner>\n");
-                ctxmlFile.write("<group>\n");
-                ctxmlFile.write("<groupId>" + cd.getGroup() + "</groupId>\n");
-                ctxmlFile.write("</group>\n");
-                ctxmlFile.write("<security>\n");
-                ctxmlFile.write("<accessRights>" + cd.getSecurityAccessRights() + "</accessRights>\n");
-                ctxmlFile.write("<encription>" + cd.getSecurityEncryption() + "</encription>\n");
-                ctxmlFile.write("</security>\n");
-                String description = cd.getDescription();
-                description = CTXML.xmlTagEncode(description);
-                ctxmlFile.write("<description>" + description + "</description>\n");
-                ctxmlFile.write("</ctxHeader>\n");
-
-                // write the header of the schema of the concept hierarchy
-                ctxmlFile.write("<ctxContent language = \"" + cd.getLanguage() + "\">\n");
-                ctxmlFile.write("<CHContent>\n");
-                ctxmlFile.write("<schema reservedNameSpaceTag=\"" + Context.NAMESPACE_URI + "\"");
-                ctxmlFile.write(" targetNamespace=\"" + cd.getNamespace() + "\"");
-                ctxmlFile.write(" reservedNameSpaceTag--ctxTag=\"" + cd.getNamespace() + "\">\n");
-
-                /// write the content of the concept hierarchy
-                writeBaseNode(ctxmlFile);
-                writeConceptHierarchyToFile(ctxmlFile, c.getRoot());
-            } catch (IOException ioe) {
-                System.out.println("Problems writing xml output file");
-                System.out.println(ioe.toString());
+            // write the header of the context
+            ctxmlFile.write("<ctxHeader ctxId = \"" + cd.getCtxId() + "\"");
+            if (cd.getLabel() == null || (cd.getLabel()).equals("")) {
+                INode root = c.getRoot();
+                cd.setLabel("Context-" + root.getNodeName());
             }
-            /// close the document
-            try {
-                ctxmlFile.write("</schema>\n");
-                ctxmlFile.write("</CHContent>\n");
-                ctxmlFile.write("</ctxContent>\n");
-                ctxmlFile.write("</datastructures>\n");
-                ctxmlFile.close();
-            } catch (IOException ioe) {
-                System.out.println("Problems closing dot output file");
-                System.out.println(ioe.toString());
-            }
-        } catch (Exception e) {
-            e.printStackTrace();  //To change body of catch statement use Options | File Templates.
+            ctxmlFile.write(" label = \"" + cd.getLabel() + "\"");
+            ctxmlFile.write(" status =\"" + cd.getStatus() + "\"");
+            ctxmlFile.write(" normalized =\"" + cd.isNormalized() + "\">\n");
+            ctxmlFile.write("<owner>\n");
+            ctxmlFile.write("<agentId>" + cd.getOwner() + "</agentId>\n");
+            ctxmlFile.write("</owner>\n");
+            ctxmlFile.write("<group>\n");
+            ctxmlFile.write("<groupId>" + cd.getGroup() + "</groupId>\n");
+            ctxmlFile.write("</group>\n");
+            ctxmlFile.write("<security>\n");
+            ctxmlFile.write("<accessRights>" + cd.getSecurityAccessRights() + "</accessRights>\n");
+            ctxmlFile.write("<encription>" + cd.getSecurityEncryption() + "</encription>\n");
+            ctxmlFile.write("</security>\n");
+            String description = cd.getDescription();
+            description = CTXML.xmlTagEncode(description);
+            ctxmlFile.write("<description>" + description + "</description>\n");
+            ctxmlFile.write("</ctxHeader>\n");
+
+            // write the header of the schema of the concept hierarchy
+            ctxmlFile.write("<ctxContent language = \"" + cd.getLanguage() + "\">\n");
+            ctxmlFile.write("<CHContent>\n");
+            ctxmlFile.write("<schema reservedNameSpaceTag=\"" + Context.NAMESPACE_URI + "\"");
+            ctxmlFile.write(" targetNamespace=\"" + cd.getNamespace() + "\"");
+            ctxmlFile.write(" reservedNameSpaceTag--ctxTag=\"" + cd.getNamespace() + "\">\n");
+
+            /// write the content of the concept hierarchy
+            writeBaseNode(ctxmlFile);
+            writeConceptHierarchyToFile(ctxmlFile, c.getRoot());
+
+            ctxmlFile.write("</schema>\n");
+            ctxmlFile.write("</CHContent>\n");
+            ctxmlFile.write("</ctxContent>\n");
+            ctxmlFile.write("</datastructures>\n");
+            ctxmlFile.close();
+        } catch (IOException e) {
+            final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
+            log.error(errMessage, e);
+            throw new ContextRendererException(errMessage, e);
         }
     }
 

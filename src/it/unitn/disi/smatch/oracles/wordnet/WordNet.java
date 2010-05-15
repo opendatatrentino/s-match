@@ -4,10 +4,7 @@ import it.unitn.disi.smatch.components.Configurable;
 import it.unitn.disi.smatch.components.ConfigurableException;
 import it.unitn.disi.smatch.data.IAtomicConceptOfLabel;
 import it.unitn.disi.smatch.data.mappings.IMappingElement;
-import it.unitn.disi.smatch.oracles.ILinguisticOracle;
-import it.unitn.disi.smatch.oracles.ISenseMatcher;
-import it.unitn.disi.smatch.oracles.ISynset;
-import it.unitn.disi.smatch.oracles.LinguisticOracleException;
+import it.unitn.disi.smatch.oracles.*;
 import net.didion.jwnl.JWNL;
 import net.didion.jwnl.JWNLException;
 import net.didion.jwnl.data.*;
@@ -132,8 +129,7 @@ public class WordNet extends Configurable implements ILinguisticOracle, ISenseMa
             IndexWordSet lemmas2 = dic.lookupAllIndexWords(str2);
             if ((lemmas1 == null) || (lemmas2 == null) || (lemmas1.size() < 1) || (lemmas2.size() < 1)) {
                 return false;
-            }
-            else {
+            } else {
                 IndexWord[] v1 = lemmas1.getIndexWordArray();
                 IndexWord[] v2 = lemmas2.getIndexWordArray();
                 for (IndexWord aV1 : v1) {
@@ -155,7 +151,7 @@ public class WordNet extends Configurable implements ILinguisticOracle, ISenseMa
         return new WordNetSynset(getSynset(source));
     }
 
-    public char getRelation(List<String> sourceSenses, List<String> targetSenses) {
+    public char getRelation(List<String> sourceSenses, List<String> targetSenses) throws SenseMatcherException {
         for (String sourceSense : sourceSenses) {
             for (String targetSense : targetSenses) {
                 if (getRelationFromOracle(sourceSense, targetSense, IMappingElement.EQUIVALENCE)) {
@@ -190,7 +186,7 @@ public class WordNet extends Configurable implements ILinguisticOracle, ISenseMa
         return IMappingElement.IDK;
     }
 
-    public char getRelationACoL(IAtomicConceptOfLabel source, IAtomicConceptOfLabel target) {
+    public char getRelationACoL(IAtomicConceptOfLabel source, IAtomicConceptOfLabel target) throws SenseMatcherException {
         List<String> sourceSenses = source.getSenses().getSenseList();
         List<String> targetSenses = target.getSenses().getSenseList();
         return getRelation(sourceSenses, targetSenses);
@@ -205,8 +201,9 @@ public class WordNet extends Configurable implements ILinguisticOracle, ISenseMa
      * @param target the string of target
      * @param rel    the relation between source and target
      * @return whether particular type of relation holds between two senses according to oracle
+     * @throws SenseMatcherException SenseMatcherException
      */
-    private boolean getRelationFromOracle(String source, String target, char rel) {
+    private boolean getRelationFromOracle(String source, String target, char rel) throws SenseMatcherException {
         char tmp;
         //  If we don't have cashed relation check which one exist and put it to cash
         if (sensesCache.get(source + target) == null) {
@@ -243,7 +240,7 @@ public class WordNet extends Configurable implements ILinguisticOracle, ISenseMa
         }
     }
 
-    public boolean isSourceSynonymTarget(String source, String target) {
+    public boolean isSourceSynonymTarget(String source, String target) throws SenseMatcherException {
         if ((source.indexOf("000000") == -1) && (target.indexOf("000000") == -1)) {
             if ((source.indexOf(UNKNOWN_MEANING) > -1) || (target.indexOf(UNKNOWN_MEANING) > -1)) {
                 return false;
@@ -264,14 +261,20 @@ public class WordNet extends Configurable implements ILinguisticOracle, ISenseMa
                         return true;
                     }
                 }
-            } catch (Exception ex) {
-                ex.printStackTrace();
+            } catch (JWNLException e) {
+                final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
+                log.error(errMessage, e);
+                throw new SenseMatcherException(errMessage, e);
+            } catch (LinguisticOracleException e) {
+                final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
+                log.error(errMessage, e);
+                throw new SenseMatcherException(errMessage, e);
             }
         }
         return false;
     }
 
-    public boolean isSourceOppositeToTarget(String source, String target) {
+    public boolean isSourceOppositeToTarget(String source, String target) throws SenseMatcherException {
         //synonymy and unrecognize words check
         if ((source.indexOf("000000") == -1) && (target.indexOf("000000") == -1)) {
             if ((source.indexOf(UNKNOWN_MEANING) > -1) || (target.indexOf(UNKNOWN_MEANING) > -1)) {
@@ -291,8 +294,14 @@ public class WordNet extends Configurable implements ILinguisticOracle, ISenseMa
                         return true;
                     }
                 }
-            } catch (Exception ex) {
-                ex.printStackTrace();
+            } catch (JWNLException e) {
+                final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
+                log.error(errMessage, e);
+                throw new SenseMatcherException(errMessage, e);
+            } catch (LinguisticOracleException e) {
+                final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
+                log.error(errMessage, e);
+                throw new SenseMatcherException(errMessage, e);
             }
         }
         return false;
@@ -308,11 +317,11 @@ public class WordNet extends Configurable implements ILinguisticOracle, ISenseMa
      * @param target the string of target
      * @return true if source is less general than target
      */
-    public boolean isSourceLessGeneralThanTarget(String source, String target) {
+    public boolean isSourceLessGeneralThanTarget(String source, String target) throws SenseMatcherException {
         return isSourceMoreGeneralThanTarget(target, source);
     }
 
-    public boolean isSourceMoreGeneralThanTarget(String source, String target) {
+    public boolean isSourceMoreGeneralThanTarget(String source, String target) throws SenseMatcherException {
         if ((source.indexOf("000000") == -1) && (target.indexOf("000000") == -1)) {
             if (((source.startsWith("n")) && (target.startsWith("n"))) || ((source.startsWith("n")) && (target.startsWith("n")))) {
                 if (source.equals(target)) {
@@ -347,8 +356,14 @@ public class WordNet extends Configurable implements ILinguisticOracle, ISenseMa
                     } else {
                         return true;
                     }
-                } catch (Exception ex) {
-                    ex.printStackTrace();
+                } catch (JWNLException e) {
+                    final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
+                    log.error(errMessage, e);
+                    throw new SenseMatcherException(errMessage, e);
+                } catch (LinguisticOracleException e) {
+                    final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
+                    log.error(errMessage, e);
+                    throw new SenseMatcherException(errMessage, e);
                 }
             }
         }
@@ -407,8 +422,9 @@ public class WordNet extends Configurable implements ILinguisticOracle, ISenseMa
      *
      * @param source a sense id
      * @return synset
+     * @throws LinguisticOracleException LinguisticOracleException
      */
-    private Synset getSynset(String source) {
+    private Synset getSynset(String source) throws LinguisticOracleException {
         StringTokenizer stSource = new StringTokenizer(source, "#");
         try {
             POS POSSource = POS.getPOSForKey(stSource.nextToken());
@@ -421,9 +437,10 @@ public class WordNet extends Configurable implements ILinguisticOracle, ISenseMa
                 long lSourseID = Long.parseLong(sourseID);
                 return dic.getSynsetAt(POSSource, lSourseID);
             }
-        } catch (Exception ex) {
-            System.err.println(source);
-            ex.printStackTrace();
+        } catch (JWNLException e) {
+            final String errMessage = "Malformed synset id: " + source + ". Error: " +  e.getClass().getSimpleName() + ": " + e.getMessage();
+            log.error(errMessage, e);
+            throw new LinguisticOracleException(errMessage, e);
         }
         return null;
     }

@@ -208,13 +208,7 @@ public class EvalNodeMatcher extends BaseNodeMatcher implements INodeMatcher {
                     saved_negation = true;
                     continue;
                 }
-                String var_num = null;
-                try {
-                    var_num = hashConceptNumber.get(node.getNodeData().getAColById(var)).toString();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    System.exit(2);
-                }
+                String var_num = hashConceptNumber.get(node.getNodeData().getAColById(var)).toString();
                 if (negation || saved_negation) {
                     saved_negation = false;
                     var_num = "-" + var_num;

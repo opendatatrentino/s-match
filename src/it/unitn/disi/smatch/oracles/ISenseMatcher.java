@@ -19,8 +19,9 @@ public interface ISenseMatcher extends IConfigurable {
      * @param listSenseS source set of senses
      * @param listSenseT target set of senses
      * @return a relation
+     * @throws SenseMatcherException SenseMatcherException
      */
-    public char getRelation(List<String> listSenseS, List<String> listSenseT);
+    public char getRelation(List<String> listSenseS, List<String> listSenseT) throws SenseMatcherException;
 
     /**
      * Returns semantic relations which holds between two ACoLs.
@@ -28,8 +29,9 @@ public interface ISenseMatcher extends IConfigurable {
      * @param source source ACoL
      * @param target target ACoL
      * @return a relation
+     * @throws SenseMatcherException SenseMatcherException
      */
-    public char getRelationACoL(IAtomicConceptOfLabel source, IAtomicConceptOfLabel target);
+    public char getRelationACoL(IAtomicConceptOfLabel source, IAtomicConceptOfLabel target) throws SenseMatcherException;
 
     /**
      * Checks whether the source is more general than target.
@@ -37,8 +39,9 @@ public interface ISenseMatcher extends IConfigurable {
      * @param source source synset id
      * @param target target synset id
      * @return whether relation holds
+     * @throws SenseMatcherException SenseMatcherException
      */
-    public boolean isSourceMoreGeneralThanTarget(String source, String target);
+    public boolean isSourceMoreGeneralThanTarget(String source, String target) throws SenseMatcherException;
 
     /**
      * Checks whether the source is less general than target.
@@ -46,8 +49,9 @@ public interface ISenseMatcher extends IConfigurable {
      * @param source source synset id
      * @param target target synset id
      * @return whether relation holds
+     * @throws SenseMatcherException SenseMatcherException
      */
-    public boolean isSourceLessGeneralThanTarget(String source, String target);
+    public boolean isSourceLessGeneralThanTarget(String source, String target) throws SenseMatcherException;
 
     /**
      * Checks whether the source is a synonym of the target.
@@ -55,8 +59,9 @@ public interface ISenseMatcher extends IConfigurable {
      * @param source source synset id
      * @param target target synset id
      * @return whether relation holds
+     * @throws SenseMatcherException SenseMatcherException
      */
-    public boolean isSourceSynonymTarget(String source, String target);
+    public boolean isSourceSynonymTarget(String source, String target) throws SenseMatcherException;
 
     /**
      * Checks whether the source is disjoint with the target.
@@ -64,6 +69,7 @@ public interface ISenseMatcher extends IConfigurable {
      * @param source source synset id
      * @param target target synset id
      * @return whether relation holds
+     * @throws SenseMatcherException SenseMatcherException
      */
-    public boolean isSourceOppositeToTarget(String source, String target);
+    public boolean isSourceOppositeToTarget(String source, String target) throws SenseMatcherException;
 }

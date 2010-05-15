@@ -150,13 +150,7 @@ public class BaseNodeMatcher extends Configurable {
                     saved_negation = true;
                     continue;
                 }
-                String var_num = null;
-                try {
-                    var_num = hashConceptNumber.get(node.getNodeData().getNMTAColById(var)).toString();
-                } catch (Exception e) {
-                    e.printStackTrace();  //To change body of catch statement use Options | File Templates.
-                    System.exit(2);
-                }
+                String var_num = hashConceptNumber.get(node.getNodeData().getNMTAColById(var)).toString();
                 if (negation || saved_negation) {
                     saved_negation = false;
                     var_num = "-" + var_num;
@@ -191,29 +185,25 @@ public class BaseNodeMatcher extends Configurable {
         result.clear();
         ArrayList<String> firstClause = new ArrayList<String>();
         int numberOfVariables = hashConceptNumber.size();
-        try {
-            for (ArrayList<String> v : pivot) {
-                if (v.size() == 1) {
-                    firstClause.add(changeSign(v.get(0)));
-                }
-                if (v.size() > 1) {
-                    numberOfVariables++;
-                    String lsn = Integer.toString(numberOfVariables);
-                    firstClause.add("-" + lsn);
-                    ArrayList<String> longClause = new ArrayList<String>();
-                    longClause.add("-" + lsn);
-                    for (String var : v) {
-                        longClause.add(var);
-                        ArrayList<String> tmp = new ArrayList<String>();
-                        tmp.add(lsn);
-                        tmp.add(changeSign(var));
-                        result.add(tmp);
-                    }
-                    result.add(longClause);
-                }
+        for (ArrayList<String> v : pivot) {
+            if (v.size() == 1) {
+                firstClause.add(changeSign(v.get(0)));
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+            if (v.size() > 1) {
+                numberOfVariables++;
+                String lsn = Integer.toString(numberOfVariables);
+                firstClause.add("-" + lsn);
+                ArrayList<String> longClause = new ArrayList<String>();
+                longClause.add("-" + lsn);
+                for (String var : v) {
+                    longClause.add(var);
+                    ArrayList<String> tmp = new ArrayList<String>();
+                    tmp.add(lsn);
+                    tmp.add(changeSign(var));
+                    result.add(tmp);
+                }
+                result.add(longClause);
+            }
         }
         if (firstClause.size() > 0)
             result.add(firstClause);

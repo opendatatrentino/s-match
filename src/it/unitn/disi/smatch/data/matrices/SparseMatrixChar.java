@@ -143,12 +143,8 @@ public class SparseMatrixChar implements IMatchMatrix {
     }
 
     private char[] getVector(int row, char[] out) {
-        try {
-            for (int i = rowPointer[row]; i < rowPointer[row + 1]; i++) {
-                out[columnIndex[i]] = data[i];
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
+        for (int i = rowPointer[row]; i < rowPointer[row + 1]; i++) {
+            out[columnIndex[i]] = data[i];
         }
         return out;
     }

@@ -1,8 +1,5 @@
 package it.unitn.disi.smatch.data;
 
-import orbital.logic.imp.Formula;
-import orbital.moon.logic.ClassicalLogic;
-
 import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeNode;
 import java.util.*;
@@ -91,7 +88,7 @@ public class Node implements INodeData, INode {
      * Constructor class which sets the node name and id. Also sets unique node name with combination of node name and id.
      *
      * @param nodeName the name of the node
-     * @param nodeId the id of the node
+     * @param nodeId   the id of the node
      */
     public Node(String nodeName, String nodeId) {
         this();
@@ -106,32 +103,6 @@ public class Node implements INodeData, INode {
 
     public INodeData getNodeData() {
         return this;
-    }
-
-    /**
-     * Sets cLab formula to CNF and stores in the concept.
-     */
-    public void setcLabFormulaToConjunciveForm(String formula) {
-        if ((formula.contains("&") && formula.contains("|")) || formula.contains("~")) {
-            String tmpFormula = formula;
-            tmpFormula = tmpFormula.trim();
-            try {
-                ClassicalLogic cl = new ClassicalLogic();
-                if (!tmpFormula.equals("")) {
-                    tmpFormula = tmpFormula.replace('.', 'P');
-                    Formula f = (Formula) (cl.createExpression(tmpFormula));
-                    Formula cnf = ClassicalLogic.Utilities.conjunctiveForm(f);
-                    tmpFormula = cnf.toString();
-                    cLabFormula = tmpFormula.replace('P', '.');
-                } else {
-                    cLabFormula = tmpFormula;
-                }
-            } catch (orbital.logic.imp.ParseException pe) {
-                pe.printStackTrace();
-            }
-        } else {
-            cLabFormula = formula;
-        }
     }
 
     public void resetLogicalFormula() {
@@ -152,7 +123,7 @@ public class Node implements INodeData, INode {
         children.add(child);
     }
 
-   public List<INode> getAncestors() {
+    public List<INode> getAncestors() {
         List<INode> result = ancestors;
         if (null == result) {
             result = new ArrayList<INode>();
@@ -336,13 +307,8 @@ public class Node implements INodeData, INode {
     public void setNodeUniqueName(String uniqueName) {
         this.nodeUniqueName = uniqueName;
         StringTokenizer extractIdAndName = new StringTokenizer(uniqueName, "$");
-        try {
-            nodeName = extractIdAndName.nextToken().trim();
-            nodeId = extractIdAndName.nextToken().trim();
-        } catch (Exception e) {
-            System.out.println(uniqueName);
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        }
+        nodeName = extractIdAndName.nextToken().trim();
+        nodeId = extractIdAndName.nextToken().trim();
     }
 
     public String toString() {
@@ -407,7 +373,7 @@ public class Node implements INodeData, INode {
      * Fills the list with Atomic concepts identifiers.
      * They are used as propositional variables in the formula.
      *
-     * @param node the interface of node which acols will be added
+     * @param node          the interface of node which acols will be added
      * @param partialResult list of atomic concept of labels which are added so far without current node
      * @return list of atomic concept of label with current node
      */

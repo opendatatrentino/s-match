@@ -8,10 +8,7 @@ import it.unitn.disi.smatch.data.IContext;
 import it.unitn.disi.smatch.data.mappings.IMappingElement;
 import it.unitn.disi.smatch.data.matrices.IMatchMatrix;
 import it.unitn.disi.smatch.data.matrices.MatrixFactory;
-import it.unitn.disi.smatch.oracles.ILinguisticOracle;
-import it.unitn.disi.smatch.oracles.ISenseMatcher;
-import it.unitn.disi.smatch.oracles.ISynset;
-import it.unitn.disi.smatch.oracles.LinguisticOracleException;
+import it.unitn.disi.smatch.oracles.*;
 import it.unitn.disi.smatch.utils.ClassFactory;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -121,30 +118,36 @@ public class MatcherLibrary extends Configurable implements IMatcherLibrary {
      * @throws MatcherLibraryException MatcherLibraryException
      */
     public char getRelation(IAtomicConceptOfLabel sourceACoL, IAtomicConceptOfLabel targetACoL) throws MatcherLibraryException {
-        sourceACoL.getSenses().convertSenses();
-        targetACoL.getSenses().convertSenses();
+        try {
+            sourceACoL.getSenses().convertSenses();
+            targetACoL.getSenses().convertSenses();
 
-        List<String> sourceSenses = sourceACoL.getSenses().getSenseList();
-        List<String> targetSenses = targetACoL.getSenses().getSenseList();
-        char relation = senseMatcher.getRelationACoL(sourceACoL, targetACoL);
+            List<String> sourceSenses = sourceACoL.getSenses().getSenseList();
+            List<String> targetSenses = targetACoL.getSenses().getSenseList();
+            char relation = senseMatcher.getRelationACoL(sourceACoL, targetACoL);
 
-        //if WN matcher did not find relation
-        if (IMappingElement.IDK == relation) {
-            if (useWeakSemanticsElementLevelMatchersLibrary) {
-                //use string based matchers
-                relation = getRelationFromStringMatchers(sourceACoL.getLemma(), targetACoL.getLemma());
-                //if they did not find relation
-                if (IMappingElement.IDK == relation) {
-                    //use sense and gloss based matchers
-                    relation = getRelationFromSenseGlossMatchers(sourceSenses, targetSenses);
+            //if WN matcher did not find relation
+            if (IMappingElement.IDK == relation) {
+                if (useWeakSemanticsElementLevelMatchersLibrary) {
+                    //use string based matchers
+                    relation = getRelationFromStringMatchers(sourceACoL.getLemma(), targetACoL.getLemma());
+                    //if they did not find relation
+                    if (IMappingElement.IDK == relation) {
+                        //use sense and gloss based matchers
+                        relation = getRelationFromSenseGlossMatchers(sourceSenses, targetSenses);
+                    }
                 }
+            } else {
+                sourceACoL.getSenses().setSenseList(sourceSenses);
+                targetACoL.getSenses().setSenseList(targetSenses);
             }
-        } else {
-            sourceACoL.getSenses().setSenseList(sourceSenses);
-            targetACoL.getSenses().setSenseList(targetSenses);
-        }
 
-        return relation;
+            return relation;
+        } catch (SenseMatcherException e) {
+            final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
+            log.error(errMessage, e);
+            throw new MatcherLibraryException(errMessage, e);
+        }
     }
 
     /**

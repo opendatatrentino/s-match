@@ -536,7 +536,6 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
                 formulaOfConcept = "(" + formulaOfConcept;
         }
         //Assign formula to the node
-        //node.getNodeData().setcLabFormulaToConjunciveForm(formulaOfConcept);
         node.getNodeData().setcLabFormula(formulaOfConcept);
     }
 

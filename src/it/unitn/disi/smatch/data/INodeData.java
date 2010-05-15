@@ -24,11 +24,6 @@ public interface INodeData {
 
     void setcNodeFormula(String cNodeFormula);
 
-    /**
-     * Sets cLab formula to CNF and store in the concept.
-     */
-    void setcLabFormulaToConjunciveForm(String formula);
-
     String getNodeUniqueName();
 
     void setParent(INode parent);
