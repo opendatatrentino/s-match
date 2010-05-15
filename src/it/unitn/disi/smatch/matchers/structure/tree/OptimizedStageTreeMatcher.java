@@ -14,8 +14,8 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Properties;
-import java.util.Vector;
 
 /**
  * Matches first disjoint, then subsumptions, then joins subsumption into equivalence.
@@ -55,8 +55,8 @@ public class OptimizedStageTreeMatcher extends BaseTreeMatcher implements ITreeM
         ClabMatrix = ClabMatrixParam;
 
         //get the nodes of the contexts
-        Vector<INode> sourceNodes = sourceContext.getAllNodes();
-        Vector<INode> targetNodes = targetContext.getAllNodes();
+        List<INode> sourceNodes = sourceContext.getAllNodes();
+        List<INode> targetNodes = targetContext.getAllNodes();
 
         total = (long) sourceContext.getRoot().getDescendantCount() * (long) targetContext.getRoot().getDescendantCount();
         reportInt = (total / 20) + 1;//i.e. report every 5%
@@ -229,7 +229,7 @@ public class OptimizedStageTreeMatcher extends BaseTreeMatcher implements ITreeM
         return mapping.contains(new MappingNodeElement(sourceNode, targetNode, relation));
     }
 
-    private boolean findRelation(INode sourceNode, Vector<INode> targetNodes, char relation) {
+    private boolean findRelation(INode sourceNode, List<INode> targetNodes, char relation) {
         for (INode targetNode : targetNodes) {
             if (mapping.contains(new MappingNodeElement(sourceNode, targetNode, relation))) {
                 return true;
@@ -238,7 +238,7 @@ public class OptimizedStageTreeMatcher extends BaseTreeMatcher implements ITreeM
         return false;
     }
 
-    private boolean findRelation(Vector<INode> sourceNodes, INode targetNode, char relation) {
+    private boolean findRelation(List<INode> sourceNodes, INode targetNode, char relation) {
         for (INode sourceNode : sourceNodes) {
             if (mapping.contains(new MappingNodeElement(sourceNode, targetNode, relation))) {
                 return true;

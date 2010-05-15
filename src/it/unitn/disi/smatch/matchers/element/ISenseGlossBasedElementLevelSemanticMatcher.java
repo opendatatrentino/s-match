@@ -17,6 +17,7 @@ public interface ISenseGlossBasedElementLevelSemanticMatcher extends IConfigurab
      * @param source interface of source synset
      * @param target interface of target synset.
      * @return a relation between source and target synsets
+     * @throws MatcherLibraryException MatcherLibraryException
      */
-    char match(ISynset source, ISynset target);
+    char match(ISynset source, ISynset target) throws MatcherLibraryException;
 }

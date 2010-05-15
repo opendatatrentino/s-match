@@ -1,7 +1,8 @@
 package it.unitn.disi.smatch.data;
 
+import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Vector;
+import java.util.List;
 
 /**
  * A Context that contains data structure of ctxml file and some methods
@@ -17,8 +18,6 @@ public class Context implements IMatchingContext, IContextData, IContext {
     private static String SCHEMA_LOCATION = "../datastructures/ctxs/ctxmlSchema.xsd";
     //default name of the base node
     public static final String BASE_NODE = "ctxBaseNode$c0";
-    //types of arcs
-    public static final String IS_A = "IsA";
 
     //ctxml metadata variables
     public static final String LANGUAGE_ENGLISH = "en";
@@ -33,19 +32,10 @@ public class Context implements IMatchingContext, IContextData, IContext {
     private String owner;
     private String group;
     private String securityAccessRights;
-    private String securityEncription;
+    private String securityEncryption;
 
     //root concept
     private INode root;
-
-    //tokens of context (used only in root concept)
-//    private Vector<String> tokens = new Vector<String>();
-    //hash to map formula to senses
-    //private Hashtable<String, Integer> ACoLid_RowColumnNumberHash = new Hashtable<String, Integer>();
-
-//    public Hashtable<String, Integer> getACoLid_RowColumnNumberHash() {
-//        return ACoLid_RowColumnNumberHash;
-//    }
 
     private HashSet<String> synonyms = new HashSet<String>();
     private HashSet<String> mg = new HashSet<String>();
@@ -54,6 +44,7 @@ public class Context implements IMatchingContext, IContextData, IContext {
 
 
     //Constructor
+
     public Context() {
         ctxId = "555";
         if (ctxId == null || ctxId.equals("")) {
@@ -83,15 +74,12 @@ public class Context implements IMatchingContext, IContextData, IContext {
      *
      * @return the list of interfaces of nodes which is depth first traversal orders.
      */
-    public Vector<INode> getAllNodes() {
+    public List<INode> getAllNodes() {
 //        if (allNodes == null) {
         INode root = getRoot();
-        Vector<INode> list = new Vector<INode>();
+        List<INode> list = new ArrayList<INode>();
         list.add(root);
         list.addAll(root.getDescendants());
-//        Vector<INode> descendants = root.getDescendants();
-//        for (int i = 0; i < descendants.size(); i++)
-//            list.add(descendants.get(i));
 
         for (int i = 0; i < list.size(); i++) {
             list.get(i).getNodeData().setIndex(i);
@@ -104,30 +92,26 @@ public class Context implements IMatchingContext, IContextData, IContext {
 
     public String getAllNodeNames(String separator) {
         separator = " " + separator + " ";
-        StringBuffer allConceptNames = new StringBuffer();
+        StringBuilder allConceptNames = new StringBuilder();
         INode root = getRoot();
         allConceptNames.append(root.getNodeName()).append(separator);
-        Vector<INode> descendants = root.getDescendants();
-        for (int i = 0; i < descendants.size(); i++) {
-            INode c = (descendants.get(i));
+        List<INode> descendants = root.getDescendants();
+        for (INode c : descendants) {
             allConceptNames.append(c.getNodeName()).append(separator);
         }
         allConceptNames.setLength(allConceptNames.length() - 3);
         return allConceptNames.toString();
     }
 
-    public Vector<IAtomicConceptOfLabel> getAllContextACoLs() {
-//        if (allACoLs == null) {
+    public List<IAtomicConceptOfLabel> getAllContextACoLs() {
         INode root = getRoot();
-        Vector<IAtomicConceptOfLabel> result = new Vector<IAtomicConceptOfLabel>();
-        result = fillACoLsVector(root, result);
+        List<IAtomicConceptOfLabel> result = new ArrayList<IAtomicConceptOfLabel>();
+        result = fillACoLsList(root, result);
         return result;
-//        } else
-//            return (Vector<AtomicConceptOfLabel>)allACoLs.clone();
     }
 
-    private Vector<IAtomicConceptOfLabel> fillACoLsVector(INode cpt, Vector<IAtomicConceptOfLabel> partialResult) {
-        Vector<IAtomicConceptOfLabel> table = cpt.getNodeData().getACoLs();
+    private List<IAtomicConceptOfLabel> fillACoLsList(INode cpt, List<IAtomicConceptOfLabel> partialResult) {
+        List<IAtomicConceptOfLabel> table = cpt.getNodeData().getACoLs();
         for (IAtomicConceptOfLabel acol : table) {
             String pos = acol.getPos();
 
@@ -140,17 +124,17 @@ public class Context implements IMatchingContext, IContextData, IContext {
         if (cpt.getChildren().size() > 0) {
             for (int i = 0; i < cpt.getChildren().size(); i++) {
                 INode child = cpt.getChildren().get(i);
-                this.fillACoLsVector(child, partialResult);
+                this.fillACoLsList(child, partialResult);
             }
         }
         return partialResult;
     }
 
     public void resetOldPreprocessing() {
-        Vector<INode> allNodes = new Vector<INode>(root.getDescendants());
+        List<INode> allNodes = new ArrayList<INode>(root.getDescendants());
         allNodes.add(root);
-        for (int i = 0; i < allNodes.size(); i++) {
-            INodeData c = allNodes.get(i).getNodeData();
+        for (INode allNode : allNodes) {
+            INodeData c = allNode.getNodeData();
             c.resetLogicalFormula();
             c.resetSetOfSenses();
         }
@@ -212,8 +196,8 @@ public class Context implements IMatchingContext, IContextData, IContext {
         this.securityAccessRights = securityAccessRights;
     }
 
-    public void setSecurityEncription(String securityEncription) {
-        this.securityEncription = securityEncription;
+    public void setSecurityEncryption(String securityEncryption) {
+        this.securityEncryption = securityEncryption;
     }
 
     public String newNode(String NodeLabel, String fatherId) {
@@ -242,9 +226,8 @@ public class Context implements IMatchingContext, IContextData, IContext {
 
         /// we must change the ids of all the context
         if (fatherId == null && !firstRoot) {
-            Vector toChangeIds = node.getDescendants();
-            for (int i = 0; i < toChangeIds.size(); i++) {
-                INode change = (INode) (toChangeIds.get(i));
+            List<INode> toChangeIds = node.getDescendants();
+            for (INode change : toChangeIds) {
                 newNodeId = this.getNewNodeId();
                 change.getNodeData().setNodeId(newNodeId);
                 change.getNodeData().setNodeUniqueName();
@@ -270,7 +253,7 @@ public class Context implements IMatchingContext, IContextData, IContext {
     public void moveNode(String NodeId, String newFatherNodeId) {
         /// first remove the Node from its actual position
         INode toBeMoved = this.getNode(NodeId);
-        Vector<INode> nodesToBeMoved;
+        List<INode> nodesToBeMoved;
         if (newFatherNodeId != null) {
             nodesToBeMoved = toBeMoved.getDescendants();
         } else {
@@ -296,8 +279,7 @@ public class Context implements IMatchingContext, IContextData, IContext {
             this.addNode(oldRoot);
         }
         /// change the ids of all the moved Nodes
-        for (int i = 0; i < nodesToBeMoved.size(); i++) {
-            INode move = nodesToBeMoved.get(i);
+        for (INode move : nodesToBeMoved) {
             newNodeId = this.getNewNodeId();
             move.getNodeData().setNodeId(newNodeId);
             move.getNodeData().setNodeUniqueName();
@@ -305,6 +287,7 @@ public class Context implements IMatchingContext, IContextData, IContext {
     }
 
     //Context staff
+
     /**
      * This method adds a given Node to the Node hierarchy.
      *
@@ -371,9 +354,8 @@ public class Context implements IMatchingContext, IContextData, IContext {
         if (localId.equals(nodeId)) {
             return node;
         }
-        Vector<INode> children = node.getChildren();
-        for (int i = 0; i < children.size(); i++) {
-            INode child = children.get(i);
+        List<INode> children = node.getChildren();
+        for (INode child : children) {
             result = getNode(nodeId, child);
             if (result != null) {
                 break;
@@ -451,8 +433,8 @@ public class Context implements IMatchingContext, IContextData, IContext {
         return securityAccessRights;
     }
 
-    public String getSecurityEncription() {
-        return securityEncription;
+    public String getSecurityEncryption() {
+        return securityEncryption;
     }
 
     public HashSet<String> getSynonyms() {
@@ -478,7 +460,7 @@ public class Context implements IMatchingContext, IContextData, IContext {
     public void updateNodeIds() {
         int oldCountNode = countNode;
         countNode = 1;
-        Vector<INode> allNodes = new Vector<INode>(root.getDescendants());
+        List<INode> allNodes = new ArrayList<INode>(root.getDescendants());
         allNodes.add(root);
         for (INode node : allNodes) {
             node.getNodeData().setNodeId(getNewNodeId());

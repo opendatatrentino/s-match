@@ -1,16 +1,11 @@
 package it.unitn.disi.smatch.utils;
 
-import it.unitn.disi.smatch.MatchManager;
-
-import java.io.*;
-import java.util.Hashtable;
-import java.util.Vector;
-
 import it.unitn.disi.smatch.SMatchException;
-import it.unitn.disi.smatch.oracles.wordnet.InMemoryWordNetBinaryArray;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
+
+import java.io.*;
 
 /**
  * Utility class.
@@ -61,8 +56,8 @@ public class SMatchUtils {
      * Reads Java object to a file.
      *
      * @param fileName the file where the object is stored
-     * @throws SMatchException SMatchException
      * @return the object
+     * @throws SMatchException SMatchException
      */
     public static Object readObject(String fileName) throws SMatchException {
         Object result = null;
@@ -97,5 +92,4 @@ public class SMatchUtils {
         }
         return result;
     }
-
 }

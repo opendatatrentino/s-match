@@ -3,6 +3,7 @@ package it.unitn.disi.smatch.matchers.element.gloss;
 import it.unitn.disi.smatch.components.ConfigurableException;
 import it.unitn.disi.smatch.data.mappings.IMappingElement;
 import it.unitn.disi.smatch.matchers.element.ISenseGlossBasedElementLevelSemanticMatcher;
+import it.unitn.disi.smatch.matchers.element.MatcherLibraryException;
 import it.unitn.disi.smatch.oracles.ISynset;
 
 import java.util.Properties;
@@ -40,7 +41,7 @@ public class WNSemanticGlossComparison extends BasicGlossMatcher implements ISen
      * @param target the gloss of target
      * @return less general, more general, equal, opposite or IDK relation
      */
-    public char match(ISynset source, ISynset target) {
+    public char match(ISynset source, ISynset target) throws MatcherLibraryException {
         int Equals = 0;
         int moreGeneral = 0;
         int lessGeneral = 0;

@@ -1,6 +1,6 @@
 package it.unitn.disi.smatch.data;
 
-import java.util.Vector;
+import java.util.List;
 
 /**
  * Context from a matching perspective.
@@ -10,11 +10,10 @@ import java.util.Vector;
  */
 public interface IMatchingContext {
 
-    Vector<IAtomicConceptOfLabel> getAllContextACoLs();
+    List<IAtomicConceptOfLabel> getAllContextACoLs();
 
     /**
      * Clears all data acquired in linguistic preprocessing phase.
      */
     void resetOldPreprocessing();
-
 }

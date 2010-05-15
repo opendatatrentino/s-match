@@ -42,11 +42,11 @@ public class DefaultNodeMatcher extends BaseNodeMatcher implements INodeMatcher 
             String axioms = (String) obj[0];
             int num_of_axiom_clauses = (Integer) obj[1];
             //convert contexts into ArrayLists
-            ArrayList<ArrayList<String>> contextAVector = parseFormula(hashConceptNumber, sourceNode);
-            ArrayList<ArrayList<String>> contextBVector = parseFormula(hashConceptNumber, targetNode);
+            ArrayList<ArrayList<String>> contextA = parseFormula(hashConceptNumber, sourceNode);
+            ArrayList<ArrayList<String>> contextB = parseFormula(hashConceptNumber, targetNode);
             //create contexts in DIMACS format
-            String contextAInDIMACSFormat = DIMACSfromVector(contextAVector);
-            String contextBInDIMACSFormat = DIMACSfromVector(contextBVector);
+            String contextAInDIMACSFormat = DIMACSfromList(contextA);
+            String contextBInDIMACSFormat = DIMACSfromList(contextB);
 
             //ArrayList with negated context
             ArrayList<ArrayList<String>> negatedContext = new ArrayList<ArrayList<String>>();
@@ -58,11 +58,11 @@ public class DefaultNodeMatcher extends BaseNodeMatcher implements INodeMatcher 
             //if the contexts are not conjunctive
             //LG test
             //negate the context
-            numberOfVariables = negateFormulaInVector(hashConceptNumber, contextBVector, negatedContext);
+            numberOfVariables = negateFormulaInList(hashConceptNumber, contextB, negatedContext);
             //get the sat problem in DIMACS format
-            satProblemInDIMACS = axioms + contextAInDIMACSFormat + DIMACSfromVector(negatedContext);
+            satProblemInDIMACS = axioms + contextAInDIMACSFormat + DIMACSfromList(negatedContext);
             //get number of clauses for SAT problem
-            numberOfClauses = num_of_axiom_clauses + contextAVector.size() + negatedContext.size();
+            numberOfClauses = num_of_axiom_clauses + contextA.size() + negatedContext.size();
             //add DIMACS header
             DIMACSproblem = "p cnf " + numberOfVariables + " " + numberOfClauses + "\n" + satProblemInDIMACS;
             //do LG test
@@ -70,11 +70,11 @@ public class DefaultNodeMatcher extends BaseNodeMatcher implements INodeMatcher 
 
             //MG test
             //negate the context
-            numberOfVariables = negateFormulaInVector(hashConceptNumber, contextAVector, negatedContext);
+            numberOfVariables = negateFormulaInList(hashConceptNumber, contextA, negatedContext);
             //get the sat problem in DIMACS format
-            satProblemInDIMACS = axioms + contextBInDIMACSFormat + DIMACSfromVector(negatedContext);
+            satProblemInDIMACS = axioms + contextBInDIMACSFormat + DIMACSfromList(negatedContext);
             //get number of clauses for SAT problem
-            numberOfClauses = num_of_axiom_clauses + contextBVector.size() + negatedContext.size();
+            numberOfClauses = num_of_axiom_clauses + contextB.size() + negatedContext.size();
             //add DIMACS header
             DIMACSproblem = "p cnf " + numberOfVariables + " " + numberOfClauses + "\n" + satProblemInDIMACS;
             //do MG test
@@ -84,7 +84,7 @@ public class DefaultNodeMatcher extends BaseNodeMatcher implements INodeMatcher 
             //get the sat problem in DIMACS format
             satProblemInDIMACS = axioms + contextBInDIMACSFormat + contextAInDIMACSFormat;
             //get number of clauses for SAT problem
-            numberOfClauses = contextAVector.size() + contextBVector.size() + num_of_axiom_clauses;
+            numberOfClauses = contextA.size() + contextB.size() + num_of_axiom_clauses;
             numberOfVariables = hashConceptNumber.size();
             //add DIMACS header
             DIMACSproblem = "p cnf " + numberOfVariables + " " + numberOfClauses + "\n" + satProblemInDIMACS;

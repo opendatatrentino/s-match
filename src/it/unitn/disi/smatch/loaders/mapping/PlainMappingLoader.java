@@ -15,7 +15,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.HashMap;
-import java.util.Vector;
+import java.util.List;
 
 /**
  * Loads the mapping as written by PlainMappingRenderer.java.
@@ -31,8 +31,8 @@ public class PlainMappingLoader extends Configurable implements IMappingLoader {
             log.info("Loading mapping: " + fileName);
         }
 
-        Vector<INode> sourceNodes = source.getAllNodes();
-        Vector<INode> targetNodes = target.getAllNodes();
+        List<INode> sourceNodes = source.getAllNodes();
+        List<INode> targetNodes = target.getAllNodes();
 
         if (log.isEnabledFor(Level.INFO)) {
             log.info(sourceNodes.size() + " x " + targetNodes.size() + " nodes");
@@ -170,7 +170,7 @@ public class PlainMappingLoader extends Configurable implements IMappingLoader {
      * @param nodes list of interfaces of all nodes of source or target tree
      * @return a hash table which contains path from root to node for each node
      */
-    public HashMap<String, Integer> createHash(Vector<INode> nodes) {
+    public HashMap<String, Integer> createHash(List<INode> nodes) {
         if (log.isEnabledFor(Level.INFO)) {
             log.info("Creating hash for " + nodes.size() + " nodes...");
         }

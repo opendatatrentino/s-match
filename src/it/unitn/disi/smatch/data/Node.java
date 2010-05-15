@@ -24,21 +24,19 @@ public class Node implements INodeData, INode {
     private String cLabFormula = "";
     private String cNodeFormula = "";
 
-    private Vector<IAtomicConceptOfLabel> setOfSenses;
-    private Vector<IAtomicConceptOfLabel> nodeMatchingTaskACols;
+    private List<IAtomicConceptOfLabel> setOfSenses;
+    private List<IAtomicConceptOfLabel> nodeMatchingTaskACols;
     private HashMap<String, IAtomicConceptOfLabel> nodeMatchingTaskAColsHash;
     private INode parent;
     //private String parentRelationType;
 
-    private Vector<INode> children;
-    private Vector<INode> descendants = null;
-    private Vector<INode> ancestors = null;
+    private List<INode> children;
+    private List<INode> descendants = null;
+    private List<INode> ancestors = null;
 
     private int index;
     //might be better implemented for a whole context via BitSet
     private boolean source;
-
-    private Object userObject;
 
     private static final Comparator<INode> nodeComparator = new Comparator<INode>() {
         //no safety checks - it should be run properly :-)
@@ -48,17 +46,16 @@ public class Node implements INodeData, INode {
         }
     };
 
-
     public void setNodeName(String nodeName) {
         this.nodeName = nodeName;
     }
 
-    public Vector<String> getSynonyms() {
-        return new Vector<String>();
+    public List<String> getSynonyms() {
+        return new ArrayList<String>();
     }
 
-    public Vector<String> getAlternativeLabels() {
-        return new Vector<String>();
+    public List<String> getAlternativeLabels() {
+        return new ArrayList<String>();
     }
 
     public double getWeight() {
@@ -84,10 +81,10 @@ public class Node implements INodeData, INode {
         nodeName = "";
         nodeUniqueName = "";
         parent = null;
-        children = new Vector<INode>();
+        children = new ArrayList<INode>();
         //parentRelationType = null;
         cLabFormula = "";
-        setOfSenses = new Vector<IAtomicConceptOfLabel>();
+        setOfSenses = new ArrayList<IAtomicConceptOfLabel>();
     }
 
     /**
@@ -143,7 +140,7 @@ public class Node implements INodeData, INode {
     }
 
     public void resetSetOfSenses() {
-        setOfSenses = new Vector<IAtomicConceptOfLabel>();
+        setOfSenses = new ArrayList<IAtomicConceptOfLabel>();
     }
 
     public void addAtomicConceptOfLabel(IAtomicConceptOfLabel sense) {
@@ -155,10 +152,10 @@ public class Node implements INodeData, INode {
         children.add(child);
     }
 
-   public Vector<INode> getAncestors() {
-        Vector<INode> result = ancestors;
+   public List<INode> getAncestors() {
+        List<INode> result = ancestors;
         if (null == result) {
-            result = new Vector<INode>();
+            result = new ArrayList<INode>();
             if (parent != null) {
                 result.add(parent);
                 result.addAll(parent.getAncestors());
@@ -168,10 +165,10 @@ public class Node implements INodeData, INode {
         return result;
     }
 
-    public Vector<INode> getDescendants() {
-        Vector<INode> result = descendants;
+    public List<INode> getDescendants() {
+        List<INode> result = descendants;
         if (result == null) {
-            result = new Vector<INode>();
+            result = new ArrayList<INode>();
             for (INode child : getChildren()) {
                 result.add(child);
                 result.addAll(child.getDescendants());
@@ -264,7 +261,7 @@ public class Node implements INodeData, INode {
     public String getPathToRootString() {
         INode concept = this;
         StringBuffer path = new StringBuffer("/");
-        Vector<INode> reversePath = concept.getAncestors();
+        List<INode> reversePath = concept.getAncestors();
         if (concept.isRoot()) {
             path.append("/");
         }
@@ -301,7 +298,7 @@ public class Node implements INodeData, INode {
     }
 
     public Enumeration children() {
-        return children.elements();
+        return Collections.enumeration(children);
     }
 
     public String getParentRelationType() {
@@ -320,7 +317,7 @@ public class Node implements INodeData, INode {
         return nodeUniqueName;
     }
 
-    public Vector<INode> getChildren() {
+    public List<INode> getChildren() {
         return children;
     }
 
@@ -332,7 +329,7 @@ public class Node implements INodeData, INode {
         return cNodeFormula;
     }
 
-    public Vector<IAtomicConceptOfLabel> getACoLs() {
+    public List<IAtomicConceptOfLabel> getACoLs() {
         return setOfSenses;
     }
 
@@ -396,29 +393,29 @@ public class Node implements INodeData, INode {
     }
 
     /**
-     * Fills and gets the Vector of all logical formula representations of all concepts.
+     * Fills and gets the list of all logical formula representations of all concepts.
      */
-    public Vector<IAtomicConceptOfLabel> getNodeMatchingTaskACols() {
+    public List<IAtomicConceptOfLabel> getNodeMatchingTaskACols() {
         if (null == nodeMatchingTaskACols) {
-            nodeMatchingTaskACols = new Vector<IAtomicConceptOfLabel>();
+            nodeMatchingTaskACols = new ArrayList<IAtomicConceptOfLabel>();
             nodeMatchingTaskACols = getNodeMatchingTaskACols(this, nodeMatchingTaskACols);
         }
         return nodeMatchingTaskACols;
     }
 
     /**
-     * Fills the Vector with Atomic concepts identifiers.
+     * Fills the list with Atomic concepts identifiers.
      * They are used as propositional variables in the formula.
      *
      * @param node the interface of node which acols will be added
      * @param partialResult list of atomic concept of labels which are added so far without current node
      * @return list of atomic concept of label with current node
      */
-    private static Vector<IAtomicConceptOfLabel> getNodeMatchingTaskACols(INode node, Vector<IAtomicConceptOfLabel> partialResult) {
+    private static List<IAtomicConceptOfLabel> getNodeMatchingTaskACols(INode node, List<IAtomicConceptOfLabel> partialResult) {
         if (!node.isRoot()) {
             getNodeMatchingTaskACols(node.getParent(), partialResult);
         }
-        Vector<IAtomicConceptOfLabel> table = node.getNodeData().getACoLs();
+        List<IAtomicConceptOfLabel> table = node.getNodeData().getACoLs();
         for (IAtomicConceptOfLabel acol : table) {
             String pos = acol.getPos();
             if (!pos.equals("")) {
@@ -430,7 +427,7 @@ public class Node implements INodeData, INode {
 
     public void insert(MutableTreeNode child, int index) {
         if (child instanceof Node) {
-            children.insertElementAt((INode) child, index);
+            children.add(index, (INode) child);
         }
     }
 
@@ -443,7 +440,6 @@ public class Node implements INodeData, INode {
     }
 
     public void setUserObject(Object object) {
-        this.userObject = object;
     }
 
     public void removeFromParent() {

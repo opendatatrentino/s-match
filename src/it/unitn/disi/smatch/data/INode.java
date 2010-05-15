@@ -1,8 +1,7 @@
 package it.unitn.disi.smatch.data;
 
 import javax.swing.tree.MutableTreeNode;
-import javax.swing.tree.TreeNode;
-import java.util.Vector;
+import java.util.List;
 
 /**
  * The interface to data structure of node.
@@ -25,7 +24,7 @@ public interface INode extends MutableTreeNode {
      *
      * @return list of ancestors
      */
-    Vector<INode> getAncestors();
+    List<INode> getAncestors();
 
     /**
      * Returns all descendants of the node.
@@ -33,7 +32,7 @@ public interface INode extends MutableTreeNode {
      *
      * @return list of descendants
      */
-    Vector<INode> getDescendants();
+    List<INode> getDescendants();
 
     /**
      * Returns count of descendant nodes, including itself.
@@ -56,11 +55,15 @@ public interface INode extends MutableTreeNode {
 
     /**
      * Returns id of a node.
+     *
+     * @return node id
      */
     String getNodeId();
 
     /**
      * Returns label of node.
+     *
+     * @return node label
      */
     String getNodeName();
 
@@ -69,7 +72,7 @@ public interface INode extends MutableTreeNode {
      *
      * @return list of children
      */
-    Vector<INode> getChildren();
+    List<INode> getChildren();
 
     /**
      * Removes child of the node.
@@ -80,6 +83,8 @@ public interface INode extends MutableTreeNode {
 
     /**
      * Returns interface to node of metadata.
+     *
+     * @return interface to INodeData
      */
     public INodeData getNodeData();
 }

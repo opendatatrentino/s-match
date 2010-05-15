@@ -3,7 +3,10 @@ package it.unitn.disi.smatch.matchers.element.gloss;
 import it.unitn.disi.smatch.components.ConfigurableException;
 import it.unitn.disi.smatch.data.mappings.IMappingElement;
 import it.unitn.disi.smatch.matchers.element.ISenseGlossBasedElementLevelSemanticMatcher;
+import it.unitn.disi.smatch.matchers.element.MatcherLibraryException;
 import it.unitn.disi.smatch.oracles.ISynset;
+import it.unitn.disi.smatch.oracles.LinguisticOracleException;
+import org.apache.log4j.Logger;
 
 import java.util.Properties;
 import java.util.StringTokenizer;
@@ -16,6 +19,8 @@ import java.util.StringTokenizer;
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
 public class WNExtendedSemanticGlossComparison extends BasicGlossMatcher implements ISenseGlossBasedElementLevelSemanticMatcher {
+
+    private static final Logger log = Logger.getLogger(WNExtendedSemanticGlossComparison.class);
 
     // the words which are cut off from the area of discourse
     public static String MEANINGLESS_WORDS_KEY = "meaninglessWords";
@@ -36,32 +41,41 @@ public class WNExtendedSemanticGlossComparison extends BasicGlossMatcher impleme
     /**
      * Computes the relation for extended semantic gloss matcher.
      *
-     * @param source1 the gloss of source
-     * @param target1 the gloss of target
+     * @param source the gloss of source
+     * @param target the gloss of target
      * @return more general, less general or IDK relation
      */
-    public char match(ISynset source1, ISynset target1) {
-        String sSynset = source1.getGloss();
-        String tSynset = target1.getGloss();
+    public char match(ISynset source, ISynset target) throws MatcherLibraryException {
+        char result = IMappingElement.IDK;
+        try {
+            String sSynset = source.getGloss();
 
-        // get gloss of Immediate ancestor of target node
-        String tLGExtendedGloss = getExtendedGloss(target1, 1, IMappingElement.LESS_GENERAL);
-        // get relation frequently occur between gloss of source and extended gloss of target
-        char LGRel = getDominantRelation(sSynset, tLGExtendedGloss);
-        // get final relation
-        char LGFinal = getRelationFromRels(IMappingElement.LESS_GENERAL, LGRel);
-        // get gloss of Immediate descendant of target node
-        String tMGExtendedGloss = getExtendedGloss(target1, 1, IMappingElement.MORE_GENERAL);
-        char MGRel = getDominantRelation(sSynset, tMGExtendedGloss);
-        char MGFinal = getRelationFromRels(IMappingElement.MORE_GENERAL, MGRel);
-        // Compute final relation
-        if (MGFinal == LGFinal)
-            return MGFinal;
-        if (MGFinal == IMappingElement.IDK)
-            return LGFinal;
-        if (LGFinal == IMappingElement.IDK)
-            return MGFinal;
-        return IMappingElement.IDK;
+            // get gloss of Immediate ancestor of target node
+            String tLGExtendedGloss = getExtendedGloss(target, 1, IMappingElement.LESS_GENERAL);
+            // get relation frequently occur between gloss of source and extended gloss of target
+            char LGRel = getDominantRelation(sSynset, tLGExtendedGloss);
+            // get final relation
+            char LGFinal = getRelationFromRels(IMappingElement.LESS_GENERAL, LGRel);
+            // get gloss of Immediate descendant of target node
+            String tMGExtendedGloss = getExtendedGloss(target, 1, IMappingElement.MORE_GENERAL);
+            char MGRel = getDominantRelation(sSynset, tMGExtendedGloss);
+            char MGFinal = getRelationFromRels(IMappingElement.MORE_GENERAL, MGRel);
+            // Compute final relation
+            if (MGFinal == LGFinal) {
+                result = MGFinal;
+            }
+            if (MGFinal == IMappingElement.IDK) {
+                result = LGFinal;
+            }
+            if (LGFinal == IMappingElement.IDK) {
+                result = MGFinal;
+            }
+        } catch (LinguisticOracleException e) {
+            final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
+            log.error(errMessage, e);
+            throw new MatcherLibraryException(errMessage, e);
+        }
+        return result;
     }
 
     /**
@@ -70,8 +84,9 @@ public class WNExtendedSemanticGlossComparison extends BasicGlossMatcher impleme
      * @param sExtendedGloss extended gloss of source
      * @param tExtendedGloss extended gloss of target
      * @return more general, less general or IDK relation
+     * @throws MatcherLibraryException MatcherLibraryException
      */
-    private char getDominantRelation(String sExtendedGloss, String tExtendedGloss) {
+    private char getDominantRelation(String sExtendedGloss, String tExtendedGloss) throws MatcherLibraryException {
         int Equals = 0;
         int moreGeneral = 0;
         int lessGeneral = 0;
@@ -102,8 +117,8 @@ public class WNExtendedSemanticGlossComparison extends BasicGlossMatcher impleme
     /**
      * Decides which relation to return.
      *
-     * @param lg number of less general words between two extended gloss
-     * @param mg number of more general words between two extended gloss
+     * @param lg  number of less general words between two extended gloss
+     * @param mg  number of more general words between two extended gloss
      * @param syn number of synonym words between two extended gloss
      * @param opp number of opposite words between two extended gloss
      * @return the more frequent relation between two extended glosses.
@@ -124,7 +139,7 @@ public class WNExtendedSemanticGlossComparison extends BasicGlossMatcher impleme
      * Decides which relation to return as a function of relation for which extended gloss was built.
      *
      * @param builtForRel relation for which the gloss was built
-     * @param glossRel relation
+     * @param glossRel    relation
      * @return less general, more general or IDK relation
      */
     private char getRelationFromRels(char builtForRel, char glossRel) {

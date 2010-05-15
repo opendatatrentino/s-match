@@ -10,10 +10,7 @@ import it.unitn.disi.smatch.deciders.ISATSolver;
 import it.unitn.disi.smatch.deciders.SATSolverException;
 import org.apache.log4j.Logger;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Properties;
-import java.util.StringTokenizer;
+import java.util.*;
 
 /**
  * Contains routines used by many other matchers.
@@ -61,7 +58,7 @@ public class BaseNodeMatcher extends Configurable {
         //for all columns of relMatrix
         for (IAtomicConceptOfLabel targetACoL : targetNode.getNodeData().getNodeMatchingTaskACols()) {
             //create corresponding to id variable number
-            //and put it as a value of hashtable with key equal to ACoL id
+            //and put it as a value of hashmap with key equal to ACoL id
             if (!hashConceptNumber.containsKey(targetACoL)) {
                 Integer value = hashConceptNumber.size() + 1;
                 hashConceptNumber.put(targetACoL, value);
@@ -177,9 +174,9 @@ public class BaseNodeMatcher extends Configurable {
      * @param tmp array list of context of a node
      * @return nodes in DIMACS format
      */
-    protected static String DIMACSfromVector(ArrayList<ArrayList<String>> tmp) {
+    protected static String DIMACSfromList(ArrayList<ArrayList<String>> tmp) {
         StringBuffer DIMACS = new StringBuffer("");
-        for (ArrayList<String> clause : tmp) {
+        for (List<String> clause : tmp) {
             for (String aClause : clause) {
                 DIMACS.append(aClause).append(" ");
             }
@@ -189,7 +186,7 @@ public class BaseNodeMatcher extends Configurable {
     }
     // TODO Need comments
 
-    protected static int negateFormulaInVector(HashMap<IAtomicConceptOfLabel, Integer> hashConceptNumber, ArrayList<ArrayList<String>> pivot, ArrayList<ArrayList<String>> result) {
+    protected static int negateFormulaInList(HashMap<IAtomicConceptOfLabel, Integer> hashConceptNumber, ArrayList<ArrayList<String>> pivot, ArrayList<ArrayList<String>> result) {
         //ArrayList<ArrayList<String>> result = new ArrayList<ArrayList<String>>();
         result.clear();
         ArrayList<String> firstClause = new ArrayList<String>();

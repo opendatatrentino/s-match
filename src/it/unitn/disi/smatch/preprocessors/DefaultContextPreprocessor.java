@@ -7,6 +7,7 @@ import it.unitn.disi.smatch.components.ConfigurableException;
 import it.unitn.disi.smatch.data.*;
 import it.unitn.disi.smatch.oracles.ILinguisticOracle;
 import it.unitn.disi.smatch.oracles.ISenseMatcher;
+import it.unitn.disi.smatch.oracles.LinguisticOracleException;
 import it.unitn.disi.smatch.utils.SMatchUtils;
 import net.didion.jwnl.JWNL;
 import net.didion.jwnl.JWNLException;
@@ -170,7 +171,7 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
      * @return context with cLabs
      */
     private IContext buildCLabs(IContext context) {
-        Vector<INode> allNodes = context.getAllNodes();
+        List<INode> allNodes = context.getAllNodes();
         try {
             int counter = 0;
             int total = allNodes.size();
@@ -199,177 +200,183 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
      *
      * @param node interface of node which will be processed
      */
-    private void processNode(INode node) {
-        int id_tok = 0;
-        boolean isEmpty = true;
-        String labelOfNode = node.getNodeName().trim();
+    private void processNode(INode node) throws ContextPreprocessorException {
+        try {
+            int id_tok = 0;
+            boolean isEmpty = true;
+            String labelOfNode = node.getNodeName().trim();
 
-        if (debugLabels) {
-            log.debug("preprocessing: " + labelOfNode);
-        }
+            if (debugLabels) {
+                log.debug("preprocessing: " + labelOfNode);
+            }
 
-        labelOfNode = replacePunctuation(labelOfNode);
-        labelOfNode = labelOfNode.toLowerCase();
-        Vector<String> wnSense;
-        if (labelOfNode.equals("top")) {
-            wnSense = null;
-        } else {
-            if ((meaninglessWords.indexOf(labelOfNode + " ") == -1) && (isTokenMeaningful(labelOfNode)))
-                wnSense = linguisticOracle.getSenses(labelOfNode);
-            else
+            labelOfNode = replacePunctuation(labelOfNode);
+            labelOfNode = labelOfNode.toLowerCase();
+            List<String> wnSense;
+            if (labelOfNode.equals("top")) {
                 wnSense = null;
-        }
+            } else {
+                if ((meaninglessWords.indexOf(labelOfNode + " ") == -1) && (isTokenMeaningful(labelOfNode)))
+                    wnSense = linguisticOracle.getSenses(labelOfNode);
+                else
+                    wnSense = null;
+            }
 
-        //Identifiers of meaningful tokens in
-        String meaningfulTokens = " ";
-        //tokens of the label of node
-        Vector<String> tokensOfNodeLabel = new Vector<String>();
+            //Identifiers of meaningful tokens in
+            String meaningfulTokens = " ";
+            //tokens of the label of node
+            List<String> tokensOfNodeLabel = new ArrayList<String>();
 
-        //is the label a Wordnet node?
-        if (wnSense != null) {
-            id_tok++;
+            //is the label a Wordnet node?
+            if (wnSense != null) {
+                id_tok++;
 
 //                    if (labelOfNode.indexOf(' ') > -1) {
 //                        for (StringTokenizer stringTokenizer = new StringTokenizer(labelOfNode); stringTokenizer.hasMoreTokens();) {
 //                            String subToken = stringTokenizer.nextToken();
-//                            Vector<String> subTokenSenses = linguisticOracle.getSenses(subToken);
+//                            List<String> subTokenSenses = linguisticOracle.getSenses(subToken);
 //                            if ((subTokenSenses != null) && (subTokenSenses.size() > 0)) {
 //                                wnSense.addAll(subTokenSenses);
 //                            }
 //                        }
 //                    }
 
-            //add to list of processed labels
-            tokensOfNodeLabel.add(labelOfNode);
-            String lemma = linguisticOracle.getBaseForm(labelOfNode);
-            if (null == lemma) {
-                lemma = labelOfNode;
-            }
-
-            //create atomic node of label
-            IAtomicConceptOfLabel ACoL = AtomicConceptOfLabel.getInstance(id_tok, labelOfNode, lemma, "all");
-            //Attach senses obtained from the oracle to the node
-            node.getNodeData().addAtomicConceptOfLabel(ACoL);
-            //to to token ids
-            meaningfulTokens = meaningfulTokens + id_tok + " ";
-            //if there are no senses in WN mark as a special node with unknown meaning
-            if (wnSense.size() == 0) {
-                wnSense.add(ILinguisticOracle.UNKNOWN_MEANING + labelOfNode);
-            }
-            //add senses to ACoL
-            ACoL.addSenses(wnSense);
-            isEmpty = false;
-        } else {
-            //The label of node is not in WN
-            //Split the label by words
-            StringTokenizer lemmaTokenizer = new StringTokenizer(labelOfNode, " _()[]/'\\#1234567890");
-            ArrayList<String> tokens = new ArrayList<String>();
-            ArrayList<String> tv = new ArrayList<String>();
-            while (lemmaTokenizer.hasMoreElements()) {
-                String tmp = (String) lemmaTokenizer.nextElement();
-                //TODO add abbr support
-                if (tv.size() > 0) {
-                    tokens.addAll(tv);
-                    tv.clear();
-                } else {
-                    tokens.add(tmp);
+                //add to list of processed labels
+                tokensOfNodeLabel.add(labelOfNode);
+                String lemma = linguisticOracle.getBaseForm(labelOfNode);
+                if (null == lemma) {
+                    lemma = labelOfNode;
                 }
-            }
 
-            //perform multiword recognition
-            tokens = multiwordRecognition(tokens);
-            //for all tokens in label
-            for (int i = 0; i < tokens.size(); i++) {
-                String token = tokens.get(i).trim();
-                //if the token is not meaningless
-                if ((meaninglessWords.indexOf(token + " ") == -1) && (isTokenMeaningful(token))) {
-                    //add to list of processed tokens
-                    tokensOfNodeLabel.add(token);
-                    id_tok++;
-                    //if not logical connective
-                    if ((andWords.indexOf(token) == -1) && ((orWords.indexOf(token)) == -1)
-                            && ((notWords.indexOf(token)) == -1) && (!isNumber(token))) {
-                        //get WN senses for token
-                        if (token.trim().equals("top")) {
-                            wnSense = null;
-                        } else {
-                            wnSense = linguisticOracle.getSenses(token);
-                        }
+                //create atomic node of label
+                IAtomicConceptOfLabel ACoL = AtomicConceptOfLabel.getInstance(id_tok, labelOfNode, lemma, "all");
+                //Attach senses obtained from the oracle to the node
+                node.getNodeData().addAtomicConceptOfLabel(ACoL);
+                //to to token ids
+                meaningfulTokens = meaningfulTokens + id_tok + " ";
+                //if there are no senses in WN mark as a special node with unknown meaning
+                if (wnSense.size() == 0) {
+                    wnSense.add(ILinguisticOracle.UNKNOWN_MEANING + labelOfNode);
+                }
+                //add senses to ACoL
+                ACoL.addSenses(wnSense);
+                isEmpty = false;
+            } else {
+                //The label of node is not in WN
+                //Split the label by words
+                StringTokenizer lemmaTokenizer = new StringTokenizer(labelOfNode, " _()[]/'\\#1234567890");
+                ArrayList<String> tokens = new ArrayList<String>();
+                ArrayList<String> tv = new ArrayList<String>();
+                while (lemmaTokenizer.hasMoreElements()) {
+                    String tmp = (String) lemmaTokenizer.nextElement();
+                    //TODO add abbr support
+                    if (tv.size() > 0) {
+                        tokens.addAll(tv);
+                        tv.clear();
+                    } else {
+                        tokens.add(tmp);
+                    }
+                }
+
+                //perform multiword recognition
+                tokens = multiwordRecognition(tokens);
+                //for all tokens in label
+                for (int i = 0; i < tokens.size(); i++) {
+                    String token = tokens.get(i).trim();
+                    //if the token is not meaningless
+                    if ((meaninglessWords.indexOf(token + " ") == -1) && (isTokenMeaningful(token))) {
+                        //add to list of processed tokens
+                        tokensOfNodeLabel.add(token);
+                        id_tok++;
+                        //if not logical connective
+                        if ((andWords.indexOf(token) == -1) && ((orWords.indexOf(token)) == -1)
+                                && ((notWords.indexOf(token)) == -1) && (!isNumber(token))) {
+                            //get WN senses for token
+                            if (token.trim().equals("top")) {
+                                wnSense = null;
+                            } else {
+                                wnSense = linguisticOracle.getSenses(token);
+                            }
 //multiword sense enrichment
 //                                if (token.indexOf(' ') > -1) {
 //                                    for (StringTokenizer stringTokenizer = new StringTokenizer(token); stringTokenizer.hasMoreTokens();) {
 //                                        String subToken = stringTokenizer.nextToken();
-//                                        Vector<String> subTokenSenses = linguisticOracle.getSenses(subToken);
+//                                        List<String> subTokenSenses = linguisticOracle.getSenses(subToken);
 //                                        if ((subTokenSenses != null) && (subTokenSenses.size() > 0)) {
 //                                            wnSense.addAll(subTokenSenses);
 //                                        }
 //                                    }
 //
 //                                }
-                        if ((wnSense == null) || (wnSense.size() == 0)) {
-                            Vector<String> newTokens = complexWordsRecognition(token);
-                            if (newTokens != null) {
-                                tokensOfNodeLabel.removeElementAt(tokensOfNodeLabel.size() - 1);
-                                tokensOfNodeLabel.add(newTokens.get(0));
-                                wnSense = linguisticOracle.getSenses(newTokens.get(0));
-                                tokens.remove(i);
-                                tokens.add(i, newTokens.get(0));
-                                for (int j = 1; j < newTokens.size(); j++) {
-                                    String s = newTokens.elementAt(j);
-                                    tokens.add(i + j, s);
+                            if ((wnSense == null) || (wnSense.size() == 0)) {
+                                List<String> newTokens = complexWordsRecognition(token);
+                                if (newTokens != null) {
+                                    tokensOfNodeLabel.remove(tokensOfNodeLabel.size() - 1);
+                                    tokensOfNodeLabel.add(newTokens.get(0));
+                                    wnSense = linguisticOracle.getSenses(newTokens.get(0));
+                                    tokens.remove(i);
+                                    tokens.add(i, newTokens.get(0));
+                                    for (int j = 1; j < newTokens.size(); j++) {
+                                        String s = newTokens.get(j);
+                                        tokens.add(i + j, s);
+                                    }
                                 }
                             }
-                        }
-                        String lemma = linguisticOracle.getBaseForm(token);
-                        if (lemma == null)
-                            lemma = token;
+                            String lemma = linguisticOracle.getBaseForm(token);
+                            if (lemma == null)
+                                lemma = token;
 
-                        //create atomic node of label
-                        IAtomicConceptOfLabel ACoL = AtomicConceptOfLabel.getInstance(id_tok, token, lemma, "all");
-                        //add it to node
-                        node.getNodeData().addAtomicConceptOfLabel(ACoL);
-                        //mark id  as meaningful
-                        meaningfulTokens = meaningfulTokens + id_tok + " ";
-                        //if there no WN senses
-                        if ((wnSense == null) || (wnSense.size() == 0)) {
-                            if (wnSense == null)
-                                wnSense = new Vector<String>();
-                            //mark as a node with unrecognized meaning
-                            wnSense.add(ILinguisticOracle.UNKNOWN_MEANING + token);
+                            //create atomic node of label
+                            IAtomicConceptOfLabel ACoL = AtomicConceptOfLabel.getInstance(id_tok, token, lemma, "all");
+                            //add it to node
+                            node.getNodeData().addAtomicConceptOfLabel(ACoL);
+                            //mark id  as meaningful
+                            meaningfulTokens = meaningfulTokens + id_tok + " ";
+                            //if there no WN senses
+                            if ((wnSense == null) || (wnSense.size() == 0)) {
+                                if (wnSense == null)
+                                    wnSense = new ArrayList<String>();
+                                //mark as a node with unrecognized meaning
+                                wnSense.add(ILinguisticOracle.UNKNOWN_MEANING + token);
 
-                            //log.debug("Unrecognized word " + token);
-                            unrecognizedWords.add(token);
+                                //log.debug("Unrecognized word " + token);
+                                unrecognizedWords.add(token);
+                            }
+                            //add senses to ACoL
+                            ACoL.addSenses(wnSense);
+                            isEmpty = false;
                         }
-                        //add senses to ACoL
-                        ACoL.addSenses(wnSense);
-                        isEmpty = false;
                     }
                 }
             }
-        }
 
-        if (isEmpty) {
-            String token = "top";
-            id_tok++;
-            //add to list of processed labels
-            tokensOfNodeLabel.add(token);
-            wnSense = null;//linguisticOracle.getSenses(token);
-            //create atomic node of label
-            IAtomicConceptOfLabel ACoL = AtomicConceptOfLabel.getInstance(id_tok, token, token, "all");
-            //Attach senses obtained from the oracle to the node
-            node.getNodeData().addAtomicConceptOfLabel(ACoL);
-            //to to token ids
-            meaningfulTokens = meaningfulTokens + id_tok + " ";
-            //if there are no senses in WN mark as a special node with unknown meaning
-            if ((wnSense == null) || (wnSense.size() == 0)) {
-                wnSense = new Vector<String>();
-                wnSense.add(ILinguisticOracle.UNKNOWN_MEANING + token);
+            if (isEmpty) {
+                String token = "top";
+                id_tok++;
+                //add to list of processed labels
+                tokensOfNodeLabel.add(token);
+                wnSense = null;//linguisticOracle.getSenses(token);
+                //create atomic node of label
+                IAtomicConceptOfLabel ACoL = AtomicConceptOfLabel.getInstance(id_tok, token, token, "all");
+                //Attach senses obtained from the oracle to the node
+                node.getNodeData().addAtomicConceptOfLabel(ACoL);
+                //to to token ids
+                meaningfulTokens = meaningfulTokens + id_tok + " ";
+                //if there are no senses in WN mark as a special node with unknown meaning
+                if ((wnSense == null) || (wnSense.size() == 0)) {
+                    wnSense = new ArrayList<String>();
+                    wnSense.add(ILinguisticOracle.UNKNOWN_MEANING + token);
+                }
+                //add senses to ACoL
+                ACoL.addSenses(wnSense);
             }
-            //add senses to ACoL
-            ACoL.addSenses(wnSense);
+            //  Building formula of complex node
+            buildComplexConcept(node, tokensOfNodeLabel, meaningfulTokens);
+        } catch (LinguisticOracleException e) {
+            final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
+            log.error(errMessage, e);
+            throw new ContextPreprocessorException(errMessage, e);
         }
-        //  Building formula of complex node
-        buildComplexConcept(node, tokensOfNodeLabel, meaningfulTokens);
     }
 
     /**
@@ -383,7 +390,7 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
         if ((andWords.indexOf(token) > -1) || ((orWords.indexOf(token)) > -1))
             return true;
         if (token.length() < 3) {
-//			Vector<String> wnSense = linguisticOracle.getSenses(token);
+//			List<String> wnSense = linguisticOracle.getSenses(token);
 //			if ((wnSense == null) || (wnSense.size() == 0))
             return false;
 //			else
@@ -396,69 +403,75 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
      * Finds out the input token is complex word or not using WordNet senses.
      *
      * @param token lemma of input string
-     * @return a vector which contains parts of the complex word.
+     * @return a list which contains parts of the complex word.
      */
-    private Vector<String> complexWordsRecognition(String token) {
-        Vector<String> senses = null;
-        int i = 0;
-        String start = null;
-        String end = null;
-        String toCheck = null;
-        boolean flag = false;
-        boolean multiword = false;
-        while ((i < token.length() - 1) && (senses == null)) {
-            i++;
-            start = token.substring(0, i);
-            end = token.substring(i, token.length());
-            toCheck = start + ' ' + end;
-            senses = linguisticOracle.getSenses(toCheck);
-            if ((senses == null) || (senses.size() == 0)) {
-                toCheck = start + '-' + end;
+    private List<String> complexWordsRecognition(String token) throws ContextPreprocessorException {
+        try {
+            List<String> senses = null;
+            int i = 0;
+            String start = null;
+            String end = null;
+            String toCheck = null;
+            boolean flag = false;
+            boolean multiword = false;
+            while ((i < token.length() - 1) && (senses == null)) {
+                i++;
+                start = token.substring(0, i);
+                end = token.substring(i, token.length());
+                toCheck = start + ' ' + end;
                 senses = linguisticOracle.getSenses(toCheck);
-            }
+                if ((senses == null) || (senses.size() == 0)) {
+                    toCheck = start + '-' + end;
+                    senses = linguisticOracle.getSenses(toCheck);
+                }
 
-            if ((senses != null) && (senses.size() > 0)) {
-                multiword = true;
-                break;
-            } else {
-                if ((start.length() > 3) && (end.length() > 3)) {
-                    senses = linguisticOracle.getSenses(start);
-                    if ((senses != null) && (senses.size() > 0)) {
-                        senses = linguisticOracle.getSenses(end);
+                if ((senses != null) && (senses.size() > 0)) {
+                    multiword = true;
+                    break;
+                } else {
+                    if ((start.length() > 3) && (end.length() > 3)) {
+                        senses = linguisticOracle.getSenses(start);
                         if ((senses != null) && (senses.size() > 0)) {
-                            flag = true;
-                            break;
+                            senses = linguisticOracle.getSenses(end);
+                            if ((senses != null) && (senses.size() > 0)) {
+                                flag = true;
+                                break;
+                            }
                         }
                     }
                 }
             }
+            if (multiword) {
+                List<String> out = new ArrayList<String>();
+                out.add(toCheck);
+                return out;
+            }
+            if (flag) {
+                List<String> out = new ArrayList<String>();
+                out.add(start);
+                out.add(end);
+                return out;
+            }
+            return null;
+        } catch (LinguisticOracleException e) {
+            final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
+            log.error(errMessage, e);
+            throw new ContextPreprocessorException(errMessage, e);
         }
-        if (multiword) {
-            Vector<String> out = new Vector<String>();
-            out.add(toCheck);
-            return out;
-        }
-        if (flag) {
-            Vector<String> out = new Vector<String>();
-            out.add(start);
-            out.add(end);
-            return out;
-        }
-        return null;
     }
 
     /**
      * The method constructs the logical formula for the complex concept of label.
      *
      * @param node              node to build complex concept
-     * @param tokensOfNodeLabel Vector of tokens in the node label
+     * @param tokensOfNodeLabel a list of tokens in the node label
      * @param meaningfulTokens  identifiers of the meaningful tokens
      */
-    private void buildComplexConcept(INode node, Vector<String> tokensOfNodeLabel, String meaningfulTokens) {
+    private void buildComplexConcept(INode node, List<String> tokensOfNodeLabel, String meaningfulTokens) {
         //label of node
         String token;
-        //Vector of ACoLs identifiers
-        Vector<String> vec = new Vector<String>();
+        //List of ACoLs identifiers
+        List<String> vec = new ArrayList<String>();
         //formula for the complex concept
         String formulaOfConcept = "";
         //logical connective
@@ -473,7 +486,7 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
         int leftBrackets = 0;
         //for each token of node label
         for (int i = 0; i < tokensOfNodeLabel.size(); i++) {
-            token = (tokensOfNodeLabel.elementAt(i));
+            token = (tokensOfNodeLabel.get(i));
             //If logical and or or
             if (andWords.indexOf(" " + token + " ") != -1 || orWords.indexOf(" " + token + " ") != -1) {
                 insert = false;
@@ -488,7 +501,7 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
                     insert = true;
                     connective = "";
                     bracket = "";
-                    vec = new Vector<String>();
+                    vec = new ArrayList<String>();
                     leftBrackets = 0;
                 }
                 //If bracket
@@ -509,7 +522,7 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
             } else if (notWords.indexOf(" " + token + " ") != -1) {
                 if (vec != null && vec.size() > 0) {
                     formulaOfConcept = formulaOfConcept + connective + vec.toString();
-                    vec = new Vector<String>();
+                    vec = new ArrayList<String>();
                     connective = "";
                 }
                 //What to add
@@ -520,7 +533,7 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
                 }
             } else {
                 if (meaningfulTokens.indexOf(" " + (i + 1) + " ") != -1) {
-                    //fill Vector with ACoL ids
+                    //fill list with ACoL ids
                     vec.add((node.getNodeId() + "." + (i + 1)));
                 }
             }
@@ -605,20 +618,26 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
         return lemma;
     }
 
-    private Vector<String> checkMW(String source, String target) {
-        ArrayList<ArrayList<String>> mwEnds = multiwords.get(source);
-        if (mwEnds != null)
-            for (int j = 0; j < mwEnds.size(); j++) {
-                ArrayList<String> strings = mwEnds.get(j);
-                if (extendedIndexOf(strings, target, 0) > 0) {
-                    return linguisticOracle.getSenses(source + " " + target);
+    private List<String> checkMW(String source, String target) throws ContextPreprocessorException {
+        try {
+            ArrayList<ArrayList<String>> mwEnds = multiwords.get(source);
+            if (mwEnds != null)
+                for (int j = 0; j < mwEnds.size(); j++) {
+                    ArrayList<String> strings = mwEnds.get(j);
+                    if (extendedIndexOf(strings, target, 0) > 0) {
+                        return linguisticOracle.getSenses(source + " " + target);
 
+                    }
                 }
-            }
-        return null;
+            return null;
+        } catch (LinguisticOracleException e) {
+            final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
+            log.error(errMessage, e);
+            throw new ContextPreprocessorException(errMessage, e);
+        }
     }
 
-    private void enrichSensesSets(ISensesSet sensesSet, Vector<String> wnSenses) {
+    private void enrichSensesSets(ISensesSet sensesSet, List<String> wnSenses) {
         sensesSet.addNewSenses(wnSenses);
     }
 
@@ -628,37 +647,32 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
      * @param context data structure of input label
      * @return context with multiwords
      */
-    private IContext findMultiwordsInContextStructure(IContext context) {
+    private IContext findMultiwordsInContextStructure(IContext context) throws ContextPreprocessorException {
         //all context nodes
-        Vector<INode> allNode = context.getAllNodes();
-        for (int i = 0; i < allNode.size(); i++) {
+        List<INode> allNode = context.getAllNodes();
+        for (INode sourceNode : allNode) {
             //get Node
-            INode sourceNode = allNode.elementAt(i);
             //get node ACoLs
-            Vector<IAtomicConceptOfLabel> sourceNodeACoLs = sourceNode.getNodeData().getACoLs();
+            List<IAtomicConceptOfLabel> sourceNodeACoLs = sourceNode.getNodeData().getACoLs();
             //sense disambiguation within the context structure
             //get all the source node descendants
-            Vector<INode> allConcept = sourceNode.getDescendants();
+            List<INode> allConcept = sourceNode.getDescendants();
             //and ancestors
             allConcept.addAll(sourceNode.getAncestors());
             //for all ACoLs in the source node
-            for (int s = 0; s < sourceNodeACoLs.size(); s++) {
-                IAtomicConceptOfLabel synSource = sourceNodeACoLs.elementAt(s);
+            for (IAtomicConceptOfLabel synSource : sourceNodeACoLs) {
                 String sourceLemma = synSource.getLemma();
-                for (int id_node_target = 0; id_node_target < allConcept.size(); id_node_target++) {
-                    INodeData targetNode = (INodeData) allConcept.elementAt(id_node_target);
+                for (INode anAllConcept : allConcept) {
+                    INodeData targetNode = (INodeData) anAllConcept;
                     //get ACoLs
-                    Vector<IAtomicConceptOfLabel> targetNodeACoLs = targetNode.getACoLs();
-                    for (int senseTarget = 0; senseTarget < targetNodeACoLs.size(); senseTarget++) {
-                        IAtomicConceptOfLabel synTarget = targetNodeACoLs.elementAt(senseTarget);
+                    List<IAtomicConceptOfLabel> targetNodeACoLs = targetNode.getACoLs();
+                    for (IAtomicConceptOfLabel synTarget : targetNodeACoLs) {
                         String targetLemma = synTarget.getLemma();
-                        //TODO add Vectors and enrich with senses
-                        Vector<String> wnSenses = checkMW(sourceLemma, targetLemma);
+                        //TODO add lists and enrich with senses
+                        List<String> wnSenses = checkMW(sourceLemma, targetLemma);
                         if ((wnSenses != null) && (wnSenses.size() > 0)) {
                             enrichSensesSets(synSource.getSenses(), wnSenses);
                             enrichSensesSets(synTarget.getSenses(), wnSenses);
-
-
                         }
                     }
                 }
@@ -678,37 +692,35 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
     private void senseFiltering(IContext context) {
         IContextData icd = context.getContextData();
         //all context nodes
-        Vector<INode> allNode = context.getAllNodes();
+        List<INode> allNode = context.getAllNodes();
         //Senses Sets for particular ACoL
-        Vector<ISensesSet> sourceSensesSets;
-        Vector<ISensesSet> targetSensesSets;
+        List<ISensesSet> sourceSensesSets;
+        List<ISensesSet> targetSensesSets;
         //for all nodes in context
         for (int i = 0; i < allNode.size(); i++) {
             //get Node
-            INode sourceNode = allNode.elementAt(i);
+            INode sourceNode = allNode.get(i);
             //get node ACoLs
-            Vector<IAtomicConceptOfLabel> sourceNodeACoLs = sourceNode.getNodeData().getACoLs();
+            List<IAtomicConceptOfLabel> sourceNodeACoLs = sourceNode.getNodeData().getACoLs();
             //if node is complex
             if (sourceNodeACoLs.size() > 1) {
                 //for each ACoL in the node
                 for (int j = 0; j < sourceNodeACoLs.size(); j++) {
-                    IAtomicConceptOfLabel sourceACoL = sourceNodeACoLs.elementAt(j);
+                    IAtomicConceptOfLabel sourceACoL = sourceNodeACoLs.get(j);
                     ISensesSet sourceSenseSet = sourceACoL.getSenses();
                     //get WN senses
-                    Vector<String> sourceSenses = sourceSenseSet.getSenseList();
+                    List<String> sourceSenses = sourceSenseSet.getSenseList();
                     //compare with all the other ACoLs in the node
                     for (int k = 1; k < sourceNodeACoLs.size(); k++) {
-                        IAtomicConceptOfLabel targetACoL = sourceNodeACoLs.elementAt(k);
+                        IAtomicConceptOfLabel targetACoL = sourceNodeACoLs.get(k);
                         if (!targetACoL.equals(sourceACoL)) {
                             ISensesSet targetSenseSet = targetACoL.getSenses();
                             //get WN senses
-                            Vector<String> targetSenses = targetSenseSet.getSenseList();
+                            List<String> targetSenses = targetSenseSet.getSenseList();
                             //for each sense in source ACoL
-                            for (int l = 0; l < sourceSenses.size(); l++) {
-                                String sourceSenseID = sourceSenses.elementAt(l);
+                            for (String sourceSenseID : sourceSenses) {
                                 //for each sense in target ACoL
-                                for (int m = 0; m < targetSenses.size(); m++) {
-                                    String targetSenseID = targetSenses.elementAt(m);
+                                for (String targetSenseID : targetSenses) {
                                     try {
                                         boolean isRelationPresent = false;
                                         if ((senseMatcher.isSourceSynonymTarget(sourceSenseID, targetSenseID))) {
@@ -755,37 +767,33 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
             }
             //sense disambiguation within the context structure
             //get all the source node descendants
-            Vector<INode> allConcept = sourceNode.getDescendants();
+            List<INode> allConcept = sourceNode.getDescendants();
             //and ancestors
             allConcept.addAll(sourceNode.getAncestors());
             //add siblings
 //            if (!sourceNode.isRoot()) {
-//                Vector<INode> siblings = sourceNode.getParent().getChildren();
+//                List<INode> siblings = sourceNode.getParent().getChildren();
 //                //siblings.remove(sourceNode);
 //                allConcept.addAll(siblings);
 //            }
             //for all ACoLs in the source node
-            for (int s = 0; s < sourceNodeACoLs.size(); s++) {
-                IAtomicConceptOfLabel sourceACoL = sourceNodeACoLs.elementAt(s);
+            for (IAtomicConceptOfLabel sourceACoL : sourceNodeACoLs) {
                 ISensesSet sourceSenseSet = sourceACoL.getSenses();
                 //get WN senses
                 if (sourceSenseSet.isRefinedSensesEmpty()) {
-                    Vector<String> sourceSenses = sourceSenseSet.getSenseList();
-                    for (Iterator<String> itSenseSource = sourceSenses.iterator(); itSenseSource.hasNext();) {
-                        String sourceSenseID = itSenseSource.next();
+                    List<String> sourceSenses = sourceSenseSet.getSenseList();
+                    for (String sourceSenseID : sourceSenses) {
                         //for all target nodes (ancestors and descendants)
-                        for (int id_node_target = 0; id_node_target < allConcept.size(); id_node_target++) {
-                            INodeData targetNode = (INodeData) allConcept.elementAt(id_node_target);
+                        for (INode anAllConcept : allConcept) {
+                            INodeData targetNode = (INodeData) anAllConcept;
                             //get ACoLs
-                            Vector<IAtomicConceptOfLabel> targetNodeACoLs = targetNode.getACoLs();
-                            for (int senseTarget = 0; senseTarget < targetNodeACoLs.size(); senseTarget++) {
-                                IAtomicConceptOfLabel targetACoL = targetNodeACoLs.elementAt(senseTarget);
+                            List<IAtomicConceptOfLabel> targetNodeACoLs = targetNode.getACoLs();
+                            for (IAtomicConceptOfLabel targetACoL : targetNodeACoLs) {
                                 ISensesSet targetSenseSet = targetACoL.getSenses();
                                 //get WN senses
                                 if (targetSenseSet.isRefinedSensesEmpty()) {
-                                    Vector<String> targetSenses = targetSenseSet.getSenseList();
-                                    for (Iterator<String> itSenseTarget = targetSenses.iterator(); itSenseTarget.hasNext();) {
-                                        String targetSenseID = itSenseTarget.next();
+                                    List<String> targetSenses = targetSenseSet.getSenseList();
+                                    for (String targetSenseID : targetSenses) {
                                         // Check whether each sense not synonym or
                                         //more general, less general then the senses of
                                         //the ancestors and descendants of the node in
@@ -837,11 +845,10 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
         //Loop on SensesSets of the all concepts and assign to them
         //senses mark as refined on the previous step
         //If there are no refined senses save the original ones
-        for (int i = 0; i < allNode.size(); i++) {
-            INodeData cSource = allNode.elementAt(i).getNodeData();
-            Vector<IAtomicConceptOfLabel> sourceSetOfSenses = cSource.getACoLs();
-            for (int s = 0; s < sourceSetOfSenses.size(); s++) {
-                IAtomicConceptOfLabel synSource = sourceSetOfSenses.elementAt(s);
+        for (INode anAllNode : allNode) {
+            INodeData cSource = anAllNode.getNodeData();
+            List<IAtomicConceptOfLabel> sourceSetOfSenses = cSource.getACoLs();
+            for (IAtomicConceptOfLabel synSource : sourceSetOfSenses) {
                 ISensesSet SenseSource = synSource.getSenses();
                 if (!SenseSource.isRefinedSensesEmpty()) {
                     SenseSource.updateSenseList();
@@ -882,44 +889,50 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
     }
 
     /**
-     * extension of Vector indexOf which uses approximate comparison of the words as
-     * elements of the Vector
+     * An extension of the list indexOf method which uses approximate comparison of the words as
+     * elements of the List.
      */
-    private int extendedIndexOf(ArrayList<String> vec, String str, int init_pos) {
-        //for all words in the input Vector starting from init_pos
-        for (int i = init_pos; i < vec.size(); i++) {
-            String vel = vec.get(i);
-            //try syntactic
-            if (vel.equals(str))
-                return i;
-            else if (vel.indexOf(str) == 0)
-                //and semantic comparison
-                if (linguisticOracle.isEqual(vel, str)) {
-                    vec.add(i, str);
-                    vec.remove(i + 1);
+    private int extendedIndexOf(List<String> vec, String str, int init_pos) throws ContextPreprocessorException {
+        try {
+            //for all words in the input list starting from init_pos
+            for (int i = init_pos; i < vec.size(); i++) {
+                String vel = vec.get(i);
+                //try syntactic
+                if (vel.equals(str))
                     return i;
-                }
+                else if (vel.indexOf(str) == 0)
+                    //and semantic comparison
+                    if (linguisticOracle.isEqual(vel, str)) {
+                        vec.add(i, str);
+                        vec.remove(i + 1);
+                        return i;
+                    }
+            }
+            return -1;
+        } catch (LinguisticOracleException e) {
+            final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
+            log.error(errMessage, e);
+            throw new ContextPreprocessorException(errMessage, e);
         }
-        return -1;
     }
 
     /**
-     * Takes as an input Vector of words and returns the Vector consisting the multiwords
+     * Takes as an input a list of words and returns the list consisting the multiwords
      * which are in WN and can be derived from the input
      * For example having [Earth, and, Atmospheric, Sciences] as the input returns
      * [Earth Sciences, and, Atmospheric, Sciences] because Earth Sciences is a WN concept
      * and Atmospheric Sciences is not a WN concept
      *
      * @param tokens input token
-     * @return a vector which contains multiwords
+     * @return a list which contains multiwords
      */
-    private ArrayList<String> multiwordRecognition(ArrayList<String> tokens) {
+    private ArrayList<String> multiwordRecognition(ArrayList<String> tokens) throws ContextPreprocessorException {
         String subLemma;
         HashMap<String, ArrayList<Integer>> is_token_in_multiword = new HashMap<String, ArrayList<Integer>>();
         for (int i = 0; i < tokens.size(); i++) {
             subLemma = tokens.get(i);
             if ((andWords.indexOf(subLemma) == -1) || (orWords.indexOf(subLemma) == -1)) {
-                //if the first element of Vector is a key element of hash
+                //if the first element of list is a key element of hash
                 if (multiwords.get(subLemma) != null) {
                     ArrayList<ArrayList<String>> entries = multiwords.get(subLemma);
                     for (int j = 0; j < entries.size(); j++) {
@@ -1144,7 +1157,7 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
      * Loads the hashmap with multiwords
      * the multiwords are stored in the following format
      * Key-the first word in the multiwords
-     * Value-Vector of Vectors, which contain the other words in the all the multiwords
+     * Value-List of List, which contain the other words in the all the multiwords
      * starting from the word in Key.
      *
      * @param fileName the file name from where the hash table will be read
@@ -1153,5 +1166,4 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
     private static HashMap<String, ArrayList<ArrayList<String>>> readHash(String fileName) throws SMatchException {
         return (HashMap<String, ArrayList<ArrayList<String>>>) SMatchUtils.readObject(fileName);
     }
-
 }

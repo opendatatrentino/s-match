@@ -4,11 +4,12 @@ import it.unitn.disi.smatch.components.Configurable;
 import it.unitn.disi.smatch.components.ConfigurableException;
 import it.unitn.disi.smatch.data.mappings.IMappingElement;
 import it.unitn.disi.smatch.matchers.element.ISenseGlossBasedElementLevelSemanticMatcher;
+import it.unitn.disi.smatch.matchers.element.MatcherLibraryException;
 import it.unitn.disi.smatch.oracles.ISynset;
 
+import java.util.List;
 import java.util.Properties;
 import java.util.StringTokenizer;
-import java.util.Vector;
 
 /**
  * Implements WNGloss matcher.
@@ -49,7 +50,7 @@ public class WNGloss extends Configurable implements ISenseGlossBasedElementLeve
      * @param target gloss of target
      * @return more general, less general or IDK relation
      */
-    public char match(ISynset source, ISynset target) {
+    public char match(ISynset source, ISynset target) throws MatcherLibraryException {
         String sSynset = source.getGloss();
         String tSynset = target.getGloss();
         StringTokenizer stSource = new StringTokenizer(sSynset, " ,.\"'();");
@@ -59,7 +60,7 @@ public class WNGloss extends Configurable implements ISenseGlossBasedElementLeve
         while (stSource.hasMoreTokens()) {
             lemma = stSource.nextToken();
             if (meaninglessWords.indexOf(lemma) == -1) {
-                Vector<String> lemmas = target.getLemmas();
+                List<String> lemmas = target.getLemmas();
                 for (String lemmaToCompare : lemmas) {
                     if (lemma.equals(lemmaToCompare)) {
                         counter++;
@@ -74,7 +75,7 @@ public class WNGloss extends Configurable implements ISenseGlossBasedElementLeve
         while (stTarget.hasMoreTokens()) {
             lemma = stTarget.nextToken();
             if (meaninglessWords.indexOf(lemma) == -1) {
-                Vector<String> lemmas = source.getLemmas();
+                List<String> lemmas = source.getLemmas();
                 for (String lemmaToCompare : lemmas) {
                     if (lemma.equals(lemmaToCompare)) {
                         counter++;

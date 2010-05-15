@@ -1,14 +1,18 @@
 package it.unitn.disi.smatch.matchers.structure.node;
 
+import it.unitn.disi.smatch.classifiers.CNFContextClassifier;
+import it.unitn.disi.smatch.classifiers.ContextClassifierException;
 import it.unitn.disi.smatch.data.IAtomicConceptOfLabel;
+import it.unitn.disi.smatch.data.INode;
 import it.unitn.disi.smatch.data.mappings.IMappingElement;
 import it.unitn.disi.smatch.data.matrices.IMatchMatrix;
-import it.unitn.disi.smatch.data.INode;
 import it.unitn.disi.smatch.matchers.element.EvalELMatcher;
-import orbital.logic.imp.Formula;
-import orbital.moon.logic.ClassicalLogic;
+import org.apache.log4j.Logger;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.StringTokenizer;
 
 /**
  * Node matcher for evaluation purposes.
@@ -17,105 +21,114 @@ import java.util.*;
  */
 public class EvalNodeMatcher extends BaseNodeMatcher implements INodeMatcher {
 
+    private static final Logger log = Logger.getLogger(EvalNodeMatcher.class);
+
     public char nodeMatch(IMatchMatrix cLabMatrix, INode sourceNode, INode targetNode) throws NodeMatcherException {
-        char result = IMappingElement.IDK;
-        String sourceCLabFormula = sourceNode.getNodeData().getcLabFormula();
-        String targetCLabFormula = targetNode.getNodeData().getcLabFormula();
+        try {
+            char result = IMappingElement.IDK;
+            String sourceCLabFormula = sourceNode.getNodeData().getcLabFormula();
+            String targetCLabFormula = targetNode.getNodeData().getcLabFormula();
 
-        if (null != sourceCLabFormula && null != targetCLabFormula && !"".equals(sourceCLabFormula) && !"".equals(targetCLabFormula)
-                ) {
-            sourceCLabFormula = toCNF(sourceCLabFormula);
-            targetCLabFormula = toCNF(targetCLabFormula);
+            if (null != sourceCLabFormula && null != targetCLabFormula && !"".equals(sourceCLabFormula) && !"".equals(targetCLabFormula)
+                    ) {
+                sourceCLabFormula = CNFContextClassifier.toCNF(sourceNode, sourceCLabFormula);
+                targetCLabFormula = CNFContextClassifier.toCNF(targetNode, targetCLabFormula);
 
-            //whether particular relation holds
-            boolean isContains;
-            boolean isContained;
+                //whether particular relation holds
+                boolean isContains;
+                boolean isContained;
 
-            //contains ACoLs ids as keys and numbers of variables in DIMACS format as values
-            HashMap<IAtomicConceptOfLabel, Integer> hashConceptNumber = new HashMap<IAtomicConceptOfLabel, Integer>();
-            //Number of variables in SAT problem
-            Integer numberOfVariables;
-            //Number of clauses in SAT problem
-            Integer numberOfClauses;
+                //contains ACoLs ids as keys and numbers of variables in DIMACS format as values
+                HashMap<IAtomicConceptOfLabel, Integer> hashConceptNumber = new HashMap<IAtomicConceptOfLabel, Integer>();
+                //Number of variables in SAT problem
+                Integer numberOfVariables;
+                //Number of clauses in SAT problem
+                Integer numberOfClauses;
 
-            Object[] obj = mkAxioms(hashConceptNumber, cLabMatrix, sourceNode, targetNode);
-            String axioms = (String) obj[0];
-            int num_of_axiom_clauses = (Integer) obj[1];
-            //convert contexts into ArrayLists
-            ArrayList<ArrayList<String>> contextAVector = parseFormula(hashConceptNumber, sourceNode, sourceCLabFormula);
-            ArrayList<ArrayList<String>> contextBVector = parseFormula(hashConceptNumber, targetNode, targetCLabFormula);
-            //create contexts in DIMACS format
-            String contextAInDIMACSFormat = DIMACSfromVector(contextAVector);
-            String contextBInDIMACSFormat = DIMACSfromVector(contextBVector);
+                Object[] obj = mkAxioms(hashConceptNumber, cLabMatrix, sourceNode, targetNode);
+                String axioms = (String) obj[0];
+                int num_of_axiom_clauses = (Integer) obj[1];
+                //convert contexts into ArrayLists
+                ArrayList<ArrayList<String>> contextA = parseFormula(hashConceptNumber, sourceNode, sourceCLabFormula);
+                ArrayList<ArrayList<String>> contextB = parseFormula(hashConceptNumber, targetNode, targetCLabFormula);
+                //create contexts in DIMACS format
+                String contextAInDIMACSFormat = DIMACSfromList(contextA);
+                String contextBInDIMACSFormat = DIMACSfromList(contextB);
 
-            //ArrayList with negated context
-            ArrayList<ArrayList<String>> negatedContext = new ArrayList<ArrayList<String>>();
-            //sat problem in DIMACS format
-            String satProblemInDIMACS;
-            //sat problem with DIMACS header
-            String DIMACSproblem;
-            //whether contexts are conjunctive
-            //if the contexts are not conjunctive
-            //LG test
-            //negate the context
-            numberOfVariables = negateFormulaInVector(hashConceptNumber, contextBVector, negatedContext);
-            //get the sat problem in DIMACS format
-            satProblemInDIMACS = axioms + contextAInDIMACSFormat + DIMACSfromVector(negatedContext);
-            //get number of clauses for SAT problem
-            numberOfClauses = num_of_axiom_clauses + contextAVector.size() + negatedContext.size();
-            //add DIMACS header
-            DIMACSproblem = "p cnf " + numberOfVariables + " " + numberOfClauses + "\n" + satProblemInDIMACS;
-            //do LG test
-            isContained = isUnsatisfiable(DIMACSproblem);
+                //ArrayList with negated context
+                ArrayList<ArrayList<String>> negatedContext = new ArrayList<ArrayList<String>>();
+                //sat problem in DIMACS format
+                String satProblemInDIMACS;
+                //sat problem with DIMACS header
+                String DIMACSproblem;
+                //whether contexts are conjunctive
+                //if the contexts are not conjunctive
+                //LG test
+                //negate the context
+                numberOfVariables = negateFormulaInList(hashConceptNumber, contextB, negatedContext);
+                //get the sat problem in DIMACS format
+                satProblemInDIMACS = axioms + contextAInDIMACSFormat + DIMACSfromList(negatedContext);
+                //get number of clauses for SAT problem
+                numberOfClauses = num_of_axiom_clauses + contextA.size() + negatedContext.size();
+                //add DIMACS header
+                DIMACSproblem = "p cnf " + numberOfVariables + " " + numberOfClauses + "\n" + satProblemInDIMACS;
+                //do LG test
+                isContained = isUnsatisfiable(DIMACSproblem);
 
-            //MG test
-            //negate the context
-            numberOfVariables = negateFormulaInVector(hashConceptNumber, contextAVector, negatedContext);
-            //get the sat problem in DIMACS format
-            satProblemInDIMACS = axioms + contextBInDIMACSFormat + DIMACSfromVector(negatedContext);
-            //get number of clauses for SAT problem
-            numberOfClauses = num_of_axiom_clauses + contextBVector.size() + negatedContext.size();
-            //add DIMACS header
-            DIMACSproblem = "p cnf " + numberOfVariables + " " + numberOfClauses + "\n" + satProblemInDIMACS;
-            //do MG test
-            isContains = isUnsatisfiable(DIMACSproblem);
+                //MG test
+                //negate the context
+                numberOfVariables = negateFormulaInList(hashConceptNumber, contextA, negatedContext);
+                //get the sat problem in DIMACS format
+                satProblemInDIMACS = axioms + contextBInDIMACSFormat + DIMACSfromList(negatedContext);
+                //get number of clauses for SAT problem
+                numberOfClauses = num_of_axiom_clauses + contextB.size() + negatedContext.size();
+                //add DIMACS header
+                DIMACSproblem = "p cnf " + numberOfVariables + " " + numberOfClauses + "\n" + satProblemInDIMACS;
+                //do MG test
+                isContains = isUnsatisfiable(DIMACSproblem);
 
-            result = getRelationString(isContains, isContained, false);
-        } else {
-            if (null == sourceCLabFormula && null == targetCLabFormula || "".equals(sourceCLabFormula) && "".equals(targetCLabFormula)) {
-                result = IMappingElement.EQUIVALENCE;
+                result = getRelationString(isContains, isContained, false);
+            } else {
+                if (null == sourceCLabFormula && null == targetCLabFormula || "".equals(sourceCLabFormula) && "".equals(targetCLabFormula)) {
+                    result = IMappingElement.EQUIVALENCE;
+                }
             }
+            return result;
+        } catch (ContextClassifierException e) {
+            final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
+            log.error(errMessage, e);
+            throw new NodeMatcherException(errMessage, e);
         }
-        return result;
+
     }
 
     /**
      * Makes axioms for CNF formula.
      *
      * @param hashConceptNumber HashMap for atomic concept of labels with its id.
-     * @param cLabMatrix relation between atomic concept of labels
-     * @param sourceNode interface of source node
-     * @param targetNode interface of target node
+     * @param cLabMatrix        relation between atomic concept of labels
+     * @param sourceNode        interface of source node
+     * @param targetNode        interface of target node
      * @return an object of axioms
      */
-    protected static Object[] mkAxioms(Hashtable<IAtomicConceptOfLabel, Integer> hashConceptNumber, IMatchMatrix cLabMatrix, INode sourceNode, INode targetNode) {
+    protected static Object[] mkAxioms(HashMap<IAtomicConceptOfLabel, Integer> hashConceptNumber, IMatchMatrix cLabMatrix, INode sourceNode, INode targetNode) {
         StringBuffer axioms = new StringBuffer();
         Integer numberOfClauses = 0;
         //create variables
-        final Vector<IAtomicConceptOfLabel> sourceNodeACols = sourceNode.getNodeData().getACoLs();
+        final List<IAtomicConceptOfLabel> sourceNodeACols = sourceNode.getNodeData().getACoLs();
         for (IAtomicConceptOfLabel sourceACoL : sourceNodeACols) {
             //create corresponding to id variable number
-            //and put it as a value of hashtable with key equal to ACoL id
+            //and put it as a value of hashmap with key equal to ACoL id
             if (!hashConceptNumber.containsKey(sourceACoL)) {
                 Integer value = hashConceptNumber.size() + 1;
                 hashConceptNumber.put(sourceACoL, value);
             }
         }
         //for all columns of relMatrix
-        final Vector<IAtomicConceptOfLabel> targetNodeACols = targetNode.getNodeData().getACoLs();
+        final List<IAtomicConceptOfLabel> targetNodeACols = targetNode.getNodeData().getACoLs();
         for (IAtomicConceptOfLabel targetACoL : targetNodeACols) {
             //create corresponding to id variable number
-            //and put it as a value of hashtable with key equal to ACoL id
+            //and put it as a value of hashmap with key equal to ACoL id
             if (!hashConceptNumber.containsKey(targetACoL)) {
                 Integer value = hashConceptNumber.size() + 1;
                 hashConceptNumber.put(targetACoL, value);
@@ -175,7 +188,7 @@ public class EvalNodeMatcher extends BaseNodeMatcher implements INodeMatcher {
      * Converts context of node into array list.
      *
      * @param hashConceptNumber HashMap for atomic concept of label with its id
-     * @param node interface of node
+     * @param node              interface of node
      * @return array list of context of node
      */
     private ArrayList<ArrayList<String>> parseFormula(HashMap<IAtomicConceptOfLabel, Integer> hashConceptNumber, INode node, String formula) {
@@ -212,37 +225,4 @@ public class EvalNodeMatcher extends BaseNodeMatcher implements INodeMatcher {
         }
         return representation;
     }
-
-    /**
-     * Converts the logical formula of node into CNF.
-     *
-     * @param formula logical formula of a node
-     * @return Conjunctive Normal Form of node
-     */
-    public String toCNF(String formula) {
-        String result = formula;
-        if ((formula.contains("&") && formula.contains("|")) || formula.contains("~")) {
-            String tmpFormula = formula;
-            tmpFormula = tmpFormula.trim();
-            try {
-                ClassicalLogic cl = new ClassicalLogic();
-                if (!tmpFormula.equals("")) {
-                    tmpFormula = tmpFormula.replace('.', 'P');
-                    Formula f = (Formula) (cl.createExpression(tmpFormula));
-                    Formula cnf = ClassicalLogic.Utilities.conjunctiveForm(f);
-                    tmpFormula = cnf.toString();
-                    result = tmpFormula.replace('P', '.');
-                } else {
-                    result = tmpFormula;
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        } else {
-            result = formula;
-        }
-
-        return result;
-    }
-
 }

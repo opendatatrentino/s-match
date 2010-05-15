@@ -31,8 +31,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
-import java.util.Vector;
 
 /**
  * MatchManager controls the process of matching, loads contexts and performs other
@@ -208,8 +208,8 @@ public class MatchManager extends Configurable implements IMatchManager {
         // Performs structure level matching which computes the relation between nodes.
         IMatchMatrix cNodeMatrix = structureLevelMatching(sourceContext, targetContext, cLabMatrix);
 
-        Vector<INode> sourceNodes = sourceContext.getAllNodes();
-        Vector<INode> targetNodes = targetContext.getAllNodes();
+        List<INode> sourceNodes = sourceContext.getAllNodes();
+        List<INode> targetNodes = targetContext.getAllNodes();
 
         IMapping mapping = new Mapping(sourceContext, targetContext);
         for (int i = 0; i < sourceNodes.size(); i++) {
@@ -348,7 +348,7 @@ public class MatchManager extends Configurable implements IMatchManager {
 
                 if (log.isEnabledFor(Level.DEBUG)) {
                     for (String k : commandProperties.stringPropertyNames()) {
-                        log.debug("property override: " + k + "=" + commandProperties.getProperty(k));    
+                        log.debug("property override: " + k + "=" + commandProperties.getProperty(k));
                     }
                 }
 

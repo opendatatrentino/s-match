@@ -3,11 +3,14 @@ package it.unitn.disi.smatch.matchers.element.gloss;
 import it.unitn.disi.smatch.components.ConfigurableException;
 import it.unitn.disi.smatch.data.mappings.IMappingElement;
 import it.unitn.disi.smatch.matchers.element.ISenseGlossBasedElementLevelSemanticMatcher;
+import it.unitn.disi.smatch.matchers.element.MatcherLibraryException;
 import it.unitn.disi.smatch.oracles.ISynset;
+import it.unitn.disi.smatch.oracles.LinguisticOracleException;
+import org.apache.log4j.Logger;
 
+import java.util.List;
 import java.util.Properties;
 import java.util.StringTokenizer;
-import java.util.Vector;
 
 /**
  * Implements WNExtendedGlossComparison matcher.
@@ -17,6 +20,8 @@ import java.util.Vector;
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
 public class WNExtendedGloss extends BasicGlossMatcher implements ISenseGlossBasedElementLevelSemanticMatcher {
+
+    private static final Logger log = Logger.getLogger(WNExtendedGloss.class);
 
     private static final String THRESHOLD_KEY = "threshold";
     private int threshold = 5;
@@ -44,33 +49,39 @@ public class WNExtendedGloss extends BasicGlossMatcher implements ISenseGlossBas
     /**
      * Computes the relation for extended gloss matcher.
      *
-     * @param source1 the gloss of source
-     * @param target1 the gloss of target
+     * @param source the gloss of source
+     * @param target the gloss of target
      * @return synonym or IDK relation
      */
-    public char match(ISynset source1, ISynset target1) {
-        String tExtendedGloss = getExtendedGloss(target1, 1, IMappingElement.LESS_GENERAL);
-        Vector<String> sourceLemmas = source1.getLemmas();
-        //variations of this matcher
-//        StringTokenizer stSource = new StringTokenizer(tExtendedGloss, " ,.\"'();");
-        String lemmaT;
-        int counter = 0;
-        for (String sourceLemma : sourceLemmas) {
-            StringTokenizer stTarget = new StringTokenizer(tExtendedGloss, " ,.\"'();");
-            if (meaninglessWords.indexOf(sourceLemma) == -1)
-                while (stTarget.hasMoreTokens()) {
-                    lemmaT = stTarget.nextToken();
-                    if (meaninglessWords.indexOf(lemmaT) == -1) {
-                        if (sourceLemma.equalsIgnoreCase(lemmaT)) {
-                            counter++;
+    public char match(ISynset source, ISynset target) throws MatcherLibraryException {
+        char result = IMappingElement.IDK;
+        try {
+            String tExtendedGloss = getExtendedGloss(target, 1, IMappingElement.LESS_GENERAL);
+            List<String> sourceLemmas = source.getLemmas();
+            //variations of this matcher
+            //StringTokenizer stSource = new StringTokenizer(tExtendedGloss, " ,.\"'();");
+            String lemmaT;
+            int counter = 0;
+            for (String sourceLemma : sourceLemmas) {
+                StringTokenizer stTarget = new StringTokenizer(tExtendedGloss, " ,.\"'();");
+                if (meaninglessWords.indexOf(sourceLemma) == -1)
+                    while (stTarget.hasMoreTokens()) {
+                        lemmaT = stTarget.nextToken();
+                        if (meaninglessWords.indexOf(lemmaT) == -1) {
+                            if (sourceLemma.equalsIgnoreCase(lemmaT)) {
+                                counter++;
+                            }
                         }
                     }
-                }
+            }
+            if (counter > threshold) {
+                result = IMappingElement.EQUIVALENCE;
+            }
+        } catch (LinguisticOracleException e) {
+            final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
+            log.error(errMessage, e);
+            throw new MatcherLibraryException(errMessage, e);
         }
-        if (counter > threshold)
-            return IMappingElement.EQUIVALENCE;
-        else
-            return IMappingElement.IDK;
+        return result;
     }
-
 }

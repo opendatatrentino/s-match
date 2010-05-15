@@ -1,8 +1,6 @@
 package it.unitn.disi.smatch.data;
 
-import java.util.Arrays;
-import java.util.StringTokenizer;
-import java.util.Vector;
+import java.util.*;
 
 /**
  * Default SensesSet representation.
@@ -11,10 +9,11 @@ import java.util.Vector;
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
 public class SensesSet implements ISensesSet {
+
     //senses
-    private Vector<String> senseList;
+    private List<String> senseList = new ArrayList<String>();
     //senses obtained after sense refining
-    private Vector<String> refinedSenses = new Vector<String>();
+    private List<String> refinedSenses = new ArrayList<String>();
 
     private long[] intSenses = null;
     private char[] POSSenses = null;
@@ -35,11 +34,11 @@ public class SensesSet implements ISensesSet {
         this.POSSenses = POSSenses;
     }
 
-    public SensesSet(Vector<String> senseList) {
-        this.senseList = senseList;
+    public SensesSet() {
     }
 
     //Used for integer array representation of WordNet
+
     public void convertSenses() {
         if ((intSenses == null) || (POSSenses == null)) {
             intSenses = new long[senseList.size()];
@@ -56,37 +55,43 @@ public class SensesSet implements ISensesSet {
                     intSenses[i] = 0;
             }
             //remove this line after scalability  test
-            senseList = new Vector<String>();
+            senseList = new ArrayList<String>();
         }
     }
 
     //Set up lemmas after sense filtering
+
     public void updateSenseList() {
         senseList = refinedSenses;
     }
 
     //Set lemmas for sense filtering
+
     public void addToRefinedSenses(String toAdd) {
         if (!refinedSenses.contains(toAdd))
             refinedSenses.add(toAdd);
     }
 
     //Check whether any lemmas refined
+
     public boolean isRefinedSensesEmpty() {
         return refinedSenses.isEmpty();
     }
 
     //Get senses
-    public Vector<String> getSenseList() {
+
+    public List<String> getSenseList() {
         return senseList;
     }
 
-    public void setSenseList(Vector<String> senseList) {
-        this.senseList = senseList;
+    public void setSenseList(List<String> senseList) {
+        this.senseList.clear();
+        this.senseList.addAll(senseList);
     }
 
     //Add new senses except repeated ones
-    public void addNewSenses(Vector<String> newSenses) {
+
+    public void addNewSenses(List<String> newSenses) {
         for (String toAdd : newSenses) {
             if (!senseList.contains(toAdd))
                 senseList.add(toAdd);
@@ -94,6 +99,7 @@ public class SensesSet implements ISensesSet {
     }
 
     //Is empty?
+
     public boolean hasSomeSenses() {
         return (senseList.size() > 0);
     }

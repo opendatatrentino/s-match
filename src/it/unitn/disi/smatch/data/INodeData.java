@@ -1,6 +1,6 @@
 package it.unitn.disi.smatch.data;
 
-import java.util.Vector;
+import java.util.List;
 
 /**
  * Data part of the node.
@@ -9,11 +9,12 @@ import java.util.Vector;
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
 public interface INodeData {
+
     void setNodeName(String nodeName);
 
-    Vector<String> getSynonyms();
+    List<String> getSynonyms();
 
-    Vector<String> getAlternativeLabels();
+    List<String> getAlternativeLabels();
 
     double getWeight();
 
@@ -37,16 +38,16 @@ public interface INodeData {
      *
      * @return atomic concepts of labels
      */
-    Vector<IAtomicConceptOfLabel> getACoLs();
+    List<IAtomicConceptOfLabel> getACoLs();
 
     /**
-     * Returns vector of atomic concepts for the node matching task.
+     * Returns list of atomic concepts for the node matching task.
      * Basically, all concepts including parent concepts with some filtering.
      * Same filter is used in getAllContextACols, therefore it is needed here.
      *
-     * @return vector of atomic concepts for the node matching task
+     * @return list of atomic concepts for the node matching task
      */
-    Vector<IAtomicConceptOfLabel> getNodeMatchingTaskACols();
+    List<IAtomicConceptOfLabel> getNodeMatchingTaskACols();
 
     /**
      * Gets node matching task acol by Id.
@@ -105,12 +106,12 @@ public interface INodeData {
     int getDepth();
 
     /**
-     * Gets index in a Vector. This is to avoid hash tables.
+     * Gets index in a list. This is to avoid hash tables.
      */
     int getIndex();
 
     /**
-     * Sets index in a Vector. This is to avoid hash tables.
+     * Sets index in a list. This is to avoid hash tables.
      *
      * @param index
      */

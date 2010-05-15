@@ -5,7 +5,7 @@ import it.unitn.disi.smatch.data.IContext;
 import it.unitn.disi.smatch.data.INode;
 import it.unitn.disi.smatch.data.INodeData;
 
-import java.util.Vector;
+import java.util.List;
 
 /**
  * Constructs concept@node formulas.
@@ -16,10 +16,9 @@ import java.util.Vector;
 public class DefaultContextClassifier extends Configurable implements IContextClassifier {
 
     public void buildCNodeFormulas(IContext context) throws ContextClassifierException {
-        Vector<INode> allNodes = context.getAllNodes();
+        List<INode> allNodes = context.getAllNodes();
         //for all nodes in the context
-        for (int i = 0; i < allNodes.size(); i++) {
-            INode concept = allNodes.elementAt(i);
+        for (INode concept : allNodes) {
             // Creates and interface for node.
             INodeData nd = concept.getNodeData();
             //build cNode

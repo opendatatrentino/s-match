@@ -107,7 +107,7 @@ public class ClassFactory {
 
 
     /**
-     * Parses a string of class names separated by separator into ArrayList of objects.
+     * Parses a string of class names separated by separator into a list of objects.
      *
      * @param str       names of classes
      * @param separator separator characters
@@ -126,7 +126,7 @@ public class ClassFactory {
     }
 
     /**
-     * Parses a string of class names separated by separator into vector of objects.
+     * Parses a string of class names separated by separator into a list of objects.
      *
      * @param str        names of classes
      * @param separator  separator characters

@@ -1,18 +1,19 @@
 package it.unitn.disi.smatch.matchers.element;
 
-import it.unitn.disi.smatch.MatchManager;
 import it.unitn.disi.smatch.SMatchConstants;
 import it.unitn.disi.smatch.components.Configurable;
-import it.unitn.disi.smatch.data.*;
+import it.unitn.disi.smatch.data.IAtomicConceptOfLabel;
+import it.unitn.disi.smatch.data.IContext;
+import it.unitn.disi.smatch.data.INode;
 import it.unitn.disi.smatch.data.mappings.IMappingElement;
 import it.unitn.disi.smatch.data.matrices.IMatchMatrix;
 import it.unitn.disi.smatch.data.matrices.MatrixFactory;
-
-import java.util.Vector;
-
 import it.unitn.disi.smatch.oracles.ILinguisticOracle;
-import org.apache.log4j.Logger;
 import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Matches acols of formulas for evaluation.
@@ -57,14 +58,14 @@ public class EvalELMatcher extends Configurable implements IMatcherLibrary {
             //compare each pair of nodes
             //for each pair compare all node acols
 
-            Vector<IAtomicConceptOfLabel> sourceACoLs = sourceContext.getMatchingContext().getAllContextACoLs();
-            Vector<IAtomicConceptOfLabel> targetACoLs = targetContext.getMatchingContext().getAllContextACoLs();
+            List<IAtomicConceptOfLabel> sourceACoLs = sourceContext.getMatchingContext().getAllContextACoLs();
+            List<IAtomicConceptOfLabel> targetACoLs = targetContext.getMatchingContext().getAllContextACoLs();
 
             //Initialization of matrix
             ClabMatrix = MatrixFactory.getInstance(sourceACoLs.size(), targetACoLs.size());
 
-            Vector<INode> sourceNodes = sourceContext.getAllNodes();
-            Vector<INode> targetNodes = targetContext.getAllNodes();
+            List<INode> sourceNodes = sourceContext.getAllNodes();
+            List<INode> targetNodes = targetContext.getAllNodes();
 
             long counter = 0;
             long total = (long) sourceNodes.size();
@@ -84,8 +85,8 @@ public class EvalELMatcher extends Configurable implements IMatcherLibrary {
                     log.warn(t);
                 }
 
-                Vector<IAtomicConceptOfLabel> sourceNodeACoLs = sourceNode.getNodeData().getACoLs();
-                Vector<IAtomicConceptOfLabel> targetNodeACoLs = targetNode.getNodeData().getACoLs();
+                List<IAtomicConceptOfLabel> sourceNodeACoLs = sourceNode.getNodeData().getACoLs();
+                List<IAtomicConceptOfLabel> targetNodeACoLs = targetNode.getNodeData().getACoLs();
 
                 for (IAtomicConceptOfLabel sourceACOL : sourceNodeACoLs) {
                     for (IAtomicConceptOfLabel targetACOL : targetNodeACoLs) {
@@ -126,8 +127,8 @@ public class EvalELMatcher extends Configurable implements IMatcherLibrary {
         //tokens do not match -> lemmas equality -> match
 
         //compare sets of senses
-        Vector<String> sourceSenses = new Vector<String>(sourceACoL.getSenses().getSenseList());
-        Vector<String> targetSenses = new Vector<String>(targetACoL.getSenses().getSenseList());
+        List<String> sourceSenses = new ArrayList<String>(sourceACoL.getSenses().getSenseList());
+        List<String> targetSenses = new ArrayList<String>(targetACoL.getSenses().getSenseList());
 
         removeUnknownSenses(sourceSenses);
         removeUnknownSenses(targetSenses);
@@ -205,7 +206,7 @@ public class EvalELMatcher extends Configurable implements IMatcherLibrary {
         return result;
     }
 
-    private void removeUnknownSenses(Vector<String> senses) {
+    private void removeUnknownSenses(List<String> senses) {
         int i = 0;
         while (i < senses.size()) {
             if (senses.get(i).startsWith(ILinguisticOracle.UNKNOWN_MEANING)) {

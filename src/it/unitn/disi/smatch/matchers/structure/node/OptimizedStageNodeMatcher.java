@@ -41,17 +41,17 @@ public class OptimizedStageNodeMatcher extends BaseNodeMatcher implements INodeM
             int num_of_axiom_clauses = (Integer) obj[1];
 
             //convert contexts into ArrayLists
-            ArrayList<ArrayList<String>> contextAVector = parseFormula(hashConceptNumber, sourceNode);
-            ArrayList<ArrayList<String>> contextBVector = parseFormula(hashConceptNumber, targetNode);
+            ArrayList<ArrayList<String>> contextA = parseFormula(hashConceptNumber, sourceNode);
+            ArrayList<ArrayList<String>> contextB = parseFormula(hashConceptNumber, targetNode);
             //create contexts in DIMACS format
-            String contextAInDIMACSFormat = DIMACSfromVector(contextAVector);
-            String contextBInDIMACSFormat = DIMACSfromVector(contextBVector);
+            String contextAInDIMACSFormat = DIMACSfromList(contextA);
+            String contextBInDIMACSFormat = DIMACSfromList(contextB);
 
             //Disjointness test
             //get the sat problem in DIMACS format
             String satProblemInDIMACS = axioms + contextBInDIMACSFormat + contextAInDIMACSFormat;
             //get number of clauses for SAT problem
-            int numberOfClauses = contextAVector.size() + contextBVector.size() + num_of_axiom_clauses;
+            int numberOfClauses = contextA.size() + contextB.size() + num_of_axiom_clauses;
             int numberOfVariables = hashConceptNumber.size();
             //add DIMACS header
             String DIMACSproblem = "p cnf " + numberOfVariables + " " + numberOfClauses + "\n" + satProblemInDIMACS;
@@ -81,21 +81,21 @@ public class OptimizedStageNodeMatcher extends BaseNodeMatcher implements INodeM
                 int num_of_axiom_clauses = (Integer) obj[1];
 
                 //convert contexts into ArrayLists
-                ArrayList<ArrayList<String>> contextAVector = parseFormula(hashConceptNumber, sourceNode);
-                ArrayList<ArrayList<String>> contextBVector = parseFormula(hashConceptNumber, targetNode);
+                ArrayList<ArrayList<String>> contextA = parseFormula(hashConceptNumber, sourceNode);
+                ArrayList<ArrayList<String>> contextB = parseFormula(hashConceptNumber, targetNode);
                 //create contexts in DIMACS format
-                String contextAInDIMACSFormat = DIMACSfromVector(contextAVector);
-                //String contextBInDIMACSFormat = DIMACSfromVector(contextBVector);
+                String contextAInDIMACSFormat = DIMACSfromList(contextA);
+                //String contextBInDIMACSFormat = DIMACSfromList(contextB);
 
                 //ArrayList with negated context
                 ArrayList<ArrayList<String>> negatedContext = new ArrayList<ArrayList<String>>();
                 //LG test
                 //negate the context
-                Integer numberOfVariables = negateFormulaInVector(hashConceptNumber, contextBVector, negatedContext);
+                Integer numberOfVariables = negateFormulaInList(hashConceptNumber, contextB, negatedContext);
                 //get the sat problem in DIMACS format
-                String satProblemInDIMACS = axioms + contextAInDIMACSFormat + DIMACSfromVector(negatedContext);
+                String satProblemInDIMACS = axioms + contextAInDIMACSFormat + DIMACSfromList(negatedContext);
                 //get number of clauses for SAT problem
-                Integer numberOfClauses = num_of_axiom_clauses + contextAVector.size() + negatedContext.size();
+                Integer numberOfClauses = num_of_axiom_clauses + contextA.size() + negatedContext.size();
                 //add DIMACS header
                 String DIMACSproblem = "p cnf " + numberOfVariables + " " + numberOfClauses + "\n" + satProblemInDIMACS;
 
@@ -108,21 +108,21 @@ public class OptimizedStageNodeMatcher extends BaseNodeMatcher implements INodeM
                 int num_of_axiom_clauses = (Integer) obj[1];
 
                 //convert contexts into ArrayLists
-                ArrayList<ArrayList<String>> contextAVector = parseFormula(hashConceptNumber, targetNode);
-                ArrayList<ArrayList<String>> contextBVector = parseFormula(hashConceptNumber, sourceNode);
+                ArrayList<ArrayList<String>> contextA = parseFormula(hashConceptNumber, targetNode);
+                ArrayList<ArrayList<String>> contextB = parseFormula(hashConceptNumber, sourceNode);
                 //create contexts in DIMACS format
-                //String contextAInDIMACSFormat = DIMACSfromVector(contextAVector);
-                String contextBInDIMACSFormat = DIMACSfromVector(contextBVector);
+                //String contextAInDIMACSFormat = DIMACSfromList(contextA);
+                String contextBInDIMACSFormat = DIMACSfromList(contextB);
 
                 //ArrayList with negated context
                 ArrayList<ArrayList<String>> negatedContext = new ArrayList<ArrayList<String>>();
                 //MG test
                 //negate the context
-                Integer numberOfVariables = negateFormulaInVector(hashConceptNumber, contextAVector, negatedContext);
+                Integer numberOfVariables = negateFormulaInList(hashConceptNumber, contextA, negatedContext);
                 //get the sat problem in DIMACS format
-                String satProblemInDIMACS = axioms + contextBInDIMACSFormat + DIMACSfromVector(negatedContext);
+                String satProblemInDIMACS = axioms + contextBInDIMACSFormat + DIMACSfromList(negatedContext);
                 //get number of clauses for SAT problem
-                Integer numberOfClauses = num_of_axiom_clauses + contextBVector.size() + negatedContext.size();
+                Integer numberOfClauses = num_of_axiom_clauses + contextB.size() + negatedContext.size();
                 //add DIMACS header
                 String DIMACSproblem = "p cnf " + numberOfVariables + " " + numberOfClauses + "\n" + satProblemInDIMACS;
 

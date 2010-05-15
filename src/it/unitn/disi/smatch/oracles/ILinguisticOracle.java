@@ -2,7 +2,7 @@ package it.unitn.disi.smatch.oracles;
 
 import it.unitn.disi.smatch.components.IConfigurable;
 
-import java.util.Vector;
+import java.util.List;
 
 /**
  * Interface to Linguistic Oracle, such as WordNet.
@@ -22,8 +22,9 @@ public interface ILinguisticOracle extends IConfigurable {
      *
      * @param source synset id
      * @return synset
+     * @throws LinguisticOracleException LinguisticOracleException
      */
-    public ISynset getISynset(String source);
+    public ISynset getISynset(String source) throws LinguisticOracleException;
 
     /**
      * Checks if lemmas of two strings are equal (e. g. the string are the same modulo inflections).
@@ -31,22 +32,25 @@ public interface ILinguisticOracle extends IConfigurable {
      * @param str1 source string
      * @param str2 target string
      * @return true if lemmas are equal
+     * @throws LinguisticOracleException LinguisticOracleException
      */
-    public boolean isEqual(String str1, String str2);
+    public boolean isEqual(String str1, String str2) throws LinguisticOracleException;
 
     /**
      * Returns all senses of a word.
      *
      * @param word the word to which the sense will be retrieve
      * @return word senses
+     * @throws LinguisticOracleException LinguisticOracleException
      */
-    public Vector<String> getSenses(String word);
+    public List<String> getSenses(String word) throws LinguisticOracleException;
 
     /**
      * Returns base form (lemma) of a word.
      *
      * @param derivation the word to get a base form for
      * @return base form of a derivation
+     * @throws LinguisticOracleException LinguisticOracleException
      */
-    public String getBaseForm(String derivation);
+    public String getBaseForm(String derivation) throws LinguisticOracleException;
 }

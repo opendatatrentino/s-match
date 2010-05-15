@@ -1,15 +1,18 @@
 package it.unitn.disi.smatch.oracles.wordnet;
 
 import it.unitn.disi.smatch.oracles.ISynset;
+import it.unitn.disi.smatch.oracles.LinguisticOracleException;
 import net.didion.jwnl.JWNLException;
 import net.didion.jwnl.data.PointerUtils;
 import net.didion.jwnl.data.Synset;
 import net.didion.jwnl.data.list.PointerTargetNode;
 import net.didion.jwnl.data.list.PointerTargetNodeList;
 import net.didion.jwnl.data.list.PointerTargetTree;
+import org.apache.log4j.Logger;
 
+import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.Vector;
+import java.util.List;
 
 /**
  * WordNet-based synset implementation.
@@ -19,7 +22,9 @@ import java.util.Vector;
  */
 public class WordNetSynset implements ISynset {
 
-    Synset tmp = null;
+    private static final Logger log = Logger.getLogger(WordNetSynset.class);
+
+    private Synset tmp;
 
     /**
      * Constructor class with sense input.
@@ -32,123 +37,109 @@ public class WordNetSynset implements ISynset {
 
 
     public String getGloss() {
-        return tmp.getGloss();  //To change body of implemented methods use File | Settings | File Templates.
+        return tmp.getGloss();
     }
 
-    public Vector<String> getLemmas() {
-        Vector<String> out = new Vector<String>();
-        String lemmaToCompare = null;
+    public List<String> getLemmas() {
+        List<String> out = new ArrayList<String>();
+        String lemmaToCompare;
 
         for (int i = 0; i < tmp.getWordsSize(); i++) {
             lemmaToCompare = tmp.getWord(i).getLemma();
             out.add(lemmaToCompare);
         }
 
-        return out;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    public Vector<ISynset> getParents() {
-        Vector<ISynset> out = new Vector<ISynset>();
-        PointerTargetTree hypernyms = null;
-        PointerUtils pu = PointerUtils.getInstance();
-        try {
-            hypernyms = pu.getHypernymTree(tmp, 1);
-            for (Iterator itr = hypernyms.toList().iterator(); itr.hasNext();) {
-//                itr.next();
-                if (itr.hasNext()) {
-                    for (Iterator itr1 = ((PointerTargetNodeList) itr.next()).iterator(); itr1.hasNext();) {
-                        Synset t = ((PointerTargetNode) itr1.next()).getSynset();
-                        if (!isEqual(tmp, t)) {
-
-                            WordNetSynset wns = new WordNetSynset(t);
-                            ISynset is = (ISynset) wns;
-                            out.add(is);
-                        }
-                    }
-                }
-            }
-        } catch (JWNLException e) {
-            e.printStackTrace();  //To change body of catch statement use Options | File Templates.
-        }
-        out.remove(tmp);
         return out;
     }
 
-    public Vector<ISynset> getParents(int depth) {
-        Vector<ISynset> out = new Vector<ISynset>();
-        PointerTargetTree hypernyms = null;
-        PointerUtils pu = PointerUtils.getInstance();
+    public List<ISynset> getParents() throws LinguisticOracleException {
+        List<ISynset> out = new ArrayList<ISynset>();
         try {
-            hypernyms = pu.getHypernymTree(tmp, depth);
+            PointerUtils pu = PointerUtils.getInstance();
+            PointerTargetTree hypernyms = pu.getHypernymTree(tmp, 1);
             for (Iterator itr = hypernyms.toList().iterator(); itr.hasNext();) {
-//                itr.next();
                 if (itr.hasNext()) {
-                    for (Iterator itr1 = ((PointerTargetNodeList) itr.next()).iterator(); itr1.hasNext();) {
-                        Synset t = ((PointerTargetNode) itr1.next()).getSynset();
+                    for (Object o : ((PointerTargetNodeList) itr.next())) {
+                        Synset t = ((PointerTargetNode) o).getSynset();
                         if (!isEqual(tmp, t)) {
-
-                            WordNetSynset wns = new WordNetSynset(t);
-                            ISynset is = (ISynset) wns;
-                            out.add(is);
+                            out.add(new WordNetSynset(t));
                         }
                     }
                 }
             }
         } catch (JWNLException e) {
-            e.printStackTrace();  //To change body of catch statement use Options | File Templates.
+            final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
+            log.error(errMessage, e);
+            throw new LinguisticOracleException(errMessage, e);
         }
-        out.remove(tmp);
         return out;
     }
 
-    public Vector<ISynset> getChildren() {
-        Vector<ISynset> out = new Vector<ISynset>();
-        PointerTargetTree hypernyms = null;
-        PointerUtils pu = PointerUtils.getInstance();
+    public List<ISynset> getParents(int depth) throws LinguisticOracleException {
+        List<ISynset> out = new ArrayList<ISynset>();
         try {
-            hypernyms = pu.getHyponymTree(tmp, 1);
+            PointerUtils pu = PointerUtils.getInstance();
+            PointerTargetTree hypernyms = pu.getHypernymTree(tmp, depth);
             for (Iterator itr = hypernyms.toList().iterator(); itr.hasNext();) {
-//                itr.next();
                 if (itr.hasNext()) {
-                    for (Iterator itr1 = ((PointerTargetNodeList) itr.next()).iterator(); itr1.hasNext();) {
-                        Synset t = ((PointerTargetNode) itr1.next()).getSynset();
+                    for (Object o : ((PointerTargetNodeList) itr.next())) {
+                        Synset t = ((PointerTargetNode) o).getSynset();
                         if (!isEqual(tmp, t)) {
-
-                            WordNetSynset wns = new WordNetSynset(t);
-                            ISynset is = (ISynset) wns;
-                            out.add(is);
+                            out.add(new WordNetSynset(t));
                         }
                     }
                 }
             }
         } catch (JWNLException e) {
-            e.printStackTrace();  //To change body of catch statement use Options | File Templates.
+            final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
+            log.error(errMessage, e);
+            throw new LinguisticOracleException(errMessage, e);
         }
-        out.remove(tmp);
         return out;
     }
 
-    public Vector<ISynset> getChildren(int depth) {
-        Vector<ISynset> out = new Vector<ISynset>();
-        PointerTargetTree hypernyms = null;
-        PointerUtils pu = PointerUtils.getInstance();
+    public List<ISynset> getChildren() throws LinguisticOracleException {
+        List<ISynset> out = new ArrayList<ISynset>();
         try {
-            hypernyms = pu.getHyponymTree(tmp, depth);
+            PointerUtils pu = PointerUtils.getInstance();
+            PointerTargetTree hypernyms = pu.getHyponymTree(tmp, 1);
             for (Iterator itr = hypernyms.toList().iterator(); itr.hasNext();) {
-//                itr.next();
                 if (itr.hasNext()) {
-                    for (Iterator itr1 = ((PointerTargetNodeList) itr.next()).iterator(); itr1.hasNext();) {
-                        Synset t = ((PointerTargetNode) itr1.next()).getSynset();
+                    for (Object o : ((PointerTargetNodeList) itr.next())) {
+                        Synset t = ((PointerTargetNode) o).getSynset();
                         if (!isEqual(tmp, t)) {
-                            WordNetSynset wns = new WordNetSynset(t);
-                            ISynset is = (ISynset) wns;
-                            out.add(is);
+                            out.add(new WordNetSynset(t));
                         }
                     }
                 }
             }
         } catch (JWNLException e) {
-            e.printStackTrace();  //To change body of catch statement use Options | File Templates.
+            final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
+            log.error(errMessage, e);
+            throw new LinguisticOracleException(errMessage, e);
+        }
+        return out;
+    }
+
+    public List<ISynset> getChildren(int depth) throws LinguisticOracleException {
+        List<ISynset> out = new ArrayList<ISynset>();
+        try {
+            PointerUtils pu = PointerUtils.getInstance();
+            PointerTargetTree hypernyms = pu.getHyponymTree(tmp, depth);
+            for (Iterator itr = hypernyms.toList().iterator(); itr.hasNext();) {
+                if (itr.hasNext()) {
+                    for (Object o : ((PointerTargetNodeList) itr.next())) {
+                        Synset t = ((PointerTargetNode) o).getSynset();
+                        if (!isEqual(tmp, t)) {
+                            out.add(new WordNetSynset(t));
+                        }
+                    }
+                }
+            }
+        } catch (JWNLException e) {
+            final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
+            log.error(errMessage, e);
+            throw new LinguisticOracleException(errMessage, e);
         }
         return out;
     }
@@ -159,10 +150,6 @@ public class WordNetSynset implements ISynset {
         String sourcePOS = source.getPOS().toString();
         String targetPOS = target.getPOS().toString();
         return ((sourcePOS.equals(targetPOS)) && (so == to));
-    }
-
-    public boolean isNull() {
-        return (tmp == null);  //To change body of implemented methods use File | Settings | File Templates.
     }
 
     public boolean equals(Object o) {

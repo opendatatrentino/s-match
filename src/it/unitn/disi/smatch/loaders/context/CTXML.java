@@ -1,6 +1,5 @@
 package it.unitn.disi.smatch.loaders.context;
 
-import it.unitn.disi.smatch.SMatchException;
 import it.unitn.disi.smatch.data.*;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -43,7 +42,7 @@ public class CTXML extends DefaultHandler implements java.io.FileFilter {
     private String elementName = null;
     private INode node = null;
     private INode pofNode = null;
-    private Vector<INode> conceptsList = new Vector<INode>();
+    private List<INode> conceptsList = new ArrayList<INode>();
     private IAtomicConceptOfLabel sense = AtomicConceptOfLabel.getInstance();
 
     //replacements for valid xml
@@ -60,8 +59,8 @@ public class CTXML extends DefaultHandler implements java.io.FileFilter {
 
     private int elementsParsed = 0;
 
-    private Hashtable<INode, INode> parentNodes = new Hashtable<INode, INode>();
-    private Hashtable<INode, Vector<INode>> childNodes = new Hashtable<INode, Vector<INode>>();
+    private HashMap<INode, INode> parentNodes = new HashMap<INode, INode>();
+    private HashMap<INode, ArrayList<INode>> childNodes = new HashMap<INode, ArrayList<INode>>();
     int debug = 0;
 
     private final static HashSet<String> allowedElements = new HashSet<String>();
@@ -245,7 +244,7 @@ public class CTXML extends DefaultHandler implements java.io.FileFilter {
             if (elementName.equals("accessRights"))
                 ctx.getContextData().setSecurityAccessRights(content);
             if (elementName.equals("encription"))
-                ctx.getContextData().setSecurityEncription(content);
+                ctx.getContextData().setSecurityEncryption(content);
             if (elementName.equals("description")) {
                 content = xmlTagDecode(content);
                 ctx.getContextData().setDescription(content);
@@ -277,9 +276,9 @@ public class CTXML extends DefaultHandler implements java.io.FileFilter {
     }
 
     //Building senses set
-    private static Vector<String> extractSenseList(String list) {
+    private static List<String> extractSenseList(String list) {
         list = list.trim();
-        Vector<String> result = new Vector<String>();
+        List<String> result = new ArrayList<String>();
         StringTokenizer extractSenses = new StringTokenizer(list, " ");
         while (extractSenses.hasMoreTokens()) {
             String wSense = extractSenses.nextToken();
@@ -315,13 +314,11 @@ public class CTXML extends DefaultHandler implements java.io.FileFilter {
             }
         }
 
-        Enumeration keys = parentNodes.keys();
-        while (keys.hasMoreElements()) {
-            INode child = (INode) keys.nextElement();
+        for (INode child : parentNodes.keySet()) {
             INode parentNode = parentNodes.get(child);
-            Vector<INode> vec = childNodes.get(parentNode);
+            ArrayList<INode> vec = childNodes.get(parentNode);
             if (vec == null) {
-                vec = new Vector<INode>();
+                vec = new ArrayList<INode>();
                 vec.add(child);
                 childNodes.put(parentNode, vec);
             } else {
@@ -334,8 +331,8 @@ public class CTXML extends DefaultHandler implements java.io.FileFilter {
         buildHierarchyStructure(root);
         log.debug("Traversing hierarchy...");
         traverseHierarchy(root);
-        parentNodes = new Hashtable<INode, INode>();
-        childNodes = new Hashtable<INode, Vector<INode>>();
+        parentNodes = new HashMap<INode, INode>();
+        childNodes = new HashMap<INode, ArrayList<INode>>();
     }
 
     // End of reimplementation of method from org.xml.sax.helpers.DefaulHandler
@@ -349,7 +346,7 @@ public class CTXML extends DefaultHandler implements java.io.FileFilter {
         elementName = null;
         node = null;
         pofNode = null;
-        conceptsList = new Vector<INode>();
+        conceptsList = new ArrayList<INode>();
         sense = AtomicConceptOfLabel.getInstance();
         this.ctx = Context.getInstance();
     }
@@ -415,7 +412,7 @@ public class CTXML extends DefaultHandler implements java.io.FileFilter {
 
     //consolidating knowledge about concept
     private void traverseHierarchy(INode node) {
-        Vector<INode> children = node.getChildren();
+        List<INode> children = node.getChildren();
         if (null == children) {
             return;
         }
@@ -426,7 +423,7 @@ public class CTXML extends DefaultHandler implements java.io.FileFilter {
     }
 
     private void buildHierarchyStructure(INode node) {
-        Vector<INode> vec = childNodes.get(node);
+        List<INode> vec = childNodes.get(node);
         if (null != vec) {
             for (INode child : vec) {
                 node.addChild(child);

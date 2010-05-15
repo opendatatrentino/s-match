@@ -7,6 +7,7 @@ import it.unitn.disi.smatch.data.mappings.IMappingElement;
 import it.unitn.disi.smatch.oracles.ILinguisticOracle;
 import it.unitn.disi.smatch.oracles.ISenseMatcher;
 import it.unitn.disi.smatch.oracles.ISynset;
+import it.unitn.disi.smatch.oracles.LinguisticOracleException;
 import net.didion.jwnl.JWNL;
 import net.didion.jwnl.JWNLException;
 import net.didion.jwnl.data.*;
@@ -73,22 +74,15 @@ public class WordNet extends Configurable implements ILinguisticOracle, ISenseMa
         }
     }
 
-    public Vector<String> getSenses(String label) {
-        IndexWordSet lemmas = null;
+    public List<String> getSenses(String label) throws LinguisticOracleException {
+        List<String> result = new ArrayList<String>();
         //TODO remove when Thing is a top
         try {
-            lemmas = dic.lookupAllIndexWords(label);
-        } catch (JWNLException e) {
-            final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
-            log.error(errMessage, e);
-            //throw new SMatchException(errMessage, e);
-        }
-        if (null != lemmas && 0 < lemmas.size()) {
-            Vector<String> tmpSense = new Vector<String>();
-            IndexWord lemma;
-            Synset synset;
-            String synsetId;
-            try {
+            IndexWordSet lemmas = dic.lookupAllIndexWords(label);
+            if (null != lemmas && 0 < lemmas.size()) {
+                IndexWord lemma;
+                Synset synset;
+                String synsetId;
                 //Looping on all words in indexWordSet
                 for (int i = 0; i < lemmas.getIndexWordArray().length; i++) {
                     lemma = lemmas.getIndexWordArray()[i];
@@ -98,44 +92,47 @@ public class WordNet extends Configurable implements ILinguisticOracle, ISenseMa
                         //TODO: cut as experimental heuristic
                         //if ((synset.getPOS().getKey().equals("n"))||(synset.getPOS().getKey().equals("a"))){
                         synsetId = synset.getPOS().getKey() + "#" + synset.getOffset();
-                        tmpSense.add(synsetId);
+                        result.add(synsetId);
                         //}
                     }
                 }
-            } catch (Exception e) {
-                final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
-                log.error(errMessage, e);
-                //throw new SMatchException(errMessage, e);
             }
-            return tmpSense;
-        } else {
-            return null;
-        }
-    }
-
-    public String getBaseForm(String derivation) {
-        try {
-            IndexWordSet tmp = Dictionary.getInstance().lookupAllIndexWords(derivation);
-            IndexWord[] tmpar = tmp.getIndexWordArray();
-            for (IndexWord indexWord : tmpar) {
-                String word = indexWord.getLemma();
-                if (word != null)
-                    return word;
-            }
+            return result;
         } catch (JWNLException e) {
             final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
             log.error(errMessage, e);
-            //throw new SMatchException(errMessage, e);
+            throw new LinguisticOracleException(errMessage, e);
         }
-        return null;
     }
 
-    public boolean isEqual(String str1, String str2) {
+    public String getBaseForm(String derivation) throws LinguisticOracleException {
+        try {
+            String result = derivation;
+            IndexWordSet tmp = dic.lookupAllIndexWords(derivation);
+            if (null != tmp) {
+                for (IndexWord indexWord : tmp.getIndexWordArray()) {
+                    String word = indexWord.getLemma();
+                    if (null != word) {
+                        result = word;
+                        break;
+                    }
+                }
+            }
+            return result;
+        } catch (JWNLException e) {
+            final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
+            log.error(errMessage, e);
+            throw new LinguisticOracleException(errMessage, e);
+        }
+    }
+
+    public boolean isEqual(String str1, String str2) throws LinguisticOracleException {
         try {
             IndexWordSet lemmas1 = dic.lookupAllIndexWords(str1);
             IndexWordSet lemmas2 = dic.lookupAllIndexWords(str2);
-            if ((lemmas1 == null) || (lemmas2 == null) || (lemmas1.size() < 1) || (lemmas2.size() < 1))
+            if ((lemmas1 == null) || (lemmas2 == null) || (lemmas1.size() < 1) || (lemmas2.size() < 1)) {
                 return false;
+            }
             else {
                 IndexWord[] v1 = lemmas1.getIndexWordArray();
                 IndexWord[] v2 = lemmas2.getIndexWordArray();
@@ -146,17 +143,19 @@ public class WordNet extends Configurable implements ILinguisticOracle, ISenseMa
                     }
                 }
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (JWNLException e) {
+            final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
+            log.error(errMessage, e);
+            throw new LinguisticOracleException(errMessage, e);
         }
         return false;
     }
 
-    public ISynset getISynset(String source) {
+    public ISynset getISynset(String source) throws LinguisticOracleException {
         return new WordNetSynset(getSynset(source));
     }
 
-    public char getRelation(Vector<String> sourceSenses, Vector<String> targetSenses) {
+    public char getRelation(List<String> sourceSenses, List<String> targetSenses) {
         for (String sourceSense : sourceSenses) {
             for (String targetSense : targetSenses) {
                 if (getRelationFromOracle(sourceSense, targetSense, IMappingElement.EQUIVALENCE)) {
@@ -192,8 +191,8 @@ public class WordNet extends Configurable implements ILinguisticOracle, ISenseMa
     }
 
     public char getRelationACoL(IAtomicConceptOfLabel source, IAtomicConceptOfLabel target) {
-        Vector<String> sourceSenses = source.getSenses().getSenseList();
-        Vector<String> targetSenses = target.getSenses().getSenseList();
+        List<String> sourceSenses = source.getSenses().getSenseList();
+        List<String> targetSenses = target.getSenses().getSenseList();
         return getRelation(sourceSenses, targetSenses);
     }
 

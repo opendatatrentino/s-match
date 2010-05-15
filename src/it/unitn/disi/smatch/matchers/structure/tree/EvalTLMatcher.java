@@ -9,7 +9,7 @@ import it.unitn.disi.smatch.matchers.structure.node.NodeMatcherException;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
-import java.util.Vector;
+import java.util.List;
 
 /**
  * For formula evaluation.
@@ -22,8 +22,8 @@ public class EvalTLMatcher extends BaseTreeMatcher implements ITreeMatcher {
 
     public IMatchMatrix treeMatch(IContext sourceContext, IContext targetContext, IMatchMatrix ClabMatrix) throws NodeMatcherException {
         //get the nodes of the contexts, should be equal
-        Vector<INode> sourceNodes = sourceContext.getAllNodes();
-        Vector<INode> targetNodes = targetContext.getAllNodes();
+        List<INode> sourceNodes = sourceContext.getAllNodes();
+        List<INode> targetNodes = targetContext.getAllNodes();
 
         //initialize CnodMatrix to keep comparison results
         //should be filled with MatchManager.EQUIVALENCE (as a positive flag)

@@ -1,6 +1,6 @@
 package it.unitn.disi.smatch.data;
 
-import java.util.Vector;
+import java.util.List;
 
 /**
  * The interface to data structure of context.
@@ -10,7 +10,7 @@ import java.util.Vector;
  */
 public interface IContext {
 
-	/**
+    /**
      * Returns an interface to context of metadata.
      *
      * @return an interface to context of metadata
@@ -31,7 +31,7 @@ public interface IContext {
      *
      * @return all the nodes in the tree
      */
-    Vector<INode> getAllNodes();
+    List<INode> getAllNodes();
 
     /**
      * Sets a new root for the context.
@@ -59,7 +59,7 @@ public interface IContext {
     /**
      * changes the name of the node with given id.
      *
-     * @param NodeId the id of the node which needs to change
+     * @param NodeId   the id of the node which needs to change
      * @param newLabel the new name of the node
      * @return new name
      */
@@ -68,7 +68,7 @@ public interface IContext {
     /**
      * Moves node to the other place in the tree.
      *
-     * @param NodeId the id of the node which need to be moved
+     * @param NodeId          the id of the node which need to be moved
      * @param newFatherNodeId the father id of the node where it needs to be removed
      */
     void moveNode(String NodeId, String newFatherNodeId);
@@ -84,6 +84,8 @@ public interface IContext {
 
     /**
      * This method can be used to find a concept in the hierarchy using its Concept Id.
+     * @param conceptId concept id
+     * @return interface to a node
      */
     INode getNode(String conceptId);
 
@@ -97,5 +99,4 @@ public interface IContext {
      * @return string of the labels of all the nodes in the context
      */
     String getAllNodeNames(String separator);
-
 }

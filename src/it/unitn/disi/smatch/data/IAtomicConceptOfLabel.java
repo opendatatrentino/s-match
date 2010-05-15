@@ -1,6 +1,6 @@
 package it.unitn.disi.smatch.data;
 
-import java.util.Vector;
+import java.util.List;
 
 /**
  * An interface for implementation of atomic concept of label.
@@ -11,30 +11,39 @@ import java.util.Vector;
 public interface IAtomicConceptOfLabel {
 
     //Set id in node
+
     void setIdToken(int idToken);
 
     //Set logical id of token
+
     void setTokenUID(String tokenUID);
 
     //Set token
+
     void setToken(String token);
 
     //Set lemma
+
     void setLemma(String lemma);
 
     //Set part of speech
+
     void setPos(String pos);
 
     //Add senses set to the lemma
-    void addSenses(Vector<String> senseList);
+
+    void addSenses(List<String> senseList);
 
     //Get token
+
     String getToken();
 
     //Get position in the sentence
+
     int getIdToken();
 
     //Get logical representation
+
     String getTokenUID();
 
     String getLemma();
@@ -44,6 +53,7 @@ public interface IAtomicConceptOfLabel {
     ISensesSet getSenses();
 
     //index for cLabMatrix
+
     int getIndex();
 
     void setIndex(int index);

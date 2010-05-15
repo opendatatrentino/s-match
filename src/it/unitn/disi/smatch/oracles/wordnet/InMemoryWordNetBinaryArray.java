@@ -79,7 +79,7 @@ public class InMemoryWordNetBinaryArray extends Configurable implements ISenseMa
         }
     }
 
-    public char getRelation(Vector<String> sourceSenses, Vector<String> targetSenses) {
+    public char getRelation(List<String> sourceSenses, List<String> targetSenses) {
         // Check for synonymy
         for (String sourceSense : sourceSenses) {
             for (String targetSense : targetSenses) {

@@ -3,7 +3,7 @@ package it.unitn.disi.smatch.oracles;
 import it.unitn.disi.smatch.components.IConfigurable;
 import it.unitn.disi.smatch.data.IAtomicConceptOfLabel;
 
-import java.util.Vector;
+import java.util.List;
 
 /**
  * An interface to sense matchers.
@@ -20,7 +20,7 @@ public interface ISenseMatcher extends IConfigurable {
      * @param listSenseT target set of senses
      * @return a relation
      */
-    public char getRelation(Vector<String> listSenseS, Vector<String> listSenseT);
+    public char getRelation(List<String> listSenseS, List<String> listSenseT);
 
     /**
      * Returns semantic relations which holds between two ACoLs.

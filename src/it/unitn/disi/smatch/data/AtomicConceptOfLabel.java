@@ -1,6 +1,6 @@
 package it.unitn.disi.smatch.data;
 
-import java.util.Vector;
+import java.util.List;
 
 /**
  * This class represents atomic concept of label (ACoL) as a
@@ -10,6 +10,7 @@ import java.util.Vector;
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
 public class AtomicConceptOfLabel implements IAtomicConceptOfLabel {
+
     //position in concept
     private int idToken;
     //logical representation
@@ -22,7 +23,7 @@ public class AtomicConceptOfLabel implements IAtomicConceptOfLabel {
     //Part of speech
     private String pos = "";
 
-    ISensesSet wSenses = new SensesSet(new Vector<String>());
+    ISensesSet wSenses = new SensesSet();
 
     //index for cLabMatrix
     private int index;
@@ -42,9 +43,9 @@ public class AtomicConceptOfLabel implements IAtomicConceptOfLabel {
      * Constructor class which sets the id, position of token, name of token and lemma.
      *
      * @param idToken Id of token
-     * @param token token name
-     * @param lemma lemma name
-     * @param pos position of token
+     * @param token   token name
+     * @param lemma   lemma name
+     * @param pos     position of token
      */
     public AtomicConceptOfLabel(int idToken, String token, String lemma, String pos) {
         this.idToken = idToken;
@@ -62,51 +63,61 @@ public class AtomicConceptOfLabel implements IAtomicConceptOfLabel {
     }
 
     //Set id in node
+
     public void setIdToken(int idToken) {
         this.idToken = idToken;
     }
 
     //Set logical id
+
     public void setTokenUID(String tokenUID) {
         this.tokenUID = tokenUID;
     }
 
     //Set token
+
     public void setToken(String token) {
         this.token = token;
     }
 
     //Set lemma
+
     public void setLemma(String lemma) {
         this.lemma = lemma;
     }
 
     //Set part of speech
+
     public void setPos(String pos) {
         this.pos = pos;
     }
 
     //Add senses to the lemma
-    public void addSenses(Vector<String> senseList) {
+
+    public void addSenses(List<String> senseList) {
         wSenses.addNewSenses(senseList);
     }
 
     //Get token
+
     public String getToken() {
         return token;
     }
 
     //Get position in the sentence
+
     public int getIdToken() {
         return idToken;
     }
 
     //Get logical representation
+
     public String getTokenUID() {
         return tokenUID;
     }
 
     //Get lemma
+
     public String getLemma() {
         return lemma;
     }

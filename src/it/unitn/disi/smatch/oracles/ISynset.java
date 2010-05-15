@@ -1,6 +1,6 @@
 package it.unitn.disi.smatch.oracles;
 
-import java.util.Vector;
+import java.util.List;
 
 /**
  * Interface for synsets.
@@ -22,43 +22,39 @@ public interface ISynset {
      *
      * @return lemmas
      */
-    Vector<String> getLemmas();
+    List<String> getLemmas();
 
     /**
      * Returns "parents", that is hypernyms of the synset.
      *
      * @return hypernyms of the synset
+     * @throws LinguisticOracleException LinguisticOracleException
      */
-    Vector<ISynset> getParents();
+    List<ISynset> getParents() throws LinguisticOracleException;
 
     /**
      * Returns "parents", that is hypernyms of the synset, up to certain depth.
      *
      * @param depth a search depth
      * @return "parents"
+     * @throws LinguisticOracleException LinguisticOracleException
      */
-    Vector<ISynset> getParents(int depth);
+    List<ISynset> getParents(int depth) throws LinguisticOracleException;
 
     /**
      * Returns "children", that is hyponyms of the synset.
      *
      * @return "children"
+     * @throws LinguisticOracleException LinguisticOracleException
      */
-    Vector<ISynset> getChildren();
+    List<ISynset> getChildren() throws LinguisticOracleException;
 
     /**
      * Returns "children", that is hyponyms of the synset, down to certain depth.
      *
      * @param depth a search depth
      * @return "children"
+     * @throws LinguisticOracleException LinguisticOracleException
      */
-    Vector<ISynset> getChildren(int depth);
-
-    //TODO refactor\remove?
-    /**
-     * Checks whether the synset holds a synset inside.
-     *
-     * @return whether the synset holds a synset inside
-     */
-    boolean isNull();
+    List<ISynset> getChildren(int depth) throws LinguisticOracleException;
 }

@@ -11,6 +11,7 @@ import it.unitn.disi.smatch.data.matrices.MatrixFactory;
 import it.unitn.disi.smatch.oracles.ILinguisticOracle;
 import it.unitn.disi.smatch.oracles.ISenseMatcher;
 import it.unitn.disi.smatch.oracles.ISynset;
+import it.unitn.disi.smatch.oracles.LinguisticOracleException;
 import it.unitn.disi.smatch.utils.ClassFactory;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -18,7 +19,6 @@ import org.apache.log4j.Logger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.Vector;
 
 /**
  * This class performs all element level matching routines
@@ -71,7 +71,7 @@ public class MatcherLibrary extends Configurable implements IMatcherLibrary {
             }
 
             if (newProperties.containsKey(USE_WEAK_SEMANTICS_MATCHERS_KEY)) {
-                useWeakSemanticsElementLevelMatchersLibrary =  Boolean.parseBoolean(newProperties.getProperty(USE_WEAK_SEMANTICS_MATCHERS_KEY));
+                useWeakSemanticsElementLevelMatchersLibrary = Boolean.parseBoolean(newProperties.getProperty(USE_WEAK_SEMANTICS_MATCHERS_KEY));
             }
 
             if (newProperties.containsKey(USE_WEAK_SEMANTICS_MATCHERS_KEY)) {
@@ -81,7 +81,7 @@ public class MatcherLibrary extends Configurable implements IMatcherLibrary {
             if (newProperties.containsKey(STRING_MATCHERS_KEY)) {
                 stringMatchers.clear();
                 for (Object o : ClassFactory.stringToClasses(newProperties.getProperty(STRING_MATCHERS_KEY), ";")) {
-                    stringMatchers.add((IStringBasedElementLevelSemanticMatcher) o);    
+                    stringMatchers.add((IStringBasedElementLevelSemanticMatcher) o);
                 }
                 // common properties for all of them
                 Properties p = getComponentProperties(STRING_MATCHERS_KEY + ".*.", newProperties);
@@ -118,13 +118,14 @@ public class MatcherLibrary extends Configurable implements IMatcherLibrary {
      * @param sourceACoL interface of source label concept
      * @param targetACoL interface of target label concept
      * @return relation between concept of labels
+     * @throws MatcherLibraryException MatcherLibraryException
      */
-    public char getRelation(IAtomicConceptOfLabel sourceACoL, IAtomicConceptOfLabel targetACoL) {
+    public char getRelation(IAtomicConceptOfLabel sourceACoL, IAtomicConceptOfLabel targetACoL) throws MatcherLibraryException {
         sourceACoL.getSenses().convertSenses();
         targetACoL.getSenses().convertSenses();
 
-        Vector<String> sourceSenses = sourceACoL.getSenses().getSenseList();
-        Vector<String> targetSenses = targetACoL.getSenses().getSenseList();
+        List<String> sourceSenses = sourceACoL.getSenses().getSenseList();
+        List<String> targetSenses = targetACoL.getSenses().getSenseList();
         char relation = senseMatcher.getRelationACoL(sourceACoL, targetACoL);
 
         //if WN matcher did not find relation
@@ -164,37 +165,34 @@ public class MatcherLibrary extends Configurable implements IMatcherLibrary {
     }
 
     /**
-     * Returns semantic relation between two ACoLs (represented by Vectors of WN senses) by WN sense based matchers.
+     * Returns semantic relation between two ACoLs (represented by lists of WN senses) by WN sense based matchers.
      *
      * @param sourceSenses the string of sense of source label
      * @param targetSenses the string of sense of target label
      * @return semantic relation between two ACoLs of labels computed by WN sense based matchers
+     * @throws MatcherLibraryException MatcherLibraryException
      */
-    private char getRelationFromSenseGlossMatchers(Vector<String> sourceSenses, Vector<String> targetSenses) {
-        String synSource;
-        String synTarget;
-        ISynset sourceSynset;
-        ISynset targetSynset;
-        char relation = IMappingElement.IDK;
-        for (String sourceSense : sourceSenses) {
-            synSource = sourceSense;
-            sourceSynset = linguisticOracle.getISynset(synSource);
-            if (!sourceSynset.isNull()) {
+    private char getRelationFromSenseGlossMatchers(List<String> sourceSenses, List<String> targetSenses) throws MatcherLibraryException {
+        try {
+            char relation = IMappingElement.IDK;
+            for (String sourceSense : sourceSenses) {
+                ISynset sourceSynset = linguisticOracle.getISynset(sourceSense);
                 for (String targetSense : targetSenses) {
-                    synTarget = targetSense;
-                    targetSynset = linguisticOracle.getISynset(synTarget);
-                    if (!targetSynset.isNull()) {
-                        int k = 0;
-                        while ((relation == IMappingElement.IDK) && (k < senseGlossMatchers.size())) {
-                            relation = senseGlossMatchers.get(k).match(sourceSynset, targetSynset);
-                            k++;
-                        }
-                        return relation;
+                    ISynset targetSynset = linguisticOracle.getISynset(targetSense);
+                    int k = 0;
+                    while ((relation == IMappingElement.IDK) && (k < senseGlossMatchers.size())) {
+                        relation = senseGlossMatchers.get(k).match(sourceSynset, targetSynset);
+                        k++;
                     }
+                    return relation;
                 }
             }
+            return relation;
+        } catch (LinguisticOracleException e) {
+            final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
+            log.error(errMessage, e);
+            throw new MatcherLibraryException(errMessage, e);
         }
-        return relation;
     }
 
     /**
@@ -209,8 +207,8 @@ public class MatcherLibrary extends Configurable implements IMatcherLibrary {
         IMatchMatrix ClabMatrix = null;
         try {
             //get all ACoLs in contexts
-            Vector<IAtomicConceptOfLabel> sourceACoLs = sourceContext.getMatchingContext().getAllContextACoLs();
-            Vector<IAtomicConceptOfLabel> targetACoLs = targetContext.getMatchingContext().getAllContextACoLs();
+            List<IAtomicConceptOfLabel> sourceACoLs = sourceContext.getMatchingContext().getAllContextACoLs();
+            List<IAtomicConceptOfLabel> targetACoLs = targetContext.getMatchingContext().getAllContextACoLs();
 
             //  Calculate relations between all ACoLs in both contexts and produce the matrix of
             //  semantic relations between them.
@@ -229,7 +227,7 @@ public class MatcherLibrary extends Configurable implements IMatcherLibrary {
                     IAtomicConceptOfLabel targetACoL = targetACoLs.get(col);
                     //Use Element level semantic matchers library
                     //in order to check the relation holding between two ACoLs represented
-                    //by Vectors of WN senses and tokens
+                    //by lists of WN senses and tokens
                     ClabMatrix.setElement(row, col, getRelation(sourceACoL, targetACoL));
 
                     counter++;

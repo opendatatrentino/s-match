@@ -13,7 +13,7 @@ import it.unitn.disi.smatch.data.matrices.MatrixFactory;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
-import java.util.Vector;
+import java.util.List;
 
 /**
  * Filters mapping according to minimal links paper.
@@ -36,8 +36,8 @@ public class RedundantMappingFilter extends Configurable implements IMappingFilt
         IContext targetContext = mapping.getTargetContext();
 
         // get the nodes of the contexts
-        Vector<INode> sourceNodes = sourceContext.getAllNodes();
-        Vector<INode> targetNodes = targetContext.getAllNodes();
+        List<INode> sourceNodes = sourceContext.getAllNodes();
+        List<INode> targetNodes = targetContext.getAllNodes();
 
         for (int i = 0; i < sourceNodes.size(); i++) {
             sourceNodes.get(i).getNodeData().setIndex(i);
@@ -182,7 +182,7 @@ public class RedundantMappingFilter extends Configurable implements IMappingFilt
         return (null != sourceNode) && (null != targetNode) && (getRelation(sourceNode, targetNode) == relation);
     }
 
-    public boolean findRelation(char relation, Vector<INode> sourceNodes, INode targetNode) {
+    public boolean findRelation(char relation, List<INode> sourceNodes, INode targetNode) {
         for (INode sourceNode : sourceNodes) {
             if (relation == getRelation(sourceNode, targetNode)) {
                 return true;
@@ -191,7 +191,7 @@ public class RedundantMappingFilter extends Configurable implements IMappingFilt
         return false;
     }
 
-    public boolean findRelation(char relation, INode sourceNode, Vector<INode> targetNodes) {
+    public boolean findRelation(char relation, INode sourceNode, List<INode> targetNodes) {
         for (INode targetNode : targetNodes) {
             if (relation == getRelation(sourceNode, targetNode)) {
                 return true;
@@ -200,7 +200,7 @@ public class RedundantMappingFilter extends Configurable implements IMappingFilt
         return false;
     }
 
-    public boolean findRelation(char relation, Vector<INode> sourceNodes, Vector<INode> targetNodes) {
+    public boolean findRelation(char relation, List<INode> sourceNodes, List<INode> targetNodes) {
         for (INode sourceNode : sourceNodes) {
             for (INode targetNode : targetNodes) {
                 if (relation == getRelation(sourceNode, targetNode)) {

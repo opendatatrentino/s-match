@@ -1,6 +1,6 @@
 package it.unitn.disi.smatch.data;
 
-import java.util.Vector;
+import java.util.List;
 
 /**
  * An interface to a set of senses.
@@ -9,6 +9,7 @@ import java.util.Vector;
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
 public interface ISensesSet {
+
     long[] getIntSenses();
 
     void setIntSenses(long[] intSenses);
@@ -20,22 +21,28 @@ public interface ISensesSet {
     void convertSenses();
 
     //Set up lemmas after sense filtering
+
     void updateSenseList();
 
     //Set lemmas for sense filtering
+
     void addToRefinedSenses(String toAdd);
 
     //Check whether any lemmas refined
+
     boolean isRefinedSensesEmpty();
 
     //Get senses
-    Vector<String> getSenseList();
 
-    void setSenseList(Vector<String> senseList);
+    List<String> getSenseList();
+
+    void setSenseList(List<String> senseList);
 
     //Add new senses except repeated ones
-    void addNewSenses(Vector<String> newSenses);
+
+    void addNewSenses(List<String> newSenses);
 
     //Is empty?
+
     boolean hasSomeSenses();
 }

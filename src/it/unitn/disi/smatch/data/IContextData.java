@@ -31,7 +31,7 @@ public interface IContextData {
 
     void setSecurityAccessRights(String securityAccessRights);
 
-    void setSecurityEncription(String securityEncription);
+    void setSecurityEncryption(String securityEncription);
 
     String getLanguage();
 
@@ -51,7 +51,7 @@ public interface IContextData {
 
     String getSecurityAccessRights();
 
-    String getSecurityEncription();
+    String getSecurityEncryption();
 
     HashSet<String> getMg();
 

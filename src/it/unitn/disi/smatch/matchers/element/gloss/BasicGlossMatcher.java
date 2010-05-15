@@ -3,13 +3,16 @@ package it.unitn.disi.smatch.matchers.element.gloss;
 import it.unitn.disi.smatch.components.Configurable;
 import it.unitn.disi.smatch.components.ConfigurableException;
 import it.unitn.disi.smatch.data.mappings.IMappingElement;
+import it.unitn.disi.smatch.matchers.element.MatcherLibraryException;
 import it.unitn.disi.smatch.oracles.ILinguisticOracle;
 import it.unitn.disi.smatch.oracles.ISenseMatcher;
 import it.unitn.disi.smatch.oracles.ISynset;
+import it.unitn.disi.smatch.oracles.LinguisticOracleException;
 import org.apache.log4j.Logger;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
-import java.util.Vector;
 
 /**
  * Matches glosses of word senses.
@@ -60,22 +63,29 @@ public class BasicGlossMatcher extends Configurable {
      * @param source sense of source
      * @param target sense of target
      * @return true if the source is more general than target
+     * @throws MatcherLibraryException MatcherLibraryException
      */
-    public boolean isWordMoreGeneral(String source, String target) {
-        Vector<String> sSenses;
-        Vector<String> tSenses;
-        sSenses = linguisticOracle.getSenses(source);
-        tSenses = linguisticOracle.getSenses(target);
-        if ((sSenses != null) && (tSenses != null))
-            if ((sSenses.size() > 0) && (tSenses.size() > 0)) {
-                for (String sSense : sSenses) {
-                    for (String tSense : tSenses) {
-                        if (senseMatcher.isSourceMoreGeneralThanTarget(sSense, tSense))
-                            return true;
+    public boolean isWordMoreGeneral(String source, String target) throws MatcherLibraryException {
+        try {
+            List<String> sSenses;
+            List<String> tSenses;
+            sSenses = linguisticOracle.getSenses(source);
+            tSenses = linguisticOracle.getSenses(target);
+            if ((sSenses != null) && (tSenses != null))
+                if ((sSenses.size() > 0) && (tSenses.size() > 0)) {
+                    for (String sSense : sSenses) {
+                        for (String tSense : tSenses) {
+                            if (senseMatcher.isSourceMoreGeneralThanTarget(sSense, tSense))
+                                return true;
+                        }
                     }
                 }
-            }
-        return false;
+            return false;
+        } catch (LinguisticOracleException e) {
+            final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
+            log.error(errMessage, e);
+            throw new MatcherLibraryException(errMessage, e);
+        }
     }
 
     /**
@@ -84,22 +94,29 @@ public class BasicGlossMatcher extends Configurable {
      * @param source sense of source
      * @param target sense of target
      * @return true if the source is less general than target
+     * @throws MatcherLibraryException MatcherLibraryException
      */
-    public boolean isWordLessGeneral(String source, String target) {
-        Vector<String> sSenses;
-        Vector<String> tSenses;
-        sSenses = linguisticOracle.getSenses(source);
-        tSenses = linguisticOracle.getSenses(target);
-        if ((sSenses != null) && (tSenses != null))
-            if ((sSenses.size() > 0) && (tSenses.size() > 0)) {
-                for (String sSense : sSenses) {
-                    for (String tSense : tSenses) {
-                        if (senseMatcher.isSourceLessGeneralThanTarget(sSense, tSense))
-                            return true;
+    public boolean isWordLessGeneral(String source, String target) throws MatcherLibraryException {
+        try {
+            List<String> sSenses;
+            List<String> tSenses;
+            sSenses = linguisticOracle.getSenses(source);
+            tSenses = linguisticOracle.getSenses(target);
+            if ((sSenses != null) && (tSenses != null))
+                if ((sSenses.size() > 0) && (tSenses.size() > 0)) {
+                    for (String sSense : sSenses) {
+                        for (String tSense : tSenses) {
+                            if (senseMatcher.isSourceLessGeneralThanTarget(sSense, tSense))
+                                return true;
+                        }
                     }
                 }
-            }
-        return false;
+            return false;
+        } catch (LinguisticOracleException e) {
+            final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
+            log.error(errMessage, e);
+            throw new MatcherLibraryException(errMessage, e);
+        }
     }
 
     /**
@@ -108,23 +125,30 @@ public class BasicGlossMatcher extends Configurable {
      * @param source sense of source
      * @param target sense of target
      * @return true if they are synonym
+     * @throws MatcherLibraryException MatcherLibraryException
      */
-    public boolean isWordSynonym(String source, String target) {
-        Vector<String> sSenses;
-        Vector<String> tSenses;
-        sSenses = linguisticOracle.getSenses(source);
-        tSenses = linguisticOracle.getSenses(target);
+    public boolean isWordSynonym(String source, String target) throws MatcherLibraryException {
+        try {
+            List<String> sSenses;
+            List<String> tSenses;
+            sSenses = linguisticOracle.getSenses(source);
+            tSenses = linguisticOracle.getSenses(target);
 
-        if ((sSenses != null) && (tSenses != null))
-            if ((sSenses.size() > 0) && (tSenses.size() > 0)) {
-                for (String sSense : sSenses) {
-                    for (String tSense : tSenses) {
-                        if (senseMatcher.isSourceSynonymTarget(sSense, tSense))
-                            return true;
+            if ((sSenses != null) && (tSenses != null))
+                if ((sSenses.size() > 0) && (tSenses.size() > 0)) {
+                    for (String sSense : sSenses) {
+                        for (String tSense : tSenses) {
+                            if (senseMatcher.isSourceSynonymTarget(sSense, tSense))
+                                return true;
+                        }
                     }
                 }
-            }
-        return false;
+            return false;
+        } catch (LinguisticOracleException e) {
+            final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
+            log.error(errMessage, e);
+            throw new MatcherLibraryException(errMessage, e);
+        }
     }
 
     /**
@@ -133,22 +157,29 @@ public class BasicGlossMatcher extends Configurable {
      * @param source sense of source
      * @param target sense of target
      * @return true if they are in opposite relation
+     * @throws MatcherLibraryException MatcherLibraryException
      */
-    public boolean isWordOpposite(String source, String target) {
-        Vector<String> sSenses;
-        Vector<String> tSenses;
-        sSenses = linguisticOracle.getSenses(source);
-        tSenses = linguisticOracle.getSenses(target);
-        if ((sSenses != null) && (tSenses != null))
-            if ((sSenses.size() > 0) && (tSenses.size() > 0)) {
-                for (String sSense : sSenses) {
-                    for (String tSense : tSenses) {
-                        if (senseMatcher.isSourceOppositeToTarget(sSense, tSense))
-                            return true;
+    public boolean isWordOpposite(String source, String target) throws MatcherLibraryException {
+        try {
+            List<String> sSenses;
+            List<String> tSenses;
+            sSenses = linguisticOracle.getSenses(source);
+            tSenses = linguisticOracle.getSenses(target);
+            if ((sSenses != null) && (tSenses != null))
+                if ((sSenses.size() > 0) && (tSenses.size() > 0)) {
+                    for (String sSense : sSenses) {
+                        for (String tSense : tSenses) {
+                            if (senseMatcher.isSourceOppositeToTarget(sSense, tSense))
+                                return true;
+                        }
                     }
                 }
-            }
-        return false;
+            return false;
+        } catch (LinguisticOracleException e) {
+            final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
+            log.error(errMessage, e);
+            throw new MatcherLibraryException(errMessage, e);
+        }
     }
 
     /**
@@ -159,9 +190,10 @@ public class BasicGlossMatcher extends Configurable {
      * @param intSource how much depth the gloss should be taken
      * @param Rel       for less than relation get child gloss and vice versa
      * @return the extended gloss
+     * @throws LinguisticOracleException LinguisticOracleException
      */
-    public String getExtendedGloss(ISynset original, int intSource, char Rel) {
-        Vector<ISynset> children = new Vector<ISynset>();
+    public String getExtendedGloss(ISynset original, int intSource, char Rel) throws LinguisticOracleException {
+        List<ISynset> children = new ArrayList<ISynset>();
         String result = "";
         if (Rel == IMappingElement.LESS_GENERAL) {
             children = original.getChildren(intSource);

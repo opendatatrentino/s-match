@@ -10,7 +10,7 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
-import java.util.Vector;
+import java.util.List;
 
 /**
  * Converts cLabFormula into CNF before use.
@@ -27,19 +27,12 @@ public class CNFContextClassifier extends Configurable implements IContextClassi
 
         while (!queue.isEmpty()) {
             INode currentNode = queue.remove(0);
-            if (null == currentNode) {
-//                pathToRoot.remove(pathToRoot.size() - 1);
-//                pathToRootPhrases.remove(pathToRootPhrases.size() - 1);
-            } else {
-//                INLPhrase currentPhrase = processNode(currentNode, pathToRoot, pathToRootPhrases);
-//                processedCount++;
+            if (null != currentNode) {
                 buildCNode(currentNode);
 
-                Vector<INode> children = currentNode.getChildren();
+                List<INode> children = currentNode.getChildren();
                 if (0 < children.size()) {
                     queue.add(0, null);
-//                    pathToRoot.add(currentNode);
-//                    pathToRootPhrases.add(currentPhrase);
                 }
                 for (int i = children.size() - 1; i >= 0; i--) {
                     // go DFS = depth-first search
@@ -53,11 +46,11 @@ public class CNFContextClassifier extends Configurable implements IContextClassi
      * Constructs cNode for the concept.
      *
      * @param in node to process
+     * @throws ContextClassifierException ContextClassifierException
      */
-    public void buildCNode(INode in) {
+    public void buildCNode(INode in) throws ContextClassifierException {
         StringBuffer path = new StringBuffer();
-        INode cpt = in;
-        INodeData nd = cpt.getNodeData();
+        INodeData nd = in.getNodeData();
         String formula = toCNF(in, nd.getcLabFormula());
         formula = formula.trim();
         if (formula != null && !formula.equals("") && !formula.equals(" ")) {
@@ -66,8 +59,8 @@ public class CNFContextClassifier extends Configurable implements IContextClassi
             }
             path.append(formula);
         }
-        if (!cpt.isRoot()) {
-            formula = cpt.getParent().getNodeData().getCNodeFormula();
+        if (!in.isRoot()) {
+            formula = in.getParent().getNodeData().getCNodeFormula();
             formula = formula.trim();
             if (formula != null && !formula.equals("") && !formula.equals(" ")) {
                 //formula = "(" + formula + ")";
@@ -84,11 +77,12 @@ public class CNFContextClassifier extends Configurable implements IContextClassi
     /**
      * Converts the formula into CNF.
      *
-     * @param in the owner of the formula
+     * @param in      the owner of the formula
      * @param formula the formula to convert
      * @return formula in CNF form
+     * @throws ContextClassifierException ContextClassifierException
      */
-    public String toCNF(INode in, String formula) {
+    public static String toCNF(INode in, String formula) throws ContextClassifierException {
         String result = formula;
         if ((formula.contains("&") && formula.contains("|")) || formula.contains("~")) {
             String tmpFormula = formula;
@@ -105,14 +99,13 @@ public class CNFContextClassifier extends Configurable implements IContextClassi
                     result = tmpFormula;
                 }
             } catch (Exception e) {
+                final String errMessage = "Logic parse exception: " + e.getClass().getSimpleName() + ": " + e.getMessage();
                 if (log.isEnabledFor(Level.ERROR)) {
                     log.error("Logic parse exception for: " + formula + " at node: " + in.getNodeName());
-                    log.error("Logic parse exception: " + e.getMessage(), e);
+                    log.error(errMessage, e);
                 }
-                //pe.printStackTrace();
+                throw new ContextClassifierException(errMessage, e);
             }
-        } else {
-            result = formula;
         }
 
         return result;

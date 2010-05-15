@@ -1,20 +1,14 @@
 package it.unitn.disi.smatch.matchers.structure.tree;
 
-import it.unitn.disi.smatch.components.Configurable;
-import it.unitn.disi.smatch.data.IContext;
-import it.unitn.disi.smatch.data.matrices.IMatchMatrix;
-import it.unitn.disi.smatch.data.INode;
-import it.unitn.disi.smatch.data.matrices.MatrixFactory;
-import it.unitn.disi.smatch.matchers.structure.node.DefaultNodeMatcher;
-import it.unitn.disi.smatch.matchers.structure.node.INodeMatcher;
-import it.unitn.disi.smatch.SMatchException;
 import it.unitn.disi.smatch.SMatchConstants;
-
-import java.util.Properties;
-import java.util.Vector;
-
-import org.apache.log4j.Logger;
+import it.unitn.disi.smatch.data.IContext;
+import it.unitn.disi.smatch.data.INode;
+import it.unitn.disi.smatch.data.matrices.IMatchMatrix;
+import it.unitn.disi.smatch.data.matrices.MatrixFactory;
 import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+
+import java.util.List;
 
 public class DefaultTreeMatcher extends BaseTreeMatcher implements ITreeMatcher {
 
@@ -22,8 +16,8 @@ public class DefaultTreeMatcher extends BaseTreeMatcher implements ITreeMatcher 
 
     public IMatchMatrix treeMatch(IContext sourceContext, IContext targetContext, IMatchMatrix ClabMatrix) throws TreeMatcherException {
         // get the nodes of the contexts
-        Vector<INode> sourceNodes = sourceContext.getAllNodes();
-        Vector<INode> targetNodes = targetContext.getAllNodes();
+        List<INode> sourceNodes = sourceContext.getAllNodes();
+        List<INode> targetNodes = targetContext.getAllNodes();
 
         //initialize CnodMatrix
         IMatchMatrix CnodMatrix = MatrixFactory.getInstance(sourceNodes.size(), targetNodes.size());
