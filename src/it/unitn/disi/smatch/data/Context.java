@@ -320,10 +320,9 @@ public class Context implements IMatchingContext, IContextData, IContext {
     private int countNode = 1;
 
     private String getNewNodeId() {
-        //Get the time at which the object has been created, expressed
-        //in milliseconds
-        long now = (new java.util.Date()).getTime();
-        String id = "c" + countNode + "_" + ((now / 1000) % (365 * 24 * 3600));
+        //Get the time at which the object has been created, expressed in milliseconds
+        long now = System.currentTimeMillis();
+        String id = "c" + countNode + "_" + (now % (365 * 24 * 3600));
         countNode++;
         return id;
     }
