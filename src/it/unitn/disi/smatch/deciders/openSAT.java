@@ -2,13 +2,13 @@ package it.unitn.disi.smatch.deciders;
 
 import it.unitn.disi.smatch.components.Configurable;
 import org.apache.log4j.Logger;
-import org.opensat.ContradictionException;
-import org.opensat.Dimacs;
+import org.opensat.Default;
 import org.opensat.ISolver;
 import org.opensat.ParseFormatException;
-import org.opensat.minisat.SolverFactory;
+import org.opensat.TimeoutException;
+import org.opensat.data.ICNF;
+import org.opensat.parsers.Dimacs;
 
-import java.io.BufferedReader;
 import java.io.LineNumberReader;
 import java.io.StringReader;
 
@@ -22,22 +22,20 @@ public class openSAT extends Configurable implements ISATSolver {
 
     private static final Logger log = Logger.getLogger(openSAT.class);
 
-    private static final Dimacs parser = new Dimacs();
+    private final Dimacs parser = new Dimacs();
+    private final ICNF formula = Default.cnf();
+    private final ISolver solver = Default.solver();
 
     public boolean isSatisfiable(String input) throws SATSolverException {
-        ISolver solver = SolverFactory.newMiniLearning();
         try {
-            LineNumberReader lnrCNF = new LineNumberReader(new BufferedReader(new StringReader(input)));
-            parser.parseInstance(lnrCNF, solver);
-            return solver.solve();
-        } catch (ParseFormatException e) {
+            parser.parseInstance(new LineNumberReader(new StringReader(input)), formula);
+            return solver.solve(formula);
+        } catch (TimeoutException e) {
             final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
             log.error(errMessage, e);
             log.error(input);
             throw new SATSolverException(errMessage, e);
-        } catch (ContradictionException e) {
-            return false;
-        } catch (Exception e) {
+        } catch (ParseFormatException e) {
             final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
             log.error(errMessage, e);
             log.error(input);

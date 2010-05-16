@@ -5,31 +5,32 @@ import org.apache.log4j.Logger;
 import org.sat4j.minisat.SolverFactory;
 import org.sat4j.reader.DimacsReader;
 import org.sat4j.reader.ParseFormatException;
+import org.sat4j.reader.Reader;
 import org.sat4j.specs.ContradictionException;
+import org.sat4j.specs.IProblem;
 import org.sat4j.specs.ISolver;
 import org.sat4j.specs.TimeoutException;
-import org.sat4j.tools.ModelIterator;
-//import org.sat4j.tools.RemiUtils;
 
-import java.io.BufferedReader;
-import java.io.LineNumberReader;
-import java.io.StringReader;
-/**
- * // TODO Need comments.
- */
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 
 public class SAT4J extends Configurable implements ISATSolver {
 
     private static final Logger log = Logger.getLogger(SAT4J.class);
 
+    private Reader reader;
+
+    public SAT4J() {
+        ISolver solver = SolverFactory.newLight();
+        solver.setTimeout(3600); // 1 hour timeout
+        reader = new DimacsReader(solver);
+    }
+
     public boolean isSatisfiable(String input) throws SATSolverException {
-        ISolver solver = new ModelIterator(SolverFactory.newMiniLearning());
-        DimacsReader reader = new DimacsReader(solver);
         boolean result;
         try {
-            LineNumberReader lnr = new LineNumberReader(new BufferedReader(new StringReader(input)));
-            reader.parseInstance(lnr);
-            result = solver.isSatisfiable();
+            IProblem problem = reader.parseInstance(new ByteArrayInputStream(input.getBytes()));
+            result = problem.isSatisfiable();
         } catch (ParseFormatException e) {
             final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
             log.error(errMessage, e);
@@ -38,6 +39,11 @@ public class SAT4J extends Configurable implements ISATSolver {
         } catch (ContradictionException e) {
             result = false;
         } catch (TimeoutException e) {
+            final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
+            log.error(errMessage, e);
+            log.error(input);
+            throw new SATSolverException(errMessage, e);
+        } catch (IOException e) {
             final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
             log.error(errMessage, e);
             log.error(input);
