@@ -57,23 +57,23 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
     private boolean debugLabels = false;
 
     // the words which are cut off from the area of discourse
-    public static String MEANINGLESS_WORDS_KEY = "meaninglessWords";
+    public static final String MEANINGLESS_WORDS_KEY = "meaninglessWords";
     private String meaninglessWords = "of on to their than from for by in at is are have has the a as with your etc our into its his her which him among those against ";
 
     // the words which are treated as logical and (&)
-    public static String AND_WORDS_KEY = "andWords";
+    public static final String AND_WORDS_KEY = "andWords";
     private String andWords = " + & ^ ";
 
     // the words which are treated as logical or (|)
-    public static String OR_WORDS_KEY = "orWords";
+    public static final String OR_WORDS_KEY = "orWords";
     private String orWords = " and or | , ";
 
     // the words which are treated as logical not (~)
-    public static String NOT_WORDS_KEY = "notWords";
+    public static final String NOT_WORDS_KEY = "notWords";
     private String notWords = " except non without ";
 
     // Number characters for linguistic preprocessing.
-    public static String NUMBER_CHARACTERS_KEY = "numberCharacters";
+    public static final String NUMBER_CHARACTERS_KEY = "numberCharacters";
     private String numberCharacters = "1234567890";
 
 

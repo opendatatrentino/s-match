@@ -12,8 +12,8 @@ public class MatrixFactory {
 
     private static final Logger log = Logger.getLogger(MatrixFactory.class);
 
-    public static String MATRIX_CLASS_NAME = "it.unitn.disi.smatch.data.matrices.MatchMatrix";
-//    public static String MATRIX_CLASS_NAME = "it.unitn.disi.smatch.data.matrices.JavaSparseArray";
+    public static final String MATRIX_CLASS_NAME = "it.unitn.disi.smatch.data.matrices.MatchMatrix";
+//    public static final String MATRIX_CLASS_NAME = "it.unitn.disi.smatch.data.matrices.JavaSparseArray";
 
     public static IMatchMatrix getInstance(int x, int y) {
         IMatchMatrix result = (IMatchMatrix) ClassFactory.getClassForName(MATRIX_CLASS_NAME);
