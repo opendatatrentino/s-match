@@ -10,7 +10,6 @@ import java.util.*;
  */
 public class SensesSet implements ISensesSet {
 
-    //senses
     private List<String> senseList = new ArrayList<String>();
     //senses obtained after sense refining
     private List<String> refinedSenses = new ArrayList<String>();
@@ -78,8 +77,6 @@ public class SensesSet implements ISensesSet {
         return refinedSenses.isEmpty();
     }
 
-    //Get senses
-
     public List<String> getSenseList() {
         return senseList;
     }
@@ -105,23 +102,10 @@ public class SensesSet implements ISensesSet {
     }
 
     public String toString() {
-        StringBuffer stringSensesSet = new StringBuffer();
+        StringBuilder stringSensesSet = new StringBuilder();
         for (String senseId : senseList) {
             stringSensesSet.append(senseId).append(" ");
         }
-        return stringSensesSet.toString();
-    }
-
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof SensesSet)) return false;
-
-        final SensesSet sensesSet = (SensesSet) o;
-
-        if (!Arrays.equals(POSSenses, sensesSet.POSSenses)) return false;
-        if (!Arrays.equals(intSenses, sensesSet.intSenses)) return false;
-        if (senseList != null ? !senseList.equals(sensesSet.senseList) : sensesSet.senseList != null) return false;
-
-        return true;
+        return stringSensesSet.toString().trim();
     }
 }
