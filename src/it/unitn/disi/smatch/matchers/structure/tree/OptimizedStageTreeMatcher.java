@@ -76,8 +76,6 @@ public class OptimizedStageTreeMatcher extends BaseTreeMatcher implements ITreeM
         treeDisjoint(sourceContext.getRoot(), targetContext.getRoot());
         int dj = mapping.size();
         log.info("Links found DJ: " + dj);
-        int djHits = openSAT.hits;
-        log.debug("DJ SAT hits: " + djHits);
         counter = 0;
 
         log.info("LG...");
@@ -85,8 +83,6 @@ public class OptimizedStageTreeMatcher extends BaseTreeMatcher implements ITreeM
         treeSubsumedBy(sourceContext.getRoot(), targetContext.getRoot());
         int lg = mapping.size() - dj;
         log.info("Links found LG: " + lg);
-        int lgHits = openSAT.hits - djHits;
-        log.debug("LG SAT hits: " + lgHits);
         counter = 0;
 
         log.info("MG...");
@@ -94,8 +90,6 @@ public class OptimizedStageTreeMatcher extends BaseTreeMatcher implements ITreeM
         treeSubsumedBy(targetContext.getRoot(), sourceContext.getRoot());
         int mg = mapping.size() - dj - lg;
         log.info("Links found MG: " + mg);
-        int mgHits = openSAT.hits - djHits - lgHits;
-        log.debug("MG SAT hits: " + mgHits);
         counter = 0;
 
         log.info("TreeEquiv...");
