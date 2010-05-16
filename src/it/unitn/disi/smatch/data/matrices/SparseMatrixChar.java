@@ -153,7 +153,7 @@ public class SparseMatrixChar implements IMatchMatrix {
         end--;
 
         while (begin <= end) {
-            int mid = (end + begin) >> 1;
+            int mid = (end + begin) >>> 1;
 
             if (index[mid] < key)
                 begin = mid + 1;
