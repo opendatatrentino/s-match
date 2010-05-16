@@ -26,10 +26,6 @@ public interface IAtomicConceptOfLabel {
 
     void setLemma(String lemma);
 
-    //Set part of speech
-
-    void setPos(String pos);
-
     //Add senses set to the lemma
 
     void addSenses(List<String> senseList);
@@ -47,8 +43,6 @@ public interface IAtomicConceptOfLabel {
     String getTokenUID();
 
     String getLemma();
-
-    String getPos();
 
     ISensesSet getSenses();
 

@@ -383,10 +383,7 @@ public class Node implements INodeData, INode {
         }
         List<IAtomicConceptOfLabel> table = node.getNodeData().getACoLs();
         for (IAtomicConceptOfLabel acol : table) {
-            String pos = acol.getPos();
-            if (!pos.equals("")) {
-                partialResult.add(acol);
-            }
+            partialResult.add(acol);
         }
         return partialResult;
     }

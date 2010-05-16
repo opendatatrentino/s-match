@@ -1,7 +1,6 @@
 package it.unitn.disi.smatch.data;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -11,58 +10,19 @@ import java.util.List;
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
-public class Context implements IMatchingContext, IContextData, IContext {
-    //xml schemas information
-    public static final String NAMESPACE_URI = "http://www.w3.org/2001/XMLSchema";
-    public static final String INSTANCE_NAMESPACE_URI = "http://www.w3.org/2001/XMLSchema-instance";
-    private static String SCHEMA_LOCATION = "../datastructures/ctxs/ctxmlSchema.xsd";
-    //default name of the base node
-    public static final String BASE_NODE = "ctxBaseNode$c0";
-
-    //ctxml metadata variables
-    public static final String LANGUAGE_ENGLISH = "en";
-    public static final String STATUS_UNDEFINED = "undefined";
-    private String language;
-    private String namespace;
-    private String description;
-    private String ctxId;
-    private String label;
-    private String status;
-    private boolean normalized = true;
-    private String owner;
-    private String group;
-    private String securityAccessRights;
-    private String securityEncryption;
+public class Context implements IMatchingContext, IContext {
 
     //root concept
     private INode root;
 
-    private HashSet<String> synonyms = new HashSet<String>();
-    private HashSet<String> mg = new HashSet<String>();
-    private HashSet<String> lg = new HashSet<String>();
-    private HashSet<String> opp = new HashSet<String>();
-
-
     //Constructor
 
     public Context() {
-        ctxId = "555";
-        if (ctxId == null || ctxId.equals("")) {
-            System.out.println("Error on create Unique ID");
-        }
-        this.status = Context.STATUS_UNDEFINED;
-        description = "";
-        language = Context.LANGUAGE_ENGLISH;
-        namespace = "";
         root = Node.getInstance();
     }
 
     public static IContext getInstance() {
         return new Context();
-    }
-
-    public IContextData getContextData() {
-        return this;
     }
 
     public IMatchingContext getMatchingContext() {
@@ -113,13 +73,9 @@ public class Context implements IMatchingContext, IContextData, IContext {
     private List<IAtomicConceptOfLabel> fillACoLsList(INode cpt, List<IAtomicConceptOfLabel> partialResult) {
         List<IAtomicConceptOfLabel> table = cpt.getNodeData().getACoLs();
         for (IAtomicConceptOfLabel acol : table) {
-            String pos = acol.getPos();
-
-            if (!pos.equals("")) {
-                int tmpInt = partialResult.size();
-                partialResult.add(acol);
-                acol.setIndex(tmpInt);
-            }
+            int tmpInt = partialResult.size();
+            partialResult.add(acol);
+            acol.setIndex(tmpInt);
         }
         if (cpt.getChildren().size() > 0) {
             for (int i = 0; i < cpt.getChildren().size(); i++) {
@@ -140,64 +96,12 @@ public class Context implements IMatchingContext, IContextData, IContext {
         }
     }
 
-    //Getters and Setters for ctxml metadata values
-
     public void setRoot(INode root) {
         this.root = root;
     }
 
-    public void setSchemaLocation(String schemaLocation) {
-        setSCHEMA_LOCATION(schemaLocation);
-    }
-
-    public void setCtxId(String ctxId) {
-        if (ctxId == null || ctxId.equals("")) {
-            System.out.println("Null input context identifier");
-        }
-        this.ctxId = ctxId;
-    }
-
-    public void setLanguage(String language) {
-        if (language == null || language.equals("")) {
-            System.out.println("Null concept hiearchy reference language");
-        }
-        this.language = language;
-    }
-
-    public void setNamespace(String namespace) {
-        this.namespace = namespace;
-    }
-
     public INode getRoot() {
         return root;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public void setLabel(String label) {
-        this.label = label;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public void setOwner(String owner) {
-        this.owner = owner;
-    }
-
-    public void setGroup(String group) {
-        this.group = group;
-    }
-
-    public void setSecurityAccessRights(String securityAccessRights) {
-        this.securityAccessRights = securityAccessRights;
-    }
-
-    public void setSecurityEncryption(String securityEncryption) {
-        this.securityEncryption = securityEncryption;
     }
 
     public String newNode(String NodeLabel, String fatherId) {
@@ -361,95 +265,6 @@ public class Context implements IMatchingContext, IContextData, IContext {
             }
         }
         return result;
-    }
-
-
-    public static String getSCHEMA_LOCATION() {
-        return SCHEMA_LOCATION;
-    }
-
-    public static void setSCHEMA_LOCATION(String SCHEMA_LOCATION) {
-        Context.SCHEMA_LOCATION = SCHEMA_LOCATION;
-    }
-
-    public String getLanguage() {
-        return language;
-    }
-
-    public String getNamespace() {
-        return namespace;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public String getCtxId() {
-        return ctxId;
-    }
-
-    public String getLabel() {
-        return label;
-    }
-
-    public String getGroup() {
-        return group;
-    }
-
-    public HashSet<String> getMg() {
-        return mg;
-    }
-
-    public void setMg(HashSet<String> mg) {
-        this.mg = mg;
-    }
-
-    public HashSet<String> getLg() {
-        return lg;
-    }
-
-    public void setLg(HashSet<String> lg) {
-        this.lg = lg;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public boolean isNormalized() {
-        return normalized;
-    }
-
-    public void setNormalized(boolean normalized) {
-        this.normalized = normalized;
-    }
-
-    public String getOwner() {
-        return owner;
-    }
-
-    public String getSecurityAccessRights() {
-        return securityAccessRights;
-    }
-
-    public String getSecurityEncryption() {
-        return securityEncryption;
-    }
-
-    public HashSet<String> getSynonyms() {
-        return synonyms;
-    }
-
-    public void setSynonyms(HashSet<String> synonyms) {
-        this.synonyms = synonyms;
-    }
-
-    public HashSet<String> getOpp() {
-        return opp;
-    }
-
-    public void setOpp(HashSet<String> opp) {
-        this.opp = opp;
     }
 
     public void sort() {

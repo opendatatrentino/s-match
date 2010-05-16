@@ -10,8 +10,13 @@ import it.unitn.disi.smatch.data.IContext;
  */
 public class CTXMLContextLoader extends BaseContextLoader implements IContextLoader {
 
+    private CTXML parser;
+
+    public CTXMLContextLoader() throws ContextLoaderException {
+        parser = new CTXML();
+    }
+
     protected IContext internalLoad(String fileName) throws ContextLoaderException {
-        CTXML parserSource = CTXML.getInstance();
-        return parserSource.parseAndLoadContext(fileName);
+        return parser.parseAndLoadContext(fileName);
     }
 }

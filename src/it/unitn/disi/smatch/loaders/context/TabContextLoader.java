@@ -34,10 +34,9 @@ public class TabContextLoader extends BaseContextLoader implements IContextLoade
                 input.close();
             }
         } catch (IOException e) {
-            if (log.isEnabledFor(Level.ERROR)) {
-                log.error("IOException: " + e.getMessage(), e);
-            }
-            throw new ContextLoaderException(e.getMessage(), e);
+            final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
+            log.error(errMessage, e);
+            throw new ContextLoaderException(errMessage, e);
         }
         return result;
     }

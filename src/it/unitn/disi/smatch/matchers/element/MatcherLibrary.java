@@ -207,46 +207,36 @@ public class MatcherLibrary extends Configurable implements IMatcherLibrary {
      * @throws MatcherLibraryException MatcherLibraryException
      */
     public IMatchMatrix elementLevelMatching(IContext sourceContext, IContext targetContext) throws MatcherLibraryException {
-        IMatchMatrix ClabMatrix = null;
-        try {
-            //get all ACoLs in contexts
-            List<IAtomicConceptOfLabel> sourceACoLs = sourceContext.getMatchingContext().getAllContextACoLs();
-            List<IAtomicConceptOfLabel> targetACoLs = targetContext.getMatchingContext().getAllContextACoLs();
+        //get all ACoLs in contexts
+        List<IAtomicConceptOfLabel> sourceACoLs = sourceContext.getMatchingContext().getAllContextACoLs();
+        List<IAtomicConceptOfLabel> targetACoLs = targetContext.getMatchingContext().getAllContextACoLs();
 
-            //  Calculate relations between all ACoLs in both contexts and produce the matrix of
-            //  semantic relations between them.
-            //  Corresponds to Step 3 of the semantic matching algorithm.
+        //  Calculate relations between all ACoLs in both contexts and produce the matrix of
+        //  semantic relations between them.
+        //  Corresponds to Step 3 of the semantic matching algorithm.
 
-            //Initialization of matrix
-            ClabMatrix = MatrixFactory.getInstance(sourceACoLs.size(), targetACoLs.size());
+        //Initialization of matrix
+        IMatchMatrix ClabMatrix = MatrixFactory.getInstance(sourceACoLs.size(), targetACoLs.size());
 
-            // for all ACoLs in source context
-            long counter = 0;
-            long total = (long) sourceACoLs.size() * (long) targetACoLs.size();
-            long reportInt = (total / 20) + 1;//i.e. report every 5%
-            for (int row = 0; row < sourceACoLs.size(); row++) {
-                IAtomicConceptOfLabel sourceACoL = sourceACoLs.get(row);
-                for (int col = 0; col < targetACoLs.size(); col++) {
-                    IAtomicConceptOfLabel targetACoL = targetACoLs.get(col);
-                    //Use Element level semantic matchers library
-                    //in order to check the relation holding between two ACoLs represented
-                    //by lists of WN senses and tokens
-                    ClabMatrix.setElement(row, col, getRelation(sourceACoL, targetACoL));
+        // for all ACoLs in source context
+        long counter = 0;
+        long total = (long) sourceACoLs.size() * (long) targetACoLs.size();
+        long reportInt = (total / 20) + 1;//i.e. report every 5%
+        for (int row = 0; row < sourceACoLs.size(); row++) {
+            IAtomicConceptOfLabel sourceACoL = sourceACoLs.get(row);
+            for (int col = 0; col < targetACoLs.size(); col++) {
+                IAtomicConceptOfLabel targetACoL = targetACoLs.get(col);
+                //Use Element level semantic matchers library
+                //in order to check the relation holding between two ACoLs represented
+                //by lists of WN senses and tokens
+                ClabMatrix.setElement(row, col, getRelation(sourceACoL, targetACoL));
 
-                    counter++;
-                    if ((SMatchConstants.LARGE_TASK < total) && (0 == (counter % reportInt)) && log.isEnabledFor(Level.INFO)) {
-                        log.info(100 * counter / total + "%");
-                    }
+                counter++;
+                if ((SMatchConstants.LARGE_TASK < total) && (0 == (counter % reportInt)) && log.isEnabledFor(Level.INFO)) {
+                    log.info(100 * counter / total + "%");
                 }
-                ClabMatrix.endOfRow();
             }
-        } catch (Exception e) {
-            if (log.isEnabledFor(Level.ERROR)) {
-                final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
-                log.error(errMessage, e);
-                log.error("The cLab matrix is not complete due to an exception");
-                throw new MatcherLibraryException("The cLab matrix is not complete due to an exception", e);
-            }
+            ClabMatrix.endOfRow();
         }
         return ClabMatrix;
     }

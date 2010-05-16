@@ -53,58 +53,49 @@ public class EvalELMatcher extends Configurable implements IMatcherLibrary {
      * @throws MatcherLibraryException MatcherLibraryException
      */
     public IMatchMatrix elementLevelMatching(IContext sourceContext, IContext targetContext) throws MatcherLibraryException {
-        IMatchMatrix ClabMatrix = null;
-        try {
-            //compare each pair of nodes
-            //for each pair compare all node acols
+        //compare each pair of nodes
+        //for each pair compare all node acols
 
-            List<IAtomicConceptOfLabel> sourceACoLs = sourceContext.getMatchingContext().getAllContextACoLs();
-            List<IAtomicConceptOfLabel> targetACoLs = targetContext.getMatchingContext().getAllContextACoLs();
+        List<IAtomicConceptOfLabel> sourceACoLs = sourceContext.getMatchingContext().getAllContextACoLs();
+        List<IAtomicConceptOfLabel> targetACoLs = targetContext.getMatchingContext().getAllContextACoLs();
 
-            //Initialization of matrix
-            ClabMatrix = MatrixFactory.getInstance(sourceACoLs.size(), targetACoLs.size());
+        //Initialization of matrix
+        IMatchMatrix ClabMatrix = MatrixFactory.getInstance(sourceACoLs.size(), targetACoLs.size());
 
-            List<INode> sourceNodes = sourceContext.getAllNodes();
-            List<INode> targetNodes = targetContext.getAllNodes();
+        List<INode> sourceNodes = sourceContext.getAllNodes();
+        List<INode> targetNodes = targetContext.getAllNodes();
 
-            long counter = 0;
-            long total = (long) sourceNodes.size();
-            long reportInt = (total / 20) + 1;//i.e. report every 5%
+        long counter = 0;
+        long total = (long) sourceNodes.size();
+        long reportInt = (total / 20) + 1;//i.e. report every 5%
 
-            for (int i = 0; i < sourceNodes.size(); i++) {
-                //should be the same nodes!
-                INode sourceNode = sourceNodes.get(i);
-                INode targetNode = targetNodes.get(i);
+        for (int i = 0; i < sourceNodes.size(); i++) {
+            //should be the same nodes!
+            INode sourceNode = sourceNodes.get(i);
+            INode targetNode = targetNodes.get(i);
 
-                //check
-                String s = sourceNode.getNodeData().getPathToRootString();
-                String t = targetNode.getNodeData().getPathToRootString();
-                if (!s.equals(t) && log.isEnabledFor(Level.WARN)) {
-                    log.warn("The nodes mismatch!");
-                    log.warn(s);
-                    log.warn(t);
-                }
+            //check
+            String s = sourceNode.getNodeData().getPathToRootString();
+            String t = targetNode.getNodeData().getPathToRootString();
+            if (!s.equals(t) && log.isEnabledFor(Level.WARN)) {
+                log.warn("The nodes mismatch!");
+                log.warn(s);
+                log.warn(t);
+            }
 
-                List<IAtomicConceptOfLabel> sourceNodeACoLs = sourceNode.getNodeData().getACoLs();
-                List<IAtomicConceptOfLabel> targetNodeACoLs = targetNode.getNodeData().getACoLs();
+            List<IAtomicConceptOfLabel> sourceNodeACoLs = sourceNode.getNodeData().getACoLs();
+            List<IAtomicConceptOfLabel> targetNodeACoLs = targetNode.getNodeData().getACoLs();
 
-                for (IAtomicConceptOfLabel sourceACOL : sourceNodeACoLs) {
-                    for (IAtomicConceptOfLabel targetACOL : targetNodeACoLs) {
-                        ClabMatrix.setElement(sourceACOL.getIndex(), targetACOL.getIndex(), getRelation(sourceACOL, targetACOL));
-                    }
-                }
-
-                counter++;
-                if ((SMatchConstants.LARGE_TASK < total) && (0 == (counter % reportInt)) && log.isEnabledFor(Level.INFO)) {
-                    log.info(100 * counter / total + "%");
+            for (IAtomicConceptOfLabel sourceACOL : sourceNodeACoLs) {
+                for (IAtomicConceptOfLabel targetACOL : targetNodeACoLs) {
+                    ClabMatrix.setElement(sourceACOL.getIndex(), targetACOL.getIndex(), getRelation(sourceACOL, targetACOL));
                 }
             }
-        } catch (Exception e) {
-            if (log.isEnabledFor(Level.ERROR)) {
-                log.error("Exception: " + e.getMessage(), e);
-                log.error("The cLab matrix is not complete due to an exception");
+
+            counter++;
+            if ((SMatchConstants.LARGE_TASK < total) && (0 == (counter % reportInt)) && log.isEnabledFor(Level.INFO)) {
+                log.info(100 * counter / total + "%");
             }
-            throw new MatcherLibraryException("The cLab matrix is not complete due to an exception", e);
         }
         return ClabMatrix;
     }

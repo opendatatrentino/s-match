@@ -11,13 +11,6 @@ import java.util.List;
 public interface IContext {
 
     /**
-     * Returns an interface to context of metadata.
-     *
-     * @return an interface to context of metadata
-     */
-    IContextData getContextData();
-
-    /**
      * Returns interface to context level functionalities
      * of matching engine.
      *

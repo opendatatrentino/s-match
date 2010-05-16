@@ -298,8 +298,10 @@ public class MatchManager extends Configurable implements IMatchManager {
      * Provides a command line interface to match manager.
      *
      * @param args command line arguments
+     * @throws IOException IOException
+     * @throws ConfigurableException ConfigurableException
      */
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException, ConfigurableException {
         // initialize property file
         String configFileName = DEFAULT_CONFIG_FILE_NAME;
         ArrayList<String> cleanArgs = new ArrayList<String>();
@@ -408,16 +410,12 @@ public class MatchManager extends Configurable implements IMatchManager {
                 } else {
                     System.out.println("Unrecognized command.");
                 }
-            } catch (IOException e) {
-                if (log.isEnabledFor(Level.ERROR)) {
-                    final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
-                    log.error(errMessage, e);
-                }
             } catch (ConfigurableException e) {
                 if (log.isEnabledFor(Level.ERROR)) {
                     final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
                     log.error(errMessage, e);
                 }
+                throw e;
             }
         }
     }

@@ -1,7 +1,6 @@
 package it.unitn.disi.smatch.loaders.context;
 
 import it.unitn.disi.smatch.data.*;
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
@@ -11,7 +10,10 @@ import org.xml.sax.helpers.DefaultHandler;
 import org.xml.sax.helpers.XMLReaderFactory;
 
 import java.io.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
 
 /**
  * Parses CTXML files and serves as a file filter for .xml files.
@@ -19,92 +21,68 @@ import java.util.*;
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
-public class CTXML extends DefaultHandler implements java.io.FileFilter {
+public class CTXML extends DefaultHandler {
 
     private static final Logger log = Logger.getLogger(CTXMLContextLoader.class);
 
-    //context
-    protected IContext ctx = null;
-    protected XMLReader parser = null;
+    protected IContext ctx;
 
-    /**
-     * Default parser name.
-     */
+    protected XMLReader parser = null;
     protected static final String DEFAULT_PARSER_NAME = "org.apache.xerces.parsers.SAXParser";
 
     //variables used in parsing
-    private String content = "";
-    private String lNodeName = "";
-    private String rNodeName = "";
-    private boolean pof = false;
-    private boolean readElementContent = false;
-    private boolean baseNode = false;
-    private String elementName = null;
-    private INode node = null;
-    private INode pofNode = null;
-    private List<INode> conceptsList = new ArrayList<INode>();
-    private IAtomicConceptOfLabel sense = AtomicConceptOfLabel.getInstance();
-
-    //replacements for valid xml
-    //TODO should be done by parser?
-    private final static String e_commercial = "&amp;";
-    private final static String a_grave = "&#224;";
-    private final static String e_grave = "&#232;";
-    private final static String i_grave = "&#236;";
-    private final static String o_grave = "&#242;";
-    private final static String u_grave = "&#249;";
-    private final static String a_GRAVE = "&#192;";
-    private final static String e_GRAVE = "&#200;";
-    private final static String minor = "&lt;";
+    private StringBuilder content;
+    private INode node;
+    private List<INode> conceptsList;
+    private IAtomicConceptOfLabel sense;
 
     private int elementsParsed = 0;
 
     private HashMap<INode, INode> parentNodes = new HashMap<INode, INode>();
     private HashMap<INode, ArrayList<INode>> childNodes = new HashMap<INode, ArrayList<INode>>();
-    int debug = 0;
 
-    private final static HashSet<String> allowedElements = new HashSet<String>();
-
-    static {
-        allowedElements.add("cLabFormula");
-        allowedElements.add("logicalFormulaRepresentation");
-        allowedElements.add("idToken");
-        allowedElements.add("token");
-        allowedElements.add("lemma");
-        allowedElements.add("PoS");
-        allowedElements.add("wSenses");
-        allowedElements.add("relationSource");
-        allowedElements.add("relationTarget");
-        allowedElements.add("relationTargetNotRecursive");
-    }
-
-    public static CTXML getInstance() {
-        return new CTXML();
-    }
-
-    public CTXML() {
-        // SAX parser initialization and creation
+    public CTXML() throws ContextLoaderException {
         try {
             parser = XMLReaderFactory.createXMLReader(DEFAULT_PARSER_NAME);
-
-            // Tells to the parser to validate with respect to an XML-Schema instead
-            // of a DTD
-            parser.setFeature("http://apache.org/xml/features/validation/schema", true);
-
-            // Tells to the parser to validate the XML instance files before parsing
-            //parser.setFeature("http://xml.org/sax/features/validation", true);
-            parser.setFeature("http://xml.org/sax/features/validation", false);
-
+            parser.setContentHandler(this);
+            parser.setProperty("http://apache.org/xml/properties/input-buffer-size", 8196);
         } catch (SAXException e) {
-            if (log.isEnabledFor(Level.ERROR)) {
-                log.error("SAXException: " + e.getMessage(), e);
-            }
+            final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
+            log.error(errMessage, e);
+            throw new ContextLoaderException(errMessage, e);
         }
     }
 
-    // Starting of re implementation of method from org.xml.sax.helpers.DefaulHandler
+    public IContext parseAndLoadContext(String inputFileName) throws ContextLoaderException {
+        try {
+            BufferedReader inputFile = new BufferedReader(new InputStreamReader(new FileInputStream(inputFileName), "UTF-8"));
+            InputSource is = new InputSource(inputFile);
+            parser.parse(is);
+        } catch (SAXException e) {
+            final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
+            log.error(errMessage, e);
+            throw new ContextLoaderException(errMessage, e);
+        } catch (FileNotFoundException e) {
+            final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
+            log.error(errMessage, e);
+            throw new ContextLoaderException(errMessage, e);
+        } catch (UnsupportedEncodingException e) {
+            final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
+            log.error(errMessage, e);
+            throw new ContextLoaderException(errMessage, e);
+        } catch (IOException e) {
+            final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
+            log.error(errMessage, e);
+            throw new ContextLoaderException(errMessage, e);
+        }
+        return ctx;
+    }
+
+    //org.xml.sax.helpers.DefaultHandler methods re-implementation start 
+
     public void startDocument() {
         ctx = Context.getInstance();
+        conceptsList = new ArrayList<INode>();
         elementsParsed = 1;
     }
 
@@ -114,180 +92,53 @@ public class CTXML extends DefaultHandler implements java.io.FileFilter {
             log.info("elements parsed: " + elementsParsed);
         }
 
-        //context tag found
-        if (localName.equals("context")) {
-            for (int i = 0; i < atts.getLength(); i++) {
-                String attributeName = atts.getLocalName(i);
-                if (attributeName.equals("noNamespaceSchemaLocation"))
-                    ctx.getContextData().setSchemaLocation(atts.getValue(i));
-            }
-        }
+        content = new StringBuilder();
 
-        //header tag found
-        if (localName.equals("ctxHeader")) {
-            for (int i = 0; i < atts.getLength(); i++) {
-                String attributeName = atts.getLocalName(i);
-                if (attributeName.equals("ctxId"))
-                    try {
-                        ctx.getContextData().setCtxId(atts.getValue(i));
-                    } catch (Exception e) {
-                        if (log.isEnabledFor(Level.ERROR)) {
-                            log.error("Exception: " + e.getMessage(), e);
-                        }
-                    }
-                if (attributeName.equals("label")) {
-                    ctx.getContextData().setLabel(atts.getValue(i));
-                }
-                if (attributeName.equals("status"))
-                    ctx.getContextData().setStatus(atts.getValue(i));
-            }
-        }
-
-        //metadata handling
-        if (localName.equals("agentId") ||
-                localName.equals("groupId") ||
-                localName.equals("accessRights") ||
-                localName.equals("encription") ||
-                localName.equals("description") ||
-                isTableOfSenseElement(localName)) {
-            elementName = localName;
-            readElementContent = true;
-        }
-
-        //content tag found
-        if (localName.equals("ctxContent")) {
-            try {
-                ctx.getContextData().setLanguage(atts.getValue("language"));
-            } catch (Exception e) {
-                if (log.isEnabledFor(Level.ERROR)) {
-                    log.error("Exception: " + e.getMessage(), e);
-                }
-            }
-        }
-
-        //schema tag found
-        if (localName.equals("schema")) {
-            ctx.getContextData().setNamespace(atts.getValue("reservedNameSpaceTag--ctxTag"));
-        }
-
-        //Concept tag found
-        if (localName.equals("complexType-Concept")) {
-            rNodeName = atts.getValue("name");
-            if (!rNodeName.equals(Context.BASE_NODE)) {
-                node = Node.getInstance();
-                rNodeName = xmlTagDecode(rNodeName);
-                node.getNodeData().setNodeUniqueName(rNodeName);
-            } else
-                baseNode = true;
-        }
-
-        //sense tag found
-        if (localName.equals("sense")) {
+        if ("complexType-Concept".equals(localName)) {
+            String nodeName = atts.getValue("name");
+            node = Node.getInstance();
+            node.getNodeData().setNodeUniqueName(nodeName);
+        } else if ("sense".equals(localName)) {
             sense = AtomicConceptOfLabel.getInstance();
-        }
-        if (localName.equals("extension")) {
-            lNodeName = atts.getValue("base");
-            lNodeName = xmlTagDecode(lNodeName);
-            if (!lNodeName.equals(Context.BASE_NODE)) {
-                INode parentNode = Node.getInstance();
-                parentNode.getNodeData().setNodeUniqueName(lNodeName);
-                node.getNodeData().setParent(parentNode);
-            }
+        } else if ("extension".equals(localName)) {
+            String parentName = atts.getValue("base");
+            INode parentNode = Node.getInstance();
+            parentNode.getNodeData().setNodeUniqueName(parentName);
+            node.getNodeData().setParent(parentNode);
         }
     }
 
-    //dealing with the closing tags
     public void endElement(String uri, String localName, String qName) {
-        if (content != null && !content.equals("")) {
-            processElementContent();
-            content = "";
-        }
-        if (localName.equals("sense")) {
-            node.getNodeData().addAtomicConceptOfLabel(sense);
-            sense = AtomicConceptOfLabel.getInstance();
-        }
-        if (localName.equals("element") && pof) {
-            conceptsList.add(pofNode);
-            pofNode = Node.getInstance();
-            pof = false;
-        }
-        if (!pof && (localName.equals("complexType-Concept") || localName.equals("element"))) {
-            if (baseNode)
-                baseNode = false;
-            else {
-                if (node != null)
-                    conceptsList.add(node);
+        if (0 < content.length()) {
+            if ("logicalFormulaRepresentation".equals(localName)) {
+                node.getNodeData().setcNodeFormula(content.toString());
+            } else if ("cLabFormula".equals(localName)) {
+                node.getNodeData().setcLabFormula(content.toString());
+            } else if ("idToken".equals(localName)) {
+                sense.setIdToken(Integer.parseInt(content.toString()));
+            } else if ("token".equals(localName)) {
+                sense.setToken(content.toString());
+            } else if ("lemma".equals(localName)) {
+                sense.setLemma(content.toString());
+            } else if ("wSenses".equals(localName)) {
+                if (-1 < content.indexOf("#")) {
+                    sense.addSenses(new ArrayList<String>(Arrays.asList(content.toString().trim().split(" "))));
+                }
             }
-            rNodeName = "";
-            lNodeName = "";
-            node = Node.getInstance();
-            node = null;
+            content = new StringBuilder();
+        }
+        if ("sense".equals(localName)) {
+            node.getNodeData().addAtomicConceptOfLabel(sense);
+        }
+        if ("complexType-Concept".equals(localName)) {
+            if (null != node) {
+                conceptsList.add(node);
+            }
         }
     }
 
     public void characters(char[] ch, int start, int length) {
-        String localContent = new String(ch, start, length);
-        content += localContent;
-    }
-
-    //filling context object with information
-    private void processElementContent() {
-        content = content.trim();
-        if (content.equals(" "))
-            content = "";
-        if (null != elementName && readElementContent && null != content) {
-            /// Context attributes
-            if (elementName.equals("agentId"))
-                ctx.getContextData().setOwner(content);
-            if (elementName.equals("groupId"))
-                ctx.getContextData().setGroup(content);
-            if (elementName.equals("accessRights"))
-                ctx.getContextData().setSecurityAccessRights(content);
-            if (elementName.equals("encription"))
-                ctx.getContextData().setSecurityEncryption(content);
-            if (elementName.equals("description")) {
-                content = xmlTagDecode(content);
-                ctx.getContextData().setDescription(content);
-            }
-            /// Table of senses elements
-            if (elementName.equals("logicalFormulaRepresentation")) {
-                node.getNodeData().setcNodeFormula(xmlTagDecode(content.trim()));
-            }
-            if (elementName.equals("cLabFormula")) {
-                node.getNodeData().setcLabFormula(xmlTagDecode(content.trim()));
-            }
-            if (elementName.equals("idToken")) {
-                sense.setIdToken(Integer.parseInt(content));
-            }
-            if (elementName.equals("token"))
-                sense.setToken(content);
-            if (elementName.equals("lemma"))
-                sense.setLemma(content);
-            if (elementName.equals("PoS"))
-                sense.setPos(content);
-            if (elementName.equals("wSenses")) {
-                if (-1 < content.indexOf("#")) {
-                    sense.addSenses(extractSenseList(content.trim()));
-                }
-            }
-            readElementContent = false;
-            elementName = "";
-        }
-    }
-
-    //Building senses set
-    private static List<String> extractSenseList(String list) {
-        list = list.trim();
-        List<String> result = new ArrayList<String>();
-        StringTokenizer extractSenses = new StringTokenizer(list, " ");
-        while (extractSenses.hasMoreTokens()) {
-            String wSense = extractSenses.nextToken();
-            //TODO added by autayeu to allow icon25.xml to run
-            if ("navr".indexOf(wSense.charAt(0)) >= 0 && wSense.charAt(1) == '#') {
-                result.add(wSense);
-            }
-        }
-        return result;
+        content.append(ch, start, length);
     }
 
     public void endDocument() {
@@ -299,94 +150,42 @@ public class CTXML extends DefaultHandler implements java.io.FileFilter {
         log.debug("Finding root...");
         INode root = findRoot();
         if (null == root) {
-            log.warn("Context root is not found");
-            return;
-        }
+            final String errMessage = "Context root is not found";
+            log.error(errMessage);
+            ctx = null;
+            //throw new ContextLoaderException(errMessage);
+        } else {
+            ctx.setRoot(root);
+            log.debug("Filling hashes...");
 
-        ctx.setRoot(root);
-        log.debug("Filling hashes...");
-
-        //----------------------------------------------------------
-        for (INode nodeInList : conceptsList) {
-            INode parentNode = nodeInList.getParent();
-            if (null != parentNode) {
-                parentNodes.put(nodeInList, parentNode);
+            for (INode node : conceptsList) {
+                INode parentNode = node.getParent();
+                if (null != parentNode) {
+                    parentNodes.put(node, parentNode);
+                }
             }
-        }
 
-        for (INode child : parentNodes.keySet()) {
-            INode parentNode = parentNodes.get(child);
-            ArrayList<INode> vec = childNodes.get(parentNode);
-            if (vec == null) {
-                vec = new ArrayList<INode>();
-                vec.add(child);
-                childNodes.put(parentNode, vec);
-            } else {
-                vec.add(child);
-                childNodes.put(parentNode, vec);
+            for (INode child : parentNodes.keySet()) {
+                INode parentNode = parentNodes.get(child);
+                ArrayList<INode> children = childNodes.get(parentNode);
+                if (null == children) {
+                    children = new ArrayList<INode>();
+                    children.add(child);
+                    childNodes.put(parentNode, children);
+                } else {
+                    children.add(child);
+                    childNodes.put(parentNode, children);
+                }
             }
+            log.debug("Building hierarchy structure...");
+            buildHierarchyStructure(root);
+            log.debug("Traversing hierarchy...");
+            traverseHierarchy(root);
+            parentNodes = new HashMap<INode, INode>();
+            childNodes = new HashMap<INode, ArrayList<INode>>();
         }
-        log.debug("Building hierarchy structure...");
-        //-----------------------------------------------------
-        buildHierarchyStructure(root);
-        log.debug("Traversing hierarchy...");
-        traverseHierarchy(root);
-        parentNodes = new HashMap<INode, INode>();
-        childNodes = new HashMap<INode, ArrayList<INode>>();
     }
-
-    // End of reimplementation of method from org.xml.sax.helpers.DefaulHandler
-    protected void resetGlobalElements() {
-        content = "";
-        lNodeName = "";
-        rNodeName = "";
-        pof = false;
-        readElementContent = false;
-        baseNode = false;
-        elementName = null;
-        node = null;
-        pofNode = null;
-        conceptsList = new ArrayList<INode>();
-        sense = AtomicConceptOfLabel.getInstance();
-        this.ctx = Context.getInstance();
-    }
-
-    //create context object from ctxml file
-    public IContext parseAndLoadContext(String inputFileName) throws ContextLoaderException {
-        resetGlobalElements();
-        try {
-            parser = XMLReaderFactory.createXMLReader(DEFAULT_PARSER_NAME);
-            parser.setContentHandler(this);
-            BufferedReader inputFile = new BufferedReader(new InputStreamReader(new FileInputStream(inputFileName), "UTF-8"));
-            InputSource is = new InputSource(inputFile);
-            parser.parse(is);
-        } catch (SAXException e) {
-            if (log.isEnabledFor(Level.ERROR)) {
-                final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
-                log.error(errMessage, e);
-                throw new ContextLoaderException(errMessage, e);
-            }
-        } catch (FileNotFoundException e) {
-            if (log.isEnabledFor(Level.ERROR)) {
-                final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
-                log.error(errMessage, e);
-                throw new ContextLoaderException(errMessage, e);
-            }
-        } catch (UnsupportedEncodingException e) {
-            if (log.isEnabledFor(Level.ERROR)) {
-                final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
-                log.error(errMessage, e);
-                throw new ContextLoaderException(errMessage, e);
-            }
-        } catch (IOException e) {
-            if (log.isEnabledFor(Level.ERROR)) {
-                final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
-                log.error(errMessage, e);
-                throw new ContextLoaderException(errMessage, e);
-            }
-        }
-        return ctx;
-    }
+    //org.xml.sax.helpers.DefaultHandler methods re-implementation end 
 
     private INode findRoot() {
         for (int i = 0; i < conceptsList.size(); i++) {
@@ -410,7 +209,6 @@ public class CTXML extends DefaultHandler implements java.io.FileFilter {
         return null;
     }
 
-    //consolidating knowledge about concept
     private void traverseHierarchy(INode node) {
         List<INode> children = node.getChildren();
         if (null == children) {
@@ -423,80 +221,12 @@ public class CTXML extends DefaultHandler implements java.io.FileFilter {
     }
 
     private void buildHierarchyStructure(INode node) {
-        List<INode> vec = childNodes.get(node);
-        if (null != vec) {
-            for (INode child : vec) {
+        List<INode> children = childNodes.get(node);
+        if (null != children) {
+            for (INode child : children) {
                 node.addChild(child);
                 child.getNodeData().setParent(node);
             }
         }
-    }
-
-    private static boolean isTableOfSenseElement(String attribute) {
-        return allowedElements.contains(attribute);
-    }
-
-    public static String xmlTagEncode(String xmlToEncode) {
-        if (null == xmlToEncode) {
-            return null;
-        }
-        StringBuilder out = new StringBuilder(xmlToEncode.length());
-        for (int t = 0; t < xmlToEncode.length(); t++) {
-            char c = xmlToEncode.charAt(t);
-            switch (c) {
-                case ('&'):
-                    out.append(e_commercial);
-                    break;
-                case ('à'):
-                    out.append(a_grave);
-                    break;
-                case ('À'):
-                    out.append(a_GRAVE);
-                    break;
-                case ('è'):
-                    out.append(e_grave);
-                    break;
-                case ('È'):
-                    out.append(e_GRAVE);
-                    break;
-                case ('ò'):
-                    out.append(o_grave);
-                    break;
-                case ('ù'):
-                    out.append(u_grave);
-                    break;
-                case ('ì'):
-                    out.append(i_grave);
-                    break;
-                case ('<'):
-                    out.append(minor);
-                    break;
-                default:
-                    out.append(c);
-            }
-        }
-        return out.toString();
-    }
-
-    private static String xmlTagDecode(String xmlToDecode) {
-        if (xmlToDecode == null) {
-            return null;
-        }
-        String out = xmlToDecode;
-        out = out.replaceAll(e_commercial, "&");
-        out = out.replaceAll(a_grave, "à");
-        out = out.replaceAll(a_GRAVE, "À");
-        out = out.replaceAll(e_grave, "è");
-        out = out.replaceAll(e_GRAVE, "È");
-        out = out.replaceAll(o_grave, "ò");
-        out = out.replaceAll(u_grave, "ù");
-        out = out.replaceAll(i_grave, "ì");
-        out = out.replaceAll(minor, "<");
-        return out;
-    }
-
-    //Xml File Filter routine
-    public boolean accept(File f) {
-        return null != f.getName() && f.getName().endsWith(".xml");
     }
 }

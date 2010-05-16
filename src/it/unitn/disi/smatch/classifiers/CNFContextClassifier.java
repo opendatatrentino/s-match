@@ -5,6 +5,7 @@ import it.unitn.disi.smatch.data.IContext;
 import it.unitn.disi.smatch.data.INode;
 import it.unitn.disi.smatch.data.INodeData;
 import orbital.logic.imp.Formula;
+import orbital.logic.sign.ParseException;
 import orbital.moon.logic.ClassicalLogic;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -98,7 +99,7 @@ public class CNFContextClassifier extends Configurable implements IContextClassi
                 } else {
                     result = tmpFormula;
                 }
-            } catch (Exception e) {
+            } catch (ParseException e) {
                 final String errMessage = "Logic parse exception: " + e.getClass().getSimpleName() + ": " + e.getMessage();
                 if (log.isEnabledFor(Level.ERROR)) {
                     log.error("Logic parse exception for: " + formula + " at node: " + in.getNodeName());
@@ -107,7 +108,6 @@ public class CNFContextClassifier extends Configurable implements IContextClassi
                 throw new ContextClassifierException(errMessage, e);
             }
         }
-
         return result;
     }
 }

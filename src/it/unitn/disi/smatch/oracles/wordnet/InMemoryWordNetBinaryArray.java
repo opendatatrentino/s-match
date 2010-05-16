@@ -14,7 +14,6 @@ import net.didion.jwnl.data.list.PointerTargetNode;
 import net.didion.jwnl.data.list.PointerTargetNodeList;
 import net.didion.jwnl.data.list.PointerTargetTree;
 import net.didion.jwnl.dictionary.Dictionary;
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import java.io.FileInputStream;
@@ -376,11 +375,9 @@ public class InMemoryWordNetBinaryArray extends Configurable implements ISenseMa
             Arrays.sort(keysArr);
             SMatchUtils.writeObject(keysArr, properties.getProperty(NOMINALIZATION_KEY));
         } catch (JWNLException e) {
-            if (log.isEnabledFor(Level.ERROR)) {
-                final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
-                log.error(errMessage, e);
-                throw new SMatchException(errMessage, e);
-            }
+            final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
+            log.error(errMessage, e);
+            throw new SMatchException(errMessage, e);
         }
     }
 
@@ -420,11 +417,9 @@ public class InMemoryWordNetBinaryArray extends Configurable implements ISenseMa
             Arrays.sort(keysArr);
             SMatchUtils.writeObject(keysArr, properties.getProperty(ADJ_SYN_KEY));
         } catch (JWNLException e) {
-            if (log.isEnabledFor(Level.ERROR)) {
-                final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
-                log.error(errMessage, e);
-                throw new SMatchException(errMessage, e);
-            }
+            final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
+            log.error(errMessage, e);
+            throw new SMatchException(errMessage, e);
         }
     }
 
@@ -465,11 +460,9 @@ public class InMemoryWordNetBinaryArray extends Configurable implements ISenseMa
             Arrays.sort(keysArr);
             SMatchUtils.writeObject(keysArr, properties.getProperty(ADV_ANT_KEY));
         } catch (JWNLException e) {
-            if (log.isEnabledFor(Level.ERROR)) {
-                final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
-                log.error(errMessage, e);
-                throw new SMatchException(errMessage, e);
-            }
+            final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
+            log.error(errMessage, e);
+            throw new SMatchException(errMessage, e);
         }
     }
 
@@ -501,11 +494,9 @@ public class InMemoryWordNetBinaryArray extends Configurable implements ISenseMa
             Arrays.sort(keysArr);
             SMatchUtils.writeObject(keysArr, properties.getProperty(ADJ_ANT_KEY));
         } catch (JWNLException e) {
-            if (log.isEnabledFor(Level.ERROR)) {
-                final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
-                log.error(errMessage, e);
-                throw new SMatchException(errMessage, e);
-            }
+            final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
+            log.error(errMessage, e);
+            throw new SMatchException(errMessage, e);
         }
     }
 
@@ -539,11 +530,9 @@ public class InMemoryWordNetBinaryArray extends Configurable implements ISenseMa
             Arrays.sort(keysArr);
             SMatchUtils.writeObject(keysArr, properties.getProperty(NOUN_ANT_KEY));
         } catch (JWNLException e) {
-            if (log.isEnabledFor(Level.ERROR)) {
-                final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
-                log.error(errMessage, e);
-                throw new SMatchException(errMessage, e);
-            }
+            final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
+            log.error(errMessage, e);
+            throw new SMatchException(errMessage, e);
         }
     }
 
@@ -583,11 +572,9 @@ public class InMemoryWordNetBinaryArray extends Configurable implements ISenseMa
             Arrays.sort(keysArr);
             SMatchUtils.writeObject(keysArr, properties.getProperty(NOUN_MG_KEY));
         } catch (JWNLException e) {
-            if (log.isEnabledFor(Level.ERROR)) {
-                final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
-                log.error(errMessage, e);
-                throw new SMatchException(errMessage, e);
-            }
+            final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
+            log.error(errMessage, e);
+            throw new SMatchException(errMessage, e);
         }
     }
 
@@ -619,11 +606,9 @@ public class InMemoryWordNetBinaryArray extends Configurable implements ISenseMa
             Arrays.sort(keysArr);
             SMatchUtils.writeObject(keysArr, properties.getProperty(VERB_MG_KEY));
         } catch (JWNLException e) {
-            if (log.isEnabledFor(Level.ERROR)) {
-                final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
-                log.error(errMessage, e);
-                throw new SMatchException(errMessage, e);
-            }
+            final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
+            log.error(errMessage, e);
+            throw new SMatchException(errMessage, e);
         }
     }
 
@@ -647,11 +632,9 @@ public class InMemoryWordNetBinaryArray extends Configurable implements ISenseMa
                 }
             }
         } catch (JWNLException e) {
-            if (log.isEnabledFor(Level.ERROR)) {
-                final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
-                log.error(errMessage, e);
-                throw new SMatchException(errMessage, e);
-            }
+            final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
+            log.error(errMessage, e);
+            throw new SMatchException(errMessage, e);
         }
     }
 

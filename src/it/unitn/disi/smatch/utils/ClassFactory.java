@@ -65,15 +65,13 @@ public class ClassFactory {
             Class cl = Class.forName(className);
             constr = cl.getConstructor(attrTypes);
         } catch (ClassNotFoundException e) {
-            if (log.isEnabledFor(Level.ERROR)) {
-                log.error("ClassNotFoundException", e);
-            }
-            throw new SMatchException("ERROR: ClassNotFoundException " + e.getMessage(), e);
+            final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
+            log.error(errMessage, e);
+            throw new SMatchException(errMessage, e);
         } catch (NoSuchMethodException e) {
-            if (log.isEnabledFor(Level.ERROR)) {
-                log.error("NoSuchMethodException", e);
-            }
-            throw new SMatchException("ERROR: NoSuchMethodException " + e.getMessage(), e);
+            final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
+            log.error(errMessage, e);
+            throw new SMatchException(errMessage, e);
         }
 
         Object classInst;
@@ -81,26 +79,17 @@ public class ClassFactory {
         try {
             classInst = constr.newInstance(attrValues);
         } catch (InstantiationException e) {
-            if (log.isEnabledFor(Level.ERROR)) {
-                log.error("InstantiationException " + e.getMessage(), e);
-            }
-            throw new SMatchException("ERROR: InstantiationException " + e.getMessage(), e);
+            final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
+            log.error(errMessage, e);
+            throw new SMatchException(errMessage, e);
         } catch (IllegalAccessException e) {
-            if (log.isEnabledFor(Level.ERROR)) {
-                log.error("IllegalAccessException", e);
-            }
-            throw new SMatchException("ERROR: IllegalAccessException " + e.getMessage(), e);
+            final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
+            log.error(errMessage, e);
+            throw new SMatchException(errMessage, e);
         } catch (InvocationTargetException e) {
-            if (log.isEnabledFor(Level.ERROR)) {
-                log.error("InvocationTargetException", e);
-            }
-            if (e.getTargetException() != null) {
-                if (log.isEnabledFor(Level.ERROR)) {
-                    log.error("InvocationTargetException.getTargetException " + e.getTargetException().getStackTrace().toString(), e);
-                }
-                throw new SMatchException("ERROR: InvocationTargetException " + e.getMessage() + " Target:" + e.getTargetException().getMessage(), e);
-            }
-            throw new SMatchException("ERROR: InvocationTargetException " + e.getMessage(), e);
+            final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
+            log.error(errMessage, e);
+            throw new SMatchException(errMessage, e);
         }
         return classInst;
     }

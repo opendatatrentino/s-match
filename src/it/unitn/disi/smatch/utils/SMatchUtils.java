@@ -1,7 +1,6 @@
 package it.unitn.disi.smatch.utils;
 
 import it.unitn.disi.smatch.SMatchException;
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 
@@ -44,11 +43,9 @@ public class SMatchUtils {
             oos.close();
             fos.close();
         } catch (IOException e) {
-            if (log.isEnabledFor(Level.ERROR)) {
-                final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
-                log.error(errMessage, e);
-                throw new SMatchException(errMessage, e);
-            }
+            final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
+            log.error(errMessage, e);
+            throw new SMatchException(errMessage, e);
         }
     }
 
@@ -68,27 +65,21 @@ public class SMatchUtils {
             try {
                 result = oos.readObject();
             } catch (IOException e) {
-                if (log.isEnabledFor(Level.ERROR)) {
-                    final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
-                    log.error(errMessage, e);
-                    throw new SMatchException(errMessage, e);
-                }
+                final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
+                log.error(errMessage, e);
+                throw new SMatchException(errMessage, e);
             } catch (ClassNotFoundException e) {
-                if (log.isEnabledFor(Level.ERROR)) {
-                    final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
-                    log.error(errMessage, e);
-                    throw new SMatchException(errMessage, e);
-                }
+                final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
+                log.error(errMessage, e);
+                throw new SMatchException(errMessage, e);
             }
             oos.close();
             bis.close();
             fos.close();
         } catch (IOException e) {
-            if (log.isEnabledFor(Level.ERROR)) {
-                final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
-                log.error(errMessage, e);
-                throw new SMatchException(errMessage, e);
-            }
+            final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
+            log.error(errMessage, e);
+            throw new SMatchException(errMessage, e);
         }
         return result;
     }

@@ -8,6 +8,7 @@ import it.unitn.disi.smatch.data.*;
 import it.unitn.disi.smatch.oracles.ILinguisticOracle;
 import it.unitn.disi.smatch.oracles.ISenseMatcher;
 import it.unitn.disi.smatch.oracles.LinguisticOracleException;
+import it.unitn.disi.smatch.oracles.SenseMatcherException;
 import it.unitn.disi.smatch.utils.SMatchUtils;
 import net.didion.jwnl.JWNL;
 import net.didion.jwnl.JWNLException;
@@ -148,6 +149,7 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
      * - sense filtering (elimination of irrelevant to context structure senses)
      *
      * @param context context to be prepocessed
+     * @throws ContextPreprocessorException ContextPreprocessorException
      */
     public void preprocess(IContext context) throws ContextPreprocessorException {
         context.getMatchingContext().resetOldPreprocessing();
@@ -156,7 +158,13 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
         context = buildCLabs(context);
         //sense filtering
         context = findMultiwordsInContextStructure(context);
-        senseFiltering(context);
+        try {
+            senseFiltering(context);
+        } catch (SenseMatcherException e) {
+            final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
+            log.error(errMessage, e);
+            throw new ContextPreprocessorException(errMessage, e);
+        }
 
         //unrecognized words
         log.info("Unrecognized words: " + unrecognizedWords.size());
@@ -168,27 +176,20 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
      *
      * @param context context of node which cLab to be build
      * @return context with cLabs
+     * @throws ContextPreprocessorException ContextPreprocessorException
      */
-    private IContext buildCLabs(IContext context) {
+    private IContext buildCLabs(IContext context) throws ContextPreprocessorException {
         List<INode> allNodes = context.getAllNodes();
-        try {
-            int counter = 0;
-            int total = allNodes.size();
-            int reportInt = (total / 20) + 1;//i.e. report every 5%
-            while (0 < allNodes.size()) {
-                counter++;
-                if ((SMatchConstants.LARGE_TREE < total) && (0 == (counter % reportInt)) && log.isEnabledFor(Level.INFO)) {
-                    log.info(100 * counter / total + "%");
-                }
-                INode node = allNodes.remove(0);
-                processNode(node);
+        int counter = 0;
+        int total = allNodes.size();
+        int reportInt = (total / 20) + 1;//i.e. report every 5%
+        while (0 < allNodes.size()) {
+            counter++;
+            if ((SMatchConstants.LARGE_TREE < total) && (0 == (counter % reportInt)) && log.isEnabledFor(Level.INFO)) {
+                log.info(100 * counter / total + "%");
             }
-        } catch (Exception e) {
-            if (log.isEnabledFor(Level.ERROR)) {
-                final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
-                log.error(errMessage, e);
-                //throw new SMatchException(errMessage, e);
-            }
+            INode node = allNodes.remove(0);
+            processNode(node);
         }
 
         return context;
@@ -198,6 +199,7 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
      * process node to construct cLabs of context.
      *
      * @param node interface of node which will be processed
+     * @throws ContextPreprocessorException ContextPreprocessorException
      */
     private void processNode(INode node) throws ContextPreprocessorException {
         try {
@@ -230,7 +232,7 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
                 String lemma = linguisticOracle.getBaseForm(labelOfNode);
 
                 //create atomic node of label
-                IAtomicConceptOfLabel ACoL = AtomicConceptOfLabel.getInstance(id_tok, labelOfNode, lemma, "all");
+                IAtomicConceptOfLabel ACoL = AtomicConceptOfLabel.getInstance(id_tok, labelOfNode, lemma);
                 //Attach senses obtained from the oracle to the node
                 node.getNodeData().addAtomicConceptOfLabel(ACoL);
                 //to to token ids
@@ -283,7 +285,7 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
                             String lemma = linguisticOracle.getBaseForm(token);
 
                             //create atomic node of label
-                            IAtomicConceptOfLabel ACoL = AtomicConceptOfLabel.getInstance(id_tok, token, lemma, "all");
+                            IAtomicConceptOfLabel ACoL = AtomicConceptOfLabel.getInstance(id_tok, token, lemma);
                             //add it to node
                             node.getNodeData().addAtomicConceptOfLabel(ACoL);
                             //mark id  as meaningful
@@ -309,7 +311,7 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
                 //add to list of processed labels
                 tokensOfNodeLabel.add(token);
                 //create atomic node of label
-                IAtomicConceptOfLabel ACoL = AtomicConceptOfLabel.getInstance(id_tok, token, token, "all");
+                IAtomicConceptOfLabel ACoL = AtomicConceptOfLabel.getInstance(id_tok, token, token);
                 //Attach senses obtained from the oracle to the node
                 node.getNodeData().addAtomicConceptOfLabel(ACoL);
                 //to to token ids
@@ -516,14 +518,12 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
         int openCount = 0;
         while (open.hasMoreTokens()) {
             String tmp = open.nextToken();
-            tmp.trim();
             if (tmp.equals("("))
                 openCount++;
         }
         StringTokenizer closed = new StringTokenizer(formulaOfConcept, ")", true);
         while (closed.hasMoreTokens()) {
             String tmp = closed.nextToken();
-            tmp.trim();
             if (tmp.equals(")"))
                 openCount--;
         }
@@ -583,6 +583,7 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
      *
      * @param context data structure of input label
      * @return context with multiwords
+     * @throws ContextPreprocessorException ContextPreprocessorException
      */
     private IContext findMultiwordsInContextStructure(IContext context) throws ContextPreprocessorException {
         //all context nodes
@@ -623,18 +624,15 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
      * -filtering within context structure
      *
      * @param context context to perform sense filtering
+     * @throws SenseMatcherException SenseMatcherException
      */
-    private void senseFiltering(IContext context) {
-        IContextData icd = context.getContextData();
+    private void senseFiltering(IContext context) throws SenseMatcherException {
         //all context nodes
         List<INode> allNode = context.getAllNodes();
         //Senses Sets for particular ACoL
-        List<ISensesSet> sourceSensesSets;
-        List<ISensesSet> targetSensesSets;
         //for all nodes in context
-        for (int i = 0; i < allNode.size(); i++) {
+        for (INode sourceNode : allNode) {
             //get Node
-            INode sourceNode = allNode.get(i);
             //get node ACoLs
             List<IAtomicConceptOfLabel> sourceNodeACoLs = sourceNode.getNodeData().getACoLs();
             //if node is complex
@@ -656,26 +654,22 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
                             for (String sourceSenseID : sourceSenses) {
                                 //for each sense in target ACoL
                                 for (String targetSenseID : targetSenses) {
-                                    try {
-                                        boolean isRelationPresent = false;
-                                        if ((senseMatcher.isSourceSynonymTarget(sourceSenseID, targetSenseID))) {
-                                            isRelationPresent = true;
-                                            fillIntraAxiomsHash(icd, sourceACoL, targetACoL);
-                                        }
-                                        if (senseMatcher.isSourceLessGeneralThanTarget(sourceSenseID, targetSenseID)) {
-                                            isRelationPresent = true;
-                                            fillIntraAxiomsHashMG(icd, targetACoL, sourceACoL);
-                                        }
-                                        if (senseMatcher.isSourceMoreGeneralThanTarget(sourceSenseID, targetSenseID)) {
-                                            isRelationPresent = true;
-                                            fillIntraAxiomsHashMG(icd, sourceACoL, targetACoL);
-                                        }
-                                        if (isRelationPresent) {
-                                            sourceSenseSet.addToRefinedSenses(sourceSenseID);
-                                            targetSenseSet.addToRefinedSenses(targetSenseID);
-                                        }
+                                    boolean isRelationPresent = false;
+                                    if ((senseMatcher.isSourceSynonymTarget(sourceSenseID, targetSenseID))) {
+                                        isRelationPresent = true;
+                                    }
+                                    if (senseMatcher.isSourceLessGeneralThanTarget(sourceSenseID, targetSenseID)) {
+                                        isRelationPresent = true;
+                                    }
+                                    if (senseMatcher.isSourceMoreGeneralThanTarget(sourceSenseID, targetSenseID)) {
+                                        isRelationPresent = true;
+                                    }
+                                    if (isRelationPresent) {
+                                        sourceSenseSet.addToRefinedSenses(sourceSenseID);
+                                        targetSenseSet.addToRefinedSenses(targetSenseID);
+                                    }
 
-                                        //if senses are synonyms or less (more) general in WN hierarchy
+                                    //if senses are synonyms or less (more) general in WN hierarchy
 //                                    if ((senseMatcher.isSourceSynonymTarget(sourceSenseID, targetSenseID)) ||
 //                                            (senseMatcher.isSourceLessGeneralThanTarget(sourceSenseID, targetSenseID)) ||
 //                                            (senseMatcher.isSourceMoreGeneralThanTarget(sourceSenseID, targetSenseID))) {
@@ -686,14 +680,6 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
 //                                    if (senseMatcher.isSourceOppositeToTarget(sourceSenseID, targetSenseID)) {
 //                                        log.debug("Inside opposite lemmas " + sourceACoL.getLemma() + " " + targetACoL.getLemma());
 //                                    }
-
-                                    } catch (Exception e) {
-                                        if (log.isEnabledFor(Level.ERROR)) {
-                                            final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
-                                            log.error(errMessage, e);
-                                            //throw new SMatchException(errMessage, e);
-                                        }
-                                    }
                                 }
                             }
                         }
@@ -733,42 +719,31 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
                                         //more general, less general then the senses of
                                         //the ancestors and descendants of the node in
                                         //context hierarchy
-                                        try {
-                                            boolean isRelationPresent = false;
-                                            if ((senseMatcher.isSourceSynonymTarget(sourceSenseID, targetSenseID))) {
-                                                isRelationPresent = true;
-                                                fillIntraAxiomsHash(icd, sourceACoL, targetACoL);
-                                            }
-                                            if (senseMatcher.isSourceLessGeneralThanTarget(sourceSenseID, targetSenseID)) {
-                                                isRelationPresent = true;
-                                                fillIntraAxiomsHashMG(icd, targetACoL, sourceACoL);
-                                            }
-                                            if (senseMatcher.isSourceMoreGeneralThanTarget(sourceSenseID, targetSenseID)) {
-                                                isRelationPresent = true;
-                                                fillIntraAxiomsHashMG(icd, sourceACoL, targetACoL);
-                                            }
-                                            if (isRelationPresent) {
-                                                sourceSenseSet.addToRefinedSenses(sourceSenseID);
-                                                targetSenseSet.addToRefinedSenses(targetSenseID);
-                                            }
-
-//                                            if ((senseMatcher.isSourceSynonymTarget(sourceSenseID, targetSenseID)) ||
-//                                                    (senseMatcher.isSourceLessGeneralThanTarget(sourceSenseID, targetSenseID)) ||
-//                                                    (senseMatcher.isSourceMoreGeneralThanTarget(sourceSenseID, targetSenseID))) {
-//                                                //add to refined senses in the sense list
-//                                                sourceSenseSet.addToRefinedSenses(sourceSenseID);
-//                                                targetSenseSet.addToRefinedSenses(targetSenseID);
-//                                            }
-//                                            if (senseMatcher.isSourceOppositeToTarget(sourceSenseID, targetSenseID)) {
-//                                                log.debug("Opposite lemmas " + sourceACoL.getLemma() + " " + targetACoL.getLemma());
-//                                            }
-                                        } catch (Exception e) {
-                                            if (log.isEnabledFor(Level.ERROR)) {
-                                                final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
-                                                log.error(errMessage, e);
-                                                //throw new SMatchException(errMessage, e);
-                                            }
+                                        boolean isRelationPresent = false;
+                                        if ((senseMatcher.isSourceSynonymTarget(sourceSenseID, targetSenseID))) {
+                                            isRelationPresent = true;
                                         }
+                                        if (senseMatcher.isSourceLessGeneralThanTarget(sourceSenseID, targetSenseID)) {
+                                            isRelationPresent = true;
+                                        }
+                                        if (senseMatcher.isSourceMoreGeneralThanTarget(sourceSenseID, targetSenseID)) {
+                                            isRelationPresent = true;
+                                        }
+                                        if (isRelationPresent) {
+                                            sourceSenseSet.addToRefinedSenses(sourceSenseID);
+                                            targetSenseSet.addToRefinedSenses(targetSenseID);
+                                        }
+
+//                                        if ((senseMatcher.isSourceSynonymTarget(sourceSenseID, targetSenseID)) ||
+//                                                (senseMatcher.isSourceLessGeneralThanTarget(sourceSenseID, targetSenseID)) ||
+//                                                (senseMatcher.isSourceMoreGeneralThanTarget(sourceSenseID, targetSenseID))) {
+//                                            //add to refined senses in the sense list
+//                                            sourceSenseSet.addToRefinedSenses(sourceSenseID);
+//                                            targetSenseSet.addToRefinedSenses(targetSenseID);
+//                                        }
+//                                        if (senseMatcher.isSourceOppositeToTarget(sourceSenseID, targetSenseID)) {
+//                                            log.debug("Opposite lemmas " + sourceACoL.getLemma() + " " + targetACoL.getLemma());
+//                                        }
                                     }
                                 }
                             }
@@ -792,24 +767,6 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
         }
     }
 
-    private void fillIntraAxiomsHash(IContextData context, IAtomicConceptOfLabel sourceACoL, IAtomicConceptOfLabel targetACoL) {
-        String source = sourceACoL.getTokenUID();
-        String target = targetACoL.getTokenUID();
-        String toHash = "";
-        if (target.compareTo(source) > 0)
-            toHash = target + source;
-        else
-            toHash = source + target;
-        context.getSynonyms().add(toHash);
-    }
-
-    private void fillIntraAxiomsHashMG(IContextData context, IAtomicConceptOfLabel sourceACoL, IAtomicConceptOfLabel targetACoL) {
-        String source = sourceACoL.getTokenUID();
-        String target = targetACoL.getTokenUID();
-        String toHash = source + target;
-        context.getMg().add(toHash);
-    }
-
     /**
      * Checks whether input string contains a number or not.
      *
@@ -826,6 +783,12 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
     /**
      * An extension of the list indexOf method which uses approximate comparison of the words as
      * elements of the List.
+     *
+     * @param vec      list of string
+     * @param str      string to search
+     * @param init_pos start position
+     * @return position
+     * @throws ContextPreprocessorException ContextPreprocessorException
      */
     private int extendedIndexOf(List<String> vec, String str, int init_pos) throws ContextPreprocessorException {
         try {
@@ -860,6 +823,7 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
      *
      * @param tokens input token
      * @return a list which contains multiwords
+     * @throws ContextPreprocessorException ContextPreprocessorException
      */
     private ArrayList<String> multiwordRecognition(ArrayList<String> tokens) throws ContextPreprocessorException {
         String subLemma;
@@ -870,122 +834,84 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
                 //if the first element of list is a key element of hash
                 if (multiwords.get(subLemma) != null) {
                     ArrayList<ArrayList<String>> entries = multiwords.get(subLemma);
-                    for (int j = 0; j < entries.size(); j++) {
-                        ArrayList<String> mweTail = entries.get(j);
-                        try {
-                            boolean flag = false;
-                            int co = 0;
-                            //at the end co is need to move pointer for case like Clupea harengus with mw Clupea harengus harengus
-                            //TODO move this to pipeline
-                            while ((co < mweTail.size()) && (extendedIndexOf(tokens, mweTail.get(co), co) > i + co)) {
-                                flag = true;
-                                co++;
-                            }
-                            if ((co > mweTail.size() - 1) && (flag)) {
-                                ArrayList<Integer> positions = new ArrayList<Integer>();
-                                int word_pos = tokens.indexOf(subLemma);
-                                if (word_pos == -1)
-                                    break;
-                                //TODO add better error recognition code
-                                int multiword_pos = word_pos;
+                    for (ArrayList<String> mweTail : entries) {
+                        boolean flag = false;
+                        int co = 0;
+                        //at the end co is need to move pointer for case like Clupea harengus with mw Clupea harengus harengus
+                        //TODO move this to pipeline
+                        while ((co < mweTail.size()) && (extendedIndexOf(tokens, mweTail.get(co), co) > i + co)) {
+                            flag = true;
+                            co++;
+                        }
+                        if ((co > mweTail.size() - 1) && (flag)) {
+                            ArrayList<Integer> positions = new ArrayList<Integer>();
+                            int word_pos = tokens.indexOf(subLemma);
+                            if (word_pos == -1)
+                                break;
+                            //TODO add better error recognition code
+                            int multiword_pos = word_pos;
+                            positions.add(word_pos);
+                            boolean cont = true;
+                            boolean connectives_prescendence = false;
+                            int and_pos = -1;
+                            for (String tok : mweTail) {
+                                int old_pos = word_pos;
+                                word_pos = tokens.subList(old_pos + 1, tokens.size()).indexOf(tok) + old_pos + 1;
+                                if (word_pos == -1) {
+                                    word_pos = extendedIndexOf(tokens, tok, old_pos);
+                                    if (word_pos == -1)
+                                        break;
+                                }
+                                if (word_pos - old_pos > 1) {
+                                    cont = false;
+                                    for (int r = old_pos + 1; r < word_pos; r++) {
+                                        if (((andWords.indexOf(tokens.get(r))) > -1) || (orWords.indexOf(tokens.get(r)) > -1)) {
+                                            and_pos = r;
+                                            connectives_prescendence = true;
+                                        } else {
+                                            //connectives_prescendence = false;
+                                        }
+                                    }
+                                }
                                 positions.add(word_pos);
-                                boolean cont = true;
-                                boolean connectives_prescendence = false;
-                                int and_pos = -1;
-                                for (int k = 0; k < mweTail.size(); k++) {
-                                    String tok = mweTail.get(k);
-                                    int old_pos = word_pos;
-                                    try {
-                                        word_pos = tokens.subList(old_pos + 1, tokens.size()).indexOf(tok) + old_pos + 1;
-                                    } catch (Exception e) {
-                                        if (log.isEnabledFor(Level.ERROR)) {
-                                            final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
-                                            log.error(errMessage, e);
-                                            log.error(subLemma);
-                                            log.error(positions);
-                                            log.error(tok);
-                                            log.error(tokens);
-                                            log.error(old_pos);
-                                            log.error(word_pos);
-                                            //throw new SMatchException(errMessage, e);
-                                        }
-                                    }
-                                    if (word_pos == -1) {
-                                        word_pos = extendedIndexOf(tokens, tok, old_pos);
-                                        if (word_pos == -1)
-                                            break;
-                                    }
-                                    if (word_pos - old_pos > 1) {
-                                        cont = false;
-                                        for (int r = old_pos + 1; r < word_pos; r++) {
-                                            if (((andWords.indexOf(tokens.get(r))) > -1) || (orWords.indexOf(tokens.get(r)) > -1)) {
-                                                and_pos = r;
-                                                connectives_prescendence = true;
-                                            } else {
-                                                //connectives_prescendence = false;
-                                            }
-                                        }
-                                    }
-                                    positions.add(word_pos);
-                                }
-                                int removed_tokens_index_correction = 0;
-                                if (cont) {
-                                    String multiword = "";
-                                    for (int k = 0; k < positions.size(); k++) {
-                                        Integer integer = positions.get(k);
-                                        int pos = integer - removed_tokens_index_correction;
-                                        multiword = multiword + tokens.get(pos) + " ";
-                                        tokens.remove(pos);
-                                        removed_tokens_index_correction++;
-                                    }
-                                    multiword = multiword.substring(0, multiword.length() - 1);
-                                    tokens.add(multiword_pos, multiword);
-                                } else {
-                                    if (connectives_prescendence) {
-                                        if (and_pos > multiword_pos) {
-                                            String multiword = "";
-                                            int word_distance = positions.get(positions.size() - 1) - positions.get(0);
-                                            for (int k = 0; k < positions.size(); k++) {
-                                                Integer integer = positions.get(k);
-                                                int pos = integer - removed_tokens_index_correction;
-                                                try {
-                                                    if (is_token_in_multiword.get(tokens.get(pos)) == null) {
-                                                        ArrayList<Integer> toAdd = new ArrayList<Integer>();
-                                                        toAdd.add(1);
-                                                        toAdd.add(word_distance - 1);
-                                                        is_token_in_multiword.put(tokens.get(pos), toAdd);
-                                                    } else {
-                                                        ArrayList<Integer> toAdd = is_token_in_multiword.get(tokens.get(pos));
-                                                        int tmp = toAdd.get(0) + 1;
-                                                        toAdd.remove(0);
-                                                        toAdd.add(0, tmp);
-                                                        is_token_in_multiword.put(tokens.get(pos), toAdd);
-                                                    }
-                                                } catch (Exception e) {
-                                                    if (log.isEnabledFor(Level.ERROR)) {
-                                                        final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
-                                                        log.error(errMessage, e);
-                                                        log.error(tokens);
-                                                        log.error(pos);
-                                                        log.error(positions);
-                                                        //throw new SMatchException(errMessage, e);
-                                                    }
-                                                }
-                                                multiword = multiword + tokens.get(pos) + " ";
-                                            }
-                                            multiword = multiword.substring(0, multiword.length() - 1);
-                                            tokens.remove(multiword_pos);
-                                            tokens.add(multiword_pos, multiword);
-                                        }
-                                    }
-                                }
                             }
-                        } catch (ArrayIndexOutOfBoundsException e) {
-                            if (log.isEnabledFor(Level.ERROR)) {
-                                final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
-                                log.error(errMessage, e);
-                                log.error(subLemma + " " + mweTail);
-                                //throw new SMatchException(errMessage, e);
+                            int removed_tokens_index_correction = 0;
+                            if (cont) {
+                                String multiword = "";
+                                for (Integer integer : positions) {
+                                    int pos = integer - removed_tokens_index_correction;
+                                    multiword = multiword + tokens.get(pos) + " ";
+                                    tokens.remove(pos);
+                                    removed_tokens_index_correction++;
+                                }
+                                multiword = multiword.substring(0, multiword.length() - 1);
+                                tokens.add(multiword_pos, multiword);
+                            } else {
+                                if (connectives_prescendence) {
+                                    if (and_pos > multiword_pos) {
+                                        String multiword = "";
+                                        int word_distance = positions.get(positions.size() - 1) - positions.get(0);
+                                        for (Integer integer : positions) {
+                                            int pos = integer - removed_tokens_index_correction;
+                                            if (is_token_in_multiword.get(tokens.get(pos)) == null) {
+                                                ArrayList<Integer> toAdd = new ArrayList<Integer>();
+                                                toAdd.add(1);
+                                                toAdd.add(word_distance - 1);
+                                                is_token_in_multiword.put(tokens.get(pos), toAdd);
+                                            } else {
+                                                ArrayList<Integer> toAdd = is_token_in_multiword.get(tokens.get(pos));
+                                                int tmp = toAdd.get(0) + 1;
+                                                toAdd.remove(0);
+                                                toAdd.add(0, tmp);
+                                                is_token_in_multiword.put(tokens.get(pos), toAdd);
+                                            }
+                                            multiword = multiword + tokens.get(pos) + " ";
+                                        }
+                                        multiword = multiword.substring(0, multiword.length() - 1);
+                                        tokens.remove(multiword_pos);
+                                        tokens.add(multiword_pos, multiword);
+                                    }
+                                }
                             }
                         }
                     }
@@ -993,8 +919,7 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
             }
         }
         ArrayList<String> tmp = new ArrayList<String>();
-        for (int k = 0; k < tokens.size(); k++) {
-            String s = tokens.get(k);
+        for (String s : tokens) {
             if (is_token_in_multiword.get(s) == null) {
                 tmp.add(s);
             } else {
@@ -1080,11 +1005,9 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
             }
             log.info(pos.getKey() + " multiwords: " + count);
         } catch (JWNLException e) {
-            if (log.isEnabledFor(Level.ERROR)) {
-                final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
-                log.error(errMessage, e);
-                throw new SMatchException(errMessage, e);
-            }
+            final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
+            log.error(errMessage, e);
+            throw new SMatchException(errMessage, e);
         }
     }
 
