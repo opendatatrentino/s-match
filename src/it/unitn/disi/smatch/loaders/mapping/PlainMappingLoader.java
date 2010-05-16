@@ -43,8 +43,9 @@ public class PlainMappingLoader extends Configurable implements IMappingLoader {
         HashMap<String, Integer> sNodes = createHash(sourceNodes);
         HashMap<String, Integer> tNodes = createHash(targetNodes);
 
+        BufferedReader reader = null;
         try {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(fileName), "UTF-8"));
+            reader = new BufferedReader(new InputStreamReader(new FileInputStream(fileName), "UTF-8"));
             String line;
             int cnt = 0;
             int cntLoaded = 0;
@@ -137,6 +138,15 @@ public class PlainMappingLoader extends Configurable implements IMappingLoader {
             final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
             log.error(errMessage, e);
             throw new MappingLoaderException(errMessage, e);
+        } finally {
+            if (null != reader) {
+                try {
+                    reader.close();
+                } catch (IOException e) {
+                    final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
+                    log.error(errMessage, e);
+                }
+            }
         }
 
         return mapping;

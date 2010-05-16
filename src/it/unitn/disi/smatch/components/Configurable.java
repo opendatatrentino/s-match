@@ -189,12 +189,23 @@ public abstract class Configurable implements IConfigurable {
     private Properties loadProperties(String filename) throws ConfigurableException {
         log.info("Loading properties from " + filename);
         Properties properties = new Properties();
+        FileInputStream input = null;
         try {
-            properties.load(new FileInputStream(filename));
+            input = new FileInputStream(filename);
+            properties.load(input);
         } catch (IOException e) {
             final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
             log.error(errMessage, e);
             throw new ConfigurableException(errMessage, e);
+        } finally {
+            if (null != input) {
+                try {
+                    input.close();
+                } catch (IOException e) {
+                    final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
+                    log.error(errMessage, e);
+                }
+            }
         }
 
         return properties;
