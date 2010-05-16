@@ -415,7 +415,7 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
         //List of ACoLs identifiers
         List<String> vec = new ArrayList<String>();
         //formula for the complex concept
-        String formulaOfConcept = "";
+        StringBuilder formulaOfConcept = new StringBuilder();
         //logical connective
         String connective = " ";
         //bracets to add
@@ -436,9 +436,9 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
                 if (vec != null && vec.size() > 0) {
                     //construct formula
                     if (connective.equals("")) {
-                        formulaOfConcept = formulaOfConcept + " | " + bracket + vec.toString();
+                        formulaOfConcept.append(" | ").append(bracket).append(vec.toString());
                     } else {
-                        formulaOfConcept = formulaOfConcept + connective + bracket + vec.toString();
+                        formulaOfConcept.append(connective).append(bracket).append(vec.toString());
                     }
                     insert = true;
                     connective = "";
@@ -454,7 +454,7 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
                     leftBrackets = leftBrackets + 1;
                 } else if (token.equals(")") && bracketsBalance > 0) {
                     if (insert) {
-                        formulaOfConcept = formulaOfConcept + ")";
+                        formulaOfConcept.append(")");
                     }
                     bracketsBalance = bracketsBalance - 1;
                 } else {
@@ -463,7 +463,7 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
                 //If logical not
             } else if (notWords.indexOf(" " + token + " ") != -1) {
                 if (vec != null && vec.size() > 0) {
-                    formulaOfConcept = formulaOfConcept + connective + vec.toString();
+                    formulaOfConcept.append(connective).append(vec.toString());
                     vec = new ArrayList<String>();
                     connective = "";
                 }
@@ -484,9 +484,9 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
         if (vec != null && vec.size() > 0) {
             //construct formula
             if (connective.indexOf("&") != -1 || connective.indexOf("|") != -1 || connective.equals(" ")) {
-                formulaOfConcept = formulaOfConcept + connective + bracket + vec.toString();
+                formulaOfConcept.append(connective).append(bracket).append(vec.toString());
             } else {
-                formulaOfConcept = formulaOfConcept + " & " + vec.toString();
+                formulaOfConcept.append(" & ").append(vec.toString());
             }
             connective = "";
         } else {
@@ -496,47 +496,49 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
         }
         if (bracketsBalance > 0) {
             for (int i = 0; i < bracketsBalance; i++) {
-                formulaOfConcept = formulaOfConcept + ")";
+                formulaOfConcept.append(")");
             }
         }
         //dealing with brackets
-        formulaOfConcept = formulaOfConcept.replace('[', '(');
-        formulaOfConcept = formulaOfConcept.replace(']', ')');
-        formulaOfConcept = formulaOfConcept.replaceAll(", ", " & ");
-        formulaOfConcept = formulaOfConcept.trim();
-        if (formulaOfConcept.startsWith("&")) {
-            StringTokenizer atoms = new StringTokenizer(formulaOfConcept, "&");
-            formulaOfConcept = atoms.nextToken();
+        String foc = formulaOfConcept.toString();
+        foc = foc.replace('[', '(');
+        foc = foc.replace(']', ')');
+        foc = foc.replaceAll(", ", " & ");
+        foc = foc.trim();
+        if (foc.startsWith("&")) {
+            StringTokenizer atoms = new StringTokenizer(foc, "&");
+            foc = atoms.nextToken();
         }
-        formulaOfConcept = formulaOfConcept.trim();
-        if (formulaOfConcept.startsWith("|")) {
-            StringTokenizer atoms = new StringTokenizer(formulaOfConcept, "|");
-            formulaOfConcept = atoms.nextToken();
+        foc = foc.trim();
+        if (foc.startsWith("|")) {
+            StringTokenizer atoms = new StringTokenizer(foc, "|");
+            foc = atoms.nextToken();
         }
         //brackets counters
-        StringTokenizer open = new StringTokenizer(formulaOfConcept, "(", true);
+        StringTokenizer open = new StringTokenizer(foc, "(", true);
         int openCount = 0;
         while (open.hasMoreTokens()) {
             String tmp = open.nextToken();
             if (tmp.equals("("))
                 openCount++;
         }
-        StringTokenizer closed = new StringTokenizer(formulaOfConcept, ")", true);
+        StringTokenizer closed = new StringTokenizer(foc, ")", true);
         while (closed.hasMoreTokens()) {
             String tmp = closed.nextToken();
             if (tmp.equals(")"))
                 openCount--;
         }
+        formulaOfConcept = new StringBuilder(foc);
         if (openCount > 0) {
             for (int par = 0; par < openCount; par++)
-                formulaOfConcept += ")";
+                formulaOfConcept.append(")");
         }
         if (openCount < 0) {
             for (int par = 0; par < openCount; par++)
-                formulaOfConcept = "(" + formulaOfConcept;
+                formulaOfConcept.insert(0, "(");
         }
         //Assign formula to the node
-        node.getNodeData().setcLabFormula(formulaOfConcept);
+        node.getNodeData().setcLabFormula(formulaOfConcept.toString());
     }
 
     /**

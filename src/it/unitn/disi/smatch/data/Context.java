@@ -267,10 +267,6 @@ public class Context implements IMatchingContext, IContext {
         return result;
     }
 
-    public void sort() {
-        root.getNodeData().sort();
-    }
-
     public void updateNodeIds() {
         int oldCountNode = countNode;
         countNode = 1;

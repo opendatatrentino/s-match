@@ -186,7 +186,7 @@ public class BasicGlossMatcher extends Configurable {
      */
     public String getExtendedGloss(ISynset original, int intSource, char Rel) throws LinguisticOracleException {
         List<ISynset> children = new ArrayList<ISynset>();
-        String result = "";
+        StringBuilder result = new StringBuilder();
         if (Rel == IMappingElement.LESS_GENERAL) {
             children = original.getChildren(intSource);
         } else if (Rel == IMappingElement.MORE_GENERAL) {
@@ -194,8 +194,8 @@ public class BasicGlossMatcher extends Configurable {
         }
         for (ISynset iSynset : children) {
             String gloss = iSynset.getGloss();
-            result = result + gloss + ".";
+            result.append(gloss).append(".");
         }
-        return result;
+        return result.toString();
     }
 }

@@ -51,6 +51,8 @@ public class CTXMLContextRenderer extends Configurable implements IContextRender
                     log.error(errMessage);
                     throw new ContextRendererException(errMessage);
                 }
+
+                context.getRoot().getNodeData().sort();
                 
                 nodeQ.add(context.getRoot());
                 INode curNode;
