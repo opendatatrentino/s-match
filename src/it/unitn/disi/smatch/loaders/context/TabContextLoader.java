@@ -1,9 +1,7 @@
 package it.unitn.disi.smatch.loaders.context;
 
-import it.unitn.disi.smatch.components.Configurable;
 import it.unitn.disi.smatch.data.Context;
 import it.unitn.disi.smatch.data.IContext;
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import java.io.BufferedReader;
@@ -47,51 +45,53 @@ public class TabContextLoader extends BaseContextLoader implements IContextLoade
      * formatted in tab indented format.
      *
      * @param input Reader for the input file
-     * @throws IOException IOException
      * @return the loaded IContext
+     * @throws IOException IOException
      */
     private IContext process(BufferedReader input) throws IOException {
         IContext result = new Context();
         ArrayList<String> rootPath = new ArrayList<String>();
 
         //loads the root node
-        String fatherConceptId = result.newNode(input.readLine(), null);
-        rootPath.add(fatherConceptId);
+        final String root = input.readLine();
+        if (null != root) {
+            String fatherConceptId = result.newNode(root, null);
+            rootPath.add(fatherConceptId);
 
-        int artificialLevel = 0;//flags that we added Top and need an increment in level
-        String fatherId;
-        int old_depth = 0;
-        String line;
-        while ((line = input.readLine()) != null &&
-                !line.startsWith("#") &&
-                !line.equals("")) {
+            int artificialLevel = 0;//flags that we added Top and need an increment in level
+            String fatherId;
+            int old_depth = 0;
+            String line;
+            while ((line = input.readLine()) != null &&
+                    !line.startsWith("#") &&
+                    !line.equals("")) {
 
-            int int_depth = numOfTabs(line);
-            String name = line.substring(int_depth);
-            int_depth = int_depth + artificialLevel;
-            if (int_depth == old_depth) {
-                fatherId = rootPath.get(old_depth - 1);
-                String newCID = result.newNode(name, fatherId);
-                setArrayNodeID(int_depth, rootPath, newCID);
-            } else if (int_depth > old_depth) {
-                fatherId = rootPath.get(old_depth);
-                String newCID = result.newNode(name, fatherId);
-                setArrayNodeID(int_depth, rootPath, newCID);
-                old_depth = int_depth;
-            } else if (int_depth < old_depth) {
-                if (0 == int_depth) {//looks like we got multiple roots in the input
-                    artificialLevel = 1;
-                    fatherId = result.newNode("Top", null);
-                    rootPath.add(0, fatherId);
-                    int_depth = 1;
+                int int_depth = numOfTabs(line);
+                String name = line.substring(int_depth);
+                int_depth = int_depth + artificialLevel;
+                if (int_depth == old_depth) {
+                    fatherId = rootPath.get(old_depth - 1);
+                    String newCID = result.newNode(name, fatherId);
+                    setArrayNodeID(int_depth, rootPath, newCID);
+                } else if (int_depth > old_depth) {
+                    fatherId = rootPath.get(old_depth);
+                    String newCID = result.newNode(name, fatherId);
+                    setArrayNodeID(int_depth, rootPath, newCID);
+                    old_depth = int_depth;
+                } else if (int_depth < old_depth) {
+                    if (0 == int_depth) {//looks like we got multiple roots in the input
+                        artificialLevel = 1;
+                        fatherId = result.newNode("Top", null);
+                        rootPath.add(0, fatherId);
+                        int_depth = 1;
+                    }
+                    fatherId = rootPath.get(int_depth - 1);
+                    String newCID = result.newNode(name, fatherId);
+                    setArrayNodeID(int_depth, rootPath, newCID);
+                    old_depth = int_depth;
                 }
-                fatherId = rootPath.get(int_depth - 1);
-                String newCID = result.newNode(name, fatherId);
-                setArrayNodeID(int_depth, rootPath, newCID);
-                old_depth = int_depth;
             }
         }
-
         return result;
     }
 
