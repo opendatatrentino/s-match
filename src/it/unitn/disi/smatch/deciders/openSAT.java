@@ -18,9 +18,9 @@ import java.io.StringReader;
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
-public class openSAT extends Configurable implements ISATSolver {
+public class OpenSAT extends Configurable implements ISATSolver {
 
-    private static final Logger log = Logger.getLogger(openSAT.class);
+    private static final Logger log = Logger.getLogger(OpenSAT.class);
 
     private final Dimacs parser = new Dimacs();
     private final ICNF formula = Default.cnf();

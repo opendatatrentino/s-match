@@ -8,7 +8,6 @@ import it.unitn.disi.smatch.data.mappings.IMappingElement;
 import it.unitn.disi.smatch.data.mappings.MappingNodeElement;
 import it.unitn.disi.smatch.data.matrices.IMatchMatrix;
 import it.unitn.disi.smatch.data.matrices.MatrixFactory;
-import it.unitn.disi.smatch.deciders.openSAT;
 import it.unitn.disi.smatch.matchers.structure.node.OptimizedStageNodeMatcher;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
