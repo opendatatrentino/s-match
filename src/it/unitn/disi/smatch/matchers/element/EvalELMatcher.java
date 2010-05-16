@@ -185,10 +185,6 @@ public class EvalELMatcher extends Configurable implements IMatcherLibrary {
                         //senses present where they should not be
                         //>
                         result = EXTRA_SENSES;
-                    } else {
-                        //should not get there
-                        System.out.println("should not get there 1");
-                        System.exit(1);
                     }
                 }
             }
