@@ -19,7 +19,7 @@ public class DefaultTreeMatcher extends BaseTreeMatcher implements ITreeMatcher 
         List<INode> sourceNodes = sourceContext.getAllNodes();
         List<INode> targetNodes = targetContext.getAllNodes();
 
-        //initialize CnodMatrix
+        //initialize cNodMatrix
         IMatchMatrix CnodMatrix = MatrixFactory.getInstance(sourceNodes.size(), targetNodes.size());
 
         //semantic relation for particular node matching task

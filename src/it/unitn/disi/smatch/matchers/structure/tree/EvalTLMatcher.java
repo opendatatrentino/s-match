@@ -25,7 +25,7 @@ public class EvalTLMatcher extends BaseTreeMatcher implements ITreeMatcher {
         List<INode> sourceNodes = sourceContext.getAllNodes();
         List<INode> targetNodes = targetContext.getAllNodes();
 
-        //initialize CnodMatrix to keep comparison results
+        //initialize cNodMatrix to keep comparison results
         //should be filled with MatchManager.EQUIVALENCE (as a positive flag)
         //0 row shows equality of the formulas
         IMatchMatrix CnodMatrix = MatrixFactory.getInstance(sourceNodes.size(), 1);

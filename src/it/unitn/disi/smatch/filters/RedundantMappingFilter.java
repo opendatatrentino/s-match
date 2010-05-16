@@ -24,7 +24,7 @@ public class RedundantMappingFilter extends Configurable implements IMappingFilt
 
     private static final Logger log = Logger.getLogger(RedundantMappingFilter.class);
 
-    protected IMatchMatrix CnodMatrix;
+    protected IMatchMatrix cNodMatrix;
 
     public IMapping filter(IMapping mapping) {
         if (log.isEnabledFor(Level.INFO)) {
@@ -47,9 +47,9 @@ public class RedundantMappingFilter extends Configurable implements IMappingFilt
         }
 
         //TODO rewrite algorithm to use mapping
-        CnodMatrix = MatrixFactory.getInstance(sourceNodes.size(), targetNodes.size());
+        cNodMatrix = MatrixFactory.getInstance(sourceNodes.size(), targetNodes.size());
         for (IMappingElement e : mapping) {
-            CnodMatrix.setElement(e.getSourceNode().getNodeData().getIndex(), e.getTargetNode().getNodeData().getIndex(), e.getRelation());
+            cNodMatrix.setElement(e.getSourceNode().getNodeData().getIndex(), e.getTargetNode().getNodeData().getIndex(), e.getRelation());
         }
 
         long counter = 0;
@@ -57,12 +57,12 @@ public class RedundantMappingFilter extends Configurable implements IMappingFilt
         long reportInt = (total / 20) + 1;//i.e. report every 5%
 
         //check each mapping
-        for (int i = 0; i < CnodMatrix.getX(); i++) {
-            for (int j = 0; j < CnodMatrix.getY(); j++) {
-                char relation = CnodMatrix.getElement(i, j);
+        for (int i = 0; i < cNodMatrix.getX(); i++) {
+            for (int j = 0; j < cNodMatrix.getY(); j++) {
+                char relation = cNodMatrix.getElement(i, j);
                 if (IMappingElement.IDK != relation) {
                     if (isRedundant(sourceNodes.get(i), targetNodes.get(j), relation)) {
-                        CnodMatrix.setElement(i, j, IMappingElement.IDK);
+                        cNodMatrix.setElement(i, j, IMappingElement.IDK);
                     }
                 }
 
@@ -78,7 +78,7 @@ public class RedundantMappingFilter extends Configurable implements IMappingFilt
             INode sourceNode = sourceNodes.get(i);
             for (int j = 0; j < targetNodes.size(); j++) {
                 INode targetNode = targetNodes.get(j);
-                char relation = CnodMatrix.getElement(i, j);
+                char relation = cNodMatrix.getElement(i, j);
                 if (IMappingElement.IDK != relation) {
                     result.add(new MappingElement(sourceNode, targetNode, relation));
                 }
@@ -212,6 +212,6 @@ public class RedundantMappingFilter extends Configurable implements IMappingFilt
     }
 
     protected char getRelation(INode a, INode b) {
-        return CnodMatrix.getElement(a.getNodeData().getIndex(), b.getNodeData().getIndex());
+        return cNodMatrix.getElement(a.getNodeData().getIndex(), b.getNodeData().getIndex());
     }
 }

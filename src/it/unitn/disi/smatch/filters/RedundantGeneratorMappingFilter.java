@@ -24,7 +24,7 @@ public class RedundantGeneratorMappingFilter extends Configurable implements IMa
 
     private static final Logger log = Logger.getLogger(RedundantGeneratorMappingFilter.class);
 
-    protected IMatchMatrix CnodMatrix;
+    protected IMatchMatrix cNodMatrix;
     List<INode> sourceNodes;
     List<INode> targetNodes;
 
@@ -50,9 +50,9 @@ public class RedundantGeneratorMappingFilter extends Configurable implements IMa
         }
 
         //TODO rewrite algorithm to use mapping
-        CnodMatrix = MatrixFactory.getInstance(sourceNodes.size(), targetNodes.size());
+        cNodMatrix = MatrixFactory.getInstance(sourceNodes.size(), targetNodes.size());
         for (IMappingElement e : mapping) {
-            CnodMatrix.setElement(e.getSourceNode().getNodeData().getIndex(), e.getTargetNode().getNodeData().getIndex(), e.getRelation());
+            cNodMatrix.setElement(e.getSourceNode().getNodeData().getIndex(), e.getTargetNode().getNodeData().getIndex(), e.getRelation());
         }
 
         long counter = 0;
@@ -60,9 +60,9 @@ public class RedundantGeneratorMappingFilter extends Configurable implements IMa
         long reportInt = (total / 20) + 1;//i.e. report every 5%
 
         //check each mapping
-        for (int i = 0; i < CnodMatrix.getX(); i++) {
-            for (int j = 0; j < CnodMatrix.getY(); j++) {
-                CnodMatrix.setElement(i, j, computeMapping(i, j));
+        for (int i = 0; i < cNodMatrix.getX(); i++) {
+            for (int j = 0; j < cNodMatrix.getY(); j++) {
+                cNodMatrix.setElement(i, j, computeMapping(i, j));
 
                 counter++;
                 if ((SMatchConstants.LARGE_TASK < total) && (0 == (counter % reportInt)) && log.isEnabledFor(Level.INFO)) {
@@ -72,19 +72,19 @@ public class RedundantGeneratorMappingFilter extends Configurable implements IMa
         }
 
         //replace ENTAILED with normal relations for rendering
-        for (int i = 0; i < CnodMatrix.getX(); i++) {
-            for (int j = 0; j < CnodMatrix.getY(); j++) {
-                switch (CnodMatrix.getElement(i, j)) {
+        for (int i = 0; i < cNodMatrix.getX(); i++) {
+            for (int j = 0; j < cNodMatrix.getY(); j++) {
+                switch (cNodMatrix.getElement(i, j)) {
                     case IMappingElement.ENTAILED_LESS_GENERAL: {
-                        CnodMatrix.setElement(i, j, IMappingElement.LESS_GENERAL);
+                        cNodMatrix.setElement(i, j, IMappingElement.LESS_GENERAL);
                         break;
                     }
                     case IMappingElement.ENTAILED_MORE_GENERAL: {
-                        CnodMatrix.setElement(i, j, IMappingElement.MORE_GENERAL);
+                        cNodMatrix.setElement(i, j, IMappingElement.MORE_GENERAL);
                         break;
                     }
                     case IMappingElement.ENTAILED_DISJOINT: {
-                        CnodMatrix.setElement(i, j, IMappingElement.DISJOINT);
+                        cNodMatrix.setElement(i, j, IMappingElement.DISJOINT);
                         break;
                     }
                     default: {
@@ -98,7 +98,7 @@ public class RedundantGeneratorMappingFilter extends Configurable implements IMa
             INode sourceNode = sourceNodes.get(i);
             for (int j = 0; j < targetNodes.size(); j++) {
                 INode targetNode = targetNodes.get(j);
-                char relation = CnodMatrix.getElement(i, j);
+                char relation = cNodMatrix.getElement(i, j);
                 if (IMappingElement.IDK != relation) {
                     result.add(new MappingElement(sourceNode, targetNode, relation));
                 }
@@ -115,30 +115,30 @@ public class RedundantGeneratorMappingFilter extends Configurable implements IMa
     // TODO needs comments
 
     private char computeMapping(int i, int j) {
-        if (IMappingElement.DISJOINT == CnodMatrix.getElement(i, j)) {
+        if (IMappingElement.DISJOINT == cNodMatrix.getElement(i, j)) {
             return IMappingElement.DISJOINT;
         }
-        //if (MatchManager.DISJOINT == CnodMatrix.getElement(i, j) || isRedundant(i, j, MatchManager.DISJOINT)) {
+        //if (MatchManager.DISJOINT == cNodMatrix.getElement(i, j) || isRedundant(i, j, MatchManager.DISJOINT)) {
         if (isRedundant(i, j, IMappingElement.DISJOINT)) {
             return IMappingElement.ENTAILED_DISJOINT;
         }
-        if (IMappingElement.EQUIVALENCE == CnodMatrix.getElement(i, j)) {
+        if (IMappingElement.EQUIVALENCE == cNodMatrix.getElement(i, j)) {
             return IMappingElement.EQUIVALENCE;
         }
-        boolean isLG = (IMappingElement.LESS_GENERAL == CnodMatrix.getElement(i, j) || isRedundant(i, j, IMappingElement.LESS_GENERAL));
-        boolean isMG = (IMappingElement.MORE_GENERAL == CnodMatrix.getElement(i, j) || isRedundant(i, j, IMappingElement.MORE_GENERAL));
+        boolean isLG = (IMappingElement.LESS_GENERAL == cNodMatrix.getElement(i, j) || isRedundant(i, j, IMappingElement.LESS_GENERAL));
+        boolean isMG = (IMappingElement.MORE_GENERAL == cNodMatrix.getElement(i, j) || isRedundant(i, j, IMappingElement.MORE_GENERAL));
         if (isLG && isMG) {
             return IMappingElement.EQUIVALENCE;
         }
         if (isLG) {
-            if (IMappingElement.LESS_GENERAL == CnodMatrix.getElement(i, j)) {
+            if (IMappingElement.LESS_GENERAL == cNodMatrix.getElement(i, j)) {
                 return IMappingElement.LESS_GENERAL;
             } else {
                 return IMappingElement.ENTAILED_LESS_GENERAL;
             }
         }
         if (isMG) {
-            if (IMappingElement.MORE_GENERAL == CnodMatrix.getElement(i, j)) {
+            if (IMappingElement.MORE_GENERAL == cNodMatrix.getElement(i, j)) {
                 return IMappingElement.MORE_GENERAL;
             } else {
                 return IMappingElement.ENTAILED_MORE_GENERAL;
@@ -260,6 +260,6 @@ public class RedundantGeneratorMappingFilter extends Configurable implements IMa
     }
 
     protected char getRelation(INode a, INode b) {
-        return CnodMatrix.getElement(a.getNodeData().getIndex(), b.getNodeData().getIndex());
+        return cNodMatrix.getElement(a.getNodeData().getIndex(), b.getNodeData().getIndex());
     }
 }
