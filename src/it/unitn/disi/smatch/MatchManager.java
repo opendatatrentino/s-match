@@ -69,8 +69,8 @@ public class MatchManager extends Configurable implements IMatchManager {
             " filter <source> <target> <input> <output> read source and target files, input mapping, run filtering and write the output mapping\n" +
             "\n" +
             " Options: \n" +
-            " -config=file.properties                     read configuration from file.properties instead of default S-Match.properties\n" +
-            " -property=key=value                         override the configuration key=value from the config file";
+            " -config=file.properties                   read configuration from file.properties instead of default S-Match.properties\n" +
+            " -property=key=value                       override the configuration key=value from the config file";
 
 
     private static final String CONTEXT_LOADER_KEY = "ContextLoader";
