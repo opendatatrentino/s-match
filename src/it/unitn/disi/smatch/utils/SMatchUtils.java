@@ -1,6 +1,7 @@
 package it.unitn.disi.smatch.utils;
 
 import it.unitn.disi.smatch.SMatchException;
+import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 
@@ -24,6 +25,7 @@ public class SMatchUtils {
             PropertyConfigurator.configure(log4jConf);
         } else {
             System.err.println("No log4j.configuration property specified.");
+            BasicConfigurator.configure();
         }
     }
 
