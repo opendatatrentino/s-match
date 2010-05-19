@@ -6,10 +6,7 @@ import it.unitn.disi.smatch.components.ConfigurableException;
 import it.unitn.disi.smatch.data.Context;
 import it.unitn.disi.smatch.data.IContext;
 import it.unitn.disi.smatch.data.INode;
-import it.unitn.disi.smatch.data.mappings.ContextMapping;
 import it.unitn.disi.smatch.data.mappings.IContextMapping;
-import it.unitn.disi.smatch.data.mappings.IMappingElement;
-import it.unitn.disi.smatch.data.mappings.MappingElement;
 import it.unitn.disi.smatch.data.matrices.IMatchMatrix;
 import it.unitn.disi.smatch.filters.IMappingFilter;
 import it.unitn.disi.smatch.loaders.context.IContextLoader;
@@ -180,15 +177,15 @@ public class MatchManager extends Configurable implements IMatchManager {
         return matcherLibrary.elementLevelMatching(sourceContext, targetContext);
     }
 
-    public IMatchMatrix structureLevelMatching(IContext sourceContext,
-                                               IContext targetContext, IMatchMatrix ClabMatrix) throws SMatchException {
+    public IContextMapping<INode> structureLevelMatching(IContext sourceContext,
+                                                         IContext targetContext, IMatchMatrix ClabMatrix) throws SMatchException {
         if (null == treeMatcher) {
             throw new SMatchException("Tree matcher is not configured.");
         }
         log.info("Structure level matching...");
-        IMatchMatrix CnodMatrix = treeMatcher.treeMatch(sourceContext, targetContext, ClabMatrix);
+        IContextMapping<INode> mapping = treeMatcher.treeMatch(sourceContext, targetContext, ClabMatrix);
         log.info("Structure level matching finished");
-        return CnodMatrix;
+        return mapping;
     }
 
     public void offline(IContext context) throws SMatchException {
@@ -206,22 +203,10 @@ public class MatchManager extends Configurable implements IMatchManager {
         // Performs element level matching which computes the relation between labels.
         IMatchMatrix cLabMatrix = elementLevelMatching(sourceContext, targetContext);
         // Performs structure level matching which computes the relation between nodes.
-        IMatchMatrix cNodeMatrix = structureLevelMatching(sourceContext, targetContext, cLabMatrix);
+        IContextMapping<INode> mapping = structureLevelMatching(sourceContext, targetContext, cLabMatrix);
 
         List<INode> sourceNodes = sourceContext.getAllNodes();
         List<INode> targetNodes = targetContext.getAllNodes();
-
-        IContextMapping<INode> mapping = new ContextMapping<INode>(sourceContext, targetContext);
-        for (int i = 0; i < sourceNodes.size(); i++) {
-            INode sourceNode = sourceNodes.get(i);
-            for (int j = 0; j < targetNodes.size(); j++) {
-                INode targetNode = targetNodes.get(j);
-                char relation = cNodeMatrix.getElement(i, j);
-                if (IMappingElement.IDK != relation) {
-                    mapping.add(new MappingElement<INode>(sourceNode, targetNode, relation));
-                }
-            }
-        }
 
         return mapping;
     }

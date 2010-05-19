@@ -104,10 +104,10 @@ public interface IMatchManager extends IConfigurable {
      * @param sourceContext interface of source context with concept at node formula
      * @param targetContext interface of target context with concept at node formula
      * @param ClabMatrix    interface to matrix of semantic relations between atomic concepts of labels in the contexts
-     * @return interface to the matrix of semantic relations between concepts at nodes in the contexts
+     * @return mapping between the concepts at nodes in the contexts
      * @throws SMatchException SMatchException
      */
-    IMatchMatrix structureLevelMatching(IContext sourceContext, IContext targetContext,
+    IContextMapping<INode> structureLevelMatching(IContext sourceContext, IContext targetContext,
                                         IMatchMatrix ClabMatrix) throws SMatchException;
 
     /**

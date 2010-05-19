@@ -4,10 +4,11 @@ import it.unitn.disi.smatch.SMatchConstants;
 import it.unitn.disi.smatch.components.ConfigurableException;
 import it.unitn.disi.smatch.data.IContext;
 import it.unitn.disi.smatch.data.INode;
+import it.unitn.disi.smatch.data.mappings.ContextMapping;
+import it.unitn.disi.smatch.data.mappings.IContextMapping;
 import it.unitn.disi.smatch.data.mappings.IMappingElement;
-import it.unitn.disi.smatch.data.mappings.MappingNodeElement;
+import it.unitn.disi.smatch.data.mappings.ReversingMappingElement;
 import it.unitn.disi.smatch.data.matrices.IMatchMatrix;
-import it.unitn.disi.smatch.data.matrices.MatrixFactory;
 import it.unitn.disi.smatch.matchers.structure.node.OptimizedStageNodeMatcher;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -29,7 +30,8 @@ public class OptimizedStageTreeMatcher extends BaseTreeMatcher implements ITreeM
 
     private IMatchMatrix ClabMatrix;
 
-    private HashSet<MappingNodeElement> mapping;
+    // need this because here we allow < and > between the same pair of nodes
+    private HashSet<IMappingElement<INode>> mapping;
 
     private long counter = 0;
     private long total;
@@ -50,7 +52,7 @@ public class OptimizedStageTreeMatcher extends BaseTreeMatcher implements ITreeM
         }
     }
 
-    public IMatchMatrix treeMatch(IContext sourceContext, IContext targetContext, IMatchMatrix ClabMatrixParam) throws TreeMatcherException {
+    public IContextMapping<INode> treeMatch(IContext sourceContext, IContext targetContext, IMatchMatrix ClabMatrixParam) throws TreeMatcherException {
         ClabMatrix = ClabMatrixParam;
 
         //get the nodes of the contexts
@@ -69,7 +71,7 @@ public class OptimizedStageTreeMatcher extends BaseTreeMatcher implements ITreeM
             targetNodes.get(i).getNodeData().setIndex(i);
         }
 
-        mapping = new HashSet<MappingNodeElement>();
+        mapping = new HashSet<IMappingElement<INode>>();
 
         log.info("DJ...");
         treeDisjoint(sourceContext.getRoot(), targetContext.getRoot());
@@ -92,12 +94,10 @@ public class OptimizedStageTreeMatcher extends BaseTreeMatcher implements ITreeM
         counter = 0;
 
         log.info("TreeEquiv...");
-        mapping = treeEquiv(mapping);
+        IContextMapping<INode> result = treeEquiv(mapping, sourceContext, targetContext);
         log.info("TreeEquiv finished");
 
-        IMatchMatrix CnodMatrix = MatrixFactory.getInstance(sourceNodes.size(), targetNodes.size());
-        mappingToMatrix(mapping, CnodMatrix);
-        return CnodMatrix;
+        return result;
     }
 
     private void treeDisjoint(INode n1, INode n2) throws TreeMatcherException {
@@ -173,24 +173,24 @@ public class OptimizedStageTreeMatcher extends BaseTreeMatcher implements ITreeM
         return false;
     }
 
-    private HashSet<MappingNodeElement> treeEquiv(HashSet<MappingNodeElement> mapping) {
-        HashSet<MappingNodeElement> result = new HashSet<MappingNodeElement>();
+    private IContextMapping<INode> treeEquiv(HashSet<IMappingElement<INode>> mapping, IContext sourceContext, IContext targetContext) {
+        IContextMapping<INode> result = new ContextMapping<INode>(sourceContext, targetContext);
         if (log.isEnabledFor(Level.INFO)) {
             log.info("Mapping before TreeEquiv: " + mapping.size());
         }
-        for (MappingNodeElement me : mapping) {
+        for (IMappingElement<INode> me : mapping) {
             if (IMappingElement.LESS_GENERAL == me.getRelation()) {
-                MappingNodeElement mg = new MappingNodeElement(me.getSource(), me.getTarget(), IMappingElement.MORE_GENERAL);
+                IMappingElement<INode> mg = createMappingElement(me.getSource(), me.getTarget(), IMappingElement.MORE_GENERAL);
                 if (mapping.contains(mg)) {
-                    result.add(new MappingNodeElement(me.getSource(), me.getTarget(), IMappingElement.EQUIVALENCE));
+                    result.setRelation(me.getSource(), me.getTarget(), IMappingElement.EQUIVALENCE);
                 } else {
                     result.add(me);
                 }
             } else {
                 if (IMappingElement.MORE_GENERAL == me.getRelation()) {
-                    MappingNodeElement lg = new MappingNodeElement(me.getSource(), me.getTarget(), IMappingElement.LESS_GENERAL);
+                    IMappingElement<INode> lg = createMappingElement(me.getSource(), me.getTarget(), IMappingElement.LESS_GENERAL);
                     if (mapping.contains(lg)) {
-                        result.add(new MappingNodeElement(me.getSource(), me.getTarget(), IMappingElement.EQUIVALENCE));
+                        result.setRelation(me.getSource(), me.getTarget(), IMappingElement.EQUIVALENCE);
                     } else {
                         result.add(me);
                     }
@@ -207,50 +207,28 @@ public class OptimizedStageTreeMatcher extends BaseTreeMatcher implements ITreeM
 
     private void addSubsumptionRelation(INode n1, INode n2) {
         if (direction) {
-            mapping.add(new MappingNodeElement(n1, n2, IMappingElement.LESS_GENERAL));
+            mapping.add(createMappingElement(n1, n2, IMappingElement.LESS_GENERAL));
         } else {
-            mapping.add(new MappingNodeElement(n2, n1, IMappingElement.MORE_GENERAL));
+            mapping.add(createMappingElement(n2, n1, IMappingElement.MORE_GENERAL));
         }
     }
 
 
     private void addRelation(INode n1, INode n2, char relation) {
-        mapping.add(new MappingNodeElement(n1, n2, relation));
+        mapping.add(createMappingElement(n1, n2, relation));
     }
 
     private boolean findRelation(INode sourceNode, INode targetNode, char relation) {
-        return mapping.contains(new MappingNodeElement(sourceNode, targetNode, relation));
-    }
-
-    private boolean findRelation(INode sourceNode, List<INode> targetNodes, char relation) {
-        for (INode targetNode : targetNodes) {
-            if (mapping.contains(new MappingNodeElement(sourceNode, targetNode, relation))) {
-                return true;
-            }
-        }
-        return false;
+        return mapping.contains(createMappingElement(sourceNode, targetNode, relation));
     }
 
     private boolean findRelation(List<INode> sourceNodes, INode targetNode, char relation) {
         for (INode sourceNode : sourceNodes) {
-            if (mapping.contains(new MappingNodeElement(sourceNode, targetNode, relation))) {
+            if (mapping.contains(createMappingElement(sourceNode, targetNode, relation))) {
                 return true;
             }
         }
         return false;
-    }
-
-    private void mappingToMatrix(HashSet<MappingNodeElement> mapping, IMatchMatrix cnodMatrix) {
-        for (MappingNodeElement me : mapping) {
-            final char element = cnodMatrix.getElement(me.getSource().getNodeData().getIndex(), me.getTarget().getNodeData().getIndex());
-            if (IMappingElement.IDK == element) {
-                cnodMatrix.setElement(me.getSource().getNodeData().getIndex(), me.getTarget().getNodeData().getIndex(), me.getRelation());
-            } else {
-                if (log.isEnabledFor(Level.WARN)) {
-                    log.warn("Override attempt " + element + " with: " + me.getSource() + "\t" + me.getTarget() + "\t" + me.getRelation());
-                }
-            }
-        }
     }
 
     private void progress() {
@@ -258,5 +236,9 @@ public class OptimizedStageTreeMatcher extends BaseTreeMatcher implements ITreeM
         if ((SMatchConstants.LARGE_TASK < total) && (0 == (counter % reportInt)) && log.isEnabledFor(Level.INFO)) {
             log.info(100 * counter / total + "%");
         }
+    }
+
+    private static IMappingElement<INode> createMappingElement(INode source, INode target, char relation) {
+        return new ReversingMappingElement(source, target, relation);
     }
 }

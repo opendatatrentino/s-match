@@ -107,7 +107,7 @@ public class PlainMappingLoader extends Configurable implements IMappingLoader {
                     }
 
                     if ((-1 != sourceIdx) && (-1 != targetIdx)) {
-                        mapping.add(new MappingElement<INode>(sourceNodes.get(sourceIdx), targetNodes.get(targetIdx), rel));
+                        mapping.setRelation(sourceNodes.get(sourceIdx), targetNodes.get(targetIdx), rel);
                         cntLoaded++;
                     } else {
                         if (log.isEnabledFor(Level.WARN)) {

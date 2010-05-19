@@ -121,20 +121,7 @@ public class Mapping<T> extends AbstractSet<IMappingElement<T>> implements IMapp
     }
 
     public boolean add(IMappingElement<T> e) {
-        NodePair<T, T> np = new NodePair<T, T>(e.getSource(), e.getTarget());
-        Integer idx = entries.get(np);
-        if (null == idx) {
-            entries.put(np, relations.length());
-            relations.append(e.getRelation());
-            return true;
-        } else {
-            if (e.getRelation() == relations.charAt(idx)) {
-                return false;
-            } else {
-                relations.setCharAt(idx, e.getRelation());
-                return true;
-            }
-        }
+        return setRelation(e.getSource(), e.getTarget(), e.getRelation());
     }
 
     public boolean remove(Object o) {
@@ -177,22 +164,27 @@ public class Mapping<T> extends AbstractSet<IMappingElement<T>> implements IMapp
         }
     }
 
-    public void setRelation(T source, T target, char relation) {
+    public boolean setRelation(T source, T target, char relation) {
         NodePair<T, T> np = new NodePair<T, T>(source, target);
         Integer idx = entries.get(np);
         if (null == idx) {
             if (IMappingElement.IDK != relation) {
                 entries.put(np, relations.length());
                 relations.append(relation);
+                return true;
             }
+            return false;
         } else {
             if (IMappingElement.IDK != relation) {
                 if (relation != relations.charAt(idx)) {
                     relations.setCharAt(idx, relation);
+                    return  true;
                 }
+                return false;
             } else {
                 relations.delete(idx, idx + 1);
                 entries.remove(np);
+                return true;
             }
         }
     }

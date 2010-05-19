@@ -7,9 +7,9 @@ package it.unitn.disi.smatch.data.mappings;
  */
 public class MappingElement<T> implements IMappingElement<T> {
 
-    private T source;
-    private T target;
-    private char relation;
+    protected T source;
+    protected T target;
+    protected char relation;
 
     public MappingElement(T source, T target, char relation) {
         this.source = source;

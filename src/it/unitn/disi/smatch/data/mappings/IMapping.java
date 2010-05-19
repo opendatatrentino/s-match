@@ -11,5 +11,5 @@ public interface IMapping<T> extends Set<IMappingElement<T>> {
 
     char getRelation(T source, T target);
 
-    void setRelation(T source, T target, char relation);
+    boolean setRelation(T source, T target, char relation);
 }
