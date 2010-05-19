@@ -35,6 +35,8 @@ public class Node implements INodeData, INode {
     //might be better implemented for a whole context via BitSet
     private boolean source;
 
+    private Object userObject;
+
     private static final Comparator<INode> nodeComparator = new Comparator<INode>() {
         //no safety checks - it should be run properly :-)
 
@@ -403,6 +405,11 @@ public class Node implements INodeData, INode {
     }
 
     public void setUserObject(Object object) {
+        userObject = object;
+    }
+
+    public Object getUserObject() {
+        return userObject;
     }
 
     public void removeFromParent() {

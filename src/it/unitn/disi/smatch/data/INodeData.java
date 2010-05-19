@@ -123,4 +123,6 @@ public interface INodeData {
     public void setSource(boolean source);
 
     void sort();
+
+    public Object getUserObject();
 }

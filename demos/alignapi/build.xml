@@ -1,0 +1,45 @@
+<project name="S-Match AlignAPI" default="jar" basedir=".">
+    <description>S-Match for AlignAPI</description>
+
+    <target name="default" depends="clean, jar" description="Default task. Does clean build">
+    </target>
+
+    <target name="props" depends="">
+        <property file="build.properties"/>
+        <fail unless="alignapi.dir" message="AlignAPI directory is not set: alignapi.dir"/>
+    </target>
+
+    <target name="init" depends="props, clean">
+        <tstamp/>
+        <mkdir dir="classes"/>
+        <mkdir dir="build"/>
+        <property name="jar-name" location="build/s-match-align-api.jar"/>
+    </target>
+
+    <target name="compile" depends="init" description="compile the source">
+        <javac srcdir="src" destdir="classes" encoding="utf-8">
+            <classpath>
+                <fileset dir="../../build">
+                    <include name="**/*.jar"/>
+                </fileset>
+                <fileset dir="../../lib">
+                    <include name="**/*.jar"/>
+                </fileset>
+                <fileset dir="${alignapi.dir}/lib">
+                    <include name="**/*.jar"/>
+                </fileset>
+            </classpath>
+        </javac>
+    </target>
+
+    <target name="jar" depends="compile" description="generate the jar">
+        <mkdir dir="build"/>
+        <jar jarfile="${jar-name}" basedir="classes"/>
+    </target>
+
+    <target name="clean" description="clean up">
+        <delete dir="classes"/>
+        <delete dir="build"/>
+    </target>
+
+</project>

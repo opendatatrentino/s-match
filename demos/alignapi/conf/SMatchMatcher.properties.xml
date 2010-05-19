@@ -1,0 +1,4 @@
+<?xml version="1.0" ?>
+<Parameters>
+  <param name="config">../conf/s-match.properties</param>
+</Parameters>
