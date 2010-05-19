@@ -4,10 +4,10 @@ import it.unitn.disi.smatch.classifiers.IContextClassifier;
 import it.unitn.disi.smatch.components.Configurable;
 import it.unitn.disi.smatch.components.ConfigurableException;
 import it.unitn.disi.smatch.data.Context;
+import it.unitn.disi.smatch.data.IAtomicConceptOfLabel;
 import it.unitn.disi.smatch.data.IContext;
 import it.unitn.disi.smatch.data.INode;
 import it.unitn.disi.smatch.data.mappings.IContextMapping;
-import it.unitn.disi.smatch.data.matrices.IMatchMatrix;
 import it.unitn.disi.smatch.filters.IMappingFilter;
 import it.unitn.disi.smatch.loaders.context.IContextLoader;
 import it.unitn.disi.smatch.loaders.mapping.IMappingLoader;
@@ -28,7 +28,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Properties;
 
 /**
@@ -139,7 +138,10 @@ public class MatchManager extends Configurable implements IMatchManager {
             throw new SMatchException("Context loader is not configured.");
         }
 
-        return contextLoader.loadContext(fileName);
+        log.info("Context loading...");
+        final IContext result = contextLoader.loadContext(fileName);
+        log.info("Context loading finished...");
+        return result;
     }
 
     public void renderContext(IContext ctxSource, String fileName) throws SMatchException {
@@ -153,37 +155,48 @@ public class MatchManager extends Configurable implements IMatchManager {
         if (null == mappingLoader) {
             throw new SMatchException("Mapping loader is not configured.");
         }
-        return mappingLoader.loadMapping(ctxSource, ctxTarget, inputFile);
+        log.info("Mapping loading...");
+        final IContextMapping<INode> result = mappingLoader.loadMapping(ctxSource, ctxTarget, inputFile);
+        log.info("Mapping loading finished...");
+        return result;
     }
 
     public void renderMapping(IContextMapping<INode> mapping, String outputFile) throws SMatchException {
         if (null == mappingRenderer) {
             throw new SMatchException("Mapping renderer is not configured.");
         }
+        log.info("Mapping rendering...");
         mappingRenderer.render(mapping, outputFile);
+        log.info("Mapping rendering finished...");
     }
 
     public IContextMapping<INode> filterMapping(IContextMapping<INode> mapping) throws SMatchException {
         if (null == mappingFilter) {
             throw new SMatchException("Mapping filter is not configured.");
         }
-        return mappingFilter.filter(mapping);
+        log.info("Filtering...");
+        final IContextMapping<INode> result = mappingFilter.filter(mapping);
+        log.info("Filtering finished...");
+        return result;
     }
 
-    public IMatchMatrix elementLevelMatching(IContext sourceContext, IContext targetContext) throws SMatchException {
+    public IContextMapping<IAtomicConceptOfLabel> elementLevelMatching(IContext sourceContext, IContext targetContext) throws SMatchException {
         if (null == matcherLibrary) {
             throw new SMatchException("Matcher library is not configured.");
         }
-        return matcherLibrary.elementLevelMatching(sourceContext, targetContext);
+        log.info("Element level matching...");
+        final IContextMapping<IAtomicConceptOfLabel> acolMapping = matcherLibrary.elementLevelMatching(sourceContext, targetContext);
+        log.info("Element level matching finished...");
+        return acolMapping;
     }
 
     public IContextMapping<INode> structureLevelMatching(IContext sourceContext,
-                                                         IContext targetContext, IMatchMatrix ClabMatrix) throws SMatchException {
+                                                         IContext targetContext, IContextMapping<IAtomicConceptOfLabel> acolMapping) throws SMatchException {
         if (null == treeMatcher) {
             throw new SMatchException("Tree matcher is not configured.");
         }
         log.info("Structure level matching...");
-        IContextMapping<INode> mapping = treeMatcher.treeMatch(sourceContext, targetContext, ClabMatrix);
+        IContextMapping<INode> mapping = treeMatcher.treeMatch(sourceContext, targetContext, acolMapping);
         log.info("Structure level matching finished");
         return mapping;
     }
@@ -199,16 +212,10 @@ public class MatchManager extends Configurable implements IMatchManager {
     }
 
     public IContextMapping<INode> online(IContext sourceContext, IContext targetContext) throws SMatchException {
-        //TODO get rid of matrices?
         // Performs element level matching which computes the relation between labels.
-        IMatchMatrix cLabMatrix = elementLevelMatching(sourceContext, targetContext);
+        IContextMapping<IAtomicConceptOfLabel> acolMapping = elementLevelMatching(sourceContext, targetContext);
         // Performs structure level matching which computes the relation between nodes.
-        IContextMapping<INode> mapping = structureLevelMatching(sourceContext, targetContext, cLabMatrix);
-
-        List<INode> sourceNodes = sourceContext.getAllNodes();
-        List<INode> targetNodes = targetContext.getAllNodes();
-
-        return mapping;
+        return structureLevelMatching(sourceContext, targetContext, acolMapping);
     }
 
     public IContextMapping<INode> match(IContext sourceContext, IContext targetContext) throws SMatchException {

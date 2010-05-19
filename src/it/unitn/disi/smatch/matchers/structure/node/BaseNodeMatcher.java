@@ -4,8 +4,8 @@ import it.unitn.disi.smatch.components.Configurable;
 import it.unitn.disi.smatch.components.ConfigurableException;
 import it.unitn.disi.smatch.data.IAtomicConceptOfLabel;
 import it.unitn.disi.smatch.data.INode;
+import it.unitn.disi.smatch.data.mappings.IContextMapping;
 import it.unitn.disi.smatch.data.mappings.IMappingElement;
-import it.unitn.disi.smatch.data.matrices.IMatchMatrix;
 import it.unitn.disi.smatch.deciders.ISATSolver;
 import it.unitn.disi.smatch.deciders.SATSolverException;
 import org.apache.log4j.Logger;
@@ -38,12 +38,12 @@ public class BaseNodeMatcher extends Configurable {
      * Makes axioms for CNF formula.
      *
      * @param hashConceptNumber HashMap for atomic concept of labels with its id.
-     * @param cLabMatrix        relation between atomic concept of labels
+     * @param acolMapping       mapping between atomic concept of labels
      * @param sourceNode        interface of source node
      * @param targetNode        interface of target node
      * @return an object of axioms
      */
-    protected static Object[] mkAxioms(HashMap<IAtomicConceptOfLabel, Integer> hashConceptNumber, IMatchMatrix cLabMatrix, INode sourceNode, INode targetNode) {
+    protected static Object[] mkAxioms(HashMap<IAtomicConceptOfLabel, Integer> hashConceptNumber, IContextMapping<IAtomicConceptOfLabel> acolMapping, INode sourceNode, INode targetNode) {
         StringBuffer axioms = new StringBuffer();
         Integer numberOfClauses = 0;
         //create variables
@@ -70,7 +70,7 @@ public class BaseNodeMatcher extends Configurable {
             //for all columns of relMatrix
             for (IAtomicConceptOfLabel targetACoL : targetNode.getNodeData().getNodeMatchingTaskACols()) {
                 //if there are semantic relation between ACoLS in relMatrix
-                char relation = cLabMatrix.getElement(sourceACoL.getIndex(), targetACoL.getIndex());
+                char relation = acolMapping.getRelation(sourceACoL, targetACoL);
                 if (IMappingElement.IDK != relation) {
                     //get the numbers of DIMACS variables corresponding to ACoLs
                     String sourceVarNumber = (hashConceptNumber.get(sourceACoL)).toString();
@@ -211,15 +211,13 @@ public class BaseNodeMatcher extends Configurable {
     }
 
     protected boolean isUnsatisfiable(String satProblem) throws NodeMatcherException {
-        boolean satResult = false;
         try {
-            satResult = satSolver.isSatisfiable(satProblem);
+            return !satSolver.isSatisfiable(satProblem);
         } catch (SATSolverException e) {
             final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
             log.error(errMessage, e);
             throw new NodeMatcherException(errMessage, e);
         }
-        return !satResult;
     }
 
     protected static char getRelationString(boolean isContains, boolean isContained, boolean isOpposite) {

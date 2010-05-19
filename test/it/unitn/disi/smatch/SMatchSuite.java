@@ -11,10 +11,7 @@ import org.junit.runners.Suite;
 
 @RunWith(Suite.class)
 
-@Suite.SuiteClasses({
-        it.unitn.disi.smatch.data.TestSparseMatrixChar.class,
-        it.unitn.disi.smatch.data.TestJavaSparseArray.class
-})
+@Suite.SuiteClasses({})
 
 public class SMatchSuite {
 }

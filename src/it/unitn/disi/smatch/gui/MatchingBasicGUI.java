@@ -169,8 +169,7 @@ public class MatchingBasicGUI extends JPanel
 
 
     /**
-     * Converts the IMatchMatrix into a list of mapping elements between
-     * sourcePath and targetPath
+     * Loads a list of mapping elements from file.
      *
      * @param sourceContext2
      * @param targetContext2

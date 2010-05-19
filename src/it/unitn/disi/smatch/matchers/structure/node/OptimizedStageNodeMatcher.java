@@ -2,8 +2,8 @@ package it.unitn.disi.smatch.matchers.structure.node;
 
 import it.unitn.disi.smatch.data.IAtomicConceptOfLabel;
 import it.unitn.disi.smatch.data.INode;
+import it.unitn.disi.smatch.data.mappings.IContextMapping;
 import it.unitn.disi.smatch.data.mappings.IMappingElement;
-import it.unitn.disi.smatch.data.matrices.IMatchMatrix;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,13 +18,13 @@ public class OptimizedStageNodeMatcher extends BaseNodeMatcher implements INodeM
     /**
      * Checks source node and target node are disjoint or not for optimizing tree matcher.
      *
-     * @param cLabMatrix interface of relational matrix with concept of labels
-     * @param sourceNode interface of source node
-     * @param targetNode interface of target node
+     * @param acolMapping mapping between acols
+     * @param sourceNode  interface of source node
+     * @param targetNode  interface of target node
      * @return true if the nodes are in disjoint relation
      * @throws NodeMatcherException NodeMatcherException
      */
-    public boolean nodeDisjoint(IMatchMatrix cLabMatrix, INode sourceNode, INode targetNode) throws NodeMatcherException {
+    public boolean nodeDisjoint(IContextMapping<IAtomicConceptOfLabel> acolMapping, INode sourceNode, INode targetNode) throws NodeMatcherException {
         boolean result = false;
         String sourceCNodeFormula = sourceNode.getNodeData().getCNodeFormula();
         String targetCNodeFormula = targetNode.getNodeData().getCNodeFormula();
@@ -36,7 +36,7 @@ public class OptimizedStageNodeMatcher extends BaseNodeMatcher implements INodeM
                 ) {
             //contains ACoLs ids as keys and numbers of variables in DIMACS format as values
             HashMap<IAtomicConceptOfLabel, Integer> hashConceptNumber = new HashMap<IAtomicConceptOfLabel, Integer>();
-            Object[] obj = mkAxioms(hashConceptNumber, cLabMatrix, sourceNode, targetNode);
+            Object[] obj = mkAxioms(hashConceptNumber, acolMapping, sourceNode, targetNode);
             String axioms = (String) obj[0];
             int num_of_axiom_clauses = (Integer) obj[1];
 
@@ -64,7 +64,7 @@ public class OptimizedStageNodeMatcher extends BaseNodeMatcher implements INodeM
 
     // TODO Needs comments
 
-    public boolean nodeSubsumedBy(IMatchMatrix cLabMatrix, INode sourceNode, INode targetNode) throws NodeMatcherException {
+    public boolean nodeSubsumedBy(IContextMapping<IAtomicConceptOfLabel> acolMapping, INode sourceNode, INode targetNode) throws NodeMatcherException {
         boolean result = false;
         String sourceCNodeFormula = sourceNode.getNodeData().getCNodeFormula();
         String targetCNodeFormula = targetNode.getNodeData().getCNodeFormula();
@@ -76,7 +76,7 @@ public class OptimizedStageNodeMatcher extends BaseNodeMatcher implements INodeM
                 ) {
             if (sourceNode.getNodeData().getSource()) {
                 HashMap<IAtomicConceptOfLabel, Integer> hashConceptNumber = new HashMap<IAtomicConceptOfLabel, Integer>();
-                Object[] obj = mkAxioms(hashConceptNumber, cLabMatrix, sourceNode, targetNode);
+                Object[] obj = mkAxioms(hashConceptNumber, acolMapping, sourceNode, targetNode);
                 String axioms = (String) obj[0];
                 int num_of_axiom_clauses = (Integer) obj[1];
 
@@ -103,7 +103,7 @@ public class OptimizedStageNodeMatcher extends BaseNodeMatcher implements INodeM
             } else {
                 //swap source, target and relation
                 HashMap<IAtomicConceptOfLabel, Integer> hashConceptNumber = new HashMap<IAtomicConceptOfLabel, Integer>();
-                Object[] obj = mkAxioms(hashConceptNumber, cLabMatrix, targetNode, sourceNode);
+                Object[] obj = mkAxioms(hashConceptNumber, acolMapping, targetNode, sourceNode);
                 String axioms = (String) obj[0];
                 int num_of_axiom_clauses = (Integer) obj[1];
 
@@ -133,7 +133,8 @@ public class OptimizedStageNodeMatcher extends BaseNodeMatcher implements INodeM
     }
 
     // stub to allow it to be created as node matcher.
-    public char nodeMatch(IMatchMatrix cLabMatrix, INode sourceNode, INode targetNode) throws NodeMatcherException {
-        return IMappingElement.IDK;  
+
+    public char nodeMatch(IContextMapping<IAtomicConceptOfLabel> acolMapping, INode sourceNode, INode targetNode) throws NodeMatcherException {
+        return IMappingElement.IDK;
     }
 }

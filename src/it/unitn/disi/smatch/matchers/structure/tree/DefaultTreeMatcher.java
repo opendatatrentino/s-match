@@ -1,11 +1,11 @@
 package it.unitn.disi.smatch.matchers.structure.tree;
 
 import it.unitn.disi.smatch.SMatchConstants;
+import it.unitn.disi.smatch.data.IAtomicConceptOfLabel;
 import it.unitn.disi.smatch.data.IContext;
 import it.unitn.disi.smatch.data.INode;
 import it.unitn.disi.smatch.data.mappings.ContextMapping;
 import it.unitn.disi.smatch.data.mappings.IContextMapping;
-import it.unitn.disi.smatch.data.matrices.IMatchMatrix;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
@@ -15,7 +15,7 @@ public class DefaultTreeMatcher extends BaseTreeMatcher implements ITreeMatcher 
 
     private static final Logger log = Logger.getLogger(DefaultTreeMatcher.class);
 
-    public IContextMapping<INode> treeMatch(IContext sourceContext, IContext targetContext, IMatchMatrix ClabMatrix) throws TreeMatcherException {
+    public IContextMapping<INode> treeMatch(IContext sourceContext, IContext targetContext, IContextMapping<IAtomicConceptOfLabel> acolMapping) throws TreeMatcherException {
         // get the nodes of the contexts
         List<INode> sourceNodes = sourceContext.getAllNodes();
         List<INode> targetNodes = targetContext.getAllNodes();
@@ -31,7 +31,7 @@ public class DefaultTreeMatcher extends BaseTreeMatcher implements ITreeMatcher 
 
         for (INode sourceNode : sourceNodes) {
             for (INode targetNode : targetNodes) {
-                relation = nodeMatcher.nodeMatch(ClabMatrix, sourceNode, targetNode);
+                relation = nodeMatcher.nodeMatch(acolMapping, sourceNode, targetNode);
                 mapping.setRelation(sourceNode, targetNode, relation);
 
                 counter++;

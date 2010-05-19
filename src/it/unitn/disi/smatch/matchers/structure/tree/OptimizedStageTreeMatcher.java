@@ -2,13 +2,13 @@ package it.unitn.disi.smatch.matchers.structure.tree;
 
 import it.unitn.disi.smatch.SMatchConstants;
 import it.unitn.disi.smatch.components.ConfigurableException;
+import it.unitn.disi.smatch.data.IAtomicConceptOfLabel;
 import it.unitn.disi.smatch.data.IContext;
 import it.unitn.disi.smatch.data.INode;
 import it.unitn.disi.smatch.data.mappings.ContextMapping;
 import it.unitn.disi.smatch.data.mappings.IContextMapping;
 import it.unitn.disi.smatch.data.mappings.IMappingElement;
 import it.unitn.disi.smatch.data.mappings.ReversingMappingElement;
-import it.unitn.disi.smatch.data.matrices.IMatchMatrix;
 import it.unitn.disi.smatch.matchers.structure.node.OptimizedStageNodeMatcher;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -28,7 +28,7 @@ public class OptimizedStageTreeMatcher extends BaseTreeMatcher implements ITreeM
 
     private OptimizedStageNodeMatcher smatchMatcher;
 
-    private IMatchMatrix ClabMatrix;
+    private IContextMapping<IAtomicConceptOfLabel> acolMapping;
 
     // need this because here we allow < and > between the same pair of nodes
     private HashSet<IMappingElement<INode>> mapping;
@@ -52,8 +52,8 @@ public class OptimizedStageTreeMatcher extends BaseTreeMatcher implements ITreeM
         }
     }
 
-    public IContextMapping<INode> treeMatch(IContext sourceContext, IContext targetContext, IMatchMatrix ClabMatrixParam) throws TreeMatcherException {
-        ClabMatrix = ClabMatrixParam;
+    public IContextMapping<INode> treeMatch(IContext sourceContext, IContext targetContext, IContextMapping<IAtomicConceptOfLabel> acolMapping) throws TreeMatcherException {
+        this.acolMapping = acolMapping;
 
         //get the nodes of the contexts
         List<INode> sourceNodes = sourceContext.getAllNodes();
@@ -118,7 +118,7 @@ public class OptimizedStageTreeMatcher extends BaseTreeMatcher implements ITreeM
             return;
         }
 
-        if (smatchMatcher.nodeDisjoint(ClabMatrix, n1, n2)) {
+        if (smatchMatcher.nodeDisjoint(acolMapping, n1, n2)) {
             addRelation(n1, n2, IMappingElement.DISJOINT);
             //we skip n2 subtree, so adjust the counter
             final long skipTo = counter + n2.getDescendantCount();
@@ -147,7 +147,7 @@ public class OptimizedStageTreeMatcher extends BaseTreeMatcher implements ITreeM
         }
 
         progress();
-        if (!smatchMatcher.nodeSubsumedBy(ClabMatrix, n1, n2)) {
+        if (!smatchMatcher.nodeSubsumedBy(acolMapping, n1, n2)) {
             for (INode c1 : n1.getChildren()) {
                 treeSubsumedBy(c1, n2);
             }

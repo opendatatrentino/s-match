@@ -1,10 +1,10 @@
 package it.unitn.disi.smatch;
 
 import it.unitn.disi.smatch.components.IConfigurable;
+import it.unitn.disi.smatch.data.IAtomicConceptOfLabel;
 import it.unitn.disi.smatch.data.IContext;
 import it.unitn.disi.smatch.data.INode;
 import it.unitn.disi.smatch.data.mappings.IContextMapping;
-import it.unitn.disi.smatch.data.matrices.IMatchMatrix;
 
 /**
  * Interface for matching related functionalities.<br>
@@ -96,19 +96,19 @@ public interface IMatchManager extends IConfigurable {
      * @return interface to a matrix of semantic relations between atomic concepts of labels in the contexts
      * @throws SMatchException SMatchException
      */
-    IMatchMatrix elementLevelMatching(IContext sourceContext, IContext targetContext) throws SMatchException;
+    IContextMapping<IAtomicConceptOfLabel> elementLevelMatching(IContext sourceContext, IContext targetContext) throws SMatchException;
 
     /**
      * Performs the fourth step of semantic matching algorithm.
      *
      * @param sourceContext interface of source context with concept at node formula
      * @param targetContext interface of target context with concept at node formula
-     * @param ClabMatrix    interface to matrix of semantic relations between atomic concepts of labels in the contexts
+     * @param acolMapping   mapping between atomic concepts of labels in the contexts
      * @return mapping between the concepts at nodes in the contexts
      * @throws SMatchException SMatchException
      */
     IContextMapping<INode> structureLevelMatching(IContext sourceContext, IContext targetContext,
-                                        IMatchMatrix ClabMatrix) throws SMatchException;
+                                                  IContextMapping<IAtomicConceptOfLabel> acolMapping) throws SMatchException;
 
     /**
      * Performs the first two steps of the semantic matching algorithm.

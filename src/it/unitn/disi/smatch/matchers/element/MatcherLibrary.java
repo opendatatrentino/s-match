@@ -5,9 +5,9 @@ import it.unitn.disi.smatch.components.Configurable;
 import it.unitn.disi.smatch.components.ConfigurableException;
 import it.unitn.disi.smatch.data.IAtomicConceptOfLabel;
 import it.unitn.disi.smatch.data.IContext;
+import it.unitn.disi.smatch.data.mappings.ContextMapping;
+import it.unitn.disi.smatch.data.mappings.IContextMapping;
 import it.unitn.disi.smatch.data.mappings.IMappingElement;
-import it.unitn.disi.smatch.data.matrices.IMatchMatrix;
-import it.unitn.disi.smatch.data.matrices.MatrixFactory;
 import it.unitn.disi.smatch.oracles.*;
 import it.unitn.disi.smatch.utils.ClassFactory;
 import org.apache.log4j.Level;
@@ -198,46 +198,32 @@ public class MatcherLibrary extends Configurable implements IMatcherLibrary {
         }
     }
 
-    /**
-     * Performs Step 3 of semantic matching algorithm.
-     *
-     * @param sourceContext interface of source label context
-     * @param targetContext interface of target label context
-     * @return matrix of semantic relations between labels in both contexts
-     * @throws MatcherLibraryException MatcherLibraryException
-     */
-    public IMatchMatrix elementLevelMatching(IContext sourceContext, IContext targetContext) throws MatcherLibraryException {
+    public IContextMapping<IAtomicConceptOfLabel> elementLevelMatching(IContext sourceContext, IContext targetContext) throws MatcherLibraryException {
         //get all ACoLs in contexts
         List<IAtomicConceptOfLabel> sourceACoLs = sourceContext.getMatchingContext().getAllContextACoLs();
         List<IAtomicConceptOfLabel> targetACoLs = targetContext.getMatchingContext().getAllContextACoLs();
 
-        //  Calculate relations between all ACoLs in both contexts and produce the matrix of
-        //  semantic relations between them.
+        //  Calculate relations between all ACoLs in both contexts and produce the mapping between them.
         //  Corresponds to Step 3 of the semantic matching algorithm.
 
-        //Initialization of matrix
-        IMatchMatrix ClabMatrix = MatrixFactory.getInstance(sourceACoLs.size(), targetACoLs.size());
+        IContextMapping<IAtomicConceptOfLabel> result = new ContextMapping<IAtomicConceptOfLabel>(sourceContext, targetContext);
 
-        // for all ACoLs in source context
         long counter = 0;
         long total = (long) sourceACoLs.size() * (long) targetACoLs.size();
         long reportInt = (total / 20) + 1;//i.e. report every 5%
-        for (int row = 0; row < sourceACoLs.size(); row++) {
-            IAtomicConceptOfLabel sourceACoL = sourceACoLs.get(row);
-            for (int col = 0; col < targetACoLs.size(); col++) {
-                IAtomicConceptOfLabel targetACoL = targetACoLs.get(col);
+        for (IAtomicConceptOfLabel sourceACoL : sourceACoLs) {
+            for (IAtomicConceptOfLabel targetACoL : targetACoLs) {
                 //Use Element level semantic matchers library
-                //in order to check the relation holding between two ACoLs represented
-                //by lists of WN senses and tokens
-                ClabMatrix.setElement(row, col, getRelation(sourceACoL, targetACoL));
+                //to check the relation holding between two ACoLs represented by lists of WN senses and tokens
+                final char relation = getRelation(sourceACoL, targetACoL);
+                result.setRelation(sourceACoL, targetACoL, relation);
 
                 counter++;
                 if ((SMatchConstants.LARGE_TASK < total) && (0 == (counter % reportInt)) && log.isEnabledFor(Level.INFO)) {
                     log.info(100 * counter / total + "%");
                 }
             }
-            ClabMatrix.endOfRow();
         }
-        return ClabMatrix;
+        return result;
     }
 }

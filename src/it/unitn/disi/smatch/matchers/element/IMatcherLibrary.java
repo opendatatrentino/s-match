@@ -1,8 +1,9 @@
 package it.unitn.disi.smatch.matchers.element;
 
 import it.unitn.disi.smatch.components.IConfigurable;
+import it.unitn.disi.smatch.data.IAtomicConceptOfLabel;
 import it.unitn.disi.smatch.data.IContext;
-import it.unitn.disi.smatch.data.matrices.IMatchMatrix;
+import it.unitn.disi.smatch.data.mappings.IContextMapping;
 
 /**
  * Interface for collections of matchers, which perform element-level matching.
@@ -17,8 +18,8 @@ public interface IMatcherLibrary extends IConfigurable {
      *
      * @param sourceContext interface of source context
      * @param targetContext interface of target context
-     * @return matrix of semantic relations between labels in both contexts
+     * @return mapping between atomic concepts in both contexts
      * @throws MatcherLibraryException MatcherLibraryException
      */
-    public IMatchMatrix elementLevelMatching(IContext sourceContext, IContext targetContext) throws MatcherLibraryException;
+    public IContextMapping<IAtomicConceptOfLabel> elementLevelMatching(IContext sourceContext, IContext targetContext) throws MatcherLibraryException;
 }

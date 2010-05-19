@@ -2,8 +2,8 @@ package it.unitn.disi.smatch.matchers.structure.node;
 
 import it.unitn.disi.smatch.data.IAtomicConceptOfLabel;
 import it.unitn.disi.smatch.data.INode;
+import it.unitn.disi.smatch.data.mappings.IContextMapping;
 import it.unitn.disi.smatch.data.mappings.IMappingElement;
-import it.unitn.disi.smatch.data.matrices.IMatchMatrix;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -16,7 +16,7 @@ import java.util.HashMap;
  */
 public class DefaultNodeMatcher extends BaseNodeMatcher implements INodeMatcher {
 
-    public char nodeMatch(IMatchMatrix cLabMatrix, INode sourceNode, INode targetNode) throws NodeMatcherException {
+    public char nodeMatch(IContextMapping<IAtomicConceptOfLabel> acolMapping, INode sourceNode, INode targetNode) throws NodeMatcherException {
         char result = IMappingElement.IDK;
         String sourceCNodeFormula = sourceNode.getNodeData().getCNodeFormula();
         String targetCNodeFormula = targetNode.getNodeData().getCNodeFormula();
@@ -38,7 +38,7 @@ public class DefaultNodeMatcher extends BaseNodeMatcher implements INodeMatcher 
             //Number of clauses in SAT problem
             Integer numberOfClauses;
 
-            Object[] obj = mkAxioms(hashConceptNumber, cLabMatrix, sourceNode, targetNode);
+            Object[] obj = mkAxioms(hashConceptNumber, acolMapping, sourceNode, targetNode);
             String axioms = (String) obj[0];
             int num_of_axiom_clauses = (Integer) obj[1];
             //convert contexts into ArrayLists
