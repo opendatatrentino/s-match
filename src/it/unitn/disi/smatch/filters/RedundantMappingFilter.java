@@ -4,9 +4,8 @@ import it.unitn.disi.smatch.SMatchConstants;
 import it.unitn.disi.smatch.components.Configurable;
 import it.unitn.disi.smatch.data.IContext;
 import it.unitn.disi.smatch.data.INode;
-import it.unitn.disi.smatch.data.mappings.*;
-import it.unitn.disi.smatch.data.matrices.IMatchMatrix;
-import it.unitn.disi.smatch.data.matrices.MatrixFactory;
+import it.unitn.disi.smatch.data.mappings.IContextMapping;
+import it.unitn.disi.smatch.data.mappings.IMappingElement;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
@@ -20,8 +19,6 @@ import java.util.List;
 public class RedundantMappingFilter extends Configurable implements IMappingFilter {
 
     private static final Logger log = Logger.getLogger(RedundantMappingFilter.class);
-
-    protected IMatchMatrix cNodMatrix;
 
     public IContextMapping<INode> filter(IContextMapping<INode> mapping) {
         if (log.isEnabledFor(Level.INFO)) {
@@ -43,82 +40,58 @@ public class RedundantMappingFilter extends Configurable implements IMappingFilt
             targetNodes.get(i).getNodeData().setIndex(i);
         }
 
-        //TODO rewrite algorithm to use mapping
-        cNodMatrix = MatrixFactory.getInstance(sourceNodes.size(), targetNodes.size());
-        for (IMappingElement<INode> e : mapping) {
-            cNodMatrix.setElement(e.getSource().getNodeData().getIndex(), e.getTarget().getNodeData().getIndex(), e.getRelation());
-        }
-
         long counter = 0;
-        long total = (long) sourceNodes.size() * (long) targetNodes.size();
+        long total = (long) mapping.size();
         long reportInt = (total / 20) + 1;//i.e. report every 5%
 
         //check each mapping
-        for (int i = 0; i < cNodMatrix.getX(); i++) {
-            for (int j = 0; j < cNodMatrix.getY(); j++) {
-                char relation = cNodMatrix.getElement(i, j);
-                if (IMappingElement.IDK != relation) {
-                    if (isRedundant(sourceNodes.get(i), targetNodes.get(j), relation)) {
-                        cNodMatrix.setElement(i, j, IMappingElement.IDK);
-                    }
-                }
+        for (IMappingElement<INode> e : mapping) {
+            if (isRedundant(mapping, e)) {
+                mapping.setRelation(e.getSource(), e.getTarget(), IMappingElement.IDK);
+            }
 
-                counter++;
-                if ((SMatchConstants.LARGE_TASK < total) && (0 == (counter % reportInt)) && log.isEnabledFor(Level.INFO)) {
-                    log.info(100 * counter / total + "%");
-                }
+            counter++;
+            if ((SMatchConstants.LARGE_TASK < total) && (0 == (counter % reportInt)) && log.isEnabledFor(Level.INFO)) {
+                log.info(100 * counter / total + "%");
             }
         }
-
-        IContextMapping<INode> result = new ContextMapping<INode>(sourceContext, targetContext);
-        for (int i = 0; i < sourceNodes.size(); i++) {
-            INode sourceNode = sourceNodes.get(i);
-            for (int j = 0; j < targetNodes.size(); j++) {
-                INode targetNode = targetNodes.get(j);
-                char relation = cNodMatrix.getElement(i, j);
-                if (IMappingElement.IDK != relation) {
-                    result.add(new MappingElement<INode>(sourceNode, targetNode, relation));
-                }
-            }
-        }
-
 
         if (log.isEnabledFor(Level.INFO)) {
             log.info("Filtering finished: " + (System.currentTimeMillis() - start) + " ms");
         }
-        return result;
+        return mapping;
     }
 
     /**
      * Checks the relation between source and target is redundant or not for minimal mapping.
      *
-     * @param C interface of source node
-     * @param D interface of target node
-     * @param R relation between source and target node
+
+     * @param mapping a mapping
+     * @param e a mapping element 
      * @return true for redundant relation
      */
-    private boolean isRedundant(INode C, INode D, char R) {
-        switch (R) {
+    private boolean isRedundant(IContextMapping<INode> mapping, IMappingElement<INode> e) {
+        switch (e.getRelation()) {
             case IMappingElement.LESS_GENERAL: {
-                if (verifyCondition1(C, D)) {
+                if (verifyCondition1(mapping, e)) {
                     return true;
                 }
                 break;
             }
             case IMappingElement.MORE_GENERAL: {
-                if (verifyCondition2(C, D)) {
+                if (verifyCondition2(mapping, e)) {
                     return true;
                 }
                 break;
             }
             case IMappingElement.DISJOINT: {
-                if (verifyCondition3(C, D)) {
+                if (verifyCondition3(mapping, e)) {
                     return true;
                 }
                 break;
             }
             case IMappingElement.EQUIVALENCE: {
-                if (verifyCondition4(C, D)) {
+                if (verifyCondition4(mapping, e)) {
                     return true;
                 }
                 break;
@@ -138,69 +111,65 @@ public class RedundantMappingFilter extends Configurable implements IMappingFilt
     //and then all the rest is not removed because of the "gap"
 
 
-    protected boolean verifyCondition1(INode C, INode D) {
-       	boolean result =
-                findRelation(IMappingElement.LESS_GENERAL, C.getAncestors(), D) ||
-                        findRelation(IMappingElement.LESS_GENERAL, C, D.getDescendants()) ||
-                        findRelation(IMappingElement.LESS_GENERAL, C.getAncestors(), D.getDescendants());
+    protected boolean verifyCondition1(IContextMapping<INode> mapping, IMappingElement<INode> e) {
+        boolean result =
+                findRelation(IMappingElement.LESS_GENERAL, e.getSource().getAncestors(), e.getTarget(), mapping) ||
+                        findRelation(IMappingElement.LESS_GENERAL, e.getSource(), e.getTarget().getDescendants(), mapping) ||
+                        findRelation(IMappingElement.LESS_GENERAL, e.getSource().getAncestors(), e.getTarget().getDescendants(), mapping);
         return result;
     }
 
-    protected boolean verifyCondition2(INode C, INode D) {
+    protected boolean verifyCondition2(IContextMapping<INode> mapping, IMappingElement<INode> e) {
         boolean result =
-                findRelation(IMappingElement.MORE_GENERAL, C, D.getAncestors()) ||
-                        findRelation(IMappingElement.MORE_GENERAL, C.getDescendants(), D) ||
-                        findRelation(IMappingElement.MORE_GENERAL, C.getDescendants(), D.getAncestors());
+                findRelation(IMappingElement.MORE_GENERAL, e.getSource(), e.getTarget().getAncestors(), mapping) ||
+                        findRelation(IMappingElement.MORE_GENERAL, e.getSource().getDescendants(), e.getTarget(), mapping) ||
+                        findRelation(IMappingElement.MORE_GENERAL, e.getSource().getDescendants(), e.getTarget().getAncestors(), mapping);
         return result;
     }
 
-    protected boolean verifyCondition3(INode C, INode D) {
+    protected boolean verifyCondition3(IContextMapping<INode> mapping, IMappingElement<INode> e) {
         boolean result =
-                findRelation(IMappingElement.DISJOINT, C, D.getAncestors()) ||
-                        findRelation(IMappingElement.DISJOINT, C.getAncestors(), D) ||
-                        findRelation(IMappingElement.DISJOINT, C.getAncestors(), D.getAncestors());
+                findRelation(IMappingElement.DISJOINT, e.getSource(), e.getTarget().getAncestors(), mapping) ||
+                        findRelation(IMappingElement.DISJOINT, e.getSource().getAncestors(), e.getTarget(), mapping) ||
+                        findRelation(IMappingElement.DISJOINT, e.getSource().getAncestors(), e.getTarget().getAncestors(), mapping);
         return result;
     }
 
-    protected boolean verifyCondition4(INode C, INode D) {
+    protected boolean verifyCondition4(IContextMapping<INode> mapping, IMappingElement<INode> e) {
         boolean result =
-                (findRelation(IMappingElement.EQUIVALENCE, C, D.getAncestors()) &&
-                        findRelation(IMappingElement.EQUIVALENCE, C.getAncestors(), D))
+                (findRelation(IMappingElement.EQUIVALENCE, e.getSource(), e.getTarget().getAncestors(), mapping) &&
+                        findRelation(IMappingElement.EQUIVALENCE, e.getSource().getAncestors(), e.getTarget(), mapping))
                         ||
-                        (findRelation(IMappingElement.EQUIVALENCE, C, D.getDescendants()) &&
-                                findRelation(IMappingElement.EQUIVALENCE, C.getDescendants(), D))
+                        (findRelation(IMappingElement.EQUIVALENCE, e.getSource(), e.getTarget().getDescendants(), mapping) &&
+                                findRelation(IMappingElement.EQUIVALENCE, e.getSource().getDescendants(), e.getTarget(), mapping))
                         ||
-                        (findRelation(IMappingElement.EQUIVALENCE, C.getAncestors(), D.getDescendants()) &&
-                                findRelation(IMappingElement.EQUIVALENCE, C.getDescendants(), D.getAncestors()));
+                        (findRelation(IMappingElement.EQUIVALENCE, e.getSource().getAncestors(), e.getTarget().getDescendants(), mapping) &&
+                                findRelation(IMappingElement.EQUIVALENCE, e.getSource().getDescendants(), e.getTarget().getAncestors(), mapping));
         return result;
     }
 
-    public boolean findRelation(char relation, INode sourceNode, INode targetNode) {
-        return (null != sourceNode) && (null != targetNode) && (getRelation(sourceNode, targetNode) == relation);
-    }
-
-    public boolean findRelation(char relation, List<INode> sourceNodes, INode targetNode) {
+    public boolean findRelation(char relation, List<INode> sourceNodes, INode targetNode, IContextMapping<INode> mapping) {
         for (INode sourceNode : sourceNodes) {
-            if (relation == getRelation(sourceNode, targetNode)) {
+            if (relation == getRelation(mapping, sourceNode, targetNode)) {
                 return true;
             }
         }
         return false;
     }
 
-    public boolean findRelation(char relation, INode sourceNode, List<INode> targetNodes) {
+    public boolean findRelation(char relation, INode sourceNode, List<INode> targetNodes, IContextMapping<INode> mapping) {
         for (INode targetNode : targetNodes) {
-            if (relation == getRelation(sourceNode, targetNode)) {
+            if (relation == getRelation(mapping, sourceNode, targetNode)) {
                 return true;
             }
         }
         return false;
     }
 
-    public boolean findRelation(char relation, List<INode> sourceNodes, List<INode> targetNodes) {
+    public boolean findRelation(char relation, List<INode> sourceNodes, List<INode> targetNodes, IContextMapping<INode> mapping) {
         for (INode sourceNode : sourceNodes) {
             for (INode targetNode : targetNodes) {
-                if (relation == getRelation(sourceNode, targetNode)) {
+                if (relation == getRelation(mapping, sourceNode, targetNode)) {
                     return true;
                 }
             }
@@ -208,7 +177,7 @@ public class RedundantMappingFilter extends Configurable implements IMappingFilt
         return false;
     }
 
-    protected char getRelation(INode a, INode b) {
-        return cNodMatrix.getElement(a.getNodeData().getIndex(), b.getNodeData().getIndex());
+    protected char getRelation(IContextMapping<INode> mapping, INode a, INode b) {
+        return mapping.getRelation(a, b);
     }
 }

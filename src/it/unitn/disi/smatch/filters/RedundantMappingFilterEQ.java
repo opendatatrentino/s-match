@@ -1,6 +1,7 @@
 package it.unitn.disi.smatch.filters;
 
 import it.unitn.disi.smatch.data.INode;
+import it.unitn.disi.smatch.data.mappings.IContextMapping;
 import it.unitn.disi.smatch.data.mappings.IMappingElement;
 
 /**
@@ -14,30 +15,30 @@ public class RedundantMappingFilterEQ extends RedundantMappingFilter {
     //we need to check ancestors and descendants, and not only parents and children
     //otherwise, in case of series of redundant links we remove first by checking parent
     //and then all the rest is not removed because of the "gap"
-    protected boolean verifyCondition1(INode C, INode D) {
+
+    protected boolean verifyCondition1(IContextMapping<INode> mapping, IMappingElement<INode> e) {
         boolean result =
-                findRelation(IMappingElement.LESS_GENERAL, C.getAncestors(), D) ||
-                        findRelation(IMappingElement.EQUIVALENCE, C.getAncestors(), D) ||
+                findRelation(IMappingElement.LESS_GENERAL, e.getSource().getAncestors(), e.getTarget(), mapping) ||
+                        findRelation(IMappingElement.EQUIVALENCE, e.getSource().getAncestors(), e.getTarget(), mapping) ||
 
-                        findRelation(IMappingElement.LESS_GENERAL, C, D.getDescendants()) ||
-                        findRelation(IMappingElement.EQUIVALENCE, C, D.getDescendants()) ||
+                        findRelation(IMappingElement.LESS_GENERAL, e.getSource(), e.getTarget().getDescendants(), mapping) ||
+                        findRelation(IMappingElement.EQUIVALENCE, e.getSource(), e.getTarget().getDescendants(), mapping) ||
 
-                        findRelation(IMappingElement.LESS_GENERAL, C.getAncestors(), D.getDescendants()) ||
-                        findRelation(IMappingElement.EQUIVALENCE, C.getAncestors(), D.getDescendants());
+                        findRelation(IMappingElement.LESS_GENERAL, e.getSource().getAncestors(), e.getTarget().getDescendants(), mapping) ||
+                        findRelation(IMappingElement.EQUIVALENCE, e.getSource().getAncestors(), e.getTarget().getDescendants(), mapping);
         return result;
     }
 
-    protected boolean verifyCondition2(INode C, INode D) {
+    protected boolean verifyCondition2(IContextMapping<INode> mapping, IMappingElement<INode> e) {
         boolean result =
-                findRelation(IMappingElement.MORE_GENERAL, C, D.getAncestors()) ||
-                        findRelation(IMappingElement.EQUIVALENCE, C, D.getAncestors()) ||
+                findRelation(IMappingElement.MORE_GENERAL, e.getSource(), e.getTarget().getAncestors(), mapping) ||
+                        findRelation(IMappingElement.EQUIVALENCE, e.getSource(), e.getTarget().getAncestors(), mapping) ||
 
-                        findRelation(IMappingElement.MORE_GENERAL, C.getDescendants(), D) ||
-                        findRelation(IMappingElement.EQUIVALENCE, C.getDescendants(), D) ||
+                        findRelation(IMappingElement.MORE_GENERAL, e.getSource().getDescendants(), e.getTarget(), mapping) ||
+                        findRelation(IMappingElement.EQUIVALENCE, e.getSource().getDescendants(), e.getTarget(), mapping) ||
 
-                        findRelation(IMappingElement.MORE_GENERAL, C.getDescendants(), D.getAncestors()) ||
-                        findRelation(IMappingElement.EQUIVALENCE, C.getDescendants(), D.getAncestors());
+                        findRelation(IMappingElement.MORE_GENERAL, e.getSource().getDescendants(), e.getTarget().getAncestors(), mapping) ||
+                        findRelation(IMappingElement.EQUIVALENCE, e.getSource().getDescendants(), e.getTarget().getAncestors(), mapping);
         return result;
     }
-
 }
