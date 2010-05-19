@@ -3,7 +3,7 @@ package it.unitn.disi.smatch.renderers.mapping;
 import it.unitn.disi.smatch.SMatchConstants;
 import it.unitn.disi.smatch.components.Configurable;
 import it.unitn.disi.smatch.data.INode;
-import it.unitn.disi.smatch.data.mappings.IMapping;
+import it.unitn.disi.smatch.data.mappings.IContextMapping;
 import it.unitn.disi.smatch.data.mappings.IMappingElement;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -24,7 +24,7 @@ public class PlainMappingRenderer extends Configurable implements IMappingRender
 
     private static final Logger log = Logger.getLogger(PlainMappingRenderer.class);
 
-    public void render(IMapping mapping, String outputFile) throws MappingRendererException {
+    public void render(IContextMapping<INode> mapping, String outputFile) throws MappingRendererException {
         try {
             BufferedWriter out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outputFile), "UTF-8"));
 
@@ -37,9 +37,9 @@ public class PlainMappingRenderer extends Configurable implements IMappingRender
             long total = mapping.size();
             long reportInt = (total / 20) + 1;//i.e. report every 5%
 
-            for (IMappingElement mappingElement : mapping) {
-                String sourceConceptName = getNodePathToRoot(mappingElement.getSourceNode());
-                String targetConceptName = getNodePathToRoot(mappingElement.getTargetNode());
+            for (IMappingElement<INode> mappingElement : mapping) {
+                String sourceConceptName = getNodePathToRoot(mappingElement.getSource());
+                String targetConceptName = getNodePathToRoot(mappingElement.getTarget());
                 char relation = mappingElement.getRelation();
 
                 out.write(sourceConceptName + "\t" + relation + "\t" + targetConceptName + "\n");

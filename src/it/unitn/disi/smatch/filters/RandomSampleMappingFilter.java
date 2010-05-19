@@ -3,9 +3,10 @@ package it.unitn.disi.smatch.filters;
 import it.unitn.disi.smatch.SMatchConstants;
 import it.unitn.disi.smatch.components.Configurable;
 import it.unitn.disi.smatch.components.ConfigurableException;
-import it.unitn.disi.smatch.data.mappings.IMapping;
+import it.unitn.disi.smatch.data.INode;
+import it.unitn.disi.smatch.data.mappings.ContextMapping;
+import it.unitn.disi.smatch.data.mappings.IContextMapping;
 import it.unitn.disi.smatch.data.mappings.IMappingElement;
-import it.unitn.disi.smatch.data.mappings.Mapping;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
@@ -36,13 +37,13 @@ public class RandomSampleMappingFilter extends Configurable implements IMappingF
         properties.putAll(newProperties);
     }
 
-    public IMapping filter(IMapping mapping) {
+    public IContextMapping<INode> filter(IContextMapping<INode> mapping) {
         if (log.isEnabledFor(Level.INFO)) {
             log.info("Filtering started...");
         }
         long start = System.currentTimeMillis();
 
-        IMapping result = new Mapping(mapping.getSourceContext(), mapping.getTargetContext());
+        IContextMapping<INode> result = new ContextMapping<INode>(mapping.getSourceContext(), mapping.getTargetContext());
 
         long counter = 0;
         long total = mapping.size();
@@ -54,7 +55,7 @@ public class RandomSampleMappingFilter extends Configurable implements IMappingF
         if (log.isEnabledFor(Level.INFO)) {
             log.info("Sampling...");
         }
-        for (IMappingElement e : mapping) {
+        for (IMappingElement<INode> e : mapping) {
             if (0 == r.nextInt(oneIn) && result.size() < sampleSize) {
                 result.add(e);
             }

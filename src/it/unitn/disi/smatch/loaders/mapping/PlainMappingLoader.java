@@ -3,10 +3,7 @@ package it.unitn.disi.smatch.loaders.mapping;
 import it.unitn.disi.smatch.components.Configurable;
 import it.unitn.disi.smatch.data.IContext;
 import it.unitn.disi.smatch.data.INode;
-import it.unitn.disi.smatch.data.mappings.IMapping;
-import it.unitn.disi.smatch.data.mappings.IMappingElement;
-import it.unitn.disi.smatch.data.mappings.Mapping;
-import it.unitn.disi.smatch.data.mappings.MappingElement;
+import it.unitn.disi.smatch.data.mappings.*;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
@@ -26,7 +23,7 @@ public class PlainMappingLoader extends Configurable implements IMappingLoader {
 
     private static final Logger log = Logger.getLogger(PlainMappingLoader.class);
 
-    public IMapping loadMapping(IContext source, IContext target, String fileName) throws MappingLoaderException {
+    public IContextMapping<INode> loadMapping(IContext source, IContext target, String fileName) throws MappingLoaderException {
         if (log.isEnabledFor(Level.INFO)) {
             log.info("Loading mapping: " + fileName);
         }
@@ -38,7 +35,7 @@ public class PlainMappingLoader extends Configurable implements IMappingLoader {
             log.info(sourceNodes.size() + " x " + targetNodes.size() + " nodes");
         }
 
-        IMapping mapping = new Mapping(source, target);
+        IContextMapping<INode> mapping = new ContextMapping<INode>(source, target);
 
         HashMap<String, Integer> sNodes = createHash(sourceNodes);
         HashMap<String, Integer> tNodes = createHash(targetNodes);
@@ -110,7 +107,7 @@ public class PlainMappingLoader extends Configurable implements IMappingLoader {
                     }
 
                     if ((-1 != sourceIdx) && (-1 != targetIdx)) {
-                        mapping.add(new MappingElement(sourceNodes.get(sourceIdx), targetNodes.get(targetIdx), rel));
+                        mapping.add(new MappingElement<INode>(sourceNodes.get(sourceIdx), targetNodes.get(targetIdx), rel));
                         cntLoaded++;
                     } else {
                         if (log.isEnabledFor(Level.WARN)) {

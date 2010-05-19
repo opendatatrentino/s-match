@@ -2,7 +2,8 @@ package it.unitn.disi.smatch;
 
 import it.unitn.disi.smatch.components.IConfigurable;
 import it.unitn.disi.smatch.data.IContext;
-import it.unitn.disi.smatch.data.mappings.IMapping;
+import it.unitn.disi.smatch.data.INode;
+import it.unitn.disi.smatch.data.mappings.IContextMapping;
 import it.unitn.disi.smatch.data.matrices.IMatchMatrix;
 
 /**
@@ -51,7 +52,7 @@ public interface IMatchManager extends IConfigurable {
      * @return a mapping
      * @throws SMatchException SMatchException
      */
-    IMapping loadMapping(IContext ctxSource, IContext ctxTarget, String inputFile) throws SMatchException;
+    IContextMapping<INode> loadMapping(IContext ctxSource, IContext ctxTarget, String inputFile) throws SMatchException;
 
     /**
      * Renders the mapping using a current mapping renderer.
@@ -60,7 +61,7 @@ public interface IMatchManager extends IConfigurable {
      * @param outputFile a render destination passed to the mapping renderer
      * @throws SMatchException SMatchException
      */
-    void renderMapping(IMapping mapping, String outputFile) throws SMatchException;
+    void renderMapping(IContextMapping<INode> mapping, String outputFile) throws SMatchException;
 
     /**
      * Filters a mapping. For example, filtering could be a minimization.
@@ -69,7 +70,7 @@ public interface IMatchManager extends IConfigurable {
      * @return a filtered mapping
      * @throws SMatchException SMatchException
      */
-    IMapping filterMapping(IMapping mapping) throws SMatchException;
+    IContextMapping<INode> filterMapping(IContextMapping<INode> mapping) throws SMatchException;
 
     /**
      * Performs the first step of the semantic matching algorithm.
@@ -125,7 +126,7 @@ public interface IMatchManager extends IConfigurable {
      * @return interface to resulting mapping
      * @throws SMatchException SMatchException
      */
-    IMapping online(IContext sourceContext, IContext targetContext) throws SMatchException;
+    IContextMapping<INode> online(IContext sourceContext, IContext targetContext) throws SMatchException;
 
     /**
      * Performs the whole matching process.
@@ -135,5 +136,5 @@ public interface IMatchManager extends IConfigurable {
      * @return interface to resulting mapping
      * @throws SMatchException SMatchException
      */
-    IMapping match(IContext sourceContext, IContext targetContext) throws SMatchException;
+    IContextMapping<INode> match(IContext sourceContext, IContext targetContext) throws SMatchException;
 }

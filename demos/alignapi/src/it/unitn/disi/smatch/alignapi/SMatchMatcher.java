@@ -10,7 +10,7 @@ import it.unitn.disi.smatch.MatchManager;
 import it.unitn.disi.smatch.components.ConfigurableException;
 import it.unitn.disi.smatch.data.IContext;
 import it.unitn.disi.smatch.data.INode;
-import it.unitn.disi.smatch.data.mappings.IMapping;
+import it.unitn.disi.smatch.data.mappings.IContextMapping;
 import it.unitn.disi.smatch.data.mappings.IMappingElement;
 import org.semanticweb.owl.align.Alignment;
 import org.semanticweb.owl.align.AlignmentException;
@@ -42,12 +42,12 @@ public class SMatchMatcher extends ObjectAlignment implements AlignmentProcess {
                 IContext c1 = importOntology(mm, ontology1());
                 IContext c2 = importOntology(mm, ontology2());
 
-                IMapping result = mm.match(c1, c2);
+                IContextMapping<INode> result = mm.match(c1, c2);
 
                 // convert mapping
-                for (IMappingElement e : result) {
-                    Object o1 = e.getSourceNode().getNodeData().getUserObject();
-                    Object o2 = e.getTargetNode().getNodeData().getUserObject();
+                for (IMappingElement<INode> e : result) {
+                    Object o1 = e.getSource().getNodeData().getUserObject();
+                    Object o2 = e.getTarget().getNodeData().getUserObject();
                     if (null != o1 && null != o2) {// in case of introduced Top node, which has no respective object
                         addAlignCell(o1, o2, Character.toString(e.getRelation()), 1.0);
                     }

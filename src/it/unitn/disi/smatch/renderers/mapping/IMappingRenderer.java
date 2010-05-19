@@ -1,7 +1,8 @@
 package it.unitn.disi.smatch.renderers.mapping;
 
 import it.unitn.disi.smatch.components.IConfigurable;
-import it.unitn.disi.smatch.data.mappings.IMapping;
+import it.unitn.disi.smatch.data.INode;
+import it.unitn.disi.smatch.data.mappings.IContextMapping;
 
 /**
  * An interface for mapping renderers.
@@ -17,5 +18,5 @@ public interface IMappingRenderer extends IConfigurable {
      * @param outputFile an output file
      * @throws MappingRendererException MappingRendererException
      */
-    void render(IMapping mapping, String outputFile) throws MappingRendererException;
+    void render(IContextMapping<INode> mapping, String outputFile) throws MappingRendererException;
 }

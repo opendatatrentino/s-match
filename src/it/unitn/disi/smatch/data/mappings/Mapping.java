@@ -1,93 +1,199 @@
 package it.unitn.disi.smatch.data.mappings;
 
-import it.unitn.disi.smatch.data.IContext;
-
-import java.util.Collection;
-import java.util.HashSet;
+import java.util.AbstractSet;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 /**
  * Default mapping implementation.
  *
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
-public class Mapping implements IMapping {
+public class Mapping<T> extends AbstractSet<IMappingElement<T>> implements IMapping<T> {
 
-    private HashSet<IMappingElement> set;
-    private IContext sourceContext;
-    private IContext targetContext;
+    private static class NodePair<K, V> {
+        final K key;
+        final V value;
 
-    public Mapping(IContext sourceContext, IContext targetContext) {
-        set = new HashSet<IMappingElement>();
-        this.sourceContext = sourceContext;
-        this.targetContext = targetContext;
+        NodePair(K k, V v) {
+            value = v;
+            key = k;
+        }
+
+        public final K getKey() {
+            return key;
+        }
+
+        public final V getValue() {
+            return value;
+        }
+
+        public final boolean equals(Object o) {
+            if (!(o instanceof NodePair)) {
+                return false;
+            }
+            NodePair e = (NodePair) o;
+            Object k1 = getKey();
+            Object k2 = e.getKey();
+            if (k1 == k2 || (k1 != null && k1.equals(k2))) {
+                Object v1 = getValue();
+                Object v2 = e.getValue();
+                if (v1 == v2 || (v1 != null && v1.equals(v2))) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public final int hashCode() {
+            return (key == null ? 0 : key.hashCode()) ^
+                    (value == null ? 0 : value.hashCode());
+        }
+
+        public final String toString() {
+            return getKey() + "=" + getValue();
+        }
+    }
+
+    // source+target pairs mapped to index of relations
+    private Map<NodePair<T, T>, Integer> entries;
+    // relations for the above pairs
+    private StringBuilder relations;
+
+    public Mapping() {
+        entries = new HashMap<NodePair<T, T>, Integer>();
+        relations = new StringBuilder();
     }
 
     public int size() {
-        return set.size();
+        return entries.size();
     }
 
     public boolean isEmpty() {
-        return set.isEmpty();
+        return entries.isEmpty();
     }
 
     public boolean contains(Object o) {
-        return set.contains(o);
+        if (o == null) {
+            return false;
+        }
+        if (getClass() != o.getClass()) {
+            return false;
+        }
+
+        @SuppressWarnings("unchecked")
+        IMappingElement<T> e = (IMappingElement<T>) o;
+        if (IMappingElement.IDK == e.getRelation()) {
+            return false;
+        }
+        Integer idx = entries.get(new NodePair<T, T>(e.getSource(), e.getTarget()));
+        return null != idx && 0 <= idx && idx < relations.length() && (e.getRelation() == relations.charAt(idx));
     }
 
-    public Iterator<IMappingElement> iterator() {
-        return set.iterator();
+    private class Itr implements Iterator<IMappingElement<T>> {
+        private Iterator<NodePair<T, T>> i;
+        private NodePair<T, T> lastPair;
+
+        private Itr(Iterator<NodePair<T, T>> i) {
+            this.i = i;
+        }
+
+        public boolean hasNext() {
+            return i.hasNext();
+        }
+
+        public IMappingElement<T> next() {
+            NodePair<T, T> np = i.next();
+            lastPair = np;
+            return new MappingElement<T>(np.getKey(), np.getValue(), relations.charAt(entries.get(np)));
+        }
+
+        public void remove() {
+            int idx = entries.get(lastPair);
+            relations.delete(idx, idx + 1);
+            i.remove();
+        }
     }
 
-    public Object[] toArray() {
-        return set.toArray();
+    public Iterator<IMappingElement<T>> iterator() {
+        return new Itr(entries.keySet().iterator());
     }
 
-    public <T> T[] toArray(T[] a) {
-        return set.toArray(a);
-    }
-
-    public boolean add(IMappingElement e) {
-        return set.add(e);
+    public boolean add(IMappingElement<T> e) {
+        NodePair<T, T> np = new NodePair<T, T>(e.getSource(), e.getTarget());
+        Integer idx = entries.get(np);
+        if (null == idx) {
+            entries.put(np, relations.length());
+            relations.append(e.getRelation());
+            return true;
+        } else {
+            if (e.getRelation() == relations.charAt(idx)) {
+                return false;
+            } else {
+                relations.setCharAt(idx, e.getRelation());
+                return true;
+            }
+        }
     }
 
     public boolean remove(Object o) {
-        return set.remove(o);
-    }
+        if (o == null) {
+            return false;
+        }
+        if (getClass() != o.getClass()) {
+            return false;
+        }
 
-    public boolean containsAll(Collection<?> c) {
-        return set.containsAll(c);
-    }
-
-    public boolean addAll(Collection<? extends IMappingElement> c) {
-        return set.addAll(c);
-    }
-
-    public boolean retainAll(Collection<?> c) {
-        return set.retainAll(c);
-    }
-
-    public boolean removeAll(Collection<?> c) {
-        return set.removeAll(c);
+        @SuppressWarnings("unchecked")
+        IMappingElement<T> e = (IMappingElement<T>) o;
+        NodePair<T, T> np = new NodePair<T, T>(e.getSource(), e.getTarget());
+        Integer idx = entries.get(np);
+        if (null == idx) {
+            return false;
+        } else {
+            if (e.getRelation() == relations.charAt(idx)) {
+                relations.delete(idx, idx + 1);
+                entries.remove(np);
+                return true;
+            } else {
+                return false;
+            }
+        }
     }
 
     public void clear() {
-        set.clear();
+        entries.clear();
+        relations = new StringBuilder();
     }
 
-    public IContext getSourceContext() {
-        return sourceContext;
+    public char getRelation(T source, T target) {
+        NodePair<T, T> np = new NodePair<T, T>(source, target);
+        Integer idx = entries.get(np);
+        if (null == idx) {
+            return IMappingElement.IDK;
+        } else {
+            return relations.charAt(idx);
+        }
     }
 
-    public IContext getTargetContext() {
-        return targetContext;
-    }
-
-    public void setSourceContext(IContext newContext) {
-        sourceContext = newContext;
-    }
-
-    public void setTargetContext(IContext newContext) {
-        targetContext = newContext;
+    public void setRelation(T source, T target, char relation) {
+        NodePair<T, T> np = new NodePair<T, T>(source, target);
+        Integer idx = entries.get(np);
+        if (null == idx) {
+            if (IMappingElement.IDK != relation) {
+                entries.put(np, relations.length());
+                relations.append(relation);
+            }
+        } else {
+            if (IMappingElement.IDK != relation) {
+                if (relation != relations.charAt(idx)) {
+                    relations.setCharAt(idx, relation);
+                }
+            } else {
+                relations.delete(idx, idx + 1);
+                entries.remove(np);
+            }
+        }
     }
 }

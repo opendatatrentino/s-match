@@ -1,14 +1,11 @@
 package it.unitn.disi.smatch.data.mappings;
 
-import it.unitn.disi.smatch.data.INode;
-
 /**
  * Interface for a mapping element.
  *
- * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
-public interface IMappingElement {
+public interface IMappingElement<T> {
 
     // Relations abbreviations
     char EQUIVALENCE = '=';
@@ -16,25 +13,16 @@ public interface IMappingElement {
     char MORE_GENERAL = '>';
     char DISJOINT = '!';
 
-    // relations for work with minimal links
+    // relations for minimal links
     char ENTAILED_LESS_GENERAL = 'L';
     char ENTAILED_MORE_GENERAL = 'M';
     char ENTAILED_DISJOINT = 'X';
 
     char IDK = '?';
-    char ERASED_LG = 'L';
-    char ERASED_MG = 'M';
 
-    INode getSourceNode();
+    T getSource();
 
-    void setSourceNode(INode newSource);
-
-    INode getTargetNode();
-
-    void setTargetNode(INode newTarget);
+    T getTarget();
 
     char getRelation();
-
-    void setRelation(char newRelation);
-
 }

@@ -4,10 +4,7 @@ import it.unitn.disi.smatch.SMatchConstants;
 import it.unitn.disi.smatch.components.Configurable;
 import it.unitn.disi.smatch.data.IContext;
 import it.unitn.disi.smatch.data.INode;
-import it.unitn.disi.smatch.data.mappings.IMapping;
-import it.unitn.disi.smatch.data.mappings.IMappingElement;
-import it.unitn.disi.smatch.data.mappings.Mapping;
-import it.unitn.disi.smatch.data.mappings.MappingElement;
+import it.unitn.disi.smatch.data.mappings.*;
 import it.unitn.disi.smatch.data.matrices.IMatchMatrix;
 import it.unitn.disi.smatch.data.matrices.MatrixFactory;
 import org.apache.log4j.Level;
@@ -26,7 +23,7 @@ public class RedundantMappingFilter extends Configurable implements IMappingFilt
 
     protected IMatchMatrix cNodMatrix;
 
-    public IMapping filter(IMapping mapping) {
+    public IContextMapping<INode> filter(IContextMapping<INode> mapping) {
         if (log.isEnabledFor(Level.INFO)) {
             log.info("Filtering started...");
         }
@@ -48,8 +45,8 @@ public class RedundantMappingFilter extends Configurable implements IMappingFilt
 
         //TODO rewrite algorithm to use mapping
         cNodMatrix = MatrixFactory.getInstance(sourceNodes.size(), targetNodes.size());
-        for (IMappingElement e : mapping) {
-            cNodMatrix.setElement(e.getSourceNode().getNodeData().getIndex(), e.getTargetNode().getNodeData().getIndex(), e.getRelation());
+        for (IMappingElement<INode> e : mapping) {
+            cNodMatrix.setElement(e.getSource().getNodeData().getIndex(), e.getTarget().getNodeData().getIndex(), e.getRelation());
         }
 
         long counter = 0;
@@ -73,14 +70,14 @@ public class RedundantMappingFilter extends Configurable implements IMappingFilt
             }
         }
 
-        IMapping result = new Mapping(sourceContext, targetContext);
+        IContextMapping<INode> result = new ContextMapping<INode>(sourceContext, targetContext);
         for (int i = 0; i < sourceNodes.size(); i++) {
             INode sourceNode = sourceNodes.get(i);
             for (int j = 0; j < targetNodes.size(); j++) {
                 INode targetNode = targetNodes.get(j);
                 char relation = cNodMatrix.getElement(i, j);
                 if (IMappingElement.IDK != relation) {
-                    result.add(new MappingElement(sourceNode, targetNode, relation));
+                    result.add(new MappingElement<INode>(sourceNode, targetNode, relation));
                 }
             }
         }

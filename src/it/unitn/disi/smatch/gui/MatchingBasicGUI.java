@@ -1,16 +1,16 @@
 package it.unitn.disi.smatch.gui;
 
 
+import it.unitn.disi.smatch.IMatchManager;
 import it.unitn.disi.smatch.MatchManager;
 import it.unitn.disi.smatch.SMatchException;
 import it.unitn.disi.smatch.components.ConfigurableException;
 import it.unitn.disi.smatch.data.IContext;
 import it.unitn.disi.smatch.data.INode;
-import it.unitn.disi.smatch.data.mappings.IMapping;
+import it.unitn.disi.smatch.data.mappings.IContextMapping;
 import it.unitn.disi.smatch.data.mappings.IMappingElement;
 import it.unitn.disi.smatch.loaders.context.ContextLoaderException;
 import it.unitn.disi.smatch.loaders.context.TabContextLoader;
-import it.unitn.disi.smatch.loaders.mapping.PlainMappingLoader;
 import org.apache.log4j.Logger;
 
 import javax.imageio.ImageIO;
@@ -75,10 +75,11 @@ public class MatchingBasicGUI extends JPanel
     private Point leftOffset = new Point(); //for source tree
     private Point rightOffset = new Point(); //for target tree
 
-    IMapping mappings = null;
+    IContextMapping<INode> mappings = null;
+    private IMatchManager mm;
 
 
-    public MatchingBasicGUI() {
+    public MatchingBasicGUI() throws SMatchException {
         super(new GridBagLayout());
 
         //Create a file chooser
@@ -163,7 +164,7 @@ public class MatchingBasicGUI extends JPanel
         //add the legend
         add(createLegend(), constraintLegend);
 
-
+        mm = new MatchManager();
     }
 
 
@@ -176,14 +177,13 @@ public class MatchingBasicGUI extends JPanel
      * @return
      * @throws IOException
      */
-    private IMapping loadMappingsFromFile(
+    private IContextMapping<INode> loadMappingsFromFile(
             IContext sourceContext2, IContext targetContext2,
             String mappingFile) throws SMatchException {
 
         mappingFileTxt.setText(mappingFile);
 
-        PlainMappingLoader mappingLoader = new PlainMappingLoader();
-        IMapping mapping = mappingLoader.loadMapping(sourceContext2, targetContext2, mappingFile);
+        IContextMapping<INode> mapping = mm.loadMapping(sourceContext2, targetContext2, mappingFile);
 
         repaint();
         return mapping;
@@ -269,9 +269,9 @@ public class MatchingBasicGUI extends JPanel
             Rectangle splitBound = splitPane.getBounds();
             g2.setClip(0, 0, splitBound.width, splitBound.height - 5);
             computeOffset();
-            for (IMappingElement mapping : mappings) {
-                int source = sourceRowForPath.get(mapping.getSourceNode());
-                int target = targetRowForPath.get(mapping.getTargetNode());
+            for (IMappingElement<INode> mapping : mappings) {
+                int source = sourceRowForPath.get(mapping.getSource());
+                int target = targetRowForPath.get(mapping.getTarget());
 
                 if (source >= 0 && target >= 0) {
                     Line2D line2 = drawBoundingLine(sourceTree.getRowBounds(source), targetTree.getRowBounds(target));
@@ -346,7 +346,7 @@ public class MatchingBasicGUI extends JPanel
      * this method should be invoked from the
      * event dispatch thread.
      */
-    private static void createAndShowGUI() {
+    private static void createAndShowGUI() throws SMatchException {
 
         //Create and set up the window.
         JFrame frame = new JFrame("S-Match GUI");
@@ -447,7 +447,11 @@ public class MatchingBasicGUI extends JPanel
         //creating and showing this application's GUI.
         javax.swing.SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                createAndShowGUI();
+                try {
+                    createAndShowGUI();
+                } catch (SMatchException e) {
+                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                }
             }
         });
     }
@@ -620,14 +624,14 @@ public class MatchingBasicGUI extends JPanel
         String outputFolder = sourceFileName.substring(0, sourceFileName.lastIndexOf(File.separator) + 1);
 
         String defaultConfigFile = ".." + File.separator + "conf" + File.separator + "s-match.properties";
-        MatchManager mm = new MatchManager(defaultConfigFile);
+        mm.setProperties(defaultConfigFile);
 
         // linguistic pre-processing
         mm.offline(sourceContext);
         mm.offline(targetContext);
 
         // match
-        IMapping mapping = mm.online(sourceContext, targetContext);
+        IContextMapping<INode> mapping = mm.online(sourceContext, targetContext);
         mm.renderMapping(mapping, outputFolder + "result-default.txt");
 
         // match minimal

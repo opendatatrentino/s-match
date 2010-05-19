@@ -180,17 +180,17 @@ public class OptimizedStageTreeMatcher extends BaseTreeMatcher implements ITreeM
         }
         for (MappingNodeElement me : mapping) {
             if (IMappingElement.LESS_GENERAL == me.getRelation()) {
-                MappingNodeElement mg = new MappingNodeElement(me.getSourceNode(), me.getTargetNode(), IMappingElement.MORE_GENERAL);
+                MappingNodeElement mg = new MappingNodeElement(me.getSource(), me.getTarget(), IMappingElement.MORE_GENERAL);
                 if (mapping.contains(mg)) {
-                    result.add(new MappingNodeElement(me.getSourceNode(), me.getTargetNode(), IMappingElement.EQUIVALENCE));
+                    result.add(new MappingNodeElement(me.getSource(), me.getTarget(), IMappingElement.EQUIVALENCE));
                 } else {
                     result.add(me);
                 }
             } else {
                 if (IMappingElement.MORE_GENERAL == me.getRelation()) {
-                    MappingNodeElement lg = new MappingNodeElement(me.getSourceNode(), me.getTargetNode(), IMappingElement.LESS_GENERAL);
+                    MappingNodeElement lg = new MappingNodeElement(me.getSource(), me.getTarget(), IMappingElement.LESS_GENERAL);
                     if (mapping.contains(lg)) {
-                        result.add(new MappingNodeElement(me.getSourceNode(), me.getTargetNode(), IMappingElement.EQUIVALENCE));
+                        result.add(new MappingNodeElement(me.getSource(), me.getTarget(), IMappingElement.EQUIVALENCE));
                     } else {
                         result.add(me);
                     }
@@ -242,12 +242,12 @@ public class OptimizedStageTreeMatcher extends BaseTreeMatcher implements ITreeM
 
     private void mappingToMatrix(HashSet<MappingNodeElement> mapping, IMatchMatrix cnodMatrix) {
         for (MappingNodeElement me : mapping) {
-            final char element = cnodMatrix.getElement(me.getSourceNode().getNodeData().getIndex(), me.getTargetNode().getNodeData().getIndex());
+            final char element = cnodMatrix.getElement(me.getSource().getNodeData().getIndex(), me.getTarget().getNodeData().getIndex());
             if (IMappingElement.IDK == element) {
-                cnodMatrix.setElement(me.getSourceNode().getNodeData().getIndex(), me.getTargetNode().getNodeData().getIndex(), me.getRelation());
+                cnodMatrix.setElement(me.getSource().getNodeData().getIndex(), me.getTarget().getNodeData().getIndex(), me.getRelation());
             } else {
                 if (log.isEnabledFor(Level.WARN)) {
-                    log.warn("Override attempt " + element + " with: " + me.getSourceNode() + "\t" + me.getTargetNode() + "\t" + me.getRelation());
+                    log.warn("Override attempt " + element + " with: " + me.getSource() + "\t" + me.getTarget() + "\t" + me.getRelation());
                 }
             }
         }

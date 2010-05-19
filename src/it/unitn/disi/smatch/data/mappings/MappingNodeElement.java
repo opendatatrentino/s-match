@@ -33,7 +33,7 @@ public class MappingNodeElement implements IMappingElement {
         }
     }
 
-    public INode getSourceNode() {
+    public INode getSource() {
         return sourceNode;
     }
 
@@ -41,7 +41,7 @@ public class MappingNodeElement implements IMappingElement {
         sourceNode = newSource;
     }
 
-    public INode getTargetNode() {
+    public INode getTarget() {
         return targetNode;
     }
 

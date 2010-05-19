@@ -6,9 +6,9 @@ import it.unitn.disi.smatch.components.ConfigurableException;
 import it.unitn.disi.smatch.data.Context;
 import it.unitn.disi.smatch.data.IContext;
 import it.unitn.disi.smatch.data.INode;
-import it.unitn.disi.smatch.data.mappings.IMapping;
+import it.unitn.disi.smatch.data.mappings.ContextMapping;
+import it.unitn.disi.smatch.data.mappings.IContextMapping;
 import it.unitn.disi.smatch.data.mappings.IMappingElement;
-import it.unitn.disi.smatch.data.mappings.Mapping;
 import it.unitn.disi.smatch.data.mappings.MappingElement;
 import it.unitn.disi.smatch.data.matrices.IMatchMatrix;
 import it.unitn.disi.smatch.filters.IMappingFilter;
@@ -152,21 +152,21 @@ public class MatchManager extends Configurable implements IMatchManager {
         contextRenderer.render(ctxSource, fileName);
     }
 
-    public IMapping loadMapping(IContext ctxSource, IContext ctxTarget, String inputFile) throws SMatchException {
+    public IContextMapping<INode> loadMapping(IContext ctxSource, IContext ctxTarget, String inputFile) throws SMatchException {
         if (null == mappingLoader) {
             throw new SMatchException("Mapping loader is not configured.");
         }
         return mappingLoader.loadMapping(ctxSource, ctxTarget, inputFile);
     }
 
-    public void renderMapping(IMapping mapping, String outputFile) throws SMatchException {
+    public void renderMapping(IContextMapping<INode> mapping, String outputFile) throws SMatchException {
         if (null == mappingRenderer) {
             throw new SMatchException("Mapping renderer is not configured.");
         }
         mappingRenderer.render(mapping, outputFile);
     }
 
-    public IMapping filterMapping(IMapping mapping) throws SMatchException {
+    public IContextMapping<INode> filterMapping(IContextMapping<INode> mapping) throws SMatchException {
         if (null == mappingFilter) {
             throw new SMatchException("Mapping filter is not configured.");
         }
@@ -201,7 +201,7 @@ public class MatchManager extends Configurable implements IMatchManager {
         log.info("Computing concept at node formulas finished");
     }
 
-    public IMapping online(IContext sourceContext, IContext targetContext) throws SMatchException {
+    public IContextMapping<INode> online(IContext sourceContext, IContext targetContext) throws SMatchException {
         //TODO get rid of matrices?
         // Performs element level matching which computes the relation between labels.
         IMatchMatrix cLabMatrix = elementLevelMatching(sourceContext, targetContext);
@@ -211,14 +211,14 @@ public class MatchManager extends Configurable implements IMatchManager {
         List<INode> sourceNodes = sourceContext.getAllNodes();
         List<INode> targetNodes = targetContext.getAllNodes();
 
-        IMapping mapping = new Mapping(sourceContext, targetContext);
+        IContextMapping<INode> mapping = new ContextMapping<INode>(sourceContext, targetContext);
         for (int i = 0; i < sourceNodes.size(); i++) {
             INode sourceNode = sourceNodes.get(i);
             for (int j = 0; j < targetNodes.size(); j++) {
                 INode targetNode = targetNodes.get(j);
                 char relation = cNodeMatrix.getElement(i, j);
                 if (IMappingElement.IDK != relation) {
-                    mapping.add(new MappingElement(sourceNode, targetNode, relation));
+                    mapping.add(new MappingElement<INode>(sourceNode, targetNode, relation));
                 }
             }
         }
@@ -226,11 +226,11 @@ public class MatchManager extends Configurable implements IMatchManager {
         return mapping;
     }
 
-    public IMapping match(IContext sourceContext, IContext targetContext) throws SMatchException {
+    public IContextMapping<INode> match(IContext sourceContext, IContext targetContext) throws SMatchException {
         log.info("Matching started...");
         offline(sourceContext);
         offline(targetContext);
-        IMapping result = online(sourceContext, targetContext);
+        IContextMapping<INode> result = online(sourceContext, targetContext);
         log.info("Matching finished");
         return result;
     }
@@ -298,7 +298,7 @@ public class MatchManager extends Configurable implements IMatchManager {
      * Provides a command line interface to match manager.
      *
      * @param args command line arguments
-     * @throws IOException IOException
+     * @throws IOException           IOException
      * @throws ConfigurableException ConfigurableException
      */
     public static void main(String[] args) throws IOException, ConfigurableException {
@@ -387,7 +387,7 @@ public class MatchManager extends Configurable implements IMatchManager {
                         String outputFile = args[3];
                         IContext ctxSource = mm.loadContext(sourceFile);
                         IContext ctxTarget = mm.loadContext(targetFile);
-                        IMapping result = mm.online(ctxSource, ctxTarget);
+                        IContextMapping<INode> result = mm.online(ctxSource, ctxTarget);
                         mm.renderMapping(result, outputFile);
                     } else {
                         System.out.println("Not enough arguments for online command.");
@@ -401,8 +401,8 @@ public class MatchManager extends Configurable implements IMatchManager {
 
                         IContext ctxSource = mm.loadContext(sourceFile);
                         IContext ctxTarget = mm.loadContext(targetFile);
-                        IMapping mapInput = mm.loadMapping(ctxSource, ctxTarget, inputFile);
-                        IMapping mapOutput = mm.filterMapping(mapInput);
+                        IContextMapping<INode> mapInput = mm.loadMapping(ctxSource, ctxTarget, inputFile);
+                        IContextMapping<INode> mapOutput = mm.filterMapping(mapInput);
                         mm.renderMapping(mapOutput, outputFile);
                     } else {
                         System.out.println("Not enough arguments for mappingFilter command.");

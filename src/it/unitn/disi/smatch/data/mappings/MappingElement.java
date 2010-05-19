@@ -1,48 +1,66 @@
 package it.unitn.disi.smatch.data.mappings;
 
-import it.unitn.disi.smatch.data.INode;
-
 /**
- * Default mapping element implementation.
+ * Mapping element implementation.
  *
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
-public class MappingElement implements IMappingElement {
+public class MappingElement<T> implements IMappingElement<T> {
 
-    private INode sourceNode;
-    private INode targetNode;
+    private T source;
+    private T target;
     private char relation;
 
-    public MappingElement() {
-    }
-
-    public MappingElement(INode sourceNode, INode targetNode, char relation) {
-        this.sourceNode = sourceNode;
-        this.targetNode = targetNode;
+    public MappingElement(T source, T target, char relation) {
+        this.source = source;
+        this.target = target;
         this.relation = relation;
     }
 
-    public INode getSourceNode() {
-        return sourceNode;
+    public T getSource() {
+        return source;
     }
 
-    public void setSourceNode(INode newSource) {
-        sourceNode = newSource;
-    }
-
-    public INode getTargetNode() {
-        return targetNode;
-    }
-
-    public void setTargetNode(INode newTarget) {
-        targetNode = newTarget;
+    public T getTarget() {
+        return target;
     }
 
     public char getRelation() {
         return relation;
     }
 
-    public void setRelation(char newRelation) {
-        relation = newRelation;
+    public int hashCode() {
+        int result;
+        result = (source != null ? source.hashCode() : 0);
+        result = 31 * result + (target != null ? target.hashCode() : 0);
+        result = 31 * result + (int) relation;
+        return result;
+    }
+
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null) {
+            return false;
+        }
+        if (getClass() != o.getClass()) {
+            return false;
+        }
+
+        @SuppressWarnings("unchecked")
+        MappingElement<T> that = (MappingElement<T>) o;
+
+        if (relation != that.relation) {
+            return false;
+        }
+        if (source != null ? !source.equals(that.source) : that.source != null) {
+            return false;
+        }
+        if (target != null ? !target.equals(that.target) : that.target != null) {
+            return false;
+        }
+
+        return true;
     }
 }

@@ -1,7 +1,8 @@
 package it.unitn.disi.smatch.filters;
 
 import it.unitn.disi.smatch.components.IConfigurable;
-import it.unitn.disi.smatch.data.mappings.IMapping;
+import it.unitn.disi.smatch.data.INode;
+import it.unitn.disi.smatch.data.mappings.IContextMapping;
 
 /**
  * Interface for mapping filters.
@@ -18,5 +19,5 @@ public interface IMappingFilter extends IConfigurable {
      * @return filtered mapping
      * @throws MappingFilterException MappingFilterException
      */
-    IMapping filter(IMapping mapping) throws MappingFilterException;
+    IContextMapping<INode> filter(IContextMapping<INode> mapping) throws MappingFilterException;
 }

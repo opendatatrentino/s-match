@@ -3,7 +3,8 @@ import it.unitn.disi.smatch.MatchManager;
 import it.unitn.disi.smatch.SMatchException;
 import it.unitn.disi.smatch.components.ConfigurableException;
 import it.unitn.disi.smatch.data.IContext;
-import it.unitn.disi.smatch.data.mappings.IMapping;
+import it.unitn.disi.smatch.data.INode;
+import it.unitn.disi.smatch.data.mappings.IContextMapping;
 import it.unitn.disi.smatch.data.mappings.IMappingElement;
 
 import java.io.File;
@@ -49,7 +50,7 @@ public class SMatchAPIDemo {
         IContext t = mm.loadContext("../test-data/cw/w.txt");
 
         config.load(new FileInputStream(CONFIG_FILE_PREFIX + "s-match.properties"));
-        System.out.println("Configuring MatchManager from " + CONFIG_FILE_PREFIX + "s-match.properties" + "...");        
+        System.out.println("Configuring MatchManager from " + CONFIG_FILE_PREFIX + "s-match.properties" + "...");
         mm.setProperties(config);
 
         System.out.println("Preprocessing source context...");
@@ -59,7 +60,7 @@ public class SMatchAPIDemo {
         mm.offline(t);
 
         System.out.println("Matching...");
-        IMapping result = mm.online(s, t);
+        IContextMapping<INode> result = mm.online(s, t);
 
         System.out.println("Rendering results...");
         mm.renderMapping(result, "../test-data/cw/result.txt");
@@ -104,12 +105,12 @@ public class SMatchAPIDemo {
         mm.offline(t);
 
         System.out.println("Matching...");
-        IMapping result = mm.online(s, t);
+        IContextMapping<INode> result = mm.online(s, t);
 
         System.out.println("Processing results...");
         System.out.println("Printing matches to: " + example);
-        for (IMappingElement e : result) {
-            System.out.println("\t" + e.getRelation() + "\t" + e.getTargetNode().getNodeName());
+        for (IMappingElement<INode> e : result) {
+            System.out.println("\t" + e.getRelation() + "\t" + e.getTarget().getNodeName());
         }
 
         System.out.println("Done");
