@@ -138,9 +138,9 @@ public class MatchManager extends Configurable implements IMatchManager {
             throw new SMatchException("Context loader is not configured.");
         }
 
-        log.info("Context loading...");
+        log.info("Loading context from: " + fileName);
         final IContext result = contextLoader.loadContext(fileName);
-        log.info("Context loading finished...");
+        log.info("Loading context finished");
         return result;
     }
 
@@ -148,7 +148,9 @@ public class MatchManager extends Configurable implements IMatchManager {
         if (null == contextRenderer) {
             throw new SMatchException("Context renderer is not configured.");
         }
+        log.info("Rendering context to: " + fileName);
         contextRenderer.render(ctxSource, fileName);
+        log.info("Rendering context finished");
     }
 
     public IContextMapping<INode> loadMapping(IContext ctxSource, IContext ctxTarget, String inputFile) throws SMatchException {

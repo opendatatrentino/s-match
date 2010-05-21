@@ -1,5 +1,6 @@
 package it.unitn.disi.smatch.loaders.context;
 
+import it.unitn.disi.smatch.components.Configurable;
 import it.unitn.disi.smatch.data.Context;
 import it.unitn.disi.smatch.data.IContext;
 import org.apache.log4j.Logger;
@@ -18,16 +19,19 @@ import java.util.ArrayList;
  * @author Aliaksandr Autayeu avtaev@gmail.com
  * @author Juan Pane pane@disi.unitn.it
  */
-public class TabContextLoader extends BaseContextLoader implements IContextLoader {
+public class TabContextLoader extends Configurable implements IContextLoader {
 
     private static final Logger log = Logger.getLogger(TabContextLoader.class);
 
-    protected IContext internalLoad(String fileName) throws ContextLoaderException {
+    private int nodesParsed = 0;
+
+    public IContext loadContext(String fileName) throws ContextLoaderException {
         IContext result = null;
         try {
             BufferedReader input = new BufferedReader(new InputStreamReader(new FileInputStream(fileName), "UTF-8"));
             try {
                 result = process(input);
+                log.info("Parsed nodes: " + nodesParsed);
             } finally {
                 input.close();
             }
@@ -52,8 +56,10 @@ public class TabContextLoader extends BaseContextLoader implements IContextLoade
         IContext result = new Context();
         ArrayList<String> rootPath = new ArrayList<String>();
 
+        nodesParsed = 0;
         //loads the root node
         final String root = input.readLine();
+        nodesParsed++;
         if (null != root) {
             String fatherConceptId = result.newNode(root, null);
             rootPath.add(fatherConceptId);
@@ -90,6 +96,8 @@ public class TabContextLoader extends BaseContextLoader implements IContextLoade
                     setArrayNodeID(int_depth, rootPath, newCID);
                     old_depth = int_depth;
                 }
+
+                nodesParsed++;
             }
         }
         return result;

@@ -18,7 +18,7 @@ public class Context implements IMatchingContext, IContext {
     //Constructor
 
     public Context() {
-        root = Node.getInstance();
+        //root = Node.getInstance();
     }
 
     public static IContext getInstance() {
