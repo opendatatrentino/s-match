@@ -3,7 +3,7 @@ package it.unitn.disi.smatch.oracles.wordnet;
 import it.unitn.disi.smatch.SMatchException;
 import it.unitn.disi.smatch.components.Configurable;
 import it.unitn.disi.smatch.components.ConfigurableException;
-import it.unitn.disi.smatch.data.IAtomicConceptOfLabel;
+import it.unitn.disi.smatch.data.ling.IAtomicConceptOfLabel;
 import it.unitn.disi.smatch.data.mappings.IMappingElement;
 import it.unitn.disi.smatch.oracles.ISenseMatcher;
 import it.unitn.disi.smatch.utils.SMatchUtils;

@@ -1,4 +1,4 @@
-package it.unitn.disi.smatch.data;
+package it.unitn.disi.smatch.data.ling;
 
 import java.util.*;
 

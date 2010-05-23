@@ -1,6 +1,6 @@
 package it.unitn.disi.smatch.data.trees;
 
-import it.unitn.disi.smatch.data.IAtomicConceptOfLabel;
+import it.unitn.disi.smatch.data.ling.IAtomicConceptOfLabel;
 
 import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeNode;
