@@ -88,15 +88,16 @@ public class SMatchAPIDemo {
         String example = "Courses";
         System.out.println("Creating source context...");
         IContext s = mm.createContext();
-        s.newNode(example, null);
+        s.createRoot(example);
 
         System.out.println("Creating target context...");
         IContext t = mm.createContext();
-        String rootID = t.newNode("Course", null);
-        String nodeID = t.newNode("College of Arts and Sciences", rootID);
-        nodeID = t.newNode("English", nodeID);
-        t.newNode("College Engineering", rootID);
-        nodeID = t.newNode("Civil and Environmental Engineering", nodeID);
+        INode root = t.createRoot("Course");
+        INode node = root.createChild("College of Arts and Sciences");
+        node.createChild("English");
+
+        node = root.createChild("College Engineering");
+        node.createChild("Civil and Environmental Engineering");
 
         System.out.println("Preprocessing source context...");
         mm.offline(s);
@@ -110,7 +111,7 @@ public class SMatchAPIDemo {
         System.out.println("Processing results...");
         System.out.println("Printing matches to: " + example);
         for (IMappingElement<INode> e : result) {
-            System.out.println("\t" + e.getRelation() + "\t" + e.getTarget().getNodeName());
+            System.out.println("\t" + e.getRelation() + "\t" + e.getTarget().getNodeData().getName());
         }
 
         System.out.println("Done");

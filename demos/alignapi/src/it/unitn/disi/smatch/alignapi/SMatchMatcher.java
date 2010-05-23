@@ -69,11 +69,12 @@ public class SMatchMatcher extends ObjectAlignment implements AlignmentProcess {
     private IContext importOntology(IMatchManager m, LoadedOntology<Object> ontology) throws OntowrapException, AlignmentException {
         IContext result = m.createContext();
         Map<Object, INode> classNode = new HashMap<Object, INode>();
+
+        // create a node for each class
         for (Object o : ontology.getClasses()) {
             String nodeName = ontology.getEntityName(o);
             nodeName = nodeName.replaceAll("_", " ");//fix for webdirs test
-            String nodeId = result.newNode(nodeName, null);
-            INode node = result.getNode(nodeId);
+            INode node = result.createNode(nodeName);
             node.setUserObject(o);
             classNode.put(o, node);
         }
@@ -82,10 +83,6 @@ public class SMatchMatcher extends ObjectAlignment implements AlignmentProcess {
             HeavyLoadedOntology hlo = (HeavyLoadedOntology) ontology;
 
             // create hierarchy
-            // TODO rewrite... ended up with kind of a mess here...
-            Map<INode, INode> parentNodes = new HashMap<INode, INode>();
-            Map<INode, ArrayList<INode>> childNodes = new HashMap<INode, ArrayList<INode>>();
-
             for (Map.Entry<Object, INode> e : classNode.entrySet()) {
                 Object o = e.getKey();
                 INode n = e.getValue();
@@ -95,82 +92,29 @@ public class SMatchMatcher extends ObjectAlignment implements AlignmentProcess {
                 }
                 if (parents.iterator().hasNext()) {
                     INode parent = classNode.get(parents.iterator().next());
-                    parentNodes.put(n, parent);
+                    parent.addChild(n);
                 }
             }
-
-            for (INode child : parentNodes.keySet()) {
-                INode parentNode = parentNodes.get(child);
-                ArrayList<INode> children = childNodes.get(parentNode);
-                if (null == children) {
-                    children = new ArrayList<INode>();
-                    children.add(child);
-                    childNodes.put(parentNode, children);
-                } else {
-                    children.add(child);
-                    childNodes.put(parentNode, children);
-                }
-            }
-
-            // remove all links
-            for (Map.Entry<INode, INode> e : parentNodes.entrySet()) {
-                INode child = e.getKey();
-                INode parent = e.getValue();
-
-                // remove old children
-                List<INode> oldChildren = new ArrayList<INode>(child.getChildren());
-                for (INode c : oldChildren) {
-                    child.removeChild(c);
-                }
-
-                oldChildren = new ArrayList<INode>(parent.getChildren());
-                for (INode c : oldChildren) {
-                    parent.removeChild(c);
-                }
-
-                parent.getNodeData().setParent(null);
-                child.getNodeData().setParent(null);
-            }
-
-            for (Map.Entry<INode, INode> e : parentNodes.entrySet()) {
-                INode child = e.getKey();
-                INode parent = e.getValue();
-
-                // add new ones
-                List<INode> children = childNodes.get(parent);
-                if (null != children) {
-                    for (INode c : children) {
-                        parent.addChild(c);
-                        c.getNodeData().setParent(parent);
-                    }
-                }
-
-                child.getNodeData().setParent(parent);
-            }
-
 
             // check multiple roots
             Set<INode> roots = new HashSet<INode>();
             for (Object o : hlo.getClasses()) {
                 INode node = classNode.get(o);
-                if (node.isRoot()) {
+                if (!node.hasParent()) {
                     roots.add(node);
                 }
             }
 
-            INode root;
             if (1 < roots.size()) {
-                // create artificial Top node
-                String topId = result.newNode("Top", null);
-                root = result.getNode(topId);
+                // create artificial Top root
+                INode root = result.createRoot("Top");
                 // put every other top one under it
                 for (INode r : roots) {
-                    r.getNodeData().setParent(root);
+                    root.addChild(r);
                 }
             } else {
                 if (1 == roots.size()) {
-                    root = roots.iterator().next();
-                    result.setRoot(root);
+                    result.setRoot(roots.iterator().next());
                 } else {
                     throw new AlignmentException("Cannot find even one root class.");
                 }
@@ -178,11 +122,10 @@ public class SMatchMatcher extends ObjectAlignment implements AlignmentProcess {
 
         } else {
             // create artificial Top and put all nodes under it
-            String topId = result.newNode("Top", null);
-            INode root = result.getNode(topId);
+            INode root = result.createRoot("Top");
             for (Object o : ontology.getClasses()) {
                 INode n = classNode.get(o);
-                n.getNodeData().setParent(root);
+                root.addChild(n);
             }
         }
         return result;
