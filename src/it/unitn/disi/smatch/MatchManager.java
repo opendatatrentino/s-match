@@ -157,9 +157,9 @@ public class MatchManager extends Configurable implements IMatchManager {
         if (null == mappingLoader) {
             throw new SMatchException("Mapping loader is not configured.");
         }
-        log.info("Mapping loading...");
+        log.info("Loading mapping from: " + inputFile);
         final IContextMapping<INode> result = mappingLoader.loadMapping(ctxSource, ctxTarget, inputFile);
-        log.info("Mapping loading finished...");
+        log.info("Mapping loading finished");
         return result;
     }
 
@@ -167,9 +167,9 @@ public class MatchManager extends Configurable implements IMatchManager {
         if (null == mappingRenderer) {
             throw new SMatchException("Mapping renderer is not configured.");
         }
-        log.info("Mapping rendering...");
+        log.info("Rendering mapping to: " + outputFile);
         mappingRenderer.render(mapping, outputFile);
-        log.info("Mapping rendering finished...");
+        log.info("Mapping rendering finished");
     }
 
     public IContextMapping<INode> filterMapping(IContextMapping<INode> mapping) throws SMatchException {
@@ -178,7 +178,7 @@ public class MatchManager extends Configurable implements IMatchManager {
         }
         log.info("Filtering...");
         final IContextMapping<INode> result = mappingFilter.filter(mapping);
-        log.info("Filtering finished...");
+        log.info("Filtering finished");
         return result;
     }
 
@@ -188,7 +188,7 @@ public class MatchManager extends Configurable implements IMatchManager {
         }
         log.info("Element level matching...");
         final IContextMapping<IAtomicConceptOfLabel> acolMapping = matcherLibrary.elementLevelMatching(sourceContext, targetContext);
-        log.info("Element level matching finished...");
+        log.info("Element level matching finished");
         return acolMapping;
     }
 
