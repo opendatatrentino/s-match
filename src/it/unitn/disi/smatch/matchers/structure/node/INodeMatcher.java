@@ -5,6 +5,8 @@ import it.unitn.disi.smatch.data.IAtomicConceptOfLabel;
 import it.unitn.disi.smatch.data.INode;
 import it.unitn.disi.smatch.data.mappings.IContextMapping;
 
+import java.util.Map;
+
 /**
  * An interface for node matchers.
  *
@@ -17,10 +19,14 @@ public interface INodeMatcher extends IConfigurable {
      * Matches two nodes and returns a relation between them.
      *
      * @param acolMapping a mapping between atomic concepts of labels
+     * @param sourceACoLs mapping acol id -> acol object
+     * @param targetACoLs mapping acol id -> acol object
      * @param sourceNode  interface of source node
      * @param targetNode  interface of target node
      * @return relation between source and target nodes.
      * @throws NodeMatcherException NodeMatcherException
      */
-    public char nodeMatch(IContextMapping<IAtomicConceptOfLabel> acolMapping, INode sourceNode, INode targetNode) throws NodeMatcherException;
+    public char nodeMatch(IContextMapping<IAtomicConceptOfLabel> acolMapping,
+                          Map<String, IAtomicConceptOfLabel> sourceACoLs, Map<String, IAtomicConceptOfLabel> targetACoLs,
+                          INode sourceNode, INode targetNode) throws NodeMatcherException;
 }

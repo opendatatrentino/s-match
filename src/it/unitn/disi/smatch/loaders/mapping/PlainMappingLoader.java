@@ -3,7 +3,9 @@ package it.unitn.disi.smatch.loaders.mapping;
 import it.unitn.disi.smatch.components.Configurable;
 import it.unitn.disi.smatch.data.IContext;
 import it.unitn.disi.smatch.data.INode;
-import it.unitn.disi.smatch.data.mappings.*;
+import it.unitn.disi.smatch.data.mappings.ContextMapping;
+import it.unitn.disi.smatch.data.mappings.IContextMapping;
+import it.unitn.disi.smatch.data.mappings.IMappingElement;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
@@ -12,7 +14,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.HashMap;
-import java.util.List;
+import java.util.Iterator;
 
 /**
  * Loads the mapping as written by PlainMappingRenderer.java.
@@ -28,17 +30,10 @@ public class PlainMappingLoader extends Configurable implements IMappingLoader {
             log.info("Loading mapping: " + fileName);
         }
 
-        List<INode> sourceNodes = source.getAllNodes();
-        List<INode> targetNodes = target.getAllNodes();
-
-        if (log.isEnabledFor(Level.INFO)) {
-            log.info(sourceNodes.size() + " x " + targetNodes.size() + " nodes");
-        }
-
         IContextMapping<INode> mapping = new ContextMapping<INode>(source, target);
 
-        HashMap<String, Integer> sNodes = createHash(sourceNodes);
-        HashMap<String, Integer> tNodes = createHash(targetNodes);
+        HashMap<String, INode> sNodes = createHash(source);
+        HashMap<String, INode> tNodes = createHash(target);
 
         BufferedReader reader = null;
         try {
@@ -55,8 +50,8 @@ public class PlainMappingLoader extends Configurable implements IMappingLoader {
                     !line.startsWith("#") &&
                     !line.equals("")) {
 
-                int sourceIdx;
-                int targetIdx;
+                INode sourceNode;
+                INode targetNode;
                 char rel;
 
                 String[] tokens = line.split("\t");
@@ -88,26 +83,22 @@ public class PlainMappingLoader extends Configurable implements IMappingLoader {
                             break;
                     }
 
-                    sourceIdx = -1;
-                    if (!sNodes.containsKey(tokens[0])) {
+                    sourceNode = sNodes.get(tokens[0]);
+                    if (null == sourceNode) {
                         if (log.isEnabledFor(Level.WARN)) {
                             log.warn("Could not find source node: " + tokens[0]);
                         }
-                    } else {
-                        sourceIdx = sNodes.get(tokens[0]);
                     }
 
-                    targetIdx = -1;
+                    targetNode = tNodes.get(tokens[2]);
                     if (!tNodes.containsKey(tokens[2])) {
                         if (log.isEnabledFor(Level.WARN)) {
                             log.warn("Could not find target node: " + tokens[2]);
                         }
-                    } else {
-                        targetIdx = tNodes.get(tokens[2]);
                     }
 
-                    if ((-1 != sourceIdx) && (-1 != targetIdx)) {
-                        mapping.setRelation(sourceNodes.get(sourceIdx), targetNodes.get(targetIdx), rel);
+                    if ((null != sourceNode) && (null != targetNode)) {
+                        mapping.setRelation(sourceNode, targetNode, rel);
                         cntLoaded++;
                     } else {
                         if (log.isEnabledFor(Level.WARN)) {
@@ -156,15 +147,15 @@ public class PlainMappingLoader extends Configurable implements IMappingLoader {
      * @return the string of the path from root to node
      */
     //TODO move this method to the INode interface
-    protected String getNodePathToRoot(INode node) {
+    private String getNodePathToRoot(INode node) {
         StringBuilder sb = new StringBuilder();
         INode parent = node;
         while (null != parent) {
-            if (parent.getNodeName().contains("\\")) {
-                log.debug("source: replacing \\ in: " + parent.getNodeName());
-                sb.insert(0, "\\" + parent.getNodeName().replaceAll("\\\\", "/"));
+            if (parent.getNodeData().getName().contains("\\")) {
+                log.debug("source: replacing \\ in: " + parent.getNodeData().getName());
+                sb.insert(0, "\\" + parent.getNodeData().getName().replaceAll("\\\\", "/"));
             } else {
-                sb.insert(0, "\\" + parent.getNodeName());
+                sb.insert(0, "\\" + parent.getNodeData().getName());
             }
             parent = parent.getParent();
         }
@@ -174,18 +165,21 @@ public class PlainMappingLoader extends Configurable implements IMappingLoader {
     /**
      * Creates hash map for nodes which contains path from root to node for each node.
      *
-     * @param nodes list of interfaces of all nodes of source or target tree
+     * @param context a context
      * @return a hash table which contains path from root to node for each node
      */
-    public HashMap<String, Integer> createHash(List<INode> nodes) {
-        if (log.isEnabledFor(Level.INFO)) {
-            log.info("Creating hash for " + nodes.size() + " nodes...");
+    private HashMap<String, INode> createHash(IContext context) {
+        HashMap<String, INode> result = new HashMap<String, INode>();
+
+        int nodeCount = 0;
+        for (Iterator<INode> i = context.getRoot().getSubtree(); i.hasNext();) {
+            INode node = i.next();
+            result.put(getNodePathToRoot(node), node);
+            nodeCount++;
         }
 
-        HashMap<String, Integer> result = new HashMap<String, Integer>(nodes.size());
-
-        for (int i = 0; i < nodes.size(); i++) {
-            result.put(getNodePathToRoot(nodes.get(i)), i);
+        if (log.isEnabledFor(Level.INFO)) {
+            log.info("Created hash for " + nodeCount + " nodes...");
         }
 
         return result;

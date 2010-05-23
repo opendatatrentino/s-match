@@ -44,31 +44,16 @@ public class BaseNodeMatcher extends Configurable {
      * @return an object of axioms
      */
     protected static Object[] mkAxioms(HashMap<IAtomicConceptOfLabel, Integer> hashConceptNumber, IContextMapping<IAtomicConceptOfLabel> acolMapping, INode sourceNode, INode targetNode) {
-        StringBuffer axioms = new StringBuffer();
+        StringBuilder axioms = new StringBuilder();
         Integer numberOfClauses = 0;
         //create variables
-        for (IAtomicConceptOfLabel sourceACoL : sourceNode.getNodeData().getNodeMatchingTaskACols()) {
-            //create corresponding to id variable number
-            //and put it as a value of hash table with key equal to ACoL id
-            if (!hashConceptNumber.containsKey(sourceACoL)) {
-                Integer value = hashConceptNumber.size() + 1;
-                hashConceptNumber.put(sourceACoL, value);
-            }
-        }
-        //for all columns of relMatrix
-        for (IAtomicConceptOfLabel targetACoL : targetNode.getNodeData().getNodeMatchingTaskACols()) {
-            //create corresponding to id variable number
-            //and put it as a value of hashmap with key equal to ACoL id
-            if (!hashConceptNumber.containsKey(targetACoL)) {
-                Integer value = hashConceptNumber.size() + 1;
-                hashConceptNumber.put(targetACoL, value);
-            }
-        }
+        createVariables(hashConceptNumber, sourceNode);
+        createVariables(hashConceptNumber, targetNode);
 
-        //for all rows of relMatrix
-        for (IAtomicConceptOfLabel sourceACoL : sourceNode.getNodeData().getNodeMatchingTaskACols()) {
-            //for all columns of relMatrix
-            for (IAtomicConceptOfLabel targetACoL : targetNode.getNodeData().getNodeMatchingTaskACols()) {
+        for (Iterator<IAtomicConceptOfLabel> i = sourceNode.getNodeData().getNodeMatchingTaskACoLs(); i.hasNext();) {
+            IAtomicConceptOfLabel sourceACoL = i.next();
+            for (Iterator<IAtomicConceptOfLabel> j = targetNode.getNodeData().getNodeMatchingTaskACoLs(); j.hasNext();) {
+                IAtomicConceptOfLabel targetACoL = j.next();
                 //if there are semantic relation between ACoLS in relMatrix
                 char relation = acolMapping.getRelation(sourceACoL, targetACoL);
                 if (IMappingElement.IDK != relation) {
@@ -126,17 +111,31 @@ public class BaseNodeMatcher extends Configurable {
         return new Object[]{axioms.toString(), numberOfClauses};
     }
 
+    private static void createVariables(HashMap<IAtomicConceptOfLabel, Integer> hashConceptNumber, INode node) {
+        for (Iterator<IAtomicConceptOfLabel> i = node.getNodeData().getNodeMatchingTaskACoLs(); i.hasNext();) {
+            IAtomicConceptOfLabel sourceACoL = i.next();
+            //create corresponding to id variable number
+            //and put it as a value of hash table with key equal to ACoL id
+            if (!hashConceptNumber.containsKey(sourceACoL)) {
+                Integer value = hashConceptNumber.size() + 1;
+                hashConceptNumber.put(sourceACoL, value);
+            }
+        }
+    }
+
     /**
      * Converts context of node into array list.
      *
      * @param hashConceptNumber HashMap for atomic concept of label with its id
+     * @param acolsMap          map with acol id -> acol mapping
      * @param node              interface of the node
      * @return array list of context of node
      */
-    protected ArrayList<ArrayList<String>> parseFormula(HashMap<IAtomicConceptOfLabel, Integer> hashConceptNumber, INode node) {
+    protected ArrayList<ArrayList<String>> parseFormula(HashMap<IAtomicConceptOfLabel, Integer> hashConceptNumber,
+                                                        Map<String, IAtomicConceptOfLabel> acolsMap, INode node) {
         ArrayList<ArrayList<String>> representation = new ArrayList<ArrayList<String>>();
         boolean saved_negation = false;
-        for (StringTokenizer clauseTokenizer = new StringTokenizer(node.getNodeData().getCNodeFormula(), "&"); clauseTokenizer.hasMoreTokens();) {
+        for (StringTokenizer clauseTokenizer = new StringTokenizer(node.getNodeData().getcNodeFormula(), "&"); clauseTokenizer.hasMoreTokens();) {
             String clause = clauseTokenizer.nextToken();
             ArrayList<String> clause_vec = new ArrayList<String>();
             for (StringTokenizer varTokenizer = new StringTokenizer(clause, "|() "); varTokenizer.hasMoreTokens();) {
@@ -150,7 +149,7 @@ public class BaseNodeMatcher extends Configurable {
                     saved_negation = true;
                     continue;
                 }
-                String var_num = hashConceptNumber.get(node.getNodeData().getNMTAColById(var)).toString();
+                String var_num = hashConceptNumber.get(acolsMap.get(var)).toString();
                 if (negation || saved_negation) {
                     saved_negation = false;
                     var_num = "-" + var_num;
@@ -169,7 +168,7 @@ public class BaseNodeMatcher extends Configurable {
      * @return nodes in DIMACS format
      */
     protected static String DIMACSfromList(ArrayList<ArrayList<String>> tmp) {
-        StringBuffer DIMACS = new StringBuffer("");
+        StringBuilder DIMACS = new StringBuilder("");
         for (List<String> clause : tmp) {
             for (String aClause : clause) {
                 DIMACS.append(aClause).append(" ");

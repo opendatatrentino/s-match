@@ -10,51 +10,51 @@ import java.util.List;
  */
 public interface IAtomicConceptOfLabel {
 
-    //Set id in node
-
-    void setIdToken(int idToken);
-
-    //Set logical id of token
-
-    void setTokenUID(String tokenUID);
-
-    //Set token
-
-    void setToken(String token);
-
-    //Set lemma
-
-    void setLemma(String lemma);
-
-    //Add senses set to the lemma
-
-    void addSenses(List<String> senseList);
-
-    //Get token
-
+    /**
+     * Returns the token(s) corresponding to the atomic concept.
+     *
+     * @return the token(s) corresponding to the atomic concept
+     */
     String getToken();
 
-    //Get position in the sentence
+    /**
+     * Sets the token(s) corresponding to the atomic concept.
+     *
+     * @param token token(s) corresponding to the atomic concept.
+     */
+    void setToken(String token);
 
-    int getIdToken();
-
-    //Get logical representation
-
-    String getTokenUID();
-
+    /**
+     * Returns lemmatized version of the token(s).
+     *
+     * @return lemmatized version of the token(s)
+     */
     String getLemma();
+
+    /**
+     * Sets lemmatized version of the token(s).
+     *
+     * @param lemma lemmatized version of the token(s)
+     */
+    void setLemma(String lemma);
+
+    /**
+     * Returns token identifier in the label. In most cases equals to token index.
+     *
+     * @return token identifier in the label
+     */
+    int getId();
+
+    /**
+     * Sets token identifier in the label. In most cases equals to token index.
+     *
+     * @param id token identifier in the label
+     */
+    void setId(int id);
 
     ISensesSet getSenses();
 
-    //index for cLabMatrix
-
-    int getIndex();
-
-    void setIndex(int index);
+    void addSenses(List<String> senseList);
 
     String toString();
-
-    boolean equals(Object o);
-
-    int hashCode();
 }

@@ -5,6 +5,7 @@ import it.unitn.disi.smatch.components.Configurable;
 import it.unitn.disi.smatch.components.ConfigurableException;
 import it.unitn.disi.smatch.data.IAtomicConceptOfLabel;
 import it.unitn.disi.smatch.data.IContext;
+import it.unitn.disi.smatch.data.INode;
 import it.unitn.disi.smatch.data.mappings.ContextMapping;
 import it.unitn.disi.smatch.data.mappings.IContextMapping;
 import it.unitn.disi.smatch.data.mappings.IMappingElement;
@@ -14,6 +15,7 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
@@ -109,6 +111,39 @@ public class MatcherLibrary extends Configurable implements IMatcherLibrary {
         }
     }
 
+    public IContextMapping<IAtomicConceptOfLabel> elementLevelMatching(IContext sourceContext, IContext targetContext) throws MatcherLibraryException {
+        //  Calculate relations between all ACoLs in both contexts and produce the mapping between them.
+        //  Corresponds to Step 3 of the semantic matching algorithm.
+
+        IContextMapping<IAtomicConceptOfLabel> result = new ContextMapping<IAtomicConceptOfLabel>(sourceContext, targetContext);
+
+        long counter = 0;
+        long total = getACoLCount(sourceContext) * getACoLCount(targetContext);
+        long reportInt = (total / 20) + 1;//i.e. report every 5%
+        for (Iterator<INode> i = sourceContext.getRoot().getSubtree(); i.hasNext();) {
+            INode sourceNode = i.next();
+            for (Iterator<IAtomicConceptOfLabel> ii = sourceNode.getNodeData().getACoLs(); ii.hasNext();) {
+                IAtomicConceptOfLabel sourceACoL = ii.next();
+                for (Iterator<INode> j = targetContext.getRoot().getSubtree(); j.hasNext();) {
+                    INode targetNode = j.next();
+                    for (Iterator<IAtomicConceptOfLabel> jj = targetNode.getNodeData().getACoLs(); jj.hasNext();) {
+                        IAtomicConceptOfLabel targetACoL = jj.next();
+                        //Use Element level semantic matchers library
+                        //to check the relation holding between two ACoLs represented by lists of WN senses and tokens
+                        final char relation = getRelation(sourceACoL, targetACoL);
+                        result.setRelation(sourceACoL, targetACoL, relation);
+
+                        counter++;
+                        if ((SMatchConstants.LARGE_TASK < total) && (0 == (counter % reportInt)) && log.isEnabledFor(Level.INFO)) {
+                            log.info(100 * counter / total + "%");
+                        }
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
     /**
      * Returns a semantic relation between two concept of labels.
      *
@@ -198,30 +233,12 @@ public class MatcherLibrary extends Configurable implements IMatcherLibrary {
         }
     }
 
-    public IContextMapping<IAtomicConceptOfLabel> elementLevelMatching(IContext sourceContext, IContext targetContext) throws MatcherLibraryException {
-        //get all ACoLs in contexts
-        List<IAtomicConceptOfLabel> sourceACoLs = sourceContext.getMatchingContext().getAllContextACoLs();
-        List<IAtomicConceptOfLabel> targetACoLs = targetContext.getMatchingContext().getAllContextACoLs();
-
-        //  Calculate relations between all ACoLs in both contexts and produce the mapping between them.
-        //  Corresponds to Step 3 of the semantic matching algorithm.
-
-        IContextMapping<IAtomicConceptOfLabel> result = new ContextMapping<IAtomicConceptOfLabel>(sourceContext, targetContext);
-
-        long counter = 0;
-        long total = (long) sourceACoLs.size() * (long) targetACoLs.size();
-        long reportInt = (total / 20) + 1;//i.e. report every 5%
-        for (IAtomicConceptOfLabel sourceACoL : sourceACoLs) {
-            for (IAtomicConceptOfLabel targetACoL : targetACoLs) {
-                //Use Element level semantic matchers library
-                //to check the relation holding between two ACoLs represented by lists of WN senses and tokens
-                final char relation = getRelation(sourceACoL, targetACoL);
-                result.setRelation(sourceACoL, targetACoL, relation);
-
-                counter++;
-                if ((SMatchConstants.LARGE_TASK < total) && (0 == (counter % reportInt)) && log.isEnabledFor(Level.INFO)) {
-                    log.info(100 * counter / total + "%");
-                }
+    private long getACoLCount(IContext context) {
+        long result = 0;
+        for (Iterator<INode> i = context.getRoot().getSubtree(); i.hasNext();) {
+            for (Iterator<IAtomicConceptOfLabel> j = i.next().getNodeData().getACoLs(); j.hasNext();) {
+                j.next();
+                result++;
             }
         }
         return result;

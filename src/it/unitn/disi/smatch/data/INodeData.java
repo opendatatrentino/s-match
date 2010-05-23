@@ -1,6 +1,6 @@
 package it.unitn.disi.smatch.data;
 
-import java.util.List;
+import java.util.Iterator;
 
 /**
  * Data part of the node.
@@ -10,107 +10,21 @@ import java.util.List;
  */
 public interface INodeData {
 
-    void setNodeName(String nodeName);
+    String getName();
 
-    List<String> getSynonyms();
-
-    List<String> getAlternativeLabels();
-
-    double getWeight();
+    void setName(String newName);
 
     String getcLabFormula();
 
     void setcLabFormula(String cLabFormula);
 
+    String getcNodeFormula();
+
     void setcNodeFormula(String cNodeFormula);
 
-    String getNodeUniqueName();
+    String getId();
 
-    void setParent(INode parent);
-
-    /**
-     * Returns atomic concepts of labels associated with the given node.
-     *
-     * @return atomic concepts of labels
-     */
-    List<IAtomicConceptOfLabel> getACoLs();
-
-    /**
-     * Returns list of atomic concepts for the node matching task.
-     * Basically, all concepts including parent concepts with some filtering.
-     * Same filter is used in getAllContextACols, therefore it is needed here.
-     *
-     * @return list of atomic concepts for the node matching task
-     */
-    List<IAtomicConceptOfLabel> getNodeMatchingTaskACols();
-
-    /**
-     * Gets node matching task acol by Id.
-     *
-     * @param tokenUID token id
-     * @return acol
-     */
-    IAtomicConceptOfLabel getNMTAColById(String tokenUID);
-
-    /**
-     * Gets node acol by Id.
-     *
-     * @param tokenUID token id
-     * @return acol
-     */
-    IAtomicConceptOfLabel getAColById(String tokenUID);
-
-    void setNodeUniqueName(String uniqueName);
-
-    void setNodeUniqueName();
-
-    void setNodeId(String nodeId);
-
-    public String getParentRelationType();
-
-    /**
-     * Adds atomic concepts of label to the node.
-     *
-     * @param sense
-     */
-    // TODO need comments
-    public void addAtomicConceptOfLabel(IAtomicConceptOfLabel sense);
-
-    String getCNodeFormula();
-
-    /**
-     * clears cLab formula.
-     */
-    void resetLogicalFormula();
-
-    /**
-     * clears sets of senses.
-     */
-    void resetSetOfSenses();
-
-    /**
-     * returns path to root string for the given node.
-     *
-     * @return path to root string
-     */
-    String getPathToRootString();
-
-    /**
-     * returns depth of the node in the context.
-     */
-    int getDepth();
-
-    /**
-     * Gets index in a list. This is to avoid hash tables.
-     */
-    int getIndex();
-
-    /**
-     * Sets index in a list. This is to avoid hash tables.
-     *
-     * @param index
-     */
-    void setIndex(int index);
+    void setId(String newId);
 
     /**
      * Indicates whether this node belongs to the source context.
@@ -118,11 +32,75 @@ public interface INodeData {
      *
      * @return whether this node belongs to the source context
      */
-    public boolean getSource();
+    boolean getSource();
 
-    public void setSource(boolean source);
+    void setSource(boolean source);
 
-    void sort();
+    /**
+     * Returns the acol at index index.
+     */
+    IAtomicConceptOfLabel getACoLAt(int index);
 
-    public Object getUserObject();
+    /**
+     * Returns the number of acols.
+     */
+    int getACoLCount();
+
+    /**
+     * Returns the index of acol in the receivers acols. If the receiver does not contain acol, -1 will be
+     * returned.
+     *
+     * @param acol an acol to search for
+     * @return the index of acol in the receivers acols
+     */
+    int getACoLIndex(IAtomicConceptOfLabel acol);
+
+    /**
+     * Returns atomic concepts of labels associated with the given node.
+     *
+     * @return atomic concepts of labels
+     */
+    Iterator<IAtomicConceptOfLabel> getACoLs();
+
+    /**
+     * Adds atomic concept of label to the node.
+     *
+     * @param acol atomic concept of label
+     */
+    void addACoL(IAtomicConceptOfLabel acol);
+
+    /**
+     * Adds acol to the receiver acols at index.
+     *
+     * @param index index where the acol will be added
+     * @param acol acol to add
+     */
+    void addACoL(int index, IAtomicConceptOfLabel acol);
+
+    /**
+     * Removes the acol at index from the receiver.
+     *
+     * @param index index of an acol to remove
+     */
+    void removeACoL(int index);
+
+    /**
+     * Removes acol from the receiver.
+     *
+     * @param acol acol to remove
+     */
+    void removeACoL(IAtomicConceptOfLabel acol);
+
+    /**
+     * Returns list of atomic concepts for the node matching task.
+     * Basically, all concepts including parent concepts with some filtering.
+     * Same filter is used in getAllContextACols, therefore it is needed here.
+     *
+     * @return atomic concepts for the node matching task
+     */
+    Iterator<IAtomicConceptOfLabel> getNodeMatchingTaskACoLs();
+
+    Object getUserObject();
+
+    void setUserObject(Object newObject);
 }

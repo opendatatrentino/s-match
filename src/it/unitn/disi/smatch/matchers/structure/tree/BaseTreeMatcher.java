@@ -2,8 +2,14 @@ package it.unitn.disi.smatch.matchers.structure.tree;
 
 import it.unitn.disi.smatch.components.Configurable;
 import it.unitn.disi.smatch.components.ConfigurableException;
+import it.unitn.disi.smatch.data.IAtomicConceptOfLabel;
+import it.unitn.disi.smatch.data.IContext;
+import it.unitn.disi.smatch.data.INode;
 import it.unitn.disi.smatch.matchers.structure.node.INodeMatcher;
 
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -24,5 +30,17 @@ public class BaseTreeMatcher extends Configurable {
             properties.clear();
             properties.putAll(newProperties);
         }
+    }
+
+    protected static Map<String, IAtomicConceptOfLabel> createAcolsMap(IContext c) {
+        HashMap<String, IAtomicConceptOfLabel> result = new HashMap<String, IAtomicConceptOfLabel>();
+        for (Iterator<INode> i = c.getRoot().getSubtree(); i.hasNext();) {
+            INode node = i.next();
+            for (Iterator<IAtomicConceptOfLabel> ii = node.getNodeData().getACoLs(); ii.hasNext();) {
+                IAtomicConceptOfLabel acol = ii.next();
+                result.put(node.getNodeData().getId() + "." + Integer.toString(acol.getId()), acol);
+            }
+        }
+        return result;
     }
 }

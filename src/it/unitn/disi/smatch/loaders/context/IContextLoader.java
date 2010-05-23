@@ -5,7 +5,7 @@ import it.unitn.disi.smatch.SMatchException;
 import it.unitn.disi.smatch.data.IContext;
 
 /**
- * Interface allowing to load contexts from various representations such as files, DBs, etc
+ * Interface allowing to load contexts from various representations such as files, DBs, etc.
  *
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
  * @author Aliaksandr Autayeu avtaev@gmail.com

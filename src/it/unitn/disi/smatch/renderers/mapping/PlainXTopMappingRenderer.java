@@ -35,7 +35,7 @@ public class PlainXTopMappingRenderer extends PlainMappingRenderer {
             long reportInt = (total / 20) + 1;//i.e. report every 5%
 
             for (IMappingElement<INode> mappingElement : mapping) {
-                if (!(mappingElement.getSource().isRoot() || mappingElement.getTarget().isRoot())) {
+                if (mappingElement.getSource().hasParent() && mappingElement.getTarget().hasParent()) {
                     String sourceConceptName = getNodePathToRoot(mappingElement.getSource());
                     String targetConceptName = getNodePathToRoot(mappingElement.getTarget());
                     char relation = mappingElement.getRelation();

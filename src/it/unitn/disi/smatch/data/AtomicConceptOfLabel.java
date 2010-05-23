@@ -11,112 +11,61 @@ import java.util.List;
  */
 public class AtomicConceptOfLabel implements IAtomicConceptOfLabel {
 
-    // position in concept
-    private int idToken;
-    // logical representation
-    private String tokenUID = "";
+    private int id;
     private String token;
     private String lemma;
 
     ISensesSet wSenses = new SensesSet();
 
-    // index for cLabMatrix
-    private int index;
-
     public AtomicConceptOfLabel() {
     }
 
-    static public IAtomicConceptOfLabel getInstance() {
-        return new AtomicConceptOfLabel();
-    }
-
-    static public IAtomicConceptOfLabel getInstance(int idToken, String token, String lemma) {
-        return new AtomicConceptOfLabel(idToken, token, lemma);
-    }
-
     /**
-     * Constructor class which sets the id, position of token, name of token and lemma.
+     * Constructor class which sets the id, token and lemma.
      *
-     * @param idToken Id of token
-     * @param token   token name
-     * @param lemma   lemma name
+     * @param id    id of token
+     * @param token token
+     * @param lemma lemma
      */
-    public AtomicConceptOfLabel(int idToken, String token, String lemma) {
-        this.idToken = idToken;
+    public AtomicConceptOfLabel(int id, String token, String lemma) {
+        this.id = id;
         this.token = token;
         this.lemma = lemma;
-    }
-
-    public int getIndex() {
-        return index;
-    }
-
-    public void setIndex(int index) {
-        this.index = index;
-    }
-
-    public void setIdToken(int idToken) {
-        this.idToken = idToken;
-    }
-
-    public void setTokenUID(String tokenUID) {
-        this.tokenUID = tokenUID;
-    }
-
-    public void setToken(String token) {
-        this.token = token;
-    }
-
-    public void setLemma(String lemma) {
-        this.lemma = lemma;
-    }
-
-    public void addSenses(List<String> senseList) {
-        wSenses.addNewSenses(senseList);
     }
 
     public String getToken() {
         return token;
     }
 
-    public int getIdToken() {
-        return idToken;
-    }
-
-    public String getTokenUID() {
-        return tokenUID;
+    public void setToken(String token) {
+        this.token = token;
     }
 
     public String getLemma() {
         return lemma;
     }
 
+    public void setLemma(String lemma) {
+        this.lemma = lemma;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
     public ISensesSet getSenses() {
         return wSenses;
     }
 
+    public void addSenses(List<String> senseList) {
+        wSenses.addNewSenses(senseList);
+    }
+
     public String toString() {
         return token;
-    }
-
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (!(o instanceof IAtomicConceptOfLabel)) {
-            return false;
-        }
-
-        final AtomicConceptOfLabel atomicConceptOfLabel = (AtomicConceptOfLabel) o;
-
-        if (!tokenUID.equals(atomicConceptOfLabel.tokenUID)) {
-            return false;
-        }
-
-        return true;
-    }
-
-    public int hashCode() {
-        return tokenUID.hashCode();
     }
 }

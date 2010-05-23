@@ -25,7 +25,6 @@ public class SMatchUtils {
             PropertyConfigurator.configure(log4jConf);
         } else {
             System.err.println("No log4j.configuration property specified.");
-            BasicConfigurator.configure();
         }
     }
 

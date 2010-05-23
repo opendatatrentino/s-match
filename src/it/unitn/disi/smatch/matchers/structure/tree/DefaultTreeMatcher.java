@@ -9,29 +9,32 @@ import it.unitn.disi.smatch.data.mappings.IContextMapping;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
-import java.util.List;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 public class DefaultTreeMatcher extends BaseTreeMatcher implements ITreeMatcher {
 
     private static final Logger log = Logger.getLogger(DefaultTreeMatcher.class);
 
     public IContextMapping<INode> treeMatch(IContext sourceContext, IContext targetContext, IContextMapping<IAtomicConceptOfLabel> acolMapping) throws TreeMatcherException {
-        // get the nodes of the contexts
-        List<INode> sourceNodes = sourceContext.getAllNodes();
-        List<INode> targetNodes = targetContext.getAllNodes();
-
         IContextMapping<INode> mapping = new ContextMapping<INode>(sourceContext, targetContext);
 
         //semantic relation for particular node matching task
         char relation;
 
         long counter = 0;
-        long total = (long) sourceNodes.size() * (long) targetNodes.size();
+        long total = (long) (sourceContext.getRoot().getDescendantCount() + 1) * (long) (targetContext.getRoot().getDescendantCount() + 1);
         long reportInt = (total / 20) + 1;//i.e. report every 5%
 
-        for (INode sourceNode : sourceNodes) {
-            for (INode targetNode : targetNodes) {
-                relation = nodeMatcher.nodeMatch(acolMapping, sourceNode, targetNode);
+        Map<String, IAtomicConceptOfLabel> sourceAcols = createAcolsMap(sourceContext);
+        Map<String, IAtomicConceptOfLabel> targetAcols = createAcolsMap(targetContext);
+
+        for (Iterator<INode> i = sourceContext.getRoot().getSubtree(); i.hasNext();) {
+            INode sourceNode = i.next();
+            for (Iterator<INode> j = targetContext.getRoot().getSubtree(); j.hasNext();) {
+                INode targetNode = j.next();
+                relation = nodeMatcher.nodeMatch(acolMapping, sourceAcols, targetAcols, sourceNode, targetNode);
                 mapping.setRelation(sourceNode, targetNode, relation);
 
                 counter++;

@@ -19,7 +19,7 @@ import java.io.BufferedWriter;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.util.List;
+import java.util.Iterator;
 
 /**
  * Renders a context into a XML file.
@@ -30,7 +30,7 @@ public class SimpleXMLContextRenderer extends Configurable implements IContextRe
 
     private static final Logger log = Logger.getLogger(SimpleXMLContextRenderer.class);
 
-    private int nodesRendered; 
+    private int nodesRendered;
 
     public void render(IContext context, String fileName) throws ContextRendererException {
         try {
@@ -81,29 +81,29 @@ public class SimpleXMLContextRenderer extends Configurable implements IContextRe
         // render current node
         INodeData curNodeData = curNode.getNodeData();
         AttributesImpl atts = new AttributesImpl();
-        atts.addAttribute("", "", "id", "CDATA", curNodeData.getNodeUniqueName());
+        atts.addAttribute("", "", "id", "CDATA", curNodeData.getId());
         hd.startElement("", "", "node", atts);
 
-        renderString(hd, "name", curNode.getNodeName());
+        renderString(hd, "name", curNodeData.getName());
         renderString(hd, "label-formula", curNodeData.getcLabFormula());
-        renderString(hd, "node-formula", curNodeData.getCNodeFormula());
+        renderString(hd, "node-formula", curNodeData.getcNodeFormula());
 
         // senses
-        List<IAtomicConceptOfLabel> setOfSenses = curNodeData.getACoLs();
-        if (0 < setOfSenses.size()) {
+        if (0 < curNodeData.getACoLCount()) {
             hd.startElement("", "", "tokens", new AttributesImpl());
-            for (IAtomicConceptOfLabel sense : setOfSenses) {
+            for (Iterator<IAtomicConceptOfLabel> it = curNodeData.getACoLs(); it.hasNext();) {
+                IAtomicConceptOfLabel acol = it.next();
                 atts = new AttributesImpl();
-                atts.addAttribute("", "", "id", "CDATA", Integer.toString(sense.getIdToken()));
+                atts.addAttribute("", "", "id", "CDATA", Integer.toString(acol.getId()));
                 hd.startElement("", "", "token", atts);
 
-                renderString(hd, "text", sense.getToken());
-                renderString(hd, "lemma", sense.getLemma());
+                renderString(hd, "text", acol.getToken());
+                renderString(hd, "lemma", acol.getLemma());
 
                 hd.startElement("", "", "senses", new AttributesImpl());
-                sense.getSenses().convertSenses();
-                long[] ids = sense.getSenses().getIntSenses();
-                char[] poss = sense.getSenses().getPOSSenses();
+                acol.getSenses().convertSenses();
+                long[] ids = acol.getSenses().getIntSenses();
+                char[] poss = acol.getSenses().getPOSSenses();
                 for (int i = 0; i < ids.length; i++) {
                     atts = new AttributesImpl();
                     atts.addAttribute("", "", "pos", "CDATA", Character.toString(poss[i]));
@@ -118,10 +118,10 @@ public class SimpleXMLContextRenderer extends Configurable implements IContextRe
             hd.endElement("", "", "tokens");
         }
 
-        if (0 < curNode.getChildren().size()) {
+        if (0 < curNode.getChildCount()) {
             hd.startElement("", "", "children", new AttributesImpl());
-            for (INode child : curNode.getChildren()) {
-                renderNode(hd, child);
+            for (Iterator<INode> i = curNode.getChildren(); i.hasNext();) {
+                renderNode(hd, i.next());
             }
             hd.endElement("", "", "children");
         }

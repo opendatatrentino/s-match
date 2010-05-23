@@ -10,8 +10,7 @@ import orbital.moon.logic.ClassicalLogic;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Iterator;
 
 /**
  * Converts cLabFormula into CNF before use.
@@ -23,22 +22,9 @@ public class CNFContextClassifier extends Configurable implements IContextClassi
     private static final Logger log = Logger.getLogger(CNFContextClassifier.class);
 
     public void buildCNodeFormulas(IContext context) throws ContextClassifierException {
-        ArrayList<INode> queue = new ArrayList<INode>();
-        queue.add(context.getRoot());
-
-        while (!queue.isEmpty()) {
-            INode currentNode = queue.remove(0);
-            if (null != currentNode) {
-                buildCNode(currentNode);
-
-                List<INode> children = currentNode.getChildren();
-                if (0 < children.size()) {
-                    queue.add(0, null);
-                }
-                for (int i = children.size() - 1; i >= 0; i--) {
-                    // go DFS = depth-first search
-                    queue.add(0, children.get(i));
-                }
+        if (context.hasRoot()) {
+            for (Iterator<INode> i = context.getRoot().getSubtree(); i.hasNext();) {
+                buildCNode(i.next());
             }
         }
     }
@@ -53,22 +39,20 @@ public class CNFContextClassifier extends Configurable implements IContextClassi
         StringBuffer path = new StringBuffer();
         INodeData nd = in.getNodeData();
         String formula = toCNF(in, nd.getcLabFormula());
-        formula = formula.trim();
         if (formula != null && !formula.equals("") && !formula.equals(" ")) {
             if (formula.contains(" ")) {
                 formula = "(" + formula + ")";
             }
             path.append(formula);
         }
-        if (!in.isRoot()) {
-            formula = in.getParent().getNodeData().getCNodeFormula();
-            formula = formula.trim();
+        if (in.hasParent()) {
+            formula = in.getParent().getNodeData().getcNodeFormula();
             if (formula != null && !formula.equals("") && !formula.equals(" ")) {
-                //formula = "(" + formula + ")";
-                if (2 < path.length())
+                if (2 < path.length()) {
                     path.append(" & ").append(formula);
-                else
+                } else {
                     path.append(formula);
+                }
             }
         }
 
@@ -102,7 +86,7 @@ public class CNFContextClassifier extends Configurable implements IContextClassi
             } catch (ParseException e) {
                 final String errMessage = "Logic parse exception: " + e.getClass().getSimpleName() + ": " + e.getMessage();
                 if (log.isEnabledFor(Level.ERROR)) {
-                    log.error("Logic parse exception for: " + formula + " at node: " + in.getNodeName());
+                    log.error("Logic parse exception for: " + formula + " at node: " + in.getNodeData().getName());
                     log.error(errMessage, e);
                 }
                 throw new ContextClassifierException(errMessage, e);

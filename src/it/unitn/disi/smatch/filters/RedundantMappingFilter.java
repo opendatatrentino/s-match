@@ -2,14 +2,14 @@ package it.unitn.disi.smatch.filters;
 
 import it.unitn.disi.smatch.SMatchConstants;
 import it.unitn.disi.smatch.components.Configurable;
-import it.unitn.disi.smatch.data.IContext;
 import it.unitn.disi.smatch.data.INode;
+import it.unitn.disi.smatch.data.mappings.ContextMapping;
 import it.unitn.disi.smatch.data.mappings.IContextMapping;
 import it.unitn.disi.smatch.data.mappings.IMappingElement;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
-import java.util.List;
+import java.util.Iterator;
 
 /**
  * Filters mapping according to minimal links paper.
@@ -26,28 +26,16 @@ public class RedundantMappingFilter extends Configurable implements IMappingFilt
         }
         long start = System.currentTimeMillis();
 
-        IContext sourceContext = mapping.getSourceContext();
-        IContext targetContext = mapping.getTargetContext();
-
-        // get the nodes of the contexts
-        List<INode> sourceNodes = sourceContext.getAllNodes();
-        List<INode> targetNodes = targetContext.getAllNodes();
-
-        for (int i = 0; i < sourceNodes.size(); i++) {
-            sourceNodes.get(i).getNodeData().setIndex(i);
-        }
-        for (int i = 0; i < targetNodes.size(); i++) {
-            targetNodes.get(i).getNodeData().setIndex(i);
-        }
-
         long counter = 0;
         long total = (long) mapping.size();
         long reportInt = (total / 20) + 1;//i.e. report every 5%
 
+        IContextMapping<INode> result = new ContextMapping<INode>(mapping.getSourceContext(), mapping.getTargetContext());
+
         //check each mapping
         for (IMappingElement<INode> e : mapping) {
-            if (isRedundant(mapping, e)) {
-                mapping.setRelation(e.getSource(), e.getTarget(), IMappingElement.IDK);
+            if (!isRedundant(mapping, e)) {
+                result.setRelation(e.getSource(), e.getTarget(), e.getRelation());
             }
 
             counter++;
@@ -59,15 +47,14 @@ public class RedundantMappingFilter extends Configurable implements IMappingFilt
         if (log.isEnabledFor(Level.INFO)) {
             log.info("Filtering finished: " + (System.currentTimeMillis() - start) + " ms");
         }
-        return mapping;
+        return result;
     }
 
     /**
      * Checks the relation between source and target is redundant or not for minimal mapping.
      *
-
      * @param mapping a mapping
-     * @param e a mapping element 
+     * @param e       a mapping element
      * @return true for redundant relation
      */
     private boolean isRedundant(IContextMapping<INode> mapping, IMappingElement<INode> e) {
@@ -148,28 +135,29 @@ public class RedundantMappingFilter extends Configurable implements IMappingFilt
         return result;
     }
 
-    public boolean findRelation(char relation, List<INode> sourceNodes, INode targetNode, IContextMapping<INode> mapping) {
-        for (INode sourceNode : sourceNodes) {
-            if (relation == getRelation(mapping, sourceNode, targetNode)) {
+    public boolean findRelation(char relation, Iterator<INode> sourceNodes, INode targetNode, IContextMapping<INode> mapping) {
+        while (sourceNodes.hasNext()) {
+            if (relation == getRelation(mapping, sourceNodes.next(), targetNode)) {
                 return true;
             }
         }
         return false;
     }
 
-    public boolean findRelation(char relation, INode sourceNode, List<INode> targetNodes, IContextMapping<INode> mapping) {
-        for (INode targetNode : targetNodes) {
-            if (relation == getRelation(mapping, sourceNode, targetNode)) {
+    public boolean findRelation(char relation, INode sourceNode, Iterator<INode> targetNodes, IContextMapping<INode> mapping) {
+        while (targetNodes.hasNext()) {
+            if (relation == getRelation(mapping, sourceNode, targetNodes.next())) {
                 return true;
             }
         }
         return false;
     }
 
-    public boolean findRelation(char relation, List<INode> sourceNodes, List<INode> targetNodes, IContextMapping<INode> mapping) {
-        for (INode sourceNode : sourceNodes) {
-            for (INode targetNode : targetNodes) {
-                if (relation == getRelation(mapping, sourceNode, targetNode)) {
+    public boolean findRelation(char relation, Iterator<INode> sourceNodes, Iterator<INode> targetNodes, IContextMapping<INode> mapping) {
+        while (sourceNodes.hasNext()) {
+            INode sourceNode = sourceNodes.next();
+            while (targetNodes.hasNext()) {
+                if (relation == getRelation(mapping, sourceNode, targetNodes.next())) {
                     return true;
                 }
             }

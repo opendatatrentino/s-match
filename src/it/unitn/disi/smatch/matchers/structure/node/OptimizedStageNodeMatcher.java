@@ -7,6 +7,7 @@ import it.unitn.disi.smatch.data.mappings.IMappingElement;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Node matcher for StageTreeMatcher for minimal links matching.
@@ -16,18 +17,22 @@ import java.util.HashMap;
 public class OptimizedStageNodeMatcher extends BaseNodeMatcher implements INodeMatcher {
 
     /**
-     * Checks source node and target node are disjoint or not for optimizing tree matcher.
+     * Checks whether source node and target node are disjoint.
      *
      * @param acolMapping mapping between acols
+     * @param sourceACoLs mapping acol id -> acol object
+     * @param targetACoLs mapping acol id -> acol object
      * @param sourceNode  interface of source node
      * @param targetNode  interface of target node
      * @return true if the nodes are in disjoint relation
      * @throws NodeMatcherException NodeMatcherException
      */
-    public boolean nodeDisjoint(IContextMapping<IAtomicConceptOfLabel> acolMapping, INode sourceNode, INode targetNode) throws NodeMatcherException {
+    public boolean nodeDisjoint(IContextMapping<IAtomicConceptOfLabel> acolMapping,
+                                Map<String, IAtomicConceptOfLabel> sourceACoLs, Map<String, IAtomicConceptOfLabel> targetACoLs,
+                                INode sourceNode, INode targetNode) throws NodeMatcherException {
         boolean result = false;
-        String sourceCNodeFormula = sourceNode.getNodeData().getCNodeFormula();
-        String targetCNodeFormula = targetNode.getNodeData().getCNodeFormula();
+        String sourceCNodeFormula = sourceNode.getNodeData().getcNodeFormula();
+        String targetCNodeFormula = targetNode.getNodeData().getcNodeFormula();
         String sourceCLabFormula = sourceNode.getNodeData().getcLabFormula();
         String targetCLabFormula = targetNode.getNodeData().getcLabFormula();
 
@@ -41,8 +46,8 @@ public class OptimizedStageNodeMatcher extends BaseNodeMatcher implements INodeM
             int num_of_axiom_clauses = (Integer) obj[1];
 
             //convert contexts into ArrayLists
-            ArrayList<ArrayList<String>> contextA = parseFormula(hashConceptNumber, sourceNode);
-            ArrayList<ArrayList<String>> contextB = parseFormula(hashConceptNumber, targetNode);
+            ArrayList<ArrayList<String>> contextA = parseFormula(hashConceptNumber, sourceACoLs, sourceNode);
+            ArrayList<ArrayList<String>> contextB = parseFormula(hashConceptNumber, targetACoLs, targetNode);
             //create contexts in DIMACS format
             String contextAInDIMACSFormat = DIMACSfromList(contextA);
             String contextBInDIMACSFormat = DIMACSfromList(contextB);
@@ -62,12 +67,23 @@ public class OptimizedStageNodeMatcher extends BaseNodeMatcher implements INodeM
         return result;
     }
 
-    // TODO Needs comments
-
-    public boolean nodeSubsumedBy(IContextMapping<IAtomicConceptOfLabel> acolMapping, INode sourceNode, INode targetNode) throws NodeMatcherException {
+    /**
+     * Checks whether the source node is subsumed by the target node.
+     *
+     * @param acolMapping mapping between acols
+     * @param sourceACoLs mapping acol id -> acol object
+     * @param targetACoLs mapping acol id -> acol object
+     * @param sourceNode  interface of source node
+     * @param targetNode  interface of target node
+     * @return true if the nodes are in subsumption relation
+     * @throws NodeMatcherException NodeMatcherException
+     */
+    public boolean nodeSubsumedBy(IContextMapping<IAtomicConceptOfLabel> acolMapping,
+                                  Map<String, IAtomicConceptOfLabel> sourceACoLs, Map<String, IAtomicConceptOfLabel> targetACoLs,
+                                  INode sourceNode, INode targetNode) throws NodeMatcherException {
         boolean result = false;
-        String sourceCNodeFormula = sourceNode.getNodeData().getCNodeFormula();
-        String targetCNodeFormula = targetNode.getNodeData().getCNodeFormula();
+        String sourceCNodeFormula = sourceNode.getNodeData().getcNodeFormula();
+        String targetCNodeFormula = targetNode.getNodeData().getcNodeFormula();
         String sourceCLabFormula = sourceNode.getNodeData().getcLabFormula();
         String targetCLabFormula = targetNode.getNodeData().getcLabFormula();
 
@@ -81,8 +97,8 @@ public class OptimizedStageNodeMatcher extends BaseNodeMatcher implements INodeM
                 int num_of_axiom_clauses = (Integer) obj[1];
 
                 //convert contexts into ArrayLists
-                ArrayList<ArrayList<String>> contextA = parseFormula(hashConceptNumber, sourceNode);
-                ArrayList<ArrayList<String>> contextB = parseFormula(hashConceptNumber, targetNode);
+                ArrayList<ArrayList<String>> contextA = parseFormula(hashConceptNumber, sourceACoLs, sourceNode);
+                ArrayList<ArrayList<String>> contextB = parseFormula(hashConceptNumber, targetACoLs, targetNode);
                 //create contexts in DIMACS format
                 String contextAInDIMACSFormat = DIMACSfromList(contextA);
                 //String contextBInDIMACSFormat = DIMACSfromList(contextB);
@@ -108,8 +124,8 @@ public class OptimizedStageNodeMatcher extends BaseNodeMatcher implements INodeM
                 int num_of_axiom_clauses = (Integer) obj[1];
 
                 //convert contexts into ArrayLists
-                ArrayList<ArrayList<String>> contextA = parseFormula(hashConceptNumber, targetNode);
-                ArrayList<ArrayList<String>> contextB = parseFormula(hashConceptNumber, sourceNode);
+                ArrayList<ArrayList<String>> contextA = parseFormula(hashConceptNumber, sourceACoLs, targetNode);
+                ArrayList<ArrayList<String>> contextB = parseFormula(hashConceptNumber, targetACoLs, sourceNode);
                 //create contexts in DIMACS format
                 //String contextAInDIMACSFormat = DIMACSfromList(contextA);
                 String contextBInDIMACSFormat = DIMACSfromList(contextB);
@@ -134,7 +150,9 @@ public class OptimizedStageNodeMatcher extends BaseNodeMatcher implements INodeM
 
     // stub to allow it to be created as node matcher.
 
-    public char nodeMatch(IContextMapping<IAtomicConceptOfLabel> acolMapping, INode sourceNode, INode targetNode) throws NodeMatcherException {
+    public char nodeMatch(IContextMapping<IAtomicConceptOfLabel> acolMapping,
+                          Map<String, IAtomicConceptOfLabel> sourceACoLs, Map<String, IAtomicConceptOfLabel> targetACoLs,
+                          INode sourceNode, INode targetNode) throws NodeMatcherException {
         return IMappingElement.IDK;
     }
 }

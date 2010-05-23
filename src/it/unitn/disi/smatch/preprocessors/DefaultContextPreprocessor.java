@@ -152,7 +152,6 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
      * @throws ContextPreprocessorException ContextPreprocessorException
      */
     public void preprocess(IContext context) throws ContextPreprocessorException {
-        context.getMatchingContext().resetOldPreprocessing();
         unrecognizedWords.clear();
         //construct cLabs
         context = buildCLabs(context);
@@ -179,17 +178,17 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
      * @throws ContextPreprocessorException ContextPreprocessorException
      */
     private IContext buildCLabs(IContext context) throws ContextPreprocessorException {
-        List<INode> allNodes = context.getAllNodes();
         int counter = 0;
-        int total = allNodes.size();
+        int total = context.getRoot().getDescendantCount() + 1;
         int reportInt = (total / 20) + 1;//i.e. report every 5%
-        while (0 < allNodes.size()) {
+
+        for (Iterator<INode> i = context.getRoot().getSubtree(); i.hasNext();) {
+            processNode(i.next());
+
             counter++;
             if ((SMatchConstants.LARGE_TREE < total) && (0 == (counter % reportInt)) && log.isEnabledFor(Level.INFO)) {
                 log.info(100 * counter / total + "%");
             }
-            INode node = allNodes.remove(0);
-            processNode(node);
         }
 
         return context;
@@ -203,9 +202,15 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
      */
     private void processNode(INode node) throws ContextPreprocessorException {
         try {
+            node.getNodeData().setcLabFormula("");
+            node.getNodeData().setcNodeFormula("");
+            while (0 < node.getNodeData().getACoLCount()) {
+                node.getNodeData().removeACoL(0);
+            }
+
             int id_tok = 0;
             boolean isEmpty = true;
-            String labelOfNode = node.getNodeName().trim();
+            String labelOfNode = node.getNodeData().getName().trim();
 
             if (debugLabels) {
                 log.debug("preprocessing: " + labelOfNode);
@@ -232,9 +237,9 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
                 String lemma = linguisticOracle.getBaseForm(labelOfNode);
 
                 //create atomic node of label
-                IAtomicConceptOfLabel ACoL = AtomicConceptOfLabel.getInstance(id_tok, labelOfNode, lemma);
+                IAtomicConceptOfLabel ACoL = new AtomicConceptOfLabel(id_tok, labelOfNode, lemma);
                 //Attach senses obtained from the oracle to the node
-                node.getNodeData().addAtomicConceptOfLabel(ACoL);
+                node.getNodeData().addACoL(ACoL);
                 //to to token ids
                 meaningfulTokens = meaningfulTokens + id_tok + " ";
                 //add senses to ACoL
@@ -285,9 +290,9 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
                             String lemma = linguisticOracle.getBaseForm(token);
 
                             //create atomic node of label
-                            IAtomicConceptOfLabel ACoL = AtomicConceptOfLabel.getInstance(id_tok, token, lemma);
+                            IAtomicConceptOfLabel ACoL = new AtomicConceptOfLabel(id_tok, token, lemma);
                             //add it to node
-                            node.getNodeData().addAtomicConceptOfLabel(ACoL);
+                            node.getNodeData().addACoL(ACoL);
                             //mark id  as meaningful
                             meaningfulTokens = meaningfulTokens + id_tok + " ";
                             //if there no WN senses
@@ -311,9 +316,9 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
                 //add to list of processed labels
                 tokensOfNodeLabel.add(token);
                 //create atomic node of label
-                IAtomicConceptOfLabel ACoL = AtomicConceptOfLabel.getInstance(id_tok, token, token);
+                IAtomicConceptOfLabel ACoL = new AtomicConceptOfLabel(id_tok, token, token);
                 //Attach senses obtained from the oracle to the node
-                node.getNodeData().addAtomicConceptOfLabel(ACoL);
+                node.getNodeData().addACoL(ACoL);
                 //to to token ids
                 meaningfulTokens = meaningfulTokens + id_tok + " ";
                 wnSense = new ArrayList<String>();
@@ -476,7 +481,7 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
             } else {
                 if (meaningfulTokens.indexOf(" " + (i + 1) + " ") != -1) {
                     //fill list with ACoL ids
-                    vec.add((node.getNodeId() + "." + (i + 1)));
+                    vec.add((node.getNodeData().getId() + "." + (i + 1)));
                 }
             }
         }
@@ -589,35 +594,32 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
      */
     private IContext findMultiwordsInContextStructure(IContext context) throws ContextPreprocessorException {
         //all context nodes
-        List<INode> allNode = context.getAllNodes();
-        for (INode sourceNode : allNode) {
-            //get Node
-            //get node ACoLs
-            List<IAtomicConceptOfLabel> sourceNodeACoLs = sourceNode.getNodeData().getACoLs();
+        for (Iterator<INode> i = context.getRoot().getSubtree(); i.hasNext();) {
+            INode sourceNode = i.next();
             //sense disambiguation within the context structure
-            //get all the source node descendants
-            List<INode> allConcept = sourceNode.getDescendants();
-            //and ancestors
-            allConcept.addAll(sourceNode.getAncestors());
             //for all ACoLs in the source node
-            for (IAtomicConceptOfLabel synSource : sourceNodeACoLs) {
-                String sourceLemma = synSource.getLemma();
-                for (INode anAllConcept : allConcept) {
-                    INodeData targetNode = (INodeData) anAllConcept;
-                    //get ACoLs
-                    List<IAtomicConceptOfLabel> targetNodeACoLs = targetNode.getACoLs();
-                    for (IAtomicConceptOfLabel synTarget : targetNodeACoLs) {
-                        String targetLemma = synTarget.getLemma();
-                        //TODO add lists and enrich with senses
-                        List<String> wnSenses = checkMW(sourceLemma, targetLemma);
-                        enrichSensesSets(synSource.getSenses(), wnSenses);
-                        enrichSensesSets(synTarget.getSenses(), wnSenses);
-                    }
-                }
+            for (Iterator<IAtomicConceptOfLabel> j = sourceNode.getNodeData().getACoLs(); j.hasNext();) {
+                IAtomicConceptOfLabel synSource = j.next();
+                //in all the source node descendants and ancestors
+                findMultiwordsAmong(sourceNode.getDescendants(), synSource);
+                findMultiwordsAmong(sourceNode.getAncestors(), synSource);
             }
         }
         return context;
     }
+
+    private void findMultiwordsAmong(Iterator<INode> i, IAtomicConceptOfLabel synSource) throws ContextPreprocessorException {
+        while (i.hasNext()) {
+            INode targetNode = i.next();
+            for (Iterator<IAtomicConceptOfLabel> k = targetNode.getNodeData().getACoLs(); k.hasNext();) {
+                IAtomicConceptOfLabel synTarget = k.next();
+                List<String> wnSenses = checkMW(synSource.getLemma(), synTarget.getLemma());
+                enrichSensesSets(synSource.getSenses(), wnSenses);
+                enrichSensesSets(synTarget.getSenses(), wnSenses);
+            }
+        }
+    }
+
 
     /**
      * This method performs elimination the senses which do not suit to overall context meaning.
@@ -629,25 +631,20 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
      * @throws SenseMatcherException SenseMatcherException
      */
     private void senseFiltering(IContext context) throws SenseMatcherException {
-        //all context nodes
-        List<INode> allNode = context.getAllNodes();
-        //Senses Sets for particular ACoL
         //for all nodes in context
-        for (INode sourceNode : allNode) {
-            //get Node
-            //get node ACoLs
-            List<IAtomicConceptOfLabel> sourceNodeACoLs = sourceNode.getNodeData().getACoLs();
+        for (Iterator<INode> i = context.getRoot().getSubtree(); i.hasNext();) {
+            INode sourceNode = i.next();
             //if node is complex
-            if (sourceNodeACoLs.size() > 1) {
+            if (1 < sourceNode.getNodeData().getACoLCount()) {
                 //for each ACoL in the node
-                for (int j = 0; j < sourceNodeACoLs.size(); j++) {
-                    IAtomicConceptOfLabel sourceACoL = sourceNodeACoLs.get(j);
+                for (Iterator<IAtomicConceptOfLabel> j = sourceNode.getNodeData().getACoLs(); j.hasNext();) {
+                    IAtomicConceptOfLabel sourceACoL = j.next();
                     ISensesSet sourceSenseSet = sourceACoL.getSenses();
                     //get WN senses
                     List<String> sourceSenses = sourceSenseSet.getSenseList();
                     //compare with all the other ACoLs in the node
-                    for (int k = 1; k < sourceNodeACoLs.size(); k++) {
-                        IAtomicConceptOfLabel targetACoL = sourceNodeACoLs.get(k);
+                    for (Iterator<IAtomicConceptOfLabel> k = sourceNode.getNodeData().getACoLs(); k.hasNext();) {
+                        IAtomicConceptOfLabel targetACoL = k.next();
                         if (!targetACoL.equals(sourceACoL)) {
                             ISensesSet targetSenseSet = targetACoL.getSenses();
                             //get WN senses
@@ -689,52 +686,63 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
                 }
             }
             //sense disambiguation within the context structure
-            //get all the source node descendants
-            List<INode> allConcept = sourceNode.getDescendants();
-            //and ancestors
-            allConcept.addAll(sourceNode.getAncestors());
-            //add siblings
-//            if (!sourceNode.isRoot()) {
-//                List<INode> siblings = sourceNode.getParent().getChildren();
-//                //siblings.remove(sourceNode);
-//                allConcept.addAll(siblings);
-//            }
             //for all ACoLs in the source node
-            for (IAtomicConceptOfLabel sourceACoL : sourceNodeACoLs) {
+            for (Iterator<IAtomicConceptOfLabel> j = sourceNode.getNodeData().getACoLs(); j.hasNext();) {
+                IAtomicConceptOfLabel sourceACoL = j.next();
                 ISensesSet sourceSenseSet = sourceACoL.getSenses();
                 //get WN senses
                 if (sourceSenseSet.isRefinedSensesEmpty()) {
                     List<String> sourceSenses = sourceSenseSet.getSenseList();
                     for (String sourceSenseID : sourceSenses) {
                         //for all target nodes (ancestors and descendants)
-                        for (INode anAllConcept : allConcept) {
-                            INodeData targetNode = (INodeData) anAllConcept;
-                            //get ACoLs
-                            List<IAtomicConceptOfLabel> targetNodeACoLs = targetNode.getACoLs();
-                            for (IAtomicConceptOfLabel targetACoL : targetNodeACoLs) {
-                                ISensesSet targetSenseSet = targetACoL.getSenses();
-                                //get WN senses
-                                if (targetSenseSet.isRefinedSensesEmpty()) {
-                                    List<String> targetSenses = targetSenseSet.getSenseList();
-                                    for (String targetSenseID : targetSenses) {
-                                        // Check whether each sense not synonym or
-                                        //more general, less general then the senses of
-                                        //the ancestors and descendants of the node in
-                                        //context hierarchy
-                                        boolean isRelationPresent = false;
-                                        if ((senseMatcher.isSourceSynonymTarget(sourceSenseID, targetSenseID))) {
-                                            isRelationPresent = true;
-                                        }
-                                        if (senseMatcher.isSourceLessGeneralThanTarget(sourceSenseID, targetSenseID)) {
-                                            isRelationPresent = true;
-                                        }
-                                        if (senseMatcher.isSourceMoreGeneralThanTarget(sourceSenseID, targetSenseID)) {
-                                            isRelationPresent = true;
-                                        }
-                                        if (isRelationPresent) {
-                                            sourceSenseSet.addToRefinedSenses(sourceSenseID);
-                                            targetSenseSet.addToRefinedSenses(targetSenseID);
-                                        }
+                        senseFilteringAmong(sourceNode.getDescendants(), sourceSenseID, sourceSenseSet);
+                        senseFilteringAmong(sourceNode.getAncestors(), sourceSenseID, sourceSenseSet);
+                    }
+                }
+            }
+        }
+
+        // Loop on SensesSets of the all concepts and assign to them
+        // senses mark as refined on the previous step
+        // If there are no refined senses save the original ones
+        for (Iterator<INode> i = context.getRoot().getSubtree(); i.hasNext();) {
+            for (Iterator<IAtomicConceptOfLabel> j = i.next().getNodeData().getACoLs(); j.hasNext();) {
+                ISensesSet senseSource = j.next().getSenses();
+                if (!senseSource.isRefinedSensesEmpty()) {
+                    senseSource.updateSenseList();
+                }
+            }
+        }
+    }
+
+    private void senseFilteringAmong(Iterator<INode> i, String sourceSenseID, ISensesSet sourceSenseSet) throws SenseMatcherException {
+        while (i.hasNext()) {
+            INode targetNode = i.next();
+            for (Iterator<IAtomicConceptOfLabel> k = targetNode.getNodeData().getACoLs(); k.hasNext();) {
+                IAtomicConceptOfLabel targetACoL = k.next();
+                ISensesSet targetSenseSet = targetACoL.getSenses();
+                //get WN senses
+                if (targetSenseSet.isRefinedSensesEmpty()) {
+                    List<String> targetSenses = targetSenseSet.getSenseList();
+                    for (String targetSenseID : targetSenses) {
+                        // Check whether each sense not synonym or
+                        //more general, less general then the senses of
+                        //the ancestors and descendants of the node in
+                        //context hierarchy
+                        boolean isRelationPresent = false;
+                        if ((senseMatcher.isSourceSynonymTarget(sourceSenseID, targetSenseID))) {
+                            isRelationPresent = true;
+                        }
+                        if (senseMatcher.isSourceLessGeneralThanTarget(sourceSenseID, targetSenseID)) {
+                            isRelationPresent = true;
+                        }
+                        if (senseMatcher.isSourceMoreGeneralThanTarget(sourceSenseID, targetSenseID)) {
+                            isRelationPresent = true;
+                        }
+                        if (isRelationPresent) {
+                            sourceSenseSet.addToRefinedSenses(sourceSenseID);
+                            targetSenseSet.addToRefinedSenses(targetSenseID);
+                        }
 
 //                                        if ((senseMatcher.isSourceSynonymTarget(sourceSenseID, targetSenseID)) ||
 //                                                (senseMatcher.isSourceLessGeneralThanTarget(sourceSenseID, targetSenseID)) ||
@@ -746,29 +754,11 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
 //                                        if (senseMatcher.isSourceOppositeToTarget(sourceSenseID, targetSenseID)) {
 //                                            log.debug("Opposite lemmas " + sourceACoL.getLemma() + " " + targetACoL.getLemma());
 //                                        }
-                                    }
-                                }
-                            }
-                        }
                     }
                 }
             }
         }
-        //Loop on SensesSets of the all concepts and assign to them
-        //senses mark as refined on the previous step
-        //If there are no refined senses save the original ones
-        for (INode anAllNode : allNode) {
-            INodeData cSource = anAllNode.getNodeData();
-            List<IAtomicConceptOfLabel> sourceSetOfSenses = cSource.getACoLs();
-            for (IAtomicConceptOfLabel synSource : sourceSetOfSenses) {
-                ISensesSet SenseSource = synSource.getSenses();
-                if (!SenseSource.isRefinedSensesEmpty()) {
-                    SenseSource.updateSenseList();
-                }
-            }
-        }
     }
-
     /**
      * Checks whether input string contains a number or not.
      *

@@ -89,11 +89,11 @@ public class PlainMappingRenderer extends Configurable implements IMappingRender
         StringBuilder sb = new StringBuilder();
         INode parent = node;
         while (null != parent) {
-            if (parent.getNodeName().contains("\\")) {
-                log.debug("source: replacing \\ in: " + parent.getNodeName());
-                sb.insert(0, "\\" + parent.getNodeName().replaceAll("\\\\", "/"));
+            if (parent.getNodeData().getName().contains("\\")) {
+                log.debug("source: replacing \\ in: " + parent.getNodeData().getName());
+                sb.insert(0, "\\" + parent.getNodeData().getName().replaceAll("\\\\", "/"));
             } else {
-                sb.insert(0, "\\" + parent.getNodeName());
+                sb.insert(0, "\\" + parent.getNodeData().getName());
             }
             parent = parent.getParent();
         }

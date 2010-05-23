@@ -3,6 +3,7 @@ package it.unitn.disi.smatch.loaders.context;
 import it.unitn.disi.smatch.components.Configurable;
 import it.unitn.disi.smatch.data.Context;
 import it.unitn.disi.smatch.data.IContext;
+import it.unitn.disi.smatch.data.INode;
 import org.apache.log4j.Logger;
 
 import java.io.BufferedReader;
@@ -10,6 +11,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Iterator;
 
 /**
  * Loads context from a tab-separated file.
@@ -32,6 +34,13 @@ public class TabContextLoader extends Configurable implements IContextLoader {
             try {
                 result = process(input);
                 log.info("Parsed nodes: " + nodesParsed);
+
+                // create ids for nodes
+                nodesParsed = 0;
+                for (Iterator<INode> i = result.getRoot().getSubtree(); i.hasNext();) {
+                    i.next().getNodeData().setId("n" + Integer.toString(nodesParsed));
+                    nodesParsed++;
+                }
             } finally {
                 input.close();
             }
@@ -54,18 +63,18 @@ public class TabContextLoader extends Configurable implements IContextLoader {
      */
     private IContext process(BufferedReader input) throws IOException {
         IContext result = new Context();
-        ArrayList<String> rootPath = new ArrayList<String>();
+        ArrayList<INode> rootPath = new ArrayList<INode>();
 
         nodesParsed = 0;
         //loads the root node
-        final String root = input.readLine();
-        nodesParsed++;
-        if (null != root) {
-            String fatherConceptId = result.newNode(root, null);
-            rootPath.add(fatherConceptId);
+        final String rootName = input.readLine();
+        if (null != rootName) {
+            INode rootNode = result.createRoot(rootName);
+            nodesParsed++;
+            rootPath.add(rootNode);
 
             int artificialLevel = 0;//flags that we added Top and need an increment in level
-            String fatherId;
+            INode parent;
             int old_depth = 0;
             String line;
             while ((line = input.readLine()) != null &&
@@ -76,24 +85,26 @@ public class TabContextLoader extends Configurable implements IContextLoader {
                 String name = line.substring(int_depth);
                 int_depth = int_depth + artificialLevel;
                 if (int_depth == old_depth) {
-                    fatherId = rootPath.get(old_depth - 1);
-                    String newCID = result.newNode(name, fatherId);
-                    setArrayNodeID(int_depth, rootPath, newCID);
+                    parent = rootPath.get(old_depth - 1);
+                    INode node = parent.createChild(name);
+                    setArrayNodeID(int_depth, rootPath, node);
                 } else if (int_depth > old_depth) {
-                    fatherId = rootPath.get(old_depth);
-                    String newCID = result.newNode(name, fatherId);
-                    setArrayNodeID(int_depth, rootPath, newCID);
+                    parent = rootPath.get(old_depth);
+                    INode node = parent.createChild(name);
+                    setArrayNodeID(int_depth, rootPath, node);
                     old_depth = int_depth;
                 } else if (int_depth < old_depth) {
                     if (0 == int_depth) {//looks like we got multiple roots in the input
                         artificialLevel = 1;
-                        fatherId = result.newNode("Top", null);
-                        rootPath.add(0, fatherId);
+                        INode oldRoot = result.getRoot();
+                        INode newRoot = result.createRoot("Top");
+                        newRoot.addChild(oldRoot);
+                        rootPath.add(0, newRoot);
                         int_depth = 1;
                     }
-                    fatherId = rootPath.get(int_depth - 1);
-                    String newCID = result.newNode(name, fatherId);
-                    setArrayNodeID(int_depth, rootPath, newCID);
+                    parent = rootPath.get(int_depth - 1);
+                    INode node = parent.createChild(name);
+                    setArrayNodeID(int_depth, rootPath, node);
                     old_depth = int_depth;
                 }
 
@@ -110,26 +121,26 @@ public class TabContextLoader extends Configurable implements IContextLoader {
      * @return the number of tabs at the beginning of the line
      */
     private int numOfTabs(String line) {
-        int close_counter = 0;
-        while (close_counter < line.length() && '\t' == line.charAt(close_counter)) {
-            close_counter++;
+        int i = 0;
+        while (i < line.length() && '\t' == line.charAt(i)) {
+            i++;
         }
-        return close_counter;
+        return i;
     }
 
     /**
-     * Sets the nodeID at a given position of the array.
+     * Sets the node at a given position of the array.
      * Changes the current value if there is one, if there is no value, add a new one.
      *
-     * @param index  position to be filled
-     * @param array  array to be modified
-     * @param nodeID value to be set
+     * @param index position to be filled
+     * @param array array to be modified
+     * @param node  value to be set
      */
-    private static void setArrayNodeID(int index, ArrayList<String> array, String nodeID) {
+    private static void setArrayNodeID(int index, ArrayList<INode> array, INode node) {
         if (index < array.size()) {
-            array.set(index, nodeID);
+            array.set(index, node);
         } else {
-            array.add(index, nodeID);
+            array.add(index, node);
         }
     }
 }

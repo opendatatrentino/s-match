@@ -5,60 +5,389 @@ import javax.swing.tree.TreeNode;
 import java.util.*;
 
 /**
- * This class represents a node in the hierarchy.
- * It contains logical (cNode and cLab formulas);
- * linguistic (WN senses,tokens) and structural information
- * (parent and children of Node).
+ * This class represents a node in the hierarchy. It contains logical (cNode and cLab formulas),
+ * linguistic (WN senses, tokens) and structural information (parent and children of a node).
+ * <p/>
+ * Many things are modeled after DefaultMutableTreeNode.
+ *
+ * @author Aliaksandr Autayeu avtaev@gmail.com
  */
-public class Node implements INodeData, INode {
-    //ConceptID
-    private String nodeId;
-    //Sentence associated with the concept
-    private String nodeName;
-    //unique name
-    private String nodeUniqueName;
+public class Node implements INode, INodeData {
 
-    private String cLabFormula = "";
-    private String cNodeFormula = "";
-
-    private List<IAtomicConceptOfLabel> setOfSenses;
-    private List<IAtomicConceptOfLabel> nodeMatchingTaskACols;
-    private HashMap<String, IAtomicConceptOfLabel> nodeMatchingTaskAColsHash;
     private INode parent;
-    //private String parentRelationType;
-
     private List<INode> children;
-    private List<INode> descendants = null;
-    private List<INode> ancestors = null;
 
-    private int index;
-    //might be better implemented for a whole context via BitSet
+    // id is needed to store cNodeFormulas in correctly.
+    // cNodeFormulas is made of cLabFormulas, each of which refers to tokens and tokens should have unique id
+    // within a context. This is achieved by using node id + token id. 
+    private String id;
+    private String name;
+    private String cLabFormula;
+    private String cNodeFormula;
+    // might be better implemented for a whole context via BitSet
     private boolean source;
-
     private Object userObject;
 
-    private static final Comparator<INode> nodeComparator = new Comparator<INode>() {
-        //no safety checks - it should be run properly :-)
+    private List<IAtomicConceptOfLabel> acols;
 
-        public int compare(INode e1, INode e2) {
-            return e1.getNodeName().compareTo(e2.getNodeName());
+    private static long countNode = 0;
+
+    private static class EmptyIterator<T> implements Iterator<T> {
+        public boolean hasNext
+                () {
+            return false;
         }
-    };
 
-    public void setNodeName(String nodeName) {
-        this.nodeName = nodeName;
+        public T next() {
+            throw new NoSuchElementException("No more elements");
+        }
+
+        public void remove() {
+            throw new IllegalStateException("No elements");
+        }
     }
 
-    public List<String> getSynonyms() {
-        return new ArrayList<String>();
+    private static final Iterator<INode> EMPTY_NODE_ITERATOR = new EmptyIterator<INode>();
+    private static final Iterator<IAtomicConceptOfLabel> EMPTY_ACOL_ITERATOR = new EmptyIterator<IAtomicConceptOfLabel>();
+
+    private static final class Ancestors implements Iterator<INode> {
+        private INode current;
+
+        public Ancestors(INode start) {
+            if (null == start) {
+                throw new IllegalArgumentException("argument is null");
+            }
+            this.current = start;
+        }
+
+        public boolean hasNext() {
+            return current.hasParent();
+        }
+
+        public INode next() {
+            current = current.getParent();
+            return current;
+        }
+
+        public void remove() {
+            throw new UnsupportedOperationException();
+        }
     }
 
-    public List<String> getAlternativeLabels() {
-        return new ArrayList<String>();
+    private static final class StartIterator implements Iterator<INode> {
+        private INode start;
+        private Iterator<INode> i;
+
+        public StartIterator(INode start, Iterator<INode> i) {
+            if (null == start) {
+                throw new IllegalArgumentException("argument is null");
+            }
+            this.start = start;
+            this.i = i; 
+        }
+
+        public boolean hasNext() {
+            return (null != start || i.hasNext());
+        }
+
+        public INode next() {
+            INode result = start;
+            if (null != start) {
+                start = null;
+            } else {
+                result = i.next();
+            }
+            return result;
+        }
+
+        public void remove() {
+            throw new UnsupportedOperationException();
+        }
     }
 
-    public double getWeight() {
-        return -1;
+    private static final class BreadthFirstSearch implements Iterator<INode> {
+        private Deque<INode> queue;
+
+        public BreadthFirstSearch(INode start) {
+            if (null == start) {
+                throw new IllegalArgumentException("argument is null");
+            }
+            queue = new ArrayDeque<INode>();
+            queue.addFirst(start);
+            next();
+        }
+
+        public boolean hasNext() {
+            return !queue.isEmpty();
+        }
+
+        public INode next() {
+            INode current = queue.removeFirst();
+            for (Iterator<INode> i = current.getChildren(); i.hasNext();) {
+                queue.add(i.next());
+            }
+            return current;
+        }
+
+        public void remove() {
+            throw new UnsupportedOperationException();
+        }
+    }
+
+    private static final class NodeMatchingTaskACoLs implements Iterator<IAtomicConceptOfLabel> {
+        private Iterator<INode> ancestors;
+        private Iterator<IAtomicConceptOfLabel> current;
+
+        public NodeMatchingTaskACoLs(INode start) {
+            if (null == start) {
+                throw new IllegalArgumentException("argument is null");
+            }
+            ancestors = start.getAncestors();
+            current = start.getNodeData().getACoLs();
+        }
+
+        public boolean hasNext() {
+            boolean result = current.hasNext();
+            while (!result && ancestors.hasNext()) {
+                current = ancestors.next().getNodeData().getACoLs();
+                result = current.hasNext();
+            }
+            return result;
+        }
+
+        public IAtomicConceptOfLabel next() {
+            return current.next();
+        }
+
+        public void remove() {
+            throw new UnsupportedOperationException();
+        }
+    }
+
+    public Node() {
+        parent = null;
+        children = null;
+
+        source = false;
+        // need to set node id to keep track of acols in c@node formulas
+        // synchronized to make counts unique within JVM and decrease same id chance
+        synchronized (Node.class) {
+            id = "n" + countNode + "_" + ((System.currentTimeMillis() / 1000) % (365 * 24 * 3600));
+            countNode++;
+        }
+        name = "";
+        cLabFormula = "";
+        cNodeFormula = "";
+        acols = null;
+    }
+
+    /**
+     * Constructor class which sets the node name.
+     *
+     * @param name the name of the node
+     */
+    public Node(String name) {
+        this();
+        this.name = name;
+    }
+
+    public INode getChildAt(int index) {
+        if (children == null) {
+            throw new ArrayIndexOutOfBoundsException("node has no children");
+        }
+        return children.get(index);
+    }
+
+    public int getChildCount() {
+        if (children == null) {
+            return 0;
+        } else {
+            return children.size();
+        }
+    }
+
+    public int getChildIndex(INode child) {
+        if (null == child) {
+            throw new IllegalArgumentException("argument is null");
+        }
+
+        if (!isNodeChild(child)) {
+            return -1;
+        }
+        return children.indexOf(child);
+    }
+
+    public Iterator<INode> getChildren() {
+        if (null == children) {
+            return EMPTY_NODE_ITERATOR;
+        } else {
+            return children.iterator();
+        }
+    }
+
+    public INode createChild() {
+        INode child = new Node();
+        addChild(child);
+        return child;
+    }
+
+    public INode createChild(String name) {
+        INode child = new Node(name);
+        addChild(child);
+        return child;
+    }
+
+    public void addChild(INode child) {
+        addChild(getChildCount(), child);
+    }
+
+    public void addChild(int index, INode child) {
+        if (null == child) {
+            throw new IllegalArgumentException("new child is null");
+        } else if (isNodeAncestor(child)) {
+            throw new IllegalArgumentException("new child is an ancestor");
+        }
+
+        INode oldParent = child.getParent();
+
+        if (null != oldParent) {
+            oldParent.removeChild(child);
+        }
+
+        child.setParent(this);
+        if (null == children) {
+            children = new ArrayList<INode>();
+        }
+        children.add(index, child);
+    }
+
+    public void removeChild(int index) {
+        INode child = getChildAt(index);
+        children.remove(index);
+        child.setParent(null);
+    }
+
+    public void removeChild(INode child) {
+        if (null == child) {
+            throw new IllegalArgumentException("argument is null");
+        }
+
+        if (!isNodeChild(child)) {
+            removeChild(getChildIndex(child));
+        }
+    }
+
+    public INode getParent() {
+        return parent;
+    }
+
+    public void setParent(INode newParent) {
+        removeFromParent();
+        parent = newParent;
+    }
+
+    public boolean hasParent() {
+        return null != parent;
+    }
+
+    public void removeFromParent() {
+        if (null != parent) {
+            parent.removeChild(this);
+            parent = null;
+        }
+    }
+
+    public boolean isLeaf() {
+        return 0 == getChildCount();
+    }
+
+    public int getAncestorCount() {
+        INode parent;
+        int levels = 0;
+
+        parent = this;
+        while ((parent = parent.getParent()) != null) {
+            levels++;
+        }
+
+        return levels;
+    }
+
+    public Iterator<INode> getAncestors() {
+        return new Ancestors(this);
+    }
+
+    public Iterator<INode> getSupertree() {
+        return new StartIterator(this, getAncestors());
+    }
+
+    public int getLevel() {
+        return getAncestorCount();
+    }
+
+    public int getDescendantCount() {
+        int result = 0;
+        for (Iterator<INode> i = getDescendants(); i.hasNext();) {
+            i.next();
+            result++;
+        }
+        return result;
+    }
+
+    public Iterator<INode> getDescendants() {
+        return new BreadthFirstSearch(this);
+    }
+
+    public Iterator<INode> getSubtree() {
+        return new StartIterator(this, getDescendants());
+    }
+
+    public INodeData getNodeData() {
+        return this;
+    }
+
+    private boolean isNodeAncestor(INode anotherNode) {
+        if (null == anotherNode) {
+            return false;
+        }
+
+        INode ancestor = this;
+
+        do {
+            if (ancestor == anotherNode) {
+                return true;
+            }
+        } while ((ancestor = ancestor.getParent()) != null);
+
+        return false;
+    }
+
+    private boolean isNodeChild(INode node) {
+        if (null == node) {
+            return false;
+        } else {
+            if (getChildCount() == 0) {
+                return false;
+            } else {
+                return (node.getParent() == this);
+            }
+        }
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String newName) {
+        name = newName;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String newId) {
+        id = newId;
     }
 
     public String getcLabFormula() {
@@ -69,149 +398,12 @@ public class Node implements INodeData, INode {
         this.cLabFormula = cLabFormula;
     }
 
+    public String getcNodeFormula() {
+        return cNodeFormula;
+    }
+
     public void setcNodeFormula(String cNodeFormula) {
         this.cNodeFormula = cNodeFormula;
-    }
-
-    public Node() {
-        source = false;
-        index = -1;
-        nodeId = "";
-        nodeName = "";
-        nodeUniqueName = "";
-        parent = null;
-        children = new ArrayList<INode>();
-        //parentRelationType = null;
-        cLabFormula = "";
-        setOfSenses = new ArrayList<IAtomicConceptOfLabel>();
-    }
-
-    /**
-     * Constructor class which sets the node name and id. Also sets unique node name with combination of node name and id.
-     *
-     * @param nodeName the name of the node
-     * @param nodeId   the id of the node
-     */
-    public Node(String nodeName, String nodeId) {
-        this();
-        this.nodeName = nodeName.trim();
-        this.nodeId = nodeId.trim();
-        setNodeUniqueName();
-    }
-
-    public static INode getInstance() {
-        return new Node();
-    }
-
-    public INodeData getNodeData() {
-        return this;
-    }
-
-    public void resetLogicalFormula() {
-        cLabFormula = "";
-        cNodeFormula = "";
-    }
-
-    public void resetSetOfSenses() {
-        setOfSenses = new ArrayList<IAtomicConceptOfLabel>();
-    }
-
-    public void addAtomicConceptOfLabel(IAtomicConceptOfLabel sense) {
-        sense.setTokenUID(this.getNodeId() + "." + sense.getIdToken());
-        setOfSenses.add(sense);
-    }
-
-    public void addChild(INode child) {
-        children.add(child);
-    }
-
-    public List<INode> getAncestors() {
-        List<INode> result = ancestors;
-        if (null == result) {
-            result = new ArrayList<INode>();
-            if (parent != null) {
-                result.add(parent);
-                result.addAll(parent.getAncestors());
-            }
-            ancestors = result;
-        }
-        return result;
-    }
-
-    public List<INode> getDescendants() {
-        List<INode> result = descendants;
-        if (result == null) {
-            result = new ArrayList<INode>();
-            for (INode child : getChildren()) {
-                result.add(child);
-                result.addAll(child.getDescendants());
-            }
-            descendants = result;
-        }
-
-        return result;
-    }
-
-    public int getDescendantCount() {
-        int result = 1;
-        for (INode child : children) {
-            result = result + child.getDescendantCount();
-        }
-        return result;
-
-    }
-
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (!(o instanceof INode)) {
-            return false;
-        }
-
-        final Node node = (Node) o;
-
-        if (!nodeId.trim().equals(node.nodeId.trim())) {
-            return false;
-        }
-
-        return true;
-    }
-
-    public int hashCode() {
-        return nodeId.hashCode();
-    }
-
-    //equals
-//    public boolean equals(Node node) {
-//        String localId = this.nodeId;
-//        localId = localId.trim();
-//        String otherId = node.getNodeId();
-//        otherId = otherId.trim();
-//        if (localId.equals(otherId))
-//            return true;
-//        return false;
-//    }
-
-    //isRoot
-
-    public boolean isRoot() {
-        if (/*parentRelationType == null && */parent == null) {
-            return true;
-        }
-        return false;
-    }
-
-    public int getDepth() {
-        return this.getAncestors().size();
-    }
-
-    public int getIndex() {
-        return index;
-    }
-
-    public void setIndex(int index) {
-        this.index = index;
     }
 
     public boolean getSource() {
@@ -222,186 +414,62 @@ public class Node implements INodeData, INode {
         this.source = source;
     }
 
-    public void sort() {
-        Collections.sort(children, nodeComparator);
-        for (INode node : children) {
-            node.getNodeData().sort();
+    public IAtomicConceptOfLabel getACoLAt(int index) {
+        if (null == acols) {
+            throw new ArrayIndexOutOfBoundsException("node has no ACoLs");
+        }
+        return acols.get(index);
+    }
+
+    public int getACoLCount() {
+        if (acols == null) {
+            return 0;
+        } else {
+            return acols.size();
         }
     }
 
-    //Get path to root for output
-
-    public String getPathToRootString() {
-        INode concept = this;
-        StringBuffer path = new StringBuffer("/");
-        List<INode> reversePath = concept.getAncestors();
-        if (concept.isRoot()) {
-            path.append("/");
+    public int getACoLIndex(IAtomicConceptOfLabel acol) {
+        if (null == acol) {
+            throw new IllegalArgumentException("argument is null");
         }
-        for (int i = reversePath.size() - 1; i >= 0; i--) {
-            INode c = (reversePath.get(i));
-            path.append(c.getNodeName()).append("/");
-        }
-        path.append(concept.getNodeName());
-        return path.toString();
+
+        return acols.indexOf(acol);
     }
 
-    public TreeNode getChildAt(int childIndex) {
-        return children.get(childIndex);
-    }
-
-    public int getChildCount() {
-        return children.size();
-    }
-
-    public INode getParent() {
-        return parent;
-    }
-
-    public int getIndex(TreeNode node) {
-        return children.indexOf(node);
-    }
-
-    public boolean getAllowsChildren() {
-        return 0 < getChildCount();
-    }
-
-    public boolean isLeaf() {
-        return 0 == getChildCount();
-    }
-
-    public Enumeration children() {
-        return Collections.enumeration(children);
-    }
-
-    public String getParentRelationType() {
-        return null/*parentRelationType*/;
-    }
-
-    public String getNodeId() {
-        return nodeId;
-    }
-
-    public String getNodeName() {
-        return nodeName;
-    }
-
-    public String getNodeUniqueName() {
-        return nodeUniqueName;
-    }
-
-    public List<INode> getChildren() {
-        return children;
-    }
-
-    public void setParent(INode parent) {
-        this.parent = parent;
-    }
-
-    public String getCNodeFormula() {
-        return cNodeFormula;
-    }
-
-    public List<IAtomicConceptOfLabel> getACoLs() {
-        return setOfSenses;
-    }
-
-    public void setNodeUniqueName(String uniqueName) {
-        this.nodeUniqueName = uniqueName;
-        StringTokenizer extractIdAndName = new StringTokenizer(uniqueName, "$");
-        nodeName = extractIdAndName.nextToken().trim();
-        nodeId = extractIdAndName.nextToken().trim();
-    }
-
-    public String toString() {
-        return nodeName;
-    }
-
-    public static INode getInstance(String nodeName, String nodeId) {
-        return new Node(nodeName, nodeId);
-    }
-
-    public void setNodeUniqueName() {
-        this.nodeUniqueName = nodeName + "$" + nodeId;
-    }
-
-    public void setNodeId(String nodeId) {
-        this.nodeId = nodeId;
-    }
-
-    public void removeChild(INode child) {
-        for (int i = 0; i < children.size(); i++) {
-            INode localChild = (children.get(i));
-            if (localChild.equals(child)) {
-                children.remove(i);
-                return;
-            }
+    public Iterator<IAtomicConceptOfLabel> getACoLs() {
+        if (null == acols) {
+            return EMPTY_ACOL_ITERATOR;
+        } else {
+            return acols.iterator();
         }
     }
 
-    public IAtomicConceptOfLabel getNMTAColById(String tokenUID) {
-        if (null == nodeMatchingTaskAColsHash) {
-            nodeMatchingTaskAColsHash = new HashMap<String, IAtomicConceptOfLabel>();
-            for (IAtomicConceptOfLabel acol : getNodeMatchingTaskACols()) {
-                nodeMatchingTaskAColsHash.put(acol.getTokenUID(), acol);
-            }
-        }
-        return nodeMatchingTaskAColsHash.get(tokenUID);
+    public void addACoL(IAtomicConceptOfLabel acol) {
+        addACoL(getACoLCount(), acol);
     }
 
-    public IAtomicConceptOfLabel getAColById(String tokenUID) {
-        IAtomicConceptOfLabel result = null;
-        for (IAtomicConceptOfLabel a : setOfSenses) {
-            if (tokenUID.equals(a.getTokenUID())) {
-                result = a;
-                break;
-            }
+    public void addACoL(int index, IAtomicConceptOfLabel acol) {
+        if (null == acol) {
+            throw new IllegalArgumentException("new acol is null");
         }
-        return result;
+
+        if (null == acols) {
+            acols = new ArrayList<IAtomicConceptOfLabel>();
+        }
+        acols.add(index, acol);
     }
 
-    /**
-     * Fills and gets the list of all logical formula representations of all concepts.
-     */
-    public List<IAtomicConceptOfLabel> getNodeMatchingTaskACols() {
-        if (null == nodeMatchingTaskACols) {
-            nodeMatchingTaskACols = new ArrayList<IAtomicConceptOfLabel>();
-            nodeMatchingTaskACols = getNodeMatchingTaskACols(this, nodeMatchingTaskACols);
-        }
-        return nodeMatchingTaskACols;
+    public void removeACoL(int index) {
+        acols.remove(index);
     }
 
-    /**
-     * Fills the list with Atomic concepts identifiers.
-     * They are used as propositional variables in the formula.
-     *
-     * @param node          the interface of node which acols will be added
-     * @param partialResult list of atomic concept of labels which are added so far without current node
-     * @return list of atomic concept of label with current node
-     */
-    private static List<IAtomicConceptOfLabel> getNodeMatchingTaskACols(INode node, List<IAtomicConceptOfLabel> partialResult) {
-        if (!node.isRoot()) {
-            getNodeMatchingTaskACols(node.getParent(), partialResult);
-        }
-        List<IAtomicConceptOfLabel> table = node.getNodeData().getACoLs();
-        for (IAtomicConceptOfLabel acol : table) {
-            partialResult.add(acol);
-        }
-        return partialResult;
+    public void removeACoL(IAtomicConceptOfLabel acol) {
+        acols.remove(acol);
     }
 
-    public void insert(MutableTreeNode child, int index) {
-        if (child instanceof Node) {
-            children.add(index, (INode) child);
-        }
-    }
-
-    public void remove(int index) {
-        children.remove(index);
-    }
-
-    public void remove(MutableTreeNode node) {
-        children.remove(node);
+    public Iterator<IAtomicConceptOfLabel> getNodeMatchingTaskACoLs() {
+        return new NodeMatchingTaskACoLs(this);
     }
 
     public void setUserObject(Object object) {
@@ -412,19 +480,46 @@ public class Node implements INodeData, INode {
         return userObject;
     }
 
-    public void removeFromParent() {
-        if (null != parent) {
-            parent.removeChild(this);
+
+    public String toString() {
+        return name;
+    }
+
+    public int getIndex(TreeNode node) {
+        if (node instanceof INode) {
+            return getChildIndex((INode) node);
+        } else {
+            return -1;
         }
-        parent = null;
+    }
+
+    public boolean getAllowsChildren() {
+        return true;
+    }
+
+    public Enumeration children() {
+        return Collections.enumeration(children);
+    }
+
+    public void insert(MutableTreeNode child, int index) {
+        if (child instanceof INode) {
+            addChild(index, (INode) child);
+        }
+    }
+
+    public void remove(int index) {
+        removeChild(index);
+    }
+
+    public void remove(MutableTreeNode node) {
+        if (node instanceof INode) {
+            removeChild((INode) node);
+        }
     }
 
     public void setParent(MutableTreeNode newParent) {
-        if (newParent instanceof Node) {
-            if (null != parent) {
-                removeFromParent();
-            }
-            parent = (Node) newParent;
+        if (newParent instanceof INode) {
+            setParent((Node) newParent);
         }
     }
 }

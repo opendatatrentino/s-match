@@ -13,9 +13,7 @@ import it.unitn.disi.smatch.matchers.structure.node.OptimizedStageNodeMatcher;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * Matches first disjoint, then subsumptions, then joins subsumption into equivalence.
@@ -27,6 +25,8 @@ public class OptimizedStageTreeMatcher extends BaseTreeMatcher implements ITreeM
     private static final Logger log = Logger.getLogger(OptimizedStageTreeMatcher.class);
 
     private OptimizedStageNodeMatcher smatchMatcher;
+    private Map<String, IAtomicConceptOfLabel> sourceAcols;
+    private Map<String, IAtomicConceptOfLabel> targetAcols;
 
     private IContextMapping<IAtomicConceptOfLabel> acolMapping;
 
@@ -55,21 +55,17 @@ public class OptimizedStageTreeMatcher extends BaseTreeMatcher implements ITreeM
     public IContextMapping<INode> treeMatch(IContext sourceContext, IContext targetContext, IContextMapping<IAtomicConceptOfLabel> acolMapping) throws TreeMatcherException {
         this.acolMapping = acolMapping;
 
-        //get the nodes of the contexts
-        List<INode> sourceNodes = sourceContext.getAllNodes();
-        List<INode> targetNodes = targetContext.getAllNodes();
-
-        total = (long) sourceContext.getRoot().getDescendantCount() * (long) targetContext.getRoot().getDescendantCount();
+        total = (long) (sourceContext.getRoot().getDescendantCount() + 1) * (long) (targetContext.getRoot().getDescendantCount() + 1);
         reportInt = (total / 20) + 1;//i.e. report every 5%
 
-        for (int i = 0; i < sourceNodes.size(); i++) {
-            sourceNodes.get(i).getNodeData().setIndex(i);
+        for (Iterator<INode> i = sourceContext.getRoot().getSubtree(); i.hasNext();) {
+            INode sourceNode = i.next();
             //this is to distinguish below, in matcher, for axiom creation
-            sourceNodes.get(i).getNodeData().setSource(true);
+            sourceNode.getNodeData().setSource(true);
         }
-        for (int i = 0; i < targetNodes.size(); i++) {
-            targetNodes.get(i).getNodeData().setIndex(i);
-        }
+
+        sourceAcols = createAcolsMap(sourceContext);
+        targetAcols = createAcolsMap(targetContext);
 
         mapping = new HashSet<IMappingElement<INode>>();
 
@@ -102,8 +98,8 @@ public class OptimizedStageTreeMatcher extends BaseTreeMatcher implements ITreeM
 
     private void treeDisjoint(INode n1, INode n2) throws TreeMatcherException {
         nodeTreeDisjoint(n1, n2);
-        for (INode c1 : n1.getChildren()) {
-            treeDisjoint(c1, n2);
+        for (Iterator<INode> i = n1.getChildren(); i.hasNext();) {
+            treeDisjoint(i.next(), n2);
         }
     }
 
@@ -118,7 +114,7 @@ public class OptimizedStageTreeMatcher extends BaseTreeMatcher implements ITreeM
             return;
         }
 
-        if (smatchMatcher.nodeDisjoint(acolMapping, n1, n2)) {
+        if (smatchMatcher.nodeDisjoint(acolMapping, sourceAcols, targetAcols, n1, n2)) {
             addRelation(n1, n2, IMappingElement.DISJOINT);
             //we skip n2 subtree, so adjust the counter
             final long skipTo = counter + n2.getDescendantCount();
@@ -130,8 +126,8 @@ public class OptimizedStageTreeMatcher extends BaseTreeMatcher implements ITreeM
 
         progress();
 
-        for (INode c2 : n2.getChildren()) {
-            nodeTreeDisjoint(n1, c2);
+        for (Iterator<INode> i = n2.getChildren(); i.hasNext();) {
+            nodeTreeDisjoint(n1, i.next());
         }
     }
 
@@ -147,14 +143,14 @@ public class OptimizedStageTreeMatcher extends BaseTreeMatcher implements ITreeM
         }
 
         progress();
-        if (!smatchMatcher.nodeSubsumedBy(acolMapping, n1, n2)) {
-            for (INode c1 : n1.getChildren()) {
-                treeSubsumedBy(c1, n2);
+        if (!smatchMatcher.nodeSubsumedBy(acolMapping, sourceAcols, targetAcols, n1, n2)) {
+            for (Iterator<INode> i = n1.getChildren(); i.hasNext();) {
+                treeSubsumedBy(i.next(), n2);
             }
         } else {
             boolean lastNodeFound = false;
-            for (INode c2 : n2.getChildren()) {
-                if (treeSubsumedBy(n1, c2)) {
+            for (Iterator<INode> i = n2.getChildren(); i.hasNext();) {
+                if (treeSubsumedBy(n1, i.next())) {
                     lastNodeFound = true;
                 }
             }
@@ -222,8 +218,9 @@ public class OptimizedStageTreeMatcher extends BaseTreeMatcher implements ITreeM
         return mapping.contains(createMappingElement(sourceNode, targetNode, relation));
     }
 
-    private boolean findRelation(List<INode> sourceNodes, INode targetNode, char relation) {
-        for (INode sourceNode : sourceNodes) {
+    private boolean findRelation(Iterator<INode> sourceNodes, INode targetNode, char relation) {
+        while (sourceNodes.hasNext()) {
+            INode sourceNode = sourceNodes.next();
             if (mapping.contains(createMappingElement(sourceNode, targetNode, relation))) {
                 return true;
             }

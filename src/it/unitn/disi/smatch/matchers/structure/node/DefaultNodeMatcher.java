@@ -7,6 +7,7 @@ import it.unitn.disi.smatch.data.mappings.IMappingElement;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Default node matcher.
@@ -16,10 +17,12 @@ import java.util.HashMap;
  */
 public class DefaultNodeMatcher extends BaseNodeMatcher implements INodeMatcher {
 
-    public char nodeMatch(IContextMapping<IAtomicConceptOfLabel> acolMapping, INode sourceNode, INode targetNode) throws NodeMatcherException {
+    public char nodeMatch(IContextMapping<IAtomicConceptOfLabel> acolMapping,
+                          Map<String, IAtomicConceptOfLabel> sourceACoLs, Map<String, IAtomicConceptOfLabel> targetACoLs,
+                          INode sourceNode, INode targetNode) throws NodeMatcherException {
         char result = IMappingElement.IDK;
-        String sourceCNodeFormula = sourceNode.getNodeData().getCNodeFormula();
-        String targetCNodeFormula = targetNode.getNodeData().getCNodeFormula();
+        String sourceCNodeFormula = sourceNode.getNodeData().getcNodeFormula();
+        String targetCNodeFormula = targetNode.getNodeData().getcNodeFormula();
         String sourceCLabFormula = sourceNode.getNodeData().getcLabFormula();
         String targetCLabFormula = targetNode.getNodeData().getcLabFormula();
 
@@ -42,8 +45,8 @@ public class DefaultNodeMatcher extends BaseNodeMatcher implements INodeMatcher 
             String axioms = (String) obj[0];
             int num_of_axiom_clauses = (Integer) obj[1];
             //convert contexts into ArrayLists
-            ArrayList<ArrayList<String>> contextA = parseFormula(hashConceptNumber, sourceNode);
-            ArrayList<ArrayList<String>> contextB = parseFormula(hashConceptNumber, targetNode);
+            ArrayList<ArrayList<String>> contextA = parseFormula(hashConceptNumber, sourceACoLs, sourceNode);
+            ArrayList<ArrayList<String>> contextB = parseFormula(hashConceptNumber, targetACoLs, targetNode);
             //create contexts in DIMACS format
             String contextAInDIMACSFormat = DIMACSfromList(contextA);
             String contextBInDIMACSFormat = DIMACSfromList(contextB);

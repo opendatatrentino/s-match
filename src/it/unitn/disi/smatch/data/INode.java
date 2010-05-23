@@ -1,90 +1,171 @@
 package it.unitn.disi.smatch.data;
 
 import javax.swing.tree.MutableTreeNode;
-import java.util.List;
+import java.util.Iterator;
 
 /**
- * The interface to data structure of node.
+ * The interface to a node data structure.
  *
- * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
 public interface INode extends MutableTreeNode {
 
     /**
-     * Adds child to the given node.
+     * Returns the child node at index childIndex.
+     */
+    INode getChildAt(int childIndex);
+
+    /**
+     * Returns the number of children INodes.
+     */
+    int getChildCount();
+
+    /**
+     * Returns the index of node in the receivers children. If the receiver does not contain node, -1 will be
+     * returned.
+     *
+     * @param child a node to search for
+     * @return the index of node in the receivers children
+     */
+    int getChildIndex(INode child);
+
+    /**
+     * Returns the iterator over the children of the receiver.
+     *
+     * @return the iterator over the children of the receiver
+     */
+    Iterator<INode> getChildren();
+
+    /**
+     * Creates a child to the given node as the last child.
+     *
+     * @return a newly created child
+     */
+    INode createChild();
+
+    /**
+     * Creates a child with a name to the given node as the last child.
+     *
+     * @param name a name for a new child
+     * @return a newly created child
+     */
+    INode createChild(String name);
+
+    /**
+     * Adds a child to the given node as the last child.
      *
      * @param child node to add
      */
     void addChild(INode child);
 
     /**
-     * Returns all ancestors of the given node.
-     * The returned list is ordered from the father node to the root.
+     * Adds child to the receiver at index.
      *
-     * @return list of ancestors
+     * @param index index where the child will be added
+     * @param child node to add
      */
-    List<INode> getAncestors();
+    void addChild(int index, INode child);
 
     /**
-     * Returns all descendants of the node.
-     * The returned list is order as in depth first traversal.
+     * Removes the child at index from the receiver.
      *
-     * @return list of descendants
+     * @param index index of a child to remove
      */
-    List<INode> getDescendants();
+    void removeChild(int index);
 
     /**
-     * Returns count of descendant nodes, including itself.
+     * Removes node from the receiver.
      *
-     * @return the number of descendant nodes
+     * @param node child to remove
      */
-    int getDescendantCount();
+    void removeChild(INode node);
 
     /**
-     * Returns true if the node is a root in the context and false otherwise.
-     *
-     * @return true if node is a root
-     */
-    boolean isRoot();
-
-    /**
-     * Returns interface to the parent node.
+     * Returns the parent of the receiver.
      */
     INode getParent();
 
     /**
-     * Returns id of a node.
+     * Sets the parent of the receiver to newParent.
      *
-     * @return node id
+     * @param newParent new parent
      */
-    String getNodeId();
+    void setParent(INode newParent);
 
     /**
-     * Returns label of node.
+     * Returns true if the receiver has a parent and false otherwise.
      *
-     * @return node label
+     * @return true if the receiver has a parent and false otherwise
      */
-    String getNodeName();
+    boolean hasParent();
 
     /**
-     * Returns children of the node.
-     *
-     * @return list of children
+     * Removes the subtree rooted at this node from the tree, giving this node a null parent.
+     * Does nothing if this node is the root of its tree.
      */
-    List<INode> getChildren();
+    void removeFromParent();
 
     /**
-     * Removes child of the node.
+     * Returns true if the receiver is a leaf.
      *
-     * @param child the child node which need to be removed
+     * @return true if the receiver is a leaf
      */
-    void removeChild(INode child);
+    boolean isLeaf();
 
     /**
-     * Returns interface to node of metadata.
+     * Returns the count of ancestor nodes.
      *
-     * @return interface to INodeData
+     * @return the count of ancestor nodes
+     */
+    int getAncestorCount();
+
+    /**
+     * Returns ancestors of the receiver. The returned list is ordered from the parent node to the root.
+     *
+     * @return ancestors of the receiver
+     */
+    Iterator<INode> getAncestors();
+
+    /**
+     * Returns ancestors of the receiver including receiver. The returned list is ordered from the parent node to the root.
+     *
+     * @return ancestors of the receiver including receiver
+     */
+    Iterator<INode> getSupertree();
+
+    /**
+     * Returns the number of levels above this node -- the distance from
+     * the root to this node.  If this node is the root, returns 0.
+     *
+     * @return the number of levels above this node
+     */
+    int getLevel();
+
+    /**
+     * Returns the count of descendant nodes.
+     *
+     * @return the count of descendant nodes
+     */
+    int getDescendantCount();
+
+    /**
+     * Returns descendants of the receiver. The descendants are ordered breadth first.
+     *
+     * @return descendants of the receiver
+     */
+    Iterator<INode> getDescendants();
+
+    /**
+     * Returns descendants of the receiver including receiver. The descendants are ordered breadth first.
+     *
+     * @return descendants of the receiver including receiver
+     */
+    Iterator<INode> getSubtree();
+
+    /**
+     * Returns interface to the node metadata.
+     *
+     * @return interface to the node metadata
      */
     public INodeData getNodeData();
 }

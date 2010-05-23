@@ -130,7 +130,7 @@ public class MatchManager extends Configurable implements IMatchManager {
     }
 
     public IContext createContext() {
-        return Context.getInstance();
+        return new Context();
     }
 
     public IContext loadContext(String fileName) throws SMatchException {

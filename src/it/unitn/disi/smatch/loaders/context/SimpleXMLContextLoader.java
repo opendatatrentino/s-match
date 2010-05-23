@@ -74,18 +74,31 @@ public class SimpleXMLContextLoader extends Configurable implements IContextLoad
     //org.xml.sax.ContentHandler methods re-implementation start
 
     public void startDocument() {
-        ctx = Context.getInstance();
+        ctx = new Context();
         nodesParsed = 0;
     }
 
     public void startElement(String namespace, String localName, String qName, Attributes atts) {
         if ("node".equals(localName)) {
-            INode node = Node.getInstance();
-            node.getNodeData().setNodeUniqueName(atts.getValue("id"));
+            INode node;
+            if (null == ctx.getRoot()) {
+                node = ctx.createRoot();
+            } else {
+                if (0 < pathToRoot.size()) {
+                    node = pathToRoot.getLast().createChild();
+                } else {
+                    // looks like there are multiple roots
+                    INode oldRoot = ctx.getRoot();
+                    INode newRoot = ctx.createRoot("Top");
+                    newRoot.addChild(oldRoot);
+                    node = newRoot.createChild();
+                }
+            }
+            node.getNodeData().setId(atts.getValue("id"));
             pathToRoot.addLast(node);
         } else if ("token".equals(localName)) {
-            sense = AtomicConceptOfLabel.getInstance();
-            sense.setIdToken(Integer.parseInt(atts.getValue("id")));
+            sense = new AtomicConceptOfLabel();
+            sense.setId(Integer.parseInt(atts.getValue("id")));
         } else if ("sense".equals(localName)) {
             sense.addSenses(Arrays.asList(atts.getValue("pos") + "#" + atts.getValue("id")));
         } else {
@@ -95,7 +108,7 @@ public class SimpleXMLContextLoader extends Configurable implements IContextLoad
 
     public void endElement(String uri, String localName, String qName) {
         if ("name".equals(localName)) {
-            pathToRoot.getLast().getNodeData().setNodeName(content.toString());
+            pathToRoot.getLast().getNodeData().setName(content.toString());
         } else if ("label-formula".equals(localName)) {
             pathToRoot.getLast().getNodeData().setcLabFormula(content.toString());
         } else if ("node-formula".equals(localName)) {
@@ -105,24 +118,9 @@ public class SimpleXMLContextLoader extends Configurable implements IContextLoad
         } else if ("lemma".equals(localName)) {
             sense.setLemma(content.toString());
         } else if ("token".equals(localName)) {
-            pathToRoot.getLast().getNodeData().addAtomicConceptOfLabel(sense);
+            pathToRoot.getLast().getNodeData().addACoL(sense);
         } else if ("node".equals(localName)) {
-            INode child = pathToRoot.removeLast();
-            if (0 < pathToRoot.size()) {
-                pathToRoot.getLast().addChild(child);
-            } else {
-                if (null == ctx.getRoot()) {
-                    ctx.setRoot(child);
-                } else {
-                    // looks like there are multiple roots
-                    INode oldRoot = ctx.getRoot();
-                    INode newRoot = Node.getInstance();
-                    newRoot.getNodeData().setNodeName("Top");
-                    ctx.setRoot(newRoot);
-                    newRoot.addChild(oldRoot);
-                    newRoot.addChild(child);
-                }
-            }
+            pathToRoot.removeLast();
 
             nodesParsed++;
             if (0 == (nodesParsed % 1000)) {
