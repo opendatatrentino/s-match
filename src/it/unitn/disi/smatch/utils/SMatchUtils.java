@@ -17,7 +17,7 @@ public class SMatchUtils {
     private static final Logger log = Logger.getLogger(SMatchUtils.class);
 
     /**
-     * Configures properties file for logging information.
+     * Configures LOG4J using a configuration file given in a log4j.configuration system property.
      */
     public static void configureLog4J() {
         String log4jConf = System.getProperty("log4j.configuration");
@@ -51,14 +51,14 @@ public class SMatchUtils {
     }
 
     /**
-     * Reads Java object to a file.
+     * Reads Java object from a file.
      *
      * @param fileName the file where the object is stored
      * @return the object
      * @throws SMatchException SMatchException
      */
     public static Object readObject(String fileName) throws SMatchException {
-        Object result = null;
+        Object result;
         try {
             FileInputStream fos = new FileInputStream(fileName);
             BufferedInputStream bis = new BufferedInputStream(fos);

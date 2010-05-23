@@ -1,20 +1,28 @@
 package it.unitn.disi.smatch.filters;
 
-import it.unitn.disi.smatch.data.trees.INode;
 import it.unitn.disi.smatch.data.mappings.IContextMapping;
 import it.unitn.disi.smatch.data.mappings.IMappingElement;
+import it.unitn.disi.smatch.data.trees.INode;
 
 /**
- * Filters the matrix according to the minimal links paper, expanding EQ into MG&LG.
+ * Filters the mapping, expanding equivalence links into pairs of more general and less general links.
+ * <p/>
+ * For more details see:
+ * <p/>
+ * <a href="http://eprints.biblio.unitn.it/archive/00001525/">http://eprints.biblio.unitn.it/archive/00001525/</a>
+ * <p/>
+ * Giunchiglia, Fausto and Maltese, Vincenzo and Autayeu, Aliaksandr. Computing minimal mappings.
+ * Technical Report DISI-08-078, Department of Information Engineering and Computer Science, University of Trento.
+ * Proc. of the Fourth Ontology Matching Workshop at ISWC 2009.
  *
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
 public class RedundantMappingFilterEQ extends RedundantMappingFilter {
 
-    //because in filtering we have a matrix and we do not "discover" links
-    //we need to check ancestors and descendants, and not only parents and children
-    //otherwise, in case of series of redundant links we remove first by checking parent
-    //and then all the rest is not removed because of the "gap"
+    // because in filtering we do not "discover" links
+    // we need to check ancestors and descendants, and not only parents and children
+    // otherwise, in case of series of redundant links we remove first by checking parent
+    // and then all the rest is not removed because of the "gap"
 
     protected boolean verifyCondition1(IContextMapping<INode> mapping, IMappingElement<INode> e) {
         boolean result =

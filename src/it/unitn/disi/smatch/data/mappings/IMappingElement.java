@@ -7,7 +7,7 @@ package it.unitn.disi.smatch.data.mappings;
  */
 public interface IMappingElement<T> {
 
-    // Relations abbreviations
+    // relations abbreviations
     char EQUIVALENCE = '=';
     char LESS_GENERAL = '<';
     char MORE_GENERAL = '>';

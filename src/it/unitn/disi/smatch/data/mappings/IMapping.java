@@ -10,7 +10,7 @@ import java.util.Set;
 public interface IMapping<T> extends Set<IMappingElement<T>> {
 
     /**
-     * Returns relation between source and target.
+     * Returns the relation between the source and the target.
      *
      * @param source source
      * @param target target
@@ -19,7 +19,7 @@ public interface IMapping<T> extends Set<IMappingElement<T>> {
     char getRelation(T source, T target);
 
     /**
-     * Sets relation between source and target.
+     * Sets the relation between the source and the target.
      *
      * @param source   source
      * @param target   target

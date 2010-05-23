@@ -1,7 +1,8 @@
 package it.unitn.disi.smatch.data.trees;
 
 /**
- * The interface to data structure of context.
+ * An interface for the context data structure. A context is basically a tree made of nodes with natural language
+ * labels, organized into a hierarchy with mostly (assumed) subsumption and is-a relations between the nodes.
  *
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */

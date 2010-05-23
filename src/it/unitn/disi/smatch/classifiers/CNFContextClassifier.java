@@ -13,7 +13,8 @@ import org.apache.log4j.Logger;
 import java.util.Iterator;
 
 /**
- * Converts cLabFormula into CNF before use.
+ * Create concept at node formulas for each node of the context.
+ * Converts concept at node formula into CNF.
  *
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
@@ -30,13 +31,13 @@ public class CNFContextClassifier extends Configurable implements IContextClassi
     }
 
     /**
-     * Constructs cNode for the concept.
+     * Constructs c@node formula for the concept.
      *
      * @param in node to process
      * @throws ContextClassifierException ContextClassifierException
      */
     public void buildCNode(INode in) throws ContextClassifierException {
-        StringBuffer path = new StringBuffer();
+        StringBuilder path = new StringBuilder();
         INodeData nd = in.getNodeData();
         String formula = toCNF(in, nd.getcLabFormula());
         if (formula != null && !formula.equals("") && !formula.equals(" ")) {

@@ -5,11 +5,11 @@ import it.unitn.disi.smatch.components.Configurable;
 import it.unitn.disi.smatch.components.ConfigurableException;
 import it.unitn.disi.smatch.data.ling.IAtomicConceptOfLabel;
 import it.unitn.disi.smatch.data.ling.ISense;
-import it.unitn.disi.smatch.data.trees.IContext;
-import it.unitn.disi.smatch.data.trees.INode;
 import it.unitn.disi.smatch.data.mappings.ContextMapping;
 import it.unitn.disi.smatch.data.mappings.IContextMapping;
 import it.unitn.disi.smatch.data.mappings.IMappingElement;
+import it.unitn.disi.smatch.data.trees.IContext;
+import it.unitn.disi.smatch.data.trees.INode;
 import it.unitn.disi.smatch.oracles.*;
 import it.unitn.disi.smatch.utils.ClassFactory;
 import org.apache.log4j.Level;
@@ -21,8 +21,20 @@ import java.util.List;
 import java.util.Properties;
 
 /**
- * This class performs all element level matching routines
- * and provides library of Element level matchers.
+ * Performs all element level matching routines and provides the library of element level matchers. Accepts the
+ * following configuration parameters:
+ * <p/>
+ * senseMatcher  - an instance of ISenseMatcher
+ * <p/>
+ * linguisticOracle - an instance of ILinguisticOracle
+ * <p/>
+ * useWeakSemanticsElementLevelMatchersLibrary - exploit only WordNet (false) or use other element level semantic
+ * matchers like string and gloss based matchers (true)
+ * <p/>
+ * stringMatchers - a ; separated list of class names implementing IStringBasedElementLevelSemanticMatcher interface
+ * <p/>
+ * senseGlossMatchers - a ; separated list of class names implementing ISenseGlossBasedElementLevelSemanticMatcher
+ * interface
  *
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
  * @author Aliaksandr Autayeu avtaev@gmail.com
@@ -39,7 +51,7 @@ public class MatcherLibrary extends Configurable implements IMatcherLibrary {
     private static final String LINGUISTIC_ORACLE_KEY = "linguisticOracle";
     private ILinguisticOracle linguisticOracle = null;
 
-    // exploit only WordNet (false) or use element level semantic matchers library (true)
+    // exploit only WordNet (false) or use element level semantic matchers (true)
     private static final String USE_WEAK_SEMANTICS_MATCHERS_KEY = "useWeakSemanticsElementLevelMatchersLibrary";
     private boolean useWeakSemanticsElementLevelMatchersLibrary = true;
 
@@ -113,8 +125,8 @@ public class MatcherLibrary extends Configurable implements IMatcherLibrary {
     }
 
     public IContextMapping<IAtomicConceptOfLabel> elementLevelMatching(IContext sourceContext, IContext targetContext) throws MatcherLibraryException {
-        //  Calculate relations between all ACoLs in both contexts and produce the mapping between them.
-        //  Corresponds to Step 3 of the semantic matching algorithm.
+        // Calculates relations between all ACoLs in both contexts and produces a mapping between them.
+        // Corresponds to Step 3 of the semantic matching algorithm.
 
         IContextMapping<IAtomicConceptOfLabel> result = new ContextMapping<IAtomicConceptOfLabel>(sourceContext, targetContext);
 
@@ -146,11 +158,11 @@ public class MatcherLibrary extends Configurable implements IMatcherLibrary {
     }
 
     /**
-     * Returns a semantic relation between two concept of labels.
+     * Returns a semantic relation between two atomic concepts.
      *
-     * @param sourceACoL interface of source label concept
-     * @param targetACoL interface of target label concept
-     * @return relation between concept of labels
+     * @param sourceACoL source concept
+     * @param targetACoL target concept
+     * @return relation between concepts
      * @throws MatcherLibraryException MatcherLibraryException
      */
     public char getRelation(IAtomicConceptOfLabel sourceACoL, IAtomicConceptOfLabel targetACoL) throws MatcherLibraryException {
@@ -196,11 +208,11 @@ public class MatcherLibrary extends Configurable implements IMatcherLibrary {
     }
 
     /**
-     * Returns semantic relation between two ACoLs (represented by lists of WN senses) by WN sense based matchers.
+     * Returns semantic relation between two sets of senses by WordNet sense-based matchers.
      *
-     * @param sourceSenses the string of sense of source label
-     * @param targetSenses the string of sense of target label
-     * @return semantic relation between two ACoLs of labels computed by WN sense based matchers
+     * @param sourceSenses source senses
+     * @param targetSenses target senses
+     * @return semantic relation between two sets of senses
      * @throws MatcherLibraryException MatcherLibraryException
      */
     private char getRelationFromSenseGlossMatchers(Iterator<ISense> sourceSenses, Iterator<ISense> targetSenses) throws MatcherLibraryException {

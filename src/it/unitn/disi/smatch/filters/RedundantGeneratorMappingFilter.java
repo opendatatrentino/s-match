@@ -2,17 +2,17 @@ package it.unitn.disi.smatch.filters;
 
 import it.unitn.disi.smatch.SMatchConstants;
 import it.unitn.disi.smatch.components.Configurable;
-import it.unitn.disi.smatch.data.trees.IContext;
-import it.unitn.disi.smatch.data.trees.INode;
 import it.unitn.disi.smatch.data.mappings.IContextMapping;
 import it.unitn.disi.smatch.data.mappings.IMappingElement;
+import it.unitn.disi.smatch.data.trees.IContext;
+import it.unitn.disi.smatch.data.trees.INode;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import java.util.Iterator;
 
 /**
- * Generates entailed mappings according to pseudo code from minimal mappings paper.
+ * Generates entailed links which logically follow from the links in the mapping.
  *
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
@@ -46,6 +46,7 @@ public class RedundantGeneratorMappingFilter extends Configurable implements IMa
             }
         }
 
+        // there is no concurrent modification here, because we do not add or remove links, just edit them
         for (IMappingElement<INode> e : mapping) {
             switch (e.getRelation()) {
                 case IMappingElement.ENTAILED_LESS_GENERAL: {
@@ -113,7 +114,7 @@ public class RedundantGeneratorMappingFilter extends Configurable implements IMa
      * @param source  source
      * @param target  target
      * @param R       relation between source and target node  @return true for redundant relation
-     * @return whether the relation between source and target is redundant
+     * @return true if the relation between source and target is redundant
      */
     private boolean isRedundant(IContextMapping<INode> mapping, INode source, INode target, char R) {
         switch (R) {
@@ -145,15 +146,15 @@ public class RedundantGeneratorMappingFilter extends Configurable implements IMa
                 return false;
             }
 
-        }//switch
+        }// end switch
 
         return false;
     }
 
-    //because in filtering we do not "discover" links
-    //we need to check ancestors and descendants, and not only parents and children
-    //otherwise, in case of series of redundant links we remove first by checking parent
-    //and then all the rest is not removed because of the "gap"
+    // because in filtering we do not "discover" links
+    // we need to check ancestors and descendants, and not only parents and children
+    // otherwise, in case of series of redundant links we remove first by checking parent
+    // and then all the rest is not removed because of the "gap"
 
     protected boolean verifyCondition1(IContextMapping<INode> mapping, INode source, INode target) {
         return findRelation(mapping, IMappingElement.LESS_GENERAL, source.getAncestors(), target) ||

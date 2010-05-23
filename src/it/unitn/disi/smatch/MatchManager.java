@@ -31,8 +31,7 @@ import java.util.ArrayList;
 import java.util.Properties;
 
 /**
- * MatchManager controls the process of matching, loads contexts and performs other
- * auxiliary work.
+ * MatchManager controls the process of matching, loads contexts and performs other auxiliary work.
  *
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
  * @author Aliaksandr Autayeu avtaev@gmail.com
@@ -69,6 +68,7 @@ public class MatchManager extends Configurable implements IMatchManager {
             " -property=key=value                       override the configuration key=value from the config file";
 
 
+    // component configuration keys and component instance variables
     private static final String CONTEXT_LOADER_KEY = "ContextLoader";
     private IContextLoader contextLoader = null;
 
@@ -289,7 +289,7 @@ public class MatchManager extends Configurable implements IMatchManager {
     }
 
     /**
-     * Provides a command line interface to match manager.
+     * Provides a command line interface to the match manager.
      *
      * @param args command line arguments
      * @throws IOException           IOException
@@ -310,7 +310,7 @@ public class MatchManager extends Configurable implements IMatchManager {
         args = cleanArgs.toArray(new String[cleanArgs.size()]);
         cleanArgs.clear();
 
-        // collect properties specified on command line
+        // collect properties specified on the command line
         Properties commandProperties = new Properties();
         for (String arg : args) {
             if (arg.startsWith(propCmdLineKey)) {
@@ -337,9 +337,7 @@ public class MatchManager extends Configurable implements IMatchManager {
             try {
                 MatchManager mm = new MatchManager();
 
-                // read properties
                 Properties config = new Properties();
-
                 config.load(new FileInputStream(configFileName));
 
                 if (log.isEnabledFor(Level.DEBUG)) {

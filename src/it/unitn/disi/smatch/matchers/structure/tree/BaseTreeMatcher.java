@@ -13,7 +13,8 @@ import java.util.Map;
 import java.util.Properties;
 
 /**
- * Base class for tree matchers.
+ * Base class for tree matchers. Accepts NodeMatcher configuration parameters which should implement a
+ * {@link it.unitn.disi.smatch.matchers.structure.node.INodeMatcher} interface.
  *
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
@@ -32,6 +33,13 @@ public class BaseTreeMatcher extends Configurable {
         }
     }
 
+    /**
+     * Creates a mapping acol id -> acol object. Used to resolve references from acol id in the formulas
+     * to acol objects to be substituted with a DIMACS variable for a specific node matching task.
+     *
+     * @param c context
+     * @return mapping acol id -> acol object
+     */
     protected static Map<String, IAtomicConceptOfLabel> createAcolsMap(IContext c) {
         HashMap<String, IAtomicConceptOfLabel> result = new HashMap<String, IAtomicConceptOfLabel>();
         for (Iterator<INode> i = c.getRoot().getSubtree(); i.hasNext();) {

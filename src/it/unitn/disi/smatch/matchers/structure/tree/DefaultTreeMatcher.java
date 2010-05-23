@@ -2,16 +2,22 @@ package it.unitn.disi.smatch.matchers.structure.tree;
 
 import it.unitn.disi.smatch.SMatchConstants;
 import it.unitn.disi.smatch.data.ling.IAtomicConceptOfLabel;
-import it.unitn.disi.smatch.data.trees.IContext;
-import it.unitn.disi.smatch.data.trees.INode;
 import it.unitn.disi.smatch.data.mappings.ContextMapping;
 import it.unitn.disi.smatch.data.mappings.IContextMapping;
+import it.unitn.disi.smatch.data.trees.IContext;
+import it.unitn.disi.smatch.data.trees.INode;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import java.util.Iterator;
 import java.util.Map;
 
+/**
+ * Matches all nodes of the source context with all nodes of the target context.
+ *
+ * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
+ * @author Aliaksandr Autayeu avtaev@gmail.com
+ */
 public class DefaultTreeMatcher extends BaseTreeMatcher implements ITreeMatcher {
 
     private static final Logger log = Logger.getLogger(DefaultTreeMatcher.class);
@@ -19,7 +25,7 @@ public class DefaultTreeMatcher extends BaseTreeMatcher implements ITreeMatcher 
     public IContextMapping<INode> treeMatch(IContext sourceContext, IContext targetContext, IContextMapping<IAtomicConceptOfLabel> acolMapping) throws TreeMatcherException {
         IContextMapping<INode> mapping = new ContextMapping<INode>(sourceContext, targetContext);
 
-        //semantic relation for particular node matching task
+        // semantic relation for particular node matching task
         char relation;
 
         long counter = 0;

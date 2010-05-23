@@ -19,9 +19,9 @@ public class Node implements INode, INodeData {
     private INode parent;
     private List<INode> children;
 
-    // id is needed to store cNodeFormulas in correctly.
-    // cNodeFormulas is made of cLabFormulas, each of which refers to tokens and tokens should have unique id
-    // within a context. This is achieved by using node id + token id. 
+    // id is needed to store cNodeFormulas correctly.
+    // cNodeFormula is made of cLabFormulas, each of which refers to tokens and tokens should have unique id
+    // within a context. This is achieved by using node id + token id for each token 
     private String id;
     private String name;
     private String cLabFormula;
@@ -32,11 +32,15 @@ public class Node implements INode, INodeData {
 
     private List<IAtomicConceptOfLabel> acols;
 
+    // node counter to set unique node id during creation
     private static long countNode = 0;
 
+    // iterator for nodes which have no children
     private static final Iterator<INode> EMPTY_NODE_ITERATOR = Collections.<INode>emptyList().iterator();
+    // iterator for nodes which have no acols
     private static final Iterator<IAtomicConceptOfLabel> EMPTY_ACOL_ITERATOR = Collections.<IAtomicConceptOfLabel>emptyList().iterator();
 
+    // iterator which iterates over all parent nodes
     private static final class Ancestors implements Iterator<INode> {
         private INode current;
 
@@ -61,6 +65,7 @@ public class Node implements INode, INodeData {
         }
     }
 
+    // start with a start node and then iterates over nodes from iterator i
     private static final class StartIterator implements Iterator<INode> {
         private INode start;
         private Iterator<INode> i;
@@ -121,6 +126,7 @@ public class Node implements INode, INodeData {
         }
     }
 
+    // iterates over acols of a node and all acols of all parent nodes
     private static final class NodeMatchingTaskACoLs implements Iterator<IAtomicConceptOfLabel> {
         private Iterator<INode> ancestors;
         private Iterator<IAtomicConceptOfLabel> current;
@@ -157,7 +163,7 @@ public class Node implements INode, INodeData {
 
         source = false;
         // need to set node id to keep track of acols in c@node formulas
-        // synchronized to make counts unique within JVM and decrease same id chance
+        // synchronized to make counts unique within JVM and decrease the chance of creating the same id
         synchronized (Node.class) {
             id = "n" + countNode + "_" + ((System.currentTimeMillis() / 1000) % (365 * 24 * 3600));
             countNode++;

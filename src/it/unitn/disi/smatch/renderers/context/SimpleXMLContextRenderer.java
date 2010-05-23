@@ -23,7 +23,7 @@ import java.io.OutputStreamWriter;
 import java.util.Iterator;
 
 /**
- * Renders a context into a XML file.
+ * Renders a context into an XML file.
  *
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */

@@ -4,7 +4,8 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * An interface for implementation of atomic concept of label.
+ * An interface for atomic concept of label. Atomic concept of label roughly corresponds to the natural language token.
+ * In most cases the correspondence is one-to-one, but multiwords can be represented as a single atomic concept.
  *
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
  * @author Aliaksandr Autayeu avtaev@gmail.com
@@ -93,7 +94,7 @@ public interface IAtomicConceptOfLabel {
     List<ISense> getSenseList();
 
     /**
-     * Creates a sense and adds it as last sense.
+     * Creates a sense and adds it as the last sense.
      *
      * @param pos pos
      * @param id id
@@ -102,14 +103,14 @@ public interface IAtomicConceptOfLabel {
     ISense createSense(char pos, long id);
 
     /**
-     * Adds a sense to the given node as the last sense.
+     * Adds a sense to the acol as the last sense.
      *
      * @param sense sense to add
      */
     void addSense(ISense sense);
 
     /**
-     * Adds sense to the receiver at index.
+     * Adds a sense to the receiver senses at the index.
      *
      * @param index index where the sense will be added
      * @param sense sense to add
@@ -117,14 +118,14 @@ public interface IAtomicConceptOfLabel {
     void addSense(int index, ISense sense);
 
     /**
-     * Removes the sense at index from the receiver.
+     * Removes the sense at the index from the receiver senses.
      *
      * @param index index of a sense to remove
      */
     void removeSense(int index);
 
     /**
-     * Removes sense from the receiver.
+     * Removes the sense from the receiver senses.
      *
      * @param sense sense to remove
      */

@@ -6,7 +6,8 @@ import java.util.Iterator;
 import java.util.Map;
 
 /**
- * Default mapping implementation.
+ * Default mapping implementation. Permits only one relation between source and target. Maps source and target pairs to
+ * the index of the relation character stored in a string. 
  *
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */

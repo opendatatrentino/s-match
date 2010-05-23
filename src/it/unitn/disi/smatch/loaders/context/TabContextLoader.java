@@ -14,9 +14,19 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 /**
- * Loads context from a tab-separated file.
- * Expects a single-rooted hierarchy, otherwise adds an artificial "Top" node.
+ * Loads context from a tab-separated file. Expects a single-rooted hierarchy, otherwise adds an artificial "Top" node.
+ * Each line of the file should contain one label, indented with a number of tabs equal to the level of the node.
+ * For example:
  *
+ * Courses
+ * \tCollege of Arts and Sciences
+ * \t\tEarth and Atmospheric Sciences
+ * \t\tHistory
+ * \t\t\tLatin America History
+ * \t\t\tAmerica History
+ * \t\t\tAncient European History
+ * \t\tComputer Science
+ * 
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
  * @author Aliaksandr Autayeu avtaev@gmail.com
  * @author Juan Pane pane@disi.unitn.it
@@ -52,15 +62,6 @@ public class TabContextLoader extends Configurable implements IContextLoader {
         return result;
     }
 
-
-    /**
-     * Processes the file loading the content. This content is supposed to be
-     * formatted in tab indented format.
-     *
-     * @param input Reader for the input file
-     * @return the loaded IContext
-     * @throws IOException IOException
-     */
     private IContext process(BufferedReader input) throws IOException {
         IContext result = new Context();
         ArrayList<INode> rootPath = new ArrayList<INode>();
@@ -130,7 +131,7 @@ public class TabContextLoader extends Configurable implements IContextLoader {
 
     /**
      * Sets the node at a given position of the array.
-     * Changes the current value if there is one, if there is no value, add a new one.
+     * Changes the current value if there is one, if there is no value, adds a new one.
      *
      * @param index position to be filled
      * @param array array to be modified

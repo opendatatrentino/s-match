@@ -18,6 +18,14 @@ import java.util.*;
 /**
  * Matches first disjoint, then subsumptions, then joins subsumption into equivalence.
  *
+ * For more details see:
+ * <p/>
+ * <a href="http://eprints.biblio.unitn.it/archive/00001525/">http://eprints.biblio.unitn.it/archive/00001525/</a>
+ * <p/>
+ * Giunchiglia, Fausto and Maltese, Vincenzo and Autayeu, Aliaksandr. Computing minimal mappings.
+ * Technical Report DISI-08-078, Department of Information Engineering and Computer Science, University of Trento.
+ * Proc. of the Fourth Ontology Matching Workshop at ISWC 2009.
+ *
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
 public class OptimizedStageTreeMatcher extends BaseTreeMatcher implements ITreeMatcher {
@@ -30,7 +38,7 @@ public class OptimizedStageTreeMatcher extends BaseTreeMatcher implements ITreeM
 
     private IContextMapping<IAtomicConceptOfLabel> acolMapping;
 
-    // need this because here we allow < and > between the same pair of nodes
+    // need another mapping because here we allow < and > between the same pair of nodes
     private HashSet<IMappingElement<INode>> mapping;
 
     private long counter = 0;
@@ -60,7 +68,7 @@ public class OptimizedStageTreeMatcher extends BaseTreeMatcher implements ITreeM
 
         for (Iterator<INode> i = sourceContext.getRoot().getSubtree(); i.hasNext();) {
             INode sourceNode = i.next();
-            //this is to distinguish below, in matcher, for axiom creation
+            // this is to distinguish below, in matcher, for axiom creation
             sourceNode.getNodeData().setSource(true);
         }
 
@@ -105,7 +113,7 @@ public class OptimizedStageTreeMatcher extends BaseTreeMatcher implements ITreeM
 
     private void nodeTreeDisjoint(INode n1, INode n2) throws TreeMatcherException {
         if (findRelation(n1.getAncestors(), n2, IMappingElement.DISJOINT)) {
-            //we skip n2 subtree, so adjust the counter
+            // we skip n2 subtree, so adjust the counter
             final long skipTo = counter + n2.getDescendantCount();
             while (counter < skipTo) {
                 progress();
@@ -116,7 +124,7 @@ public class OptimizedStageTreeMatcher extends BaseTreeMatcher implements ITreeM
 
         if (smatchMatcher.nodeDisjoint(acolMapping, sourceAcols, targetAcols, n1, n2)) {
             addRelation(n1, n2, IMappingElement.DISJOINT);
-            //we skip n2 subtree, so adjust the counter
+            // we skip n2 subtree, so adjust the counter
             final long skipTo = counter + n2.getDescendantCount();
             while (counter < skipTo) {
                 progress();
@@ -133,7 +141,7 @@ public class OptimizedStageTreeMatcher extends BaseTreeMatcher implements ITreeM
 
     private boolean treeSubsumedBy(INode n1, INode n2) throws TreeMatcherException {
         if (findRelation(n1, n2, IMappingElement.DISJOINT)) {
-            //we skip n1 subtree, so adjust the counter
+            // we skip n1 subtree, so adjust the counter
             final long skipTo = counter + n1.getDescendantCount();
             while (counter < skipTo) {
                 progress();
@@ -158,7 +166,7 @@ public class OptimizedStageTreeMatcher extends BaseTreeMatcher implements ITreeM
                 addSubsumptionRelation(n1, n2);
             }
 
-            //we skip n1 subtree, so adjust the counter
+            // we skip n1 subtree, so adjust the counter
             final long skipTo = counter + n1.getDescendantCount();
             while (counter < skipTo) {
                 progress();

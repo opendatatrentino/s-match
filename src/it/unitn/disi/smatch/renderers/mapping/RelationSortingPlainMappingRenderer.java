@@ -79,9 +79,9 @@ public class RelationSortingPlainMappingRenderer extends PlainMappingRenderer {
                 }
 
                 if (0 < relationsRendered) {
-                    out.write("\n");//relation separator
+                    out.write("\n");// relation separator
                 }
-            }//for relation
+            }// for relation
 
             out.close();
             if (log.isEnabledFor(Level.INFO)) {

@@ -4,7 +4,7 @@ import it.unitn.disi.smatch.components.IConfigurable;
 import it.unitn.disi.smatch.data.trees.IContext;
 
 /**
- * An interface for preprocessors.
+ * An interface for context preprocessors.
  *
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
  * @author Aliaksandr Autayeu avtaev@gmail.com
@@ -12,7 +12,7 @@ import it.unitn.disi.smatch.data.trees.IContext;
 public interface IContextPreprocessor extends IConfigurable {
 
     /**
-     * This method translates natural language labels of a context into a logical formulas.
+     * This method translates natural language labels of a context into logical formulas.
      *
      * @param context context to be preprocessed
      * @throws ContextPreprocessorException ContextPreprocessorException

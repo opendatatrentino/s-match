@@ -13,7 +13,7 @@ import org.apache.log4j.Logger;
 import java.util.*;
 
 /**
- * Contains routines used by many other matchers.
+ * Contains routines used by other matchers.
  *
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
@@ -35,18 +35,18 @@ public class BaseNodeMatcher extends Configurable {
     }
 
     /**
-     * Makes axioms for CNF formula.
+     * Makes axioms for a CNF formula out of relations between atomic concepts.
      *
-     * @param hashConceptNumber HashMap for atomic concept of labels with its id.
-     * @param acolMapping       mapping between atomic concept of labels
-     * @param sourceNode        interface of source node
-     * @param targetNode        interface of target node
-     * @return an object of axioms
+     * @param hashConceptNumber HashMap for atomic concept of labels with its id
+     * @param acolMapping       mapping between atomic concepts
+     * @param sourceNode        source node
+     * @param targetNode        target node
+     * @return axiom string and axiom count
      */
     protected static Object[] mkAxioms(HashMap<IAtomicConceptOfLabel, Integer> hashConceptNumber, IContextMapping<IAtomicConceptOfLabel> acolMapping, INode sourceNode, INode targetNode) {
         StringBuilder axioms = new StringBuilder();
         Integer numberOfClauses = 0;
-        //create variables
+        // create DIMACS variables for all acols in the matching task
         createVariables(hashConceptNumber, sourceNode);
         createVariables(hashConceptNumber, targetNode);
 
@@ -54,34 +54,25 @@ public class BaseNodeMatcher extends Configurable {
             IAtomicConceptOfLabel sourceACoL = i.next();
             for (Iterator<IAtomicConceptOfLabel> j = targetNode.getNodeData().getNodeMatchingTaskACoLs(); j.hasNext();) {
                 IAtomicConceptOfLabel targetACoL = j.next();
-                //if there are semantic relation between ACoLS in relMatrix
                 char relation = acolMapping.getRelation(sourceACoL, targetACoL);
                 if (IMappingElement.IDK != relation) {
                     //get the numbers of DIMACS variables corresponding to ACoLs
                     String sourceVarNumber = (hashConceptNumber.get(sourceACoL)).toString();
                     String targetVarNumber = (hashConceptNumber.get(targetACoL)).toString();
-                    //if LG
                     if (IMappingElement.LESS_GENERAL == relation) {
-                        //create corresponding clause
                         String tmp = "-" + sourceVarNumber + " " + targetVarNumber + " 0\n";
                         //if not already present add to axioms
                         if ((axioms.indexOf(tmp) != 0) || (axioms.indexOf("\0" + tmp) == -1)) {
                             axioms.append("-").append(sourceVarNumber).append(" ").append(targetVarNumber).append(" 0\n");
-                            //increment number of clauses
                             numberOfClauses++;
                         }
                     } else if (IMappingElement.MORE_GENERAL == relation) {
-                        //if MG
-                        //create corresponding clause
                         String tmp = sourceVarNumber + " -" + targetVarNumber + " 0\n";
-                        //if not already present add to axioms
                         if ((axioms.indexOf(tmp) != 0) || (axioms.indexOf("\0" + tmp) == -1)) {
                             axioms.append(sourceVarNumber).append(" -").append(targetVarNumber).append(" 0\n");
-                            //increment number of clauses
                             numberOfClauses++;
                         }
                     } else if (IMappingElement.EQUIVALENCE == relation) {
-                        //if equal
                         if (!sourceVarNumber.equals(targetVarNumber)) {
                             //add clauses for less and more generality
                             String tmp = "-" + sourceVarNumber + " " + targetVarNumber + " 0\n";
@@ -96,10 +87,7 @@ public class BaseNodeMatcher extends Configurable {
                             }
                         }
                     } else if (IMappingElement.DISJOINT == relation) {
-                        //if disjointness
-                        //create corresponding clause
                         String tmp = "-" + sourceVarNumber + " -" + targetVarNumber + " 0\n";
-                        //if not already present add to axioms
                         if ((axioms.indexOf(tmp) != 0) || (axioms.indexOf("\0" + tmp) == -1)) {
                             axioms.append("-").append(sourceVarNumber).append(" -").append(targetVarNumber).append(" 0\n");
                             numberOfClauses++;
@@ -112,10 +100,11 @@ public class BaseNodeMatcher extends Configurable {
     }
 
     private static void createVariables(HashMap<IAtomicConceptOfLabel, Integer> hashConceptNumber, INode node) {
+        // creates DIMACS variables for all concepts in the node matching task
         for (Iterator<IAtomicConceptOfLabel> i = node.getNodeData().getNodeMatchingTaskACoLs(); i.hasNext();) {
             IAtomicConceptOfLabel sourceACoL = i.next();
             //create corresponding to id variable number
-            //and put it as a value of hash table with key equal to ACoL id
+            //and put it as a value of hash table with key equal to ACoL
             if (!hashConceptNumber.containsKey(sourceACoL)) {
                 Integer value = hashConceptNumber.size() + 1;
                 hashConceptNumber.put(sourceACoL, value);
@@ -124,12 +113,14 @@ public class BaseNodeMatcher extends Configurable {
     }
 
     /**
-     * Converts context of node into array list.
+     * Parses a c@node formula replacing references to acols with references to the DIMACS variables. Uses and depends
+     * on CNF representation which is "conjunction of disjunctions",  that is the first level list represents
+     * conjunction of second-level lists representing disjunction clauses.
      *
-     * @param hashConceptNumber HashMap for atomic concept of label with its id
+     * @param hashConceptNumber HashMap acol -> variable number
      * @param acolsMap          map with acol id -> acol mapping
-     * @param node              interface of the node
-     * @return array list of context of node
+     * @param node              node
+     * @return formula with DIMACS variables
      */
     protected ArrayList<ArrayList<String>> parseFormula(HashMap<IAtomicConceptOfLabel, Integer> hashConceptNumber,
                                                         Map<String, IAtomicConceptOfLabel> acolsMap, INode node) {
@@ -162,20 +153,20 @@ public class BaseNodeMatcher extends Configurable {
     }
 
     /**
-     * Converts array list of context of node into DIMACS form.
+     * Converts parsed formula into DIMACS format.
      *
-     * @param tmp array list of context of a node
-     * @return nodes in DIMACS format
+     * @param formula parsed formula
+     * @return formula in DIMACS format
      */
-    protected static String DIMACSfromList(ArrayList<ArrayList<String>> tmp) {
-        StringBuilder DIMACS = new StringBuilder("");
-        for (List<String> clause : tmp) {
-            for (String aClause : clause) {
-                DIMACS.append(aClause).append(" ");
+    protected static String DIMACSfromList(ArrayList<ArrayList<String>> formula) {
+        StringBuilder dimacs = new StringBuilder("");
+        for (List<String> conjClause : formula) {
+            for (String disjClause : conjClause) {
+                dimacs.append(disjClause).append(" ");
             }
-            DIMACS.append(" 0\n");
+            dimacs.append(" 0\n");
         }
-        return DIMACS.toString();
+        return dimacs.toString();
     }
 
     protected static int negateFormulaInList(HashMap<IAtomicConceptOfLabel, Integer> hashConceptNumber, ArrayList<ArrayList<String>> pivot, ArrayList<ArrayList<String>> result) {
@@ -220,7 +211,7 @@ public class BaseNodeMatcher extends Configurable {
     protected static char getRelationString(boolean isContains, boolean isContained, boolean isOpposite) {
         //return the tests results
         if (isOpposite) {
-            //The concepts have opposite menaning
+            //The concepts have opposite meaning
             return IMappingElement.DISJOINT;
         }
         if (isContains && isContained) {
@@ -242,7 +233,7 @@ public class BaseNodeMatcher extends Configurable {
         if (strClause.trim().startsWith("-")) {
             strClause = strClause.substring(1);
         } else {
-            strClause = "-" + strClause;// + " ";
+            strClause = "-" + strClause;
         }
         return strClause;
     }

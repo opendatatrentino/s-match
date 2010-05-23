@@ -14,6 +14,12 @@ import org.sat4j.specs.TimeoutException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
+/**
+ * SAT4J-based Solver.
+ *
+ * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
+ * @author Aliaksandr Autayeu avtaev@gmail.com
+ */
 public class SAT4J extends Configurable implements ISATSolver {
 
     private static final Logger log = Logger.getLogger(SAT4J.class);

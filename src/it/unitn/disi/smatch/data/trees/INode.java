@@ -4,7 +4,7 @@ import javax.swing.tree.MutableTreeNode;
 import java.util.Iterator;
 
 /**
- * The interface to a node data structure.
+ * An interface to a node.
  *
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
@@ -127,7 +127,8 @@ public interface INode extends MutableTreeNode {
     Iterator<INode> getAncestors();
 
     /**
-     * Returns ancestors of the receiver including receiver. The returned list is ordered from the parent node to the root.
+     * Returns ancestors of the receiver including receiver. The returned list is ordered from the parent node
+     * to the root.
      *
      * @return ancestors of the receiver including receiver
      */

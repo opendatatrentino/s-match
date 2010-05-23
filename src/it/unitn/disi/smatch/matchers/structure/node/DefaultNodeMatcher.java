@@ -10,7 +10,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Default node matcher.
+ * Default node matcher used by a {@link it.unitn.disi.smatch.matchers.structure.tree.DefaultTreeMatcher}.
  *
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
  * @author Aliaksandr Autayeu avtaev@gmail.com
@@ -34,64 +34,63 @@ public class DefaultNodeMatcher extends BaseNodeMatcher implements INodeMatcher 
             boolean isContained;
             boolean isOpposite;
 
-            //contains ACoLs ids as keys and numbers of variables in DIMACS format as values
+            // ACoLs -> its DIMACS variable number
             HashMap<IAtomicConceptOfLabel, Integer> hashConceptNumber = new HashMap<IAtomicConceptOfLabel, Integer>();
-            //Number of variables in SAT problem
+            // number of variables in SAT problem
             Integer numberOfVariables;
-            //Number of clauses in SAT problem
+            // number of clauses in SAT problem
             Integer numberOfClauses;
 
             Object[] obj = mkAxioms(hashConceptNumber, acolMapping, sourceNode, targetNode);
             String axioms = (String) obj[0];
             int num_of_axiom_clauses = (Integer) obj[1];
-            //convert contexts into ArrayLists
+            // parse formulas with acols into formulas with DIMACS variables
             ArrayList<ArrayList<String>> contextA = parseFormula(hashConceptNumber, sourceACoLs, sourceNode);
             ArrayList<ArrayList<String>> contextB = parseFormula(hashConceptNumber, targetACoLs, targetNode);
-            //create contexts in DIMACS format
+            // create contexts in DIMACS format
             String contextAInDIMACSFormat = DIMACSfromList(contextA);
             String contextBInDIMACSFormat = DIMACSfromList(contextB);
 
-            //ArrayList with negated context
+            // negated formula
             ArrayList<ArrayList<String>> negatedContext = new ArrayList<ArrayList<String>>();
-            //sat problem in DIMACS format
+            // sat problem in DIMACS format
             String satProblemInDIMACS;
-            //sat problem with DIMACS header
+            // sat problem with DIMACS header
             String DIMACSproblem;
-            //whether contexts are conjunctive
-            //if the contexts are not conjunctive
-            //LG test
-            //negate the context
+
+            // LG test
+            // negate the context
             numberOfVariables = negateFormulaInList(hashConceptNumber, contextB, negatedContext);
-            //get the sat problem in DIMACS format
+            // get the sat problem in DIMACS format
             satProblemInDIMACS = axioms + contextAInDIMACSFormat + DIMACSfromList(negatedContext);
-            //get number of clauses for SAT problem
+            // get number of clauses for SAT problem
             numberOfClauses = num_of_axiom_clauses + contextA.size() + negatedContext.size();
-            //add DIMACS header
+            // add DIMACS header
             DIMACSproblem = "p cnf " + numberOfVariables + " " + numberOfClauses + "\n" + satProblemInDIMACS;
-            //do LG test
+            // do LG test
             isContained = isUnsatisfiable(DIMACSproblem);
 
-            //MG test
-            //negate the context
+            // MG test
+            // negate the context
             numberOfVariables = negateFormulaInList(hashConceptNumber, contextA, negatedContext);
-            //get the sat problem in DIMACS format
+            // get the sat problem in DIMACS format
             satProblemInDIMACS = axioms + contextBInDIMACSFormat + DIMACSfromList(negatedContext);
-            //get number of clauses for SAT problem
+            // get number of clauses for SAT problem
             numberOfClauses = num_of_axiom_clauses + contextB.size() + negatedContext.size();
-            //add DIMACS header
+            // add DIMACS header
             DIMACSproblem = "p cnf " + numberOfVariables + " " + numberOfClauses + "\n" + satProblemInDIMACS;
-            //do MG test
+            // do MG test
             isContains = isUnsatisfiable(DIMACSproblem);
 
-            //Disjointness test
-            //get the sat problem in DIMACS format
+            // DJ test
+            // get the sat problem in DIMACS format
             satProblemInDIMACS = axioms + contextBInDIMACSFormat + contextAInDIMACSFormat;
-            //get number of clauses for SAT problem
+            // get number of clauses for SAT problem
             numberOfClauses = contextA.size() + contextB.size() + num_of_axiom_clauses;
             numberOfVariables = hashConceptNumber.size();
-            //add DIMACS header
+            // add DIMACS header
             DIMACSproblem = "p cnf " + numberOfVariables + " " + numberOfClauses + "\n" + satProblemInDIMACS;
-            //do disjointness test
+            // do disjointness test
             isOpposite = isUnsatisfiable(DIMACSproblem);
 
             result = getRelationString(isContains, isContained, isOpposite);

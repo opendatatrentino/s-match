@@ -26,10 +26,14 @@ public class SimpleXMLContextLoader extends Configurable implements IContextLoad
     private static final String DEFAULT_PARSER_NAME = "org.apache.xerces.parsers.SAXParser";
     private XMLReader parser;
 
-    //variables used in parsing
+    // variables used in parsing
+    // context being loaded
     private IContext ctx;
+    // to collect all content in case parser processes element content in several passes
     private StringBuilder content;
+    // atomic concept begin read
     private IAtomicConceptOfLabel acol;
+    // path to the root node
     private Deque<INode> pathToRoot;
 
     private int nodesParsed = 0;

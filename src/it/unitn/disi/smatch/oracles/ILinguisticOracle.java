@@ -6,7 +6,7 @@ import it.unitn.disi.smatch.data.ling.ISense;
 import java.util.List;
 
 /**
- * Interface to Linguistic Oracle, such as WordNet.
+ * Interface to Linguistic Oracles, such as WordNet.
  *
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
  * @author Aliaksandr Autayeu avtaev@gmail.com

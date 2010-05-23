@@ -2,17 +2,25 @@ package it.unitn.disi.smatch.filters;
 
 import it.unitn.disi.smatch.SMatchConstants;
 import it.unitn.disi.smatch.components.Configurable;
-import it.unitn.disi.smatch.data.trees.INode;
 import it.unitn.disi.smatch.data.mappings.ContextMapping;
 import it.unitn.disi.smatch.data.mappings.IContextMapping;
 import it.unitn.disi.smatch.data.mappings.IMappingElement;
+import it.unitn.disi.smatch.data.trees.INode;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import java.util.Iterator;
 
 /**
- * Filters mapping according to minimal links paper.
+ * Filters mapping removing all links which logically follow from the other links in the mapping.
+ *
+ * For more details see:
+ * <p/>
+ * <a href="http://eprints.biblio.unitn.it/archive/00001525/">http://eprints.biblio.unitn.it/archive/00001525/</a>
+ * <p/>
+ * Giunchiglia, Fausto and Maltese, Vincenzo and Autayeu, Aliaksandr. Computing minimal mappings.
+ * Technical Report DISI-08-078, Department of Information Engineering and Computer Science, University of Trento.
+ * Proc. of the Fourth Ontology Matching Workshop at ISWC 2009.
  *
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
@@ -32,7 +40,6 @@ public class RedundantMappingFilter extends Configurable implements IMappingFilt
 
         IContextMapping<INode> result = new ContextMapping<INode>(mapping.getSourceContext(), mapping.getTargetContext());
 
-        //check each mapping
         for (IMappingElement<INode> e : mapping) {
             if (!isRedundant(mapping, e)) {
                 result.setRelation(e.getSource(), e.getTarget(), e.getRelation());
@@ -87,7 +94,7 @@ public class RedundantMappingFilter extends Configurable implements IMappingFilt
                 return false;
             }
 
-        }//switch
+        }// end switch
 
         return false;
     }
@@ -96,7 +103,6 @@ public class RedundantMappingFilter extends Configurable implements IMappingFilt
     //we need to check ancestors and descendants, and not only parents and children
     //otherwise, in case of series of redundant links we remove first by checking parent
     //and then all the rest is not removed because of the "gap"
-
 
     protected boolean verifyCondition1(IContextMapping<INode> mapping, IMappingElement<INode> e) {
         boolean result =

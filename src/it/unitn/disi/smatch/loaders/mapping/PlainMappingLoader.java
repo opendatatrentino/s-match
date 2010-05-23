@@ -17,7 +17,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 
 /**
- * Loads the mapping as written by PlainMappingRenderer.java.
+ * Loads the mapping as written by {@link it.unitn.disi.smatch.renderers.mapping.PlainMappingRenderer}.
  *
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
