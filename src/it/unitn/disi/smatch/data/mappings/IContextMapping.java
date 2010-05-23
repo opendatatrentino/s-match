@@ -1,6 +1,6 @@
 package it.unitn.disi.smatch.data.mappings;
 
-import it.unitn.disi.smatch.data.IContext;
+import it.unitn.disi.smatch.data.trees.IContext;
 
 /**
  * Interface for context mappings.

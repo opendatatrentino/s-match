@@ -3,7 +3,7 @@ package it.unitn.disi.smatch.matchers.structure.node;
 import it.unitn.disi.smatch.components.Configurable;
 import it.unitn.disi.smatch.components.ConfigurableException;
 import it.unitn.disi.smatch.data.IAtomicConceptOfLabel;
-import it.unitn.disi.smatch.data.INode;
+import it.unitn.disi.smatch.data.trees.INode;
 import it.unitn.disi.smatch.data.mappings.IContextMapping;
 import it.unitn.disi.smatch.data.mappings.IMappingElement;
 import it.unitn.disi.smatch.deciders.ISATSolver;

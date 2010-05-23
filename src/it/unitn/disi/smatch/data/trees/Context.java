@@ -1,4 +1,4 @@
-package it.unitn.disi.smatch.data;
+package it.unitn.disi.smatch.data.trees;
 
 /**
  * A Context that contains tree data structure.

@@ -1,9 +1,9 @@
 package it.unitn.disi.smatch.classifiers;
 
 import it.unitn.disi.smatch.components.Configurable;
-import it.unitn.disi.smatch.data.IContext;
-import it.unitn.disi.smatch.data.INode;
-import it.unitn.disi.smatch.data.INodeData;
+import it.unitn.disi.smatch.data.trees.IContext;
+import it.unitn.disi.smatch.data.trees.INode;
+import it.unitn.disi.smatch.data.trees.INodeData;
 import orbital.logic.imp.Formula;
 import orbital.logic.sign.ParseException;
 import orbital.moon.logic.ClassicalLogic;

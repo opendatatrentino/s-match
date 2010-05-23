@@ -1,4 +1,6 @@
-package it.unitn.disi.smatch.data;
+package it.unitn.disi.smatch.data.trees;
+
+import it.unitn.disi.smatch.data.IAtomicConceptOfLabel;
 
 import java.util.Iterator;
 

@@ -1,6 +1,6 @@
 package it.unitn.disi.smatch.data.mappings;
 
-import it.unitn.disi.smatch.data.INode;
+import it.unitn.disi.smatch.data.trees.INode;
 
 /**
  * Reverses the mapping element so that source node is always on the left (as source).

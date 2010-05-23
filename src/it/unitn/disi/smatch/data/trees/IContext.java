@@ -1,4 +1,4 @@
-package it.unitn.disi.smatch.data;
+package it.unitn.disi.smatch.data.trees;
 
 /**
  * The interface to data structure of context.

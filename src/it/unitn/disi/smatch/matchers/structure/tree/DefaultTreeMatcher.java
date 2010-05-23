@@ -2,14 +2,13 @@ package it.unitn.disi.smatch.matchers.structure.tree;
 
 import it.unitn.disi.smatch.SMatchConstants;
 import it.unitn.disi.smatch.data.IAtomicConceptOfLabel;
-import it.unitn.disi.smatch.data.IContext;
-import it.unitn.disi.smatch.data.INode;
+import it.unitn.disi.smatch.data.trees.IContext;
+import it.unitn.disi.smatch.data.trees.INode;
 import it.unitn.disi.smatch.data.mappings.ContextMapping;
 import it.unitn.disi.smatch.data.mappings.IContextMapping;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 

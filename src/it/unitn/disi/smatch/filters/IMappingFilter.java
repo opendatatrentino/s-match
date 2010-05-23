@@ -1,7 +1,7 @@
 package it.unitn.disi.smatch.filters;
 
 import it.unitn.disi.smatch.components.IConfigurable;
-import it.unitn.disi.smatch.data.INode;
+import it.unitn.disi.smatch.data.trees.INode;
 import it.unitn.disi.smatch.data.mappings.IContextMapping;
 
 /**

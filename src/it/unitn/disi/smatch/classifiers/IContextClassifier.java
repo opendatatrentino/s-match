@@ -1,7 +1,7 @@
 package it.unitn.disi.smatch.classifiers;
 
 import it.unitn.disi.smatch.components.IConfigurable;
-import it.unitn.disi.smatch.data.IContext;
+import it.unitn.disi.smatch.data.trees.IContext;
 
 /**
  * Interface for classifiers.

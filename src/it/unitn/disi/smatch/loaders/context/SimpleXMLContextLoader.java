@@ -2,6 +2,9 @@ package it.unitn.disi.smatch.loaders.context;
 
 import it.unitn.disi.smatch.components.Configurable;
 import it.unitn.disi.smatch.data.*;
+import it.unitn.disi.smatch.data.trees.Context;
+import it.unitn.disi.smatch.data.trees.IContext;
+import it.unitn.disi.smatch.data.trees.INode;
 import org.apache.log4j.Logger;
 import org.xml.sax.*;
 import org.xml.sax.helpers.XMLReaderFactory;

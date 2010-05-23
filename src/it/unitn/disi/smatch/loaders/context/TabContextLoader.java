@@ -1,9 +1,9 @@
 package it.unitn.disi.smatch.loaders.context;
 
 import it.unitn.disi.smatch.components.Configurable;
-import it.unitn.disi.smatch.data.Context;
-import it.unitn.disi.smatch.data.IContext;
-import it.unitn.disi.smatch.data.INode;
+import it.unitn.disi.smatch.data.trees.Context;
+import it.unitn.disi.smatch.data.trees.IContext;
+import it.unitn.disi.smatch.data.trees.INode;
 import org.apache.log4j.Logger;
 
 import java.io.BufferedReader;
