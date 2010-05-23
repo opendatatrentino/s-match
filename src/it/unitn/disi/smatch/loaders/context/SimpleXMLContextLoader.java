@@ -1,6 +1,7 @@
 package it.unitn.disi.smatch.loaders.context;
 
 import it.unitn.disi.smatch.components.Configurable;
+import it.unitn.disi.smatch.components.ConfigurableException;
 import it.unitn.disi.smatch.data.ling.AtomicConceptOfLabel;
 import it.unitn.disi.smatch.data.ling.IAtomicConceptOfLabel;
 import it.unitn.disi.smatch.data.trees.Context;
@@ -13,6 +14,8 @@ import org.xml.sax.helpers.XMLReaderFactory;
 import java.io.*;
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.HashMap;
+import java.util.Properties;
 
 /**
  * Loader for XML format.
@@ -38,6 +41,23 @@ public class SimpleXMLContextLoader extends Configurable implements IContextLoad
 
     private int nodesParsed = 0;
 
+    // flag to output the label being translated in logs
+    private final static String UNIQUE_STRINGS_KEY = "uniqueStrings";
+    private boolean uniqueStrings = false;
+    private final HashMap<String, String> unique = new HashMap<String, String>();
+
+    @Override
+    public void setProperties(Properties newProperties) throws ConfigurableException {
+        if (!newProperties.equals(properties)) {
+            if (newProperties.containsKey(UNIQUE_STRINGS_KEY)) {
+                uniqueStrings = Boolean.parseBoolean(newProperties.getProperty(UNIQUE_STRINGS_KEY));
+            }
+
+            properties.clear();
+            properties.putAll(newProperties);
+        }
+    }
+
     public SimpleXMLContextLoader() throws ContextLoaderException {
         try {
             parser = XMLReaderFactory.createXMLReader(DEFAULT_PARSER_NAME);
@@ -57,6 +77,7 @@ public class SimpleXMLContextLoader extends Configurable implements IContextLoad
             InputSource is = new InputSource(inputFile);
             parser.parse(is);
             log.info("Parsed nodes: " + nodesParsed);
+            unique.clear();
         } catch (SAXException e) {
             final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
             log.error(errMessage, e);
@@ -115,15 +136,15 @@ public class SimpleXMLContextLoader extends Configurable implements IContextLoad
 
     public void endElement(String uri, String localName, String qName) {
         if ("name".equals(localName)) {
-            pathToRoot.getLast().getNodeData().setName(content.toString());
+            pathToRoot.getLast().getNodeData().setName(makeUnique(content.toString()));
         } else if ("label-formula".equals(localName)) {
             pathToRoot.getLast().getNodeData().setcLabFormula(content.toString());
         } else if ("node-formula".equals(localName)) {
             pathToRoot.getLast().getNodeData().setcNodeFormula(content.toString());
         } else if ("text".equals(localName)) {
-            acol.setToken(content.toString());
+            acol.setToken(makeUnique(content.toString()));
         } else if ("lemma".equals(localName)) {
-            acol.setLemma(content.toString());
+            acol.setLemma(makeUnique(content.toString()));
         } else if ("token".equals(localName)) {
             pathToRoot.getLast().getNodeData().addACoL(acol);
         } else if ("node".equals(localName)) {
@@ -133,6 +154,19 @@ public class SimpleXMLContextLoader extends Configurable implements IContextLoad
             if (0 == (nodesParsed % 1000)) {
                 log.info("nodes parsed: " + nodesParsed);
             }
+        }
+    }
+
+    private String makeUnique(String s) {
+        if (uniqueStrings) {
+            String result = unique.get(s);
+            if (null == result) {
+                unique.put(s, s);
+                result = s;
+            }
+            return result;
+        } else {
+            return s;
         }
     }
 
