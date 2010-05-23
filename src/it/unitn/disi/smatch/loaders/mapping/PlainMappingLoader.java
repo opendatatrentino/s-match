@@ -146,7 +146,6 @@ public class PlainMappingLoader extends Configurable implements IMappingLoader {
      * @param node the interface of data structure of input node
      * @return the string of the path from root to node
      */
-    //TODO move this method to the INode interface
     private String getNodePathToRoot(INode node) {
         StringBuilder sb = new StringBuilder();
         INode parent = node;

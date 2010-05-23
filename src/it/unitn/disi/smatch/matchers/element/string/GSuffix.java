@@ -11,6 +11,7 @@ import java.util.HashSet;
 /**
  * Implements GSuffix matcher.
  * Tries to use morphological knowledge (prefixes) to enhance relations returned.
+ * It is called GSuffix because it matches words with equal suffixes, which differ in prefixes only.
  *
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
@@ -20,11 +21,9 @@ public class GSuffix extends Configurable implements IStringBasedElementLevelSem
     private static int relCount = 0;
     private static HashSet<String> hm = new HashSet<String>();
 
-    // TODO Perhaps the commenting will be about suffix. Need revision.
     //prefix -> relation
     //based on http://en.wiktionary.org/wiki/Appendix:Prefixes:English
 
-    // TODO variable name is prefix, but this is suffix matcher
     private static HashMap<String, Character> prefixes = new HashMap<String, Character>();
 
     //for roots
@@ -607,7 +606,7 @@ un-
         char rel = IMappingElement.IDK;
         int spacePos1 = str1.lastIndexOf(' ');
         String prefix = str1.substring(0, str1.length() - str2.length());
-        if (-1 < spacePos1 && !prefixes.containsKey(prefix)) {//check prefixes - ordered set!unordered set // TODO the matcher is suffix not prefix. need revision
+        if (-1 < spacePos1 && !prefixes.containsKey(prefix)) {//check prefixes - ordered set!unordered set
             if (str1.length() == spacePos1 + str2.length() + 1) {//adhesive tape<tape   attention deficit disorder<disorder
                 rel = IMappingElement.LESS_GENERAL;
             } else {//connective tissue<issue

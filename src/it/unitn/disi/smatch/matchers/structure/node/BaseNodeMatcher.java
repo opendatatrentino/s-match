@@ -177,10 +177,8 @@ public class BaseNodeMatcher extends Configurable {
         }
         return DIMACS.toString();
     }
-    // TODO Need comments
 
     protected static int negateFormulaInList(HashMap<IAtomicConceptOfLabel, Integer> hashConceptNumber, ArrayList<ArrayList<String>> pivot, ArrayList<ArrayList<String>> result) {
-        //ArrayList<ArrayList<String>> result = new ArrayList<ArrayList<String>>();
         result.clear();
         ArrayList<String> firstClause = new ArrayList<String>();
         int numberOfVariables = hashConceptNumber.size();

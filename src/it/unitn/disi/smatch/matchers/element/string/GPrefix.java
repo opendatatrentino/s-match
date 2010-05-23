@@ -11,6 +11,7 @@ import java.util.HashSet;
 /**
  * Implements GPrefix matcher.
  * Tries to use morphological knowledge (suffixes) to enhance relations returned.
+ * It is called GPefix because it matches words with equal prefixes, which differ in suffixes only.
  *
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
@@ -20,8 +21,6 @@ public class GPrefix extends Configurable implements IStringBasedElementLevelSem
     private static int relCount = 0;
     private static HashSet<String> hm = new HashSet<String>();
 
-    // TODO Perhaps the commenting will be about prefix. Need revision.
-
     //suffix -> relation
     //based on http://en.wiktionary.org/wiki/Appendix:Suffixes:English
     //in most cases = left
@@ -29,7 +28,6 @@ public class GPrefix extends Configurable implements IStringBasedElementLevelSem
     //also here http://en.wikipedia.org/wiki/List_of_English_suffixes
     //but not considered (yet)
 
-    // TODO variable name is suffix, but this is prefix matcher
     private static HashMap<String, Character> suffixes = new HashMap<String, Character>();
 
     static {
@@ -611,7 +609,7 @@ public class GPrefix extends Configurable implements IStringBasedElementLevelSem
         char rel = IMappingElement.IDK;
         int spacePos1 = str1.indexOf(' ');
         String suffix = str1.substring(str2.length());
-        if (-1 < spacePos1 && !suffixes.containsKey(suffix)) {//check suffixes - pole vault=pole vaulter // TODO the matcher is prefix not suffix. need revision
+        if (-1 < spacePos1 && !suffixes.containsKey(suffix)) {//check suffixes - pole vault=pole vaulter
             if (str2.length() == spacePos1) {//plant part<plant
                 rel = IMappingElement.LESS_GENERAL;
             } else {//plant part<plan
