@@ -3,7 +3,7 @@ package it.unitn.disi.smatch.oracles.wordnet;
 import it.unitn.disi.smatch.SMatchException;
 import it.unitn.disi.smatch.components.Configurable;
 import it.unitn.disi.smatch.components.ConfigurableException;
-import it.unitn.disi.smatch.data.ling.IAtomicConceptOfLabel;
+import it.unitn.disi.smatch.data.ling.ISense;
 import it.unitn.disi.smatch.data.mappings.IMappingElement;
 import it.unitn.disi.smatch.oracles.ISenseMatcher;
 import it.unitn.disi.smatch.utils.SMatchUtils;
@@ -78,93 +78,39 @@ public class InMemoryWordNetBinaryArray extends Configurable implements ISenseMa
         }
     }
 
-    public char getRelation(List<String> sourceSenses, List<String> targetSenses) {
+    public char getRelation(List<ISense> sourceSenses, List<ISense> targetSenses) {
         // Check for synonymy
-        for (String sourceSense : sourceSenses) {
-            for (String targetSense : targetSenses) {
+        for (ISense sourceSense : sourceSenses) {
+            for (ISense targetSense : targetSenses) {
                 if (isSourceSynonymTarget(sourceSense, targetSense)) {
                     return IMappingElement.EQUIVALENCE;
                 }
             }
         }
         // Check for less general than
-        for (String sourceSense : sourceSenses) {
-            for (String targetSense : targetSenses) {
+        for (ISense sourceSense : sourceSenses) {
+            for (ISense targetSense : targetSenses) {
                 if (isSourceLessGeneralThanTarget(sourceSense, targetSense)) {
                     return IMappingElement.LESS_GENERAL;
                 }
             }
         }
         // Check for more general than
-        for (String sourceSense : sourceSenses) {
-            for (String targetSense : targetSenses) {
+        for (ISense sourceSense : sourceSenses) {
+            for (ISense targetSense : targetSenses) {
                 if (isSourceMoreGeneralThanTarget(sourceSense, targetSense)) {
                     return IMappingElement.MORE_GENERAL;
                 }
             }
         }
         // Check for opposite meaning
-        for (String sourceSense : sourceSenses) {
-            for (String targetSense : targetSenses) {
+        for (ISense sourceSense : sourceSenses) {
+            for (ISense targetSense : targetSenses) {
                 if (isSourceOppositeToTarget(sourceSense, targetSense)) {
                     return IMappingElement.DISJOINT;
                 }
             }
         }
-        return IMappingElement.IDK;
-    }
-
-    public char getRelationACoL(IAtomicConceptOfLabel source, IAtomicConceptOfLabel target) {
-        long[] sourceSenses = source.getSenses().getIntSenses();
-        long[] targetSenses = target.getSenses().getIntSenses();
-        char[] POSSensesSource = source.getSenses().getPOSSenses();
-        char[] POSSensesTarget = target.getSenses().getPOSSenses();
-
-        if ((1 == sourceSenses.length && 0 == sourceSenses[0]) || (1 == targetSenses.length && 0 == targetSenses[0])) {
-            //either source or target are meaningless, does not make sense to match
-        } else {
-            // Check for synonymy
-            for (int i = 0; i < sourceSenses.length; i++) {
-                long sourceSense = sourceSenses[i];
-                for (int j = 0; j < targetSenses.length; j++) {
-                    long targetSense = targetSenses[j];
-                    if (isSourceSynonymTargetInt(sourceSense, targetSense, POSSensesSource[i], POSSensesTarget[j])) {
-                        return IMappingElement.EQUIVALENCE;
-                    }
-                }
-            }
-            // Check for less general than
-            for (int i = 0; i < sourceSenses.length; i++) {
-                long sourceSense = sourceSenses[i];
-                for (int j = 0; j < targetSenses.length; j++) {
-                    long targetSense = targetSenses[j];
-                    if (isSourceLessGeneralThanTargetInt(sourceSense, targetSense, POSSensesSource[i], POSSensesTarget[j])) {
-                        return IMappingElement.LESS_GENERAL;
-                    }
-                }
-            }
-            // Check for more general than
-            for (int i = 0; i < sourceSenses.length; i++) {
-                long sourceSense = sourceSenses[i];
-                for (int j = 0; j < targetSenses.length; j++) {
-                    long targetSense = targetSenses[j];
-                    if (isSourceMoreGeneralThanTargetInt(sourceSense, targetSense, POSSensesSource[i], POSSensesTarget[j])) {
-                        return IMappingElement.MORE_GENERAL;
-                    }
-                }
-            }
-            // Check for opposite meaning
-            for (int i = 0; i < sourceSenses.length; i++) {
-                long sourceSense = sourceSenses[i];
-                for (int j = 0; j < targetSenses.length; j++) {
-                    long targetSense = targetSenses[j];
-                    if (isSourceOppositeToTargetInt(sourceSense, targetSense, POSSensesSource[i], POSSensesTarget[j])) {
-                        return IMappingElement.DISJOINT;
-                    }
-                }
-            }
-        }
-
         return IMappingElement.IDK;
     }
 
@@ -195,10 +141,6 @@ public class InMemoryWordNetBinaryArray extends Configurable implements ISenseMa
         }
 
         return false;
-    }
-
-    private boolean isSourceMoreGeneralThanTargetInt(long sourceSense, long targetSense, char sourcePOS, char targetPOS) {
-        return isSourceLessGeneralThanTargetInt(targetSense, sourceSense, targetPOS, sourcePOS);
     }
 
     private boolean isSourceLessGeneralThanTargetInt(long sourceSense, long targetSense, char sourcePOS, char targetPOS) {
@@ -267,41 +209,20 @@ public class InMemoryWordNetBinaryArray extends Configurable implements ISenseMa
         return (long[]) SMatchUtils.readObject(fileName);
     }
 
-    public boolean isSourceMoreGeneralThanTarget(String source, String target) {
+    public boolean isSourceMoreGeneralThanTarget(ISense source, ISense target) {
         return isSourceLessGeneralThanTarget(target, source);
     }
 
-    public boolean isSourceLessGeneralThanTarget(String source, String target) {
-        if ((source.indexOf("000000") == -1) && (target.indexOf("000000") == -1)) {
-            long l_source = Long.parseLong(source.substring(2));
-            long l_target = Long.parseLong(target.substring(2));
-            char c_source = source.charAt(0);
-            char c_target = target.charAt(0);
-            return isSourceLessGeneralThanTargetInt(l_source, l_target, c_source, c_target);
-        }
-        return false;
+    public boolean isSourceLessGeneralThanTarget(ISense source, ISense target) {
+        return isSourceLessGeneralThanTargetInt(source.getId(), target.getId(), source.getPos(), target.getPos());
     }
 
-    public boolean isSourceSynonymTarget(String source, String target) {
-        if ((source.indexOf("000000") == -1) && (target.indexOf("000000") == -1)) {
-            long l_source = Long.parseLong(source.substring(2));
-            long l_target = Long.parseLong(target.substring(2));
-            char c_source = source.charAt(0);
-            char c_target = target.charAt(0);
-            return isSourceSynonymTargetInt(l_source, l_target, c_source, c_target);
-        }
-        return false;
+    public boolean isSourceSynonymTarget(ISense source, ISense target) {
+        return isSourceSynonymTargetInt(source.getId(), target.getId(), source.getPos(), target.getPos());
     }
 
-    public boolean isSourceOppositeToTarget(String source, String target) {
-        if ((source.indexOf("000000") == -1) && (target.indexOf("000000") == -1)) {
-            long l_source = Long.parseLong(source.substring(2));
-            long l_target = Long.parseLong(target.substring(2));
-            char c_source = source.charAt(0);
-            char c_target = target.charAt(0);
-            return isSourceOppositeToTargetInt(l_source, l_target, c_source, c_target);
-        }
-        return false;
+    public boolean isSourceOppositeToTarget(ISense source, ISense target) {
+        return isSourceOppositeToTargetInt(source.getId(), target.getId(), source.getPos(), target.getPos());
     }
 
     /**

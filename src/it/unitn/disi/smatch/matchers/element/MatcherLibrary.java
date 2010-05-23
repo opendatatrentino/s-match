@@ -4,6 +4,7 @@ import it.unitn.disi.smatch.SMatchConstants;
 import it.unitn.disi.smatch.components.Configurable;
 import it.unitn.disi.smatch.components.ConfigurableException;
 import it.unitn.disi.smatch.data.ling.IAtomicConceptOfLabel;
+import it.unitn.disi.smatch.data.ling.ISense;
 import it.unitn.disi.smatch.data.trees.IContext;
 import it.unitn.disi.smatch.data.trees.INode;
 import it.unitn.disi.smatch.data.mappings.ContextMapping;
@@ -154,12 +155,7 @@ public class MatcherLibrary extends Configurable implements IMatcherLibrary {
      */
     public char getRelation(IAtomicConceptOfLabel sourceACoL, IAtomicConceptOfLabel targetACoL) throws MatcherLibraryException {
         try {
-            sourceACoL.getSenses().convertSenses();
-            targetACoL.getSenses().convertSenses();
-
-            List<String> sourceSenses = sourceACoL.getSenses().getSenseList();
-            List<String> targetSenses = targetACoL.getSenses().getSenseList();
-            char relation = senseMatcher.getRelationACoL(sourceACoL, targetACoL);
+            char relation = senseMatcher.getRelation(sourceACoL.getSenseList(), targetACoL.getSenseList());
 
             //if WN matcher did not find relation
             if (IMappingElement.IDK == relation) {
@@ -169,12 +165,9 @@ public class MatcherLibrary extends Configurable implements IMatcherLibrary {
                     //if they did not find relation
                     if (IMappingElement.IDK == relation) {
                         //use sense and gloss based matchers
-                        relation = getRelationFromSenseGlossMatchers(sourceSenses, targetSenses);
+                        relation = getRelationFromSenseGlossMatchers(sourceACoL.getSenses(), targetACoL.getSenses());
                     }
                 }
-            } else {
-                sourceACoL.getSenses().setSenseList(sourceSenses);
-                targetACoL.getSenses().setSenseList(targetSenses);
             }
 
             return relation;
@@ -210,13 +203,13 @@ public class MatcherLibrary extends Configurable implements IMatcherLibrary {
      * @return semantic relation between two ACoLs of labels computed by WN sense based matchers
      * @throws MatcherLibraryException MatcherLibraryException
      */
-    private char getRelationFromSenseGlossMatchers(List<String> sourceSenses, List<String> targetSenses) throws MatcherLibraryException {
+    private char getRelationFromSenseGlossMatchers(Iterator<ISense> sourceSenses, Iterator<ISense> targetSenses) throws MatcherLibraryException {
         try {
             char relation = IMappingElement.IDK;
-            for (String sourceSense : sourceSenses) {
-                ISynset sourceSynset = linguisticOracle.getISynset(sourceSense);
-                for (String targetSense : targetSenses) {
-                    ISynset targetSynset = linguisticOracle.getISynset(targetSense);
+            while (sourceSenses.hasNext()) {
+                ISynset sourceSynset = linguisticOracle.getISynset(sourceSenses.next());
+                while (targetSenses.hasNext()) {
+                    ISynset targetSynset = linguisticOracle.getISynset(targetSenses.next());
                     int k = 0;
                     while ((relation == IMappingElement.IDK) && (k < senseGlossMatchers.size())) {
                         relation = senseGlossMatchers.get(k).match(sourceSynset, targetSynset);

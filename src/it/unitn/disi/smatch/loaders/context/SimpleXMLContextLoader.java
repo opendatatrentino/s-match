@@ -12,7 +12,6 @@ import org.xml.sax.helpers.XMLReaderFactory;
 
 import java.io.*;
 import java.util.ArrayDeque;
-import java.util.Arrays;
 import java.util.Deque;
 
 /**
@@ -30,7 +29,7 @@ public class SimpleXMLContextLoader extends Configurable implements IContextLoad
     //variables used in parsing
     private IContext ctx;
     private StringBuilder content;
-    private IAtomicConceptOfLabel sense;
+    private IAtomicConceptOfLabel acol;
     private Deque<INode> pathToRoot;
 
     private int nodesParsed = 0;
@@ -101,10 +100,10 @@ public class SimpleXMLContextLoader extends Configurable implements IContextLoad
             node.getNodeData().setId(atts.getValue("id"));
             pathToRoot.addLast(node);
         } else if ("token".equals(localName)) {
-            sense = new AtomicConceptOfLabel();
-            sense.setId(Integer.parseInt(atts.getValue("id")));
+            acol = new AtomicConceptOfLabel();
+            acol.setId(Integer.parseInt(atts.getValue("id")));
         } else if ("sense".equals(localName)) {
-            sense.addSenses(Arrays.asList(atts.getValue("pos") + "#" + atts.getValue("id")));
+            acol.createSense(atts.getValue("pos").charAt(0), Long.parseLong(atts.getValue("id")));
         } else {
             content = new StringBuilder();
         }
@@ -118,11 +117,11 @@ public class SimpleXMLContextLoader extends Configurable implements IContextLoad
         } else if ("node-formula".equals(localName)) {
             pathToRoot.getLast().getNodeData().setcNodeFormula(content.toString());
         } else if ("text".equals(localName)) {
-            sense.setToken(content.toString());
+            acol.setToken(content.toString());
         } else if ("lemma".equals(localName)) {
-            sense.setLemma(content.toString());
+            acol.setLemma(content.toString());
         } else if ("token".equals(localName)) {
-            pathToRoot.getLast().getNodeData().addACoL(sense);
+            pathToRoot.getLast().getNodeData().addACoL(acol);
         } else if ("node".equals(localName)) {
             pathToRoot.removeLast();
 

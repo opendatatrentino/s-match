@@ -2,6 +2,7 @@ package it.unitn.disi.smatch.matchers.element.gloss;
 
 import it.unitn.disi.smatch.components.Configurable;
 import it.unitn.disi.smatch.components.ConfigurableException;
+import it.unitn.disi.smatch.data.ling.ISense;
 import it.unitn.disi.smatch.data.mappings.IMappingElement;
 import it.unitn.disi.smatch.matchers.element.MatcherLibraryException;
 import it.unitn.disi.smatch.oracles.*;
@@ -64,10 +65,10 @@ public class BasicGlossMatcher extends Configurable {
      */
     public boolean isWordMoreGeneral(String source, String target) throws MatcherLibraryException {
         try {
-            List<String> sSenses = linguisticOracle.getSenses(source);
-            List<String> tSenses = linguisticOracle.getSenses(target);
-            for (String sSense : sSenses) {
-                for (String tSense : tSenses) {
+            List<ISense> sSenses = linguisticOracle.getSenses(source);
+            List<ISense> tSenses = linguisticOracle.getSenses(target);
+            for (ISense sSense : sSenses) {
+                for (ISense tSense : tSenses) {
                     if (senseMatcher.isSourceMoreGeneralThanTarget(sSense, tSense))
                         return true;
                 }
@@ -94,10 +95,10 @@ public class BasicGlossMatcher extends Configurable {
      */
     public boolean isWordLessGeneral(String source, String target) throws MatcherLibraryException {
         try {
-            List<String> sSenses = linguisticOracle.getSenses(source);
-            List<String> tSenses = linguisticOracle.getSenses(target);
-            for (String sSense : sSenses) {
-                for (String tSense : tSenses) {
+            List<ISense> sSenses = linguisticOracle.getSenses(source);
+            List<ISense> tSenses = linguisticOracle.getSenses(target);
+            for (ISense sSense : sSenses) {
+                for (ISense tSense : tSenses) {
                     if (senseMatcher.isSourceLessGeneralThanTarget(sSense, tSense))
                         return true;
                 }
@@ -124,10 +125,10 @@ public class BasicGlossMatcher extends Configurable {
      */
     public boolean isWordSynonym(String source, String target) throws MatcherLibraryException {
         try {
-            List<String> sSenses = linguisticOracle.getSenses(source);
-            List<String> tSenses = linguisticOracle.getSenses(target);
-            for (String sSense : sSenses) {
-                for (String tSense : tSenses) {
+            List<ISense> sSenses = linguisticOracle.getSenses(source);
+            List<ISense> tSenses = linguisticOracle.getSenses(target);
+            for (ISense sSense : sSenses) {
+                for (ISense tSense : tSenses) {
                     if (senseMatcher.isSourceSynonymTarget(sSense, tSense))
                         return true;
                 }
@@ -154,10 +155,10 @@ public class BasicGlossMatcher extends Configurable {
      */
     public boolean isWordOpposite(String source, String target) throws MatcherLibraryException {
         try {
-            List<String> sSenses = linguisticOracle.getSenses(source);
-            List<String> tSenses = linguisticOracle.getSenses(target);
-            for (String sSense : sSenses) {
-                for (String tSense : tSenses) {
+            List<ISense> sSenses = linguisticOracle.getSenses(source);
+            List<ISense> tSenses = linguisticOracle.getSenses(target);
+            for (ISense sSense : sSenses) {
+                for (ISense tSense : tSenses) {
                     if (senseMatcher.isSourceOppositeToTarget(sSense, tSense))
                         return true;
                 }

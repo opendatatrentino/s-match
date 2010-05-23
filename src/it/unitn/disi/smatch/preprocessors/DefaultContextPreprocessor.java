@@ -6,7 +6,7 @@ import it.unitn.disi.smatch.components.Configurable;
 import it.unitn.disi.smatch.components.ConfigurableException;
 import it.unitn.disi.smatch.data.ling.AtomicConceptOfLabel;
 import it.unitn.disi.smatch.data.ling.IAtomicConceptOfLabel;
-import it.unitn.disi.smatch.data.ling.ISensesSet;
+import it.unitn.disi.smatch.data.ling.ISense;
 import it.unitn.disi.smatch.data.trees.IContext;
 import it.unitn.disi.smatch.data.trees.INode;
 import it.unitn.disi.smatch.oracles.ILinguisticOracle;
@@ -206,6 +206,7 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
      */
     private void processNode(INode node) throws ContextPreprocessorException {
         try {
+            // reset old preprocessing if any
             node.getNodeData().setcLabFormula("");
             node.getNodeData().setcNodeFormula("");
             while (0 < node.getNodeData().getACoLCount()) {
@@ -222,17 +223,17 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
 
             labelOfNode = replacePunctuation(labelOfNode);
             labelOfNode = labelOfNode.toLowerCase();
-            List<String> wnSense = new ArrayList<String>();
-            if (!"top".equals(labelOfNode) && (meaninglessWords.indexOf(labelOfNode + " ") == -1) && (isTokenMeaningful(labelOfNode))) {
+            List<ISense> wnSense = new ArrayList<ISense>();
+            if (!("top".equals(labelOfNode) && !node.hasParent()) && (meaninglessWords.indexOf(labelOfNode + " ") == -1) && (isTokenMeaningful(labelOfNode))) {
                 wnSense = linguisticOracle.getSenses(labelOfNode);
             }
 
-            //Identifiers of meaningful tokens in
+            // identifiers of meaningful tokens in
             String meaningfulTokens = " ";
-            //tokens of the label of node
+            // tokens of the label of node
             List<String> tokensOfNodeLabel = new ArrayList<String>();
 
-            //is the label a WordNet entry?
+            // is the label a WordNet entry?
             if (0 < wnSense.size()) {
                 id_tok++;
 
@@ -247,7 +248,9 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
                 //to to token ids
                 meaningfulTokens = meaningfulTokens + id_tok + " ";
                 //add senses to ACoL
-                ACoL.addSenses(wnSense);
+                for (ISense sense : wnSense) {
+                    ACoL.addSense(sense);
+                }
                 isEmpty = false;
             } else {
                 //The label of node is not in WN
@@ -272,10 +275,10 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
                         if ((andWords.indexOf(token) == -1) && ((orWords.indexOf(token)) == -1)
                                 && ((notWords.indexOf(token)) == -1) && (!isNumber(token))) {
                             //get WN senses for token
-                            if (!"top".equals(token)) {
+                            if (!("top".equals(token) && !node.hasParent())) {
                                 wnSense = linguisticOracle.getSenses(token);
                             } else {
-                                wnSense = new ArrayList<String>();
+                                wnSense = new ArrayList<ISense>();
                             }
                             if (0 == wnSense.size()) {
                                 List<String> newTokens = complexWordsRecognition(token);
@@ -301,13 +304,12 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
                             meaningfulTokens = meaningfulTokens + id_tok + " ";
                             //if there no WN senses
                             if (0 == wnSense.size()) {
-                                //mark as a node with unrecognized meaning
-                                wnSense.add(ILinguisticOracle.UNKNOWN_MEANING + token);
-                                //log.debug("Unrecognized word " + token);
                                 unrecognizedWords.add(token);
                             }
                             //add senses to ACoL
-                            ACoL.addSenses(wnSense);
+                            for (ISense sense : wnSense) {
+                                ACoL.addSense(sense);
+                            }
                             isEmpty = false;
                         }
                     }
@@ -325,12 +327,8 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
                 node.getNodeData().addACoL(ACoL);
                 //to to token ids
                 meaningfulTokens = meaningfulTokens + id_tok + " ";
-                wnSense = new ArrayList<String>();
-                wnSense.add(ILinguisticOracle.UNKNOWN_MEANING + token);
-                //add senses to ACoL
-                ACoL.addSenses(wnSense);
             }
-            //  Building formula of complex node
+            // building formula of complex node
             buildComplexConcept(node, tokensOfNodeLabel, meaningfulTokens);
         } catch (LinguisticOracleException e) {
             final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
@@ -360,7 +358,7 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
     private List<String> complexWordsRecognition(String token) throws ContextPreprocessorException {
         List<String> result = new ArrayList<String>();
         try {
-            List<String> senses = new ArrayList<String>();
+            List<ISense> senses = new ArrayList<ISense>();
             int i = 0;
             String start = null;
             String end = null;
@@ -568,7 +566,7 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
         return lemma;
     }
 
-    private List<String> checkMW(String source, String target) throws ContextPreprocessorException {
+    private List<ISense> checkMW(String source, String target) throws ContextPreprocessorException {
         try {
             ArrayList<ArrayList<String>> mwEnds = multiwords.get(source);
             if (mwEnds != null)
@@ -577,7 +575,7 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
                         return linguisticOracle.getSenses(source + " " + target);
                     }
                 }
-            return new ArrayList<String>();
+            return new ArrayList<ISense>();
         } catch (LinguisticOracleException e) {
             final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
             log.error(errMessage, e);
@@ -585,8 +583,10 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
         }
     }
 
-    private void enrichSensesSets(ISensesSet sensesSet, List<String> wnSenses) {
-        sensesSet.addNewSenses(wnSenses);
+    private void enrichSensesSets(IAtomicConceptOfLabel acol, List<ISense> senses) {
+        for (ISense sense : senses) {
+            acol.addSense(sense);
+        }
     }
 
     /**
@@ -617,9 +617,9 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
             INode targetNode = i.next();
             for (Iterator<IAtomicConceptOfLabel> k = targetNode.getNodeData().getACoLs(); k.hasNext();) {
                 IAtomicConceptOfLabel synTarget = k.next();
-                List<String> wnSenses = checkMW(synSource.getLemma(), synTarget.getLemma());
-                enrichSensesSets(synSource.getSenses(), wnSenses);
-                enrichSensesSets(synTarget.getSenses(), wnSenses);
+                List<ISense> wnSenses = checkMW(synSource.getLemma(), synTarget.getLemma());
+                enrichSensesSets(synSource, wnSenses);
+                enrichSensesSets(synTarget, wnSenses);
             }
         }
     }
@@ -635,6 +635,8 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
      * @throws SenseMatcherException SenseMatcherException
      */
     private void senseFiltering(IContext context) throws SenseMatcherException {
+        HashMap<IAtomicConceptOfLabel, List<ISense>> refinedSenses = new HashMap<IAtomicConceptOfLabel, List<ISense>>();
+
         //for all nodes in context
         for (Iterator<INode> i = context.getRoot().getSubtree(); i.hasNext();) {
             INode sourceNode = i.next();
@@ -643,44 +645,42 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
                 //for each ACoL in the node
                 for (Iterator<IAtomicConceptOfLabel> j = sourceNode.getNodeData().getACoLs(); j.hasNext();) {
                     IAtomicConceptOfLabel sourceACoL = j.next();
-                    ISensesSet sourceSenseSet = sourceACoL.getSenses();
                     //get WN senses
-                    List<String> sourceSenses = sourceSenseSet.getSenseList();
                     //compare with all the other ACoLs in the node
                     for (Iterator<IAtomicConceptOfLabel> k = sourceNode.getNodeData().getACoLs(); k.hasNext();) {
                         IAtomicConceptOfLabel targetACoL = k.next();
                         if (!targetACoL.equals(sourceACoL)) {
-                            ISensesSet targetSenseSet = targetACoL.getSenses();
                             //get WN senses
-                            List<String> targetSenses = targetSenseSet.getSenseList();
                             //for each sense in source ACoL
-                            for (String sourceSenseID : sourceSenses) {
+                            for (Iterator<ISense> s = sourceACoL.getSenses(); s.hasNext();) {
+                                ISense sourceSense = s.next();
                                 //for each sense in target ACoL
-                                for (String targetSenseID : targetSenses) {
+                                for (Iterator<ISense> t = targetACoL.getSenses(); t.hasNext();) {
+                                    ISense targetSense = t.next();
                                     boolean isRelationPresent = false;
-                                    if ((senseMatcher.isSourceSynonymTarget(sourceSenseID, targetSenseID))) {
+                                    if ((senseMatcher.isSourceSynonymTarget(sourceSense, targetSense))) {
                                         isRelationPresent = true;
                                     }
-                                    if (senseMatcher.isSourceLessGeneralThanTarget(sourceSenseID, targetSenseID)) {
+                                    if (senseMatcher.isSourceLessGeneralThanTarget(sourceSense, targetSense)) {
                                         isRelationPresent = true;
                                     }
-                                    if (senseMatcher.isSourceMoreGeneralThanTarget(sourceSenseID, targetSenseID)) {
+                                    if (senseMatcher.isSourceMoreGeneralThanTarget(sourceSense, targetSense)) {
                                         isRelationPresent = true;
                                     }
                                     if (isRelationPresent) {
-                                        sourceSenseSet.addToRefinedSenses(sourceSenseID);
-                                        targetSenseSet.addToRefinedSenses(targetSenseID);
+                                        addToRefinedSenses(refinedSenses, sourceACoL, sourceSense);
+                                        addToRefinedSenses(refinedSenses, targetACoL, targetSense);
                                     }
 
                                     //if senses are synonyms or less (more) general in WN hierarchy
-//                                    if ((senseMatcher.isSourceSynonymTarget(sourceSenseID, targetSenseID)) ||
-//                                            (senseMatcher.isSourceLessGeneralThanTarget(sourceSenseID, targetSenseID)) ||
-//                                            (senseMatcher.isSourceMoreGeneralThanTarget(sourceSenseID, targetSenseID))) {
+//                                    if ((senseMatcher.isSourceSynonymTarget(sourceSense, targetSense)) ||
+//                                            (senseMatcher.isSourceLessGeneralThanTarget(sourceSense, targetSense)) ||
+//                                            (senseMatcher.isSourceMoreGeneralThanTarget(sourceSense, targetSense))) {
 //                                        //add to refined senses in the sense list
-//                                        sourceSenseSet.addToRefinedSenses(sourceSenseID);
-//                                        targetSenseSet.addToRefinedSenses(targetSenseID);
+//                                        sourceSenseSet.addToRefinedSenses(sourceSense);
+//                                        targetSenseSet.addToRefinedSenses(targetSense);
 //                                    }
-//                                    if (senseMatcher.isSourceOppositeToTarget(sourceSenseID, targetSenseID)) {
+//                                    if (senseMatcher.isSourceOppositeToTarget(sourceSense, targetSense)) {
 //                                        log.debug("Inside opposite lemmas " + sourceACoL.getLemma() + " " + targetACoL.getLemma());
 //                                    }
                                 }
@@ -693,14 +693,13 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
             //for all ACoLs in the source node
             for (Iterator<IAtomicConceptOfLabel> j = sourceNode.getNodeData().getACoLs(); j.hasNext();) {
                 IAtomicConceptOfLabel sourceACoL = j.next();
-                ISensesSet sourceSenseSet = sourceACoL.getSenses();
-                //get WN senses
-                if (sourceSenseSet.isRefinedSensesEmpty()) {
-                    List<String> sourceSenses = sourceSenseSet.getSenseList();
-                    for (String sourceSenseID : sourceSenses) {
+                List<ISense> refined = refinedSenses.get(sourceACoL);
+                if (null == refined) {
+                    for (Iterator<ISense> s = sourceACoL.getSenses(); s.hasNext();) {
+                        ISense sourceSense = s.next();
                         //for all target nodes (ancestors and descendants)
-                        senseFilteringAmong(sourceNode.getDescendants(), sourceSenseID, sourceSenseSet);
-                        senseFilteringAmong(sourceNode.getAncestors(), sourceSenseID, sourceSenseSet);
+                        senseFilteringAmong(sourceNode.getDescendants(), sourceSense, sourceACoL, refinedSenses);
+                        senseFilteringAmong(sourceNode.getAncestors(), sourceSense, sourceACoL, refinedSenses);
                     }
                 }
             }
@@ -711,51 +710,64 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
         // If there are no refined senses save the original ones
         for (Iterator<INode> i = context.getRoot().getSubtree(); i.hasNext();) {
             for (Iterator<IAtomicConceptOfLabel> j = i.next().getNodeData().getACoLs(); j.hasNext();) {
-                ISensesSet senseSource = j.next().getSenses();
-                if (!senseSource.isRefinedSensesEmpty()) {
-                    senseSource.updateSenseList();
+                IAtomicConceptOfLabel acol = j.next();
+                List<ISense> refined = refinedSenses.get(acol);
+                if (null != refined) {
+                    while (0 < acol.getSenseCount()) {
+                        acol.removeSense(0);
+                    }
+                    for (ISense sense : refined) {
+                        acol.addSense(sense);
+                    }
                 }
             }
         }
     }
 
-    private void senseFilteringAmong(Iterator<INode> i, String sourceSenseID, ISensesSet sourceSenseSet) throws SenseMatcherException {
+    private void addToRefinedSenses(HashMap<IAtomicConceptOfLabel, List<ISense>> refinedSenses, IAtomicConceptOfLabel acol, ISense sense) {
+        List<ISense> senses = refinedSenses.get(acol);
+        if (null == senses) {
+            senses = new ArrayList<ISense>();
+        }
+        senses.add(sense);
+        refinedSenses.put(acol, senses);
+    }
+
+    private void senseFilteringAmong(Iterator<INode> i, ISense sourceSense, IAtomicConceptOfLabel sourceACoL, HashMap<IAtomicConceptOfLabel, List<ISense>> refinedSenses) throws SenseMatcherException {
         while (i.hasNext()) {
             INode targetNode = i.next();
             for (Iterator<IAtomicConceptOfLabel> k = targetNode.getNodeData().getACoLs(); k.hasNext();) {
                 IAtomicConceptOfLabel targetACoL = k.next();
-                ISensesSet targetSenseSet = targetACoL.getSenses();
-                //get WN senses
-                if (targetSenseSet.isRefinedSensesEmpty()) {
-                    List<String> targetSenses = targetSenseSet.getSenseList();
-                    for (String targetSenseID : targetSenses) {
+                if (null == refinedSenses.get(targetACoL)) {
+                    for (Iterator<ISense> t = targetACoL.getSenses(); t.hasNext();) {
+                        ISense targetSense = t.next();
                         // Check whether each sense not synonym or
                         //more general, less general then the senses of
                         //the ancestors and descendants of the node in
                         //context hierarchy
                         boolean isRelationPresent = false;
-                        if ((senseMatcher.isSourceSynonymTarget(sourceSenseID, targetSenseID))) {
+                        if ((senseMatcher.isSourceSynonymTarget(sourceSense, targetSense))) {
                             isRelationPresent = true;
                         }
-                        if (senseMatcher.isSourceLessGeneralThanTarget(sourceSenseID, targetSenseID)) {
+                        if (senseMatcher.isSourceLessGeneralThanTarget(sourceSense, targetSense)) {
                             isRelationPresent = true;
                         }
-                        if (senseMatcher.isSourceMoreGeneralThanTarget(sourceSenseID, targetSenseID)) {
+                        if (senseMatcher.isSourceMoreGeneralThanTarget(sourceSense, targetSense)) {
                             isRelationPresent = true;
                         }
                         if (isRelationPresent) {
-                            sourceSenseSet.addToRefinedSenses(sourceSenseID);
-                            targetSenseSet.addToRefinedSenses(targetSenseID);
+                            addToRefinedSenses(refinedSenses, sourceACoL, sourceSense);
+                            addToRefinedSenses(refinedSenses, targetACoL, targetSense);
                         }
 
-//                                        if ((senseMatcher.isSourceSynonymTarget(sourceSenseID, targetSenseID)) ||
-//                                                (senseMatcher.isSourceLessGeneralThanTarget(sourceSenseID, targetSenseID)) ||
-//                                                (senseMatcher.isSourceMoreGeneralThanTarget(sourceSenseID, targetSenseID))) {
+//                                        if ((senseMatcher.isSourceSynonymTarget(sourceSense, targetSenseID)) ||
+//                                                (senseMatcher.isSourceLessGeneralThanTarget(sourceSense, targetSenseID)) ||
+//                                                (senseMatcher.isSourceMoreGeneralThanTarget(sourceSense, targetSenseID))) {
 //                                            //add to refined senses in the sense list
-//                                            sourceSenseSet.addToRefinedSenses(sourceSenseID);
+//                                            sourceSenseSet.addToRefinedSenses(sourceSense);
 //                                            targetSenseSet.addToRefinedSenses(targetSenseID);
 //                                        }
-//                                        if (senseMatcher.isSourceOppositeToTarget(sourceSenseID, targetSenseID)) {
+//                                        if (senseMatcher.isSourceOppositeToTarget(sourceSense, targetSenseID)) {
 //                                            log.debug("Opposite lemmas " + sourceACoL.getLemma() + " " + targetACoL.getLemma());
 //                                        }
                     }
@@ -763,6 +775,7 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
             }
         }
     }
+
     /**
      * Checks whether input string contains a number or not.
      *
@@ -834,7 +847,6 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
                         boolean flag = false;
                         int co = 0;
                         //at the end co is need to move pointer for case like Clupea harengus with mw Clupea harengus harengus
-                        //TODO move this to pipeline
                         while ((co < mweTail.size()) && (extendedIndexOf(tokens, mweTail.get(co), co) > i + co)) {
                             flag = true;
                             co++;
@@ -844,7 +856,6 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
                             int word_pos = tokens.indexOf(subLemma);
                             if (word_pos == -1)
                                 break;
-                            //TODO add better error recognition code
                             int multiword_pos = word_pos;
                             positions.add(word_pos);
                             boolean cont = true;

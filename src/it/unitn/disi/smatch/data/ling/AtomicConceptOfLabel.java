@@ -1,5 +1,8 @@
 package it.unitn.disi.smatch.data.ling;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -15,7 +18,8 @@ public class AtomicConceptOfLabel implements IAtomicConceptOfLabel {
     private String token;
     private String lemma;
 
-    ISensesSet wSenses = new SensesSet();
+    private List<ISense> senses = new ArrayList<ISense>();
+    private static final Iterator<ISense> EMPTY_SENSE_ITERATOR = Collections.<ISense>emptyList().iterator();
 
     public AtomicConceptOfLabel() {
     }
@@ -57,12 +61,75 @@ public class AtomicConceptOfLabel implements IAtomicConceptOfLabel {
         this.id = id;
     }
 
-    public ISensesSet getSenses() {
-        return wSenses;
+    public ISense getSenseAt(int index) {
+        if (senses == null) {
+            throw new ArrayIndexOutOfBoundsException("acol has no senses");
+        }
+        return senses.get(index);
     }
 
-    public void addSenses(List<String> senseList) {
-        wSenses.addNewSenses(senseList);
+    public int getSenseCount() {
+        if (senses == null) {
+            return 0;
+        } else {
+            return senses.size();
+        }
+    }
+
+    public int getSenseIndex(ISense sense) {
+        if (null == sense) {
+            throw new IllegalArgumentException("argument is null");
+        }
+
+        return senses.indexOf(sense);
+    }
+
+    public Iterator<ISense> getSenses() {
+        if (null == senses) {
+            return EMPTY_SENSE_ITERATOR;
+        } else {
+            return senses.iterator();
+        }
+    }
+
+    public List<ISense> getSenseList() {
+        return Collections.unmodifiableList(senses);
+    }
+
+    public ISense createSense(char pos, long id) {
+        ISense sense = new Sense(pos, id);
+        addSense(sense);
+        return sense;
+    }
+
+    public void addSense(ISense sense) {
+        addSense(getSenseCount(), sense);
+    }
+
+    public void addSense(int index, ISense sense) {
+        if (null == sense) {
+            throw new IllegalArgumentException("new sense is null");
+        }
+
+        if (null == senses) {
+            senses = new ArrayList<ISense>();
+        }
+
+        if (-1 == senses.indexOf(sense)) {
+            senses.add(index, sense);
+        }
+    }
+
+    public void removeSense(int index) {
+        senses.remove(index);
+    }
+
+    public void removeSense(ISense sense) {
+        if (null == sense) {
+            throw new IllegalArgumentException("argument is null");
+        }
+
+        removeSense(getSenseIndex(sense));
     }
 
     public String toString() {

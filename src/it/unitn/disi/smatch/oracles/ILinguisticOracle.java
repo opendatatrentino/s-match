@@ -1,6 +1,7 @@
 package it.unitn.disi.smatch.oracles;
 
 import it.unitn.disi.smatch.components.IConfigurable;
+import it.unitn.disi.smatch.data.ling.ISense;
 
 import java.util.List;
 
@@ -13,18 +14,13 @@ import java.util.List;
 public interface ILinguisticOracle extends IConfigurable {
 
     /**
-     * Represents the words whos meaning is unknown. The ones that are out of vocabulary (WordNet).
-     */
-    String UNKNOWN_MEANING = "n#000000";
-
-    /**
      * Returns a synset given its id.
      *
-     * @param source synset id
+     * @param sense sense
      * @return synset
      * @throws LinguisticOracleException LinguisticOracleException
      */
-    public ISynset getISynset(String source) throws LinguisticOracleException;
+    public ISynset getISynset(ISense sense) throws LinguisticOracleException;
 
     /**
      * Checks if lemmas of two strings are equal (e. g. the string are the same modulo inflections).
@@ -43,7 +39,7 @@ public interface ILinguisticOracle extends IConfigurable {
      * @return word senses
      * @throws LinguisticOracleException LinguisticOracleException
      */
-    public List<String> getSenses(String word) throws LinguisticOracleException;
+    public List<ISense> getSenses(String word) throws LinguisticOracleException;
 
     /**
      * Returns base form (lemma) of a word.

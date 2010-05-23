@@ -2,6 +2,7 @@ package it.unitn.disi.smatch.renderers.context;
 
 import it.unitn.disi.smatch.components.Configurable;
 import it.unitn.disi.smatch.data.ling.IAtomicConceptOfLabel;
+import it.unitn.disi.smatch.data.ling.ISense;
 import it.unitn.disi.smatch.data.trees.IContext;
 import it.unitn.disi.smatch.data.trees.INode;
 import it.unitn.disi.smatch.data.trees.INodeData;
@@ -101,13 +102,11 @@ public class SimpleXMLContextRenderer extends Configurable implements IContextRe
                 renderString(hd, "lemma", acol.getLemma());
 
                 hd.startElement("", "", "senses", new AttributesImpl());
-                acol.getSenses().convertSenses();
-                long[] ids = acol.getSenses().getIntSenses();
-                char[] poss = acol.getSenses().getPOSSenses();
-                for (int i = 0; i < ids.length; i++) {
+                for (Iterator<ISense> i = acol.getSenses(); i.hasNext();) {
+                    ISense sense = i.next();
                     atts = new AttributesImpl();
-                    atts.addAttribute("", "", "pos", "CDATA", Character.toString(poss[i]));
-                    atts.addAttribute("", "", "id", "CDATA", Long.toString(ids[i]));
+                    atts.addAttribute("", "", "pos", "CDATA", Character.toString(sense.getPos()));
+                    atts.addAttribute("", "", "id", "CDATA", Long.toString(sense.getId()));
                     hd.startElement("", "", "sense", atts);
                     hd.endElement("", "", "sense");
                 }

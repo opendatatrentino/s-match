@@ -34,23 +34,8 @@ public class Node implements INode, INodeData {
 
     private static long countNode = 0;
 
-    private static class EmptyIterator<T> implements Iterator<T> {
-        public boolean hasNext
-                () {
-            return false;
-        }
-
-        public T next() {
-            throw new NoSuchElementException("No more elements");
-        }
-
-        public void remove() {
-            throw new IllegalStateException("No elements");
-        }
-    }
-
-    private static final Iterator<INode> EMPTY_NODE_ITERATOR = new EmptyIterator<INode>();
-    private static final Iterator<IAtomicConceptOfLabel> EMPTY_ACOL_ITERATOR = new EmptyIterator<IAtomicConceptOfLabel>();
+    private static final Iterator<INode> EMPTY_NODE_ITERATOR = Collections.<INode>emptyList().iterator();
+    private static final Iterator<IAtomicConceptOfLabel> EMPTY_ACOL_ITERATOR = Collections.<IAtomicConceptOfLabel>emptyList().iterator();
 
     private static final class Ancestors implements Iterator<INode> {
         private INode current;
@@ -85,7 +70,7 @@ public class Node implements INode, INodeData {
                 throw new IllegalArgumentException("argument is null");
             }
             this.start = start;
-            this.i = i; 
+            this.i = i;
         }
 
         public boolean hasNext() {

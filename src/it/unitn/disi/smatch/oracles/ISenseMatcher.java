@@ -1,7 +1,7 @@
 package it.unitn.disi.smatch.oracles;
 
 import it.unitn.disi.smatch.components.IConfigurable;
-import it.unitn.disi.smatch.data.ling.IAtomicConceptOfLabel;
+import it.unitn.disi.smatch.data.ling.ISense;
 
 import java.util.List;
 
@@ -16,60 +16,50 @@ public interface ISenseMatcher extends IConfigurable {
     /**
      * Returns semantic relation holding between two sets of senses.
      *
-     * @param listSenseS source set of senses
-     * @param listSenseT target set of senses
+     * @param sourceSenses source set of senses
+     * @param targetSenses target set of senses
      * @return a relation
      * @throws SenseMatcherException SenseMatcherException
      */
-    public char getRelation(List<String> listSenseS, List<String> listSenseT) throws SenseMatcherException;
-
-    /**
-     * Returns semantic relations which holds between two ACoLs.
-     *
-     * @param source source ACoL
-     * @param target target ACoL
-     * @return a relation
-     * @throws SenseMatcherException SenseMatcherException
-     */
-    public char getRelationACoL(IAtomicConceptOfLabel source, IAtomicConceptOfLabel target) throws SenseMatcherException;
+    public char getRelation(List<ISense> sourceSenses, List<ISense> targetSenses) throws SenseMatcherException;
 
     /**
      * Checks whether the source is more general than target.
      *
-     * @param source source synset id
-     * @param target target synset id
+     * @param source source sense
+     * @param target target sense
      * @return whether relation holds
      * @throws SenseMatcherException SenseMatcherException
      */
-    public boolean isSourceMoreGeneralThanTarget(String source, String target) throws SenseMatcherException;
+    public boolean isSourceMoreGeneralThanTarget(ISense source, ISense target) throws SenseMatcherException;
 
     /**
      * Checks whether the source is less general than target.
      *
-     * @param source source synset id
-     * @param target target synset id
+     * @param source source sense
+     * @param target target sense
      * @return whether relation holds
      * @throws SenseMatcherException SenseMatcherException
      */
-    public boolean isSourceLessGeneralThanTarget(String source, String target) throws SenseMatcherException;
+    public boolean isSourceLessGeneralThanTarget(ISense source, ISense target) throws SenseMatcherException;
 
     /**
      * Checks whether the source is a synonym of the target.
      *
-     * @param source source synset id
-     * @param target target synset id
+     * @param source source sense
+     * @param target target sense
      * @return whether relation holds
      * @throws SenseMatcherException SenseMatcherException
      */
-    public boolean isSourceSynonymTarget(String source, String target) throws SenseMatcherException;
+    public boolean isSourceSynonymTarget(ISense source, ISense target) throws SenseMatcherException;
 
     /**
      * Checks whether the source is disjoint with the target.
      *
-     * @param source source synset id
-     * @param target target synset id
+     * @param source source sense
+     * @param target target sense
      * @return whether relation holds
      * @throws SenseMatcherException SenseMatcherException
      */
-    public boolean isSourceOppositeToTarget(String source, String target) throws SenseMatcherException;
+    public boolean isSourceOppositeToTarget(ISense source, ISense target) throws SenseMatcherException;
 }

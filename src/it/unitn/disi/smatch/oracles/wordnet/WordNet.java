@@ -2,7 +2,8 @@ package it.unitn.disi.smatch.oracles.wordnet;
 
 import it.unitn.disi.smatch.components.Configurable;
 import it.unitn.disi.smatch.components.ConfigurableException;
-import it.unitn.disi.smatch.data.ling.IAtomicConceptOfLabel;
+import it.unitn.disi.smatch.data.ling.ISense;
+import it.unitn.disi.smatch.data.ling.Sense;
 import it.unitn.disi.smatch.data.mappings.IMappingElement;
 import it.unitn.disi.smatch.oracles.*;
 import net.didion.jwnl.JWNL;
@@ -71,26 +72,17 @@ public class WordNet extends Configurable implements ILinguisticOracle, ISenseMa
         }
     }
 
-    public List<String> getSenses(String label) throws LinguisticOracleException {
-        List<String> result = new ArrayList<String>();
-        //TODO remove when Thing is a top
+    public List<ISense> getSenses(String label) throws LinguisticOracleException {
+        List<ISense> result = new ArrayList<ISense>();
         try {
             IndexWordSet lemmas = dic.lookupAllIndexWords(label);
             if (null != lemmas && 0 < lemmas.size()) {
-                IndexWord lemma;
-                Synset synset;
-                String synsetId;
                 //Looping on all words in indexWordSet
                 for (int i = 0; i < lemmas.getIndexWordArray().length; i++) {
-                    lemma = lemmas.getIndexWordArray()[i];
+                    IndexWord lemma = lemmas.getIndexWordArray()[i];
                     for (int j = 0; j < lemma.getSenseCount(); j++) {
-                        synset = lemma.getSenses()[j];
-                        //Forming the sense string
-                        //TODO: cut as experimental heuristic
-                        //if ((synset.getPOS().getKey().equals("n"))||(synset.getPOS().getKey().equals("a"))){
-                        synsetId = synset.getPOS().getKey() + "#" + synset.getOffset();
-                        result.add(synsetId);
-                        //}
+                        Synset synset = lemma.getSenses()[j];
+                        result.add(new Sense(synset.getPOS().getKey().charAt(0), synset.getOffset()));
                     }
                 }
             }
@@ -147,49 +139,43 @@ public class WordNet extends Configurable implements ILinguisticOracle, ISenseMa
         return false;
     }
 
-    public ISynset getISynset(String source) throws LinguisticOracleException {
+    public ISynset getISynset(ISense source) throws LinguisticOracleException {
         return new WordNetSynset(getSynset(source));
     }
 
-    public char getRelation(List<String> sourceSenses, List<String> targetSenses) throws SenseMatcherException {
-        for (String sourceSense : sourceSenses) {
-            for (String targetSense : targetSenses) {
+    public char getRelation(List<ISense> sourceSenses, List<ISense> targetSenses) throws SenseMatcherException {
+        for (ISense sourceSense : sourceSenses) {
+            for (ISense targetSense : targetSenses) {
                 if (getRelationFromOracle(sourceSense, targetSense, IMappingElement.EQUIVALENCE)) {
                     return IMappingElement.EQUIVALENCE;
                 }
             }
         }
         //  Check for less general than
-        for (String sourceSense : sourceSenses) {
-            for (String targetSense : targetSenses) {
+        for (ISense sourceSense : sourceSenses) {
+            for (ISense targetSense : targetSenses) {
                 if (getRelationFromOracle(sourceSense, targetSense, IMappingElement.LESS_GENERAL)) {
                     return IMappingElement.LESS_GENERAL;
                 }
             }
         }
         //  Check for more general than
-        for (String sourceSense : sourceSenses) {
-            for (String targetSense : targetSenses) {
+        for (ISense sourceSense : sourceSenses) {
+            for (ISense targetSense : targetSenses) {
                 if (getRelationFromOracle(sourceSense, targetSense, IMappingElement.MORE_GENERAL)) {
                     return IMappingElement.MORE_GENERAL;
                 }
             }
         }
         //  Check for opposite meaning
-        for (String sourceSense : sourceSenses) {
-            for (String targetSense : targetSenses) {
+        for (ISense sourceSense : sourceSenses) {
+            for (ISense targetSense : targetSenses) {
                 if (getRelationFromOracle(sourceSense, targetSense, IMappingElement.DISJOINT)) {
                     return IMappingElement.DISJOINT;
                 }
             }
         }
         return IMappingElement.IDK;
-    }
-
-    public char getRelationACoL(IAtomicConceptOfLabel source, IAtomicConceptOfLabel target) throws SenseMatcherException {
-        List<String> sourceSenses = source.getSenses().getSenseList();
-        List<String> targetSenses = target.getSenses().getSenseList();
-        return getRelation(sourceSenses, targetSenses);
     }
 
     /**
@@ -203,106 +189,93 @@ public class WordNet extends Configurable implements ILinguisticOracle, ISenseMa
      * @return whether particular type of relation holds between two senses according to oracle
      * @throws SenseMatcherException SenseMatcherException
      */
-    private boolean getRelationFromOracle(String source, String target, char rel) throws SenseMatcherException {
-        char tmp;
-        //  If we don't have cashed relation check which one exist and put it to cash
-        if (sensesCache.get(source + target) == null) {
-            //  Check for synonymy
+    private boolean getRelationFromOracle(ISense source, ISense target, char rel) throws SenseMatcherException {
+        final String sensePairKey = source.toString() + target.toString();
+        Character cachedRelation = sensesCache.get(sensePairKey);
+        // if we don't have cached relation check which one exist and put it to cash
+        if (null == cachedRelation) {
+            // check for synonymy
             if (isSourceSynonymTarget(source, target)) {
-                sensesCache.put(source + target, IMappingElement.EQUIVALENCE);
+                sensesCache.put(sensePairKey, IMappingElement.EQUIVALENCE);
                 return rel == IMappingElement.EQUIVALENCE;
             } else {
-                //  Check for opposite meaning
+                // check for opposite meaning
                 if (isSourceOppositeToTarget(source, target)) {
-                    sensesCache.put(source + target, IMappingElement.DISJOINT);
+                    sensesCache.put(sensePairKey, IMappingElement.DISJOINT);
                     return rel == IMappingElement.DISJOINT;
                 } else {
-                    //  Check for less general than
+                    // check for less general than
                     if (isSourceLessGeneralThanTarget(source, target)) {
-                        sensesCache.put(source + target, IMappingElement.LESS_GENERAL);
+                        sensesCache.put(sensePairKey, IMappingElement.LESS_GENERAL);
                         return rel == IMappingElement.LESS_GENERAL;
                     } else {
-                        //  Check for more general than
+                        // check for more general than
                         if (isSourceMoreGeneralThanTarget(source, target)) {
-                            sensesCache.put(source + target, IMappingElement.MORE_GENERAL);
+                            sensesCache.put(sensePairKey, IMappingElement.MORE_GENERAL);
                             return rel == IMappingElement.MORE_GENERAL;
                         } else {
-                            sensesCache.put(source + target, IMappingElement.IDK);
+                            sensesCache.put(sensePairKey, IMappingElement.IDK);
                             return false;
                         }
                     }
                 }
             }
-            //  Return relation already stored in cash
         } else {
-            tmp = (sensesCache.get(source + target));
-            return rel == tmp;
+            return rel == cachedRelation;
         }
     }
 
-    public boolean isSourceSynonymTarget(String source, String target) throws SenseMatcherException {
-        if ((source.indexOf("000000") == -1) && (target.indexOf("000000") == -1)) {
-            if ((source.indexOf(UNKNOWN_MEANING) > -1) || (target.indexOf(UNKNOWN_MEANING) > -1)) {
-                return false;
-            }
-            if (source.equals(target)) {
-                return true;
-            }
-            try {
-                //Get synsets
-                Synset sourceSyn = getSynset(source);
-                Synset targetSyn = getSynset(target);
-                //is synonym
-                RelationshipList list = RelationshipFinder.getInstance().findRelationships(sourceSyn, targetSyn, PointerType.SIMILAR_TO);
-                if (list.size() > 0) {
-                    if ((source.startsWith("a#")) || (target.startsWith("a#"))) {
-                        return (((Relationship) list.get(0)).getDepth() == 0);
-                    } else {
-                        return true;
-                    }
+    public boolean isSourceSynonymTarget(ISense source, ISense target) throws SenseMatcherException {
+        if (source.equals(target)) {
+            return true;
+        }
+        try {
+            Synset sourceSyn = getSynset(source);
+            Synset targetSyn = getSynset(target);
+            //is synonym
+            RelationshipList list = RelationshipFinder.getInstance().findRelationships(sourceSyn, targetSyn, PointerType.SIMILAR_TO);
+            if (list.size() > 0) {
+                if (('a' == source.getPos()) || ('a' == target.getPos())) {
+                    return (((Relationship) list.get(0)).getDepth() == 0);
+                } else {
+                    return true;
                 }
-            } catch (JWNLException e) {
-                final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
-                log.error(errMessage, e);
-                throw new SenseMatcherException(errMessage, e);
-            } catch (LinguisticOracleException e) {
-                final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
-                log.error(errMessage, e);
-                throw new SenseMatcherException(errMessage, e);
             }
+        } catch (JWNLException e) {
+            final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
+            log.error(errMessage, e);
+            throw new SenseMatcherException(errMessage, e);
+        } catch (LinguisticOracleException e) {
+            final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
+            log.error(errMessage, e);
+            throw new SenseMatcherException(errMessage, e);
         }
         return false;
     }
 
-    public boolean isSourceOppositeToTarget(String source, String target) throws SenseMatcherException {
-        //synonymy and unrecognize words check
-        if ((source.indexOf("000000") == -1) && (target.indexOf("000000") == -1)) {
-            if ((source.indexOf(UNKNOWN_MEANING) > -1) || (target.indexOf(UNKNOWN_MEANING) > -1)) {
-                return false;
-            }
-            if (source.equals(target)) {
-                return false;
-            }
-            try {
-                Synset sourceSyn = getSynset(source);
-                Synset targetSyn = getSynset(target);
-                //  Checks whether senses are siblings (thus they are opposite)
-                if (source.startsWith("n#") && target.startsWith("n#")) {
-                } else {
-                    RelationshipList list = RelationshipFinder.getInstance().findRelationships(sourceSyn, targetSyn, PointerType.ANTONYM);
-                    if (list.size() > 0) {
-                        return true;
-                    }
+    public boolean isSourceOppositeToTarget(ISense source, ISense target) throws SenseMatcherException {
+        if (source.equals(target)) {
+            return false;
+        }
+        try {
+            Synset sourceSyn = getSynset(source);
+            Synset targetSyn = getSynset(target);
+            //  Checks whether senses are siblings (thus they are opposite)
+            if ('n' == source.getPos() && 'n' == target.getPos()) {
+            } else {
+                RelationshipList list = RelationshipFinder.getInstance().findRelationships(sourceSyn, targetSyn, PointerType.ANTONYM);
+                if (list.size() > 0) {
+                    return true;
                 }
-            } catch (JWNLException e) {
-                final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
-                log.error(errMessage, e);
-                throw new SenseMatcherException(errMessage, e);
-            } catch (LinguisticOracleException e) {
-                final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
-                log.error(errMessage, e);
-                throw new SenseMatcherException(errMessage, e);
             }
+        } catch (JWNLException e) {
+            final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
+            log.error(errMessage, e);
+            throw new SenseMatcherException(errMessage, e);
+        } catch (LinguisticOracleException e) {
+            final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
+            log.error(errMessage, e);
+            throw new SenseMatcherException(errMessage, e);
         }
         return false;
     }
@@ -317,37 +290,30 @@ public class WordNet extends Configurable implements ILinguisticOracle, ISenseMa
      * @param target the string of target
      * @return true if source is less general than target
      */
-    public boolean isSourceLessGeneralThanTarget(String source, String target) throws SenseMatcherException {
+    public boolean isSourceLessGeneralThanTarget(ISense source, ISense target) throws SenseMatcherException {
         return isSourceMoreGeneralThanTarget(target, source);
     }
 
-    public boolean isSourceMoreGeneralThanTarget(String source, String target) throws SenseMatcherException {
-        if ((source.indexOf("000000") == -1) && (target.indexOf("000000") == -1)) {
-            if (((source.startsWith("n")) && (target.startsWith("n"))) || ((source.startsWith("n")) && (target.startsWith("n")))) {
-                if (source.equals(target)) {
-                    return false;
-                }
-                if ((source.indexOf(UNKNOWN_MEANING) > -1) || (target.indexOf(UNKNOWN_MEANING) > -1)) {
-                    return false;
-                }
-                try {
-                    Synset sourceSyn = getSynset(source);
-                    Synset targetSyn = getSynset(target);
-                    //  Find all more general relationships from wordnet
-                    RelationshipList list = RelationshipFinder.getInstance().findRelationships(sourceSyn, targetSyn, PointerType.HYPERNYM);
-                    if (!isUnidirestionalList(list)) {
-                        PointerTargetTree ptt = PointerUtils.getInstance().getInheritedMemberHolonyms(targetSyn);
-                        PointerTargetNodeList ptnl = PointerUtils.getInstance().getMemberHolonyms(targetSyn);
+    public boolean isSourceMoreGeneralThanTarget(ISense source, ISense target) throws SenseMatcherException {
+        if (('n' == source.getPos() && 'n' == target.getPos()) || ('v' == source.getPos() && 'v' == target.getPos())) {
+            if (source.equals(target)) {
+                return false;
+            }
+            try {
+                Synset sourceSyn = getSynset(source);
+                Synset targetSyn = getSynset(target);
+                // find all more general relationships from WordNet
+                RelationshipList list = RelationshipFinder.getInstance().findRelationships(sourceSyn, targetSyn, PointerType.HYPERNYM);
+                if (!isUnidirestionalList(list)) {
+                    PointerTargetTree ptt = PointerUtils.getInstance().getInheritedMemberHolonyms(targetSyn);
+                    PointerTargetNodeList ptnl = PointerUtils.getInstance().getMemberHolonyms(targetSyn);
+                    if (!traverseTree(ptt, ptnl, sourceSyn)) {
+                        ptt = PointerUtils.getInstance().getInheritedPartHolonyms(targetSyn);
+                        ptnl = PointerUtils.getInstance().getPartHolonyms(targetSyn);
                         if (!traverseTree(ptt, ptnl, sourceSyn)) {
-                            ptt = PointerUtils.getInstance().getInheritedPartHolonyms(targetSyn);
-                            ptnl = PointerUtils.getInstance().getPartHolonyms(targetSyn);
-                            if (!traverseTree(ptt, ptnl, sourceSyn)) {
-                                ptt = PointerUtils.getInstance().getInheritedSubstanceHolonyms(targetSyn);
-                                ptnl = PointerUtils.getInstance().getSubstanceHolonyms(targetSyn);
-                                if (traverseTree(ptt, ptnl, sourceSyn)) {
-                                    return true;
-                                }
-                            } else {
+                            ptt = PointerUtils.getInstance().getInheritedSubstanceHolonyms(targetSyn);
+                            ptnl = PointerUtils.getInstance().getSubstanceHolonyms(targetSyn);
+                            if (traverseTree(ptt, ptnl, sourceSyn)) {
                                 return true;
                             }
                         } else {
@@ -356,15 +322,17 @@ public class WordNet extends Configurable implements ILinguisticOracle, ISenseMa
                     } else {
                         return true;
                     }
-                } catch (JWNLException e) {
-                    final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
-                    log.error(errMessage, e);
-                    throw new SenseMatcherException(errMessage, e);
-                } catch (LinguisticOracleException e) {
-                    final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
-                    log.error(errMessage, e);
-                    throw new SenseMatcherException(errMessage, e);
+                } else {
+                    return true;
                 }
+            } catch (JWNLException e) {
+                final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
+                log.error(errMessage, e);
+                throw new SenseMatcherException(errMessage, e);
+            } catch (LinguisticOracleException e) {
+                final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
+                log.error(errMessage, e);
+                throw new SenseMatcherException(errMessage, e);
             }
         }
         return false;
@@ -418,30 +386,20 @@ public class WordNet extends Configurable implements ILinguisticOracle, ISenseMa
     }
 
     /**
-     * Returns a synset for a sense id.
+     * Returns a synset for a sense.
      *
-     * @param source a sense id
+     * @param source a sense
      * @return synset
      * @throws LinguisticOracleException LinguisticOracleException
      */
-    private Synset getSynset(String source) throws LinguisticOracleException {
-        StringTokenizer stSource = new StringTokenizer(source, "#");
+    private Synset getSynset(ISense source) throws LinguisticOracleException {
         try {
-            POS POSSource = POS.getPOSForKey(stSource.nextToken());
-            if (!stSource.hasMoreTokens()) {
-                System.err.println(source);
-                return null;
-            }
-            String sourseID = stSource.nextToken();
-            if (!sourseID.startsWith("000000")) {
-                long lSourseID = Long.parseLong(sourseID);
-                return dic.getSynsetAt(POSSource, lSourseID);
-            }
+            POS POSSource = POS.getPOSForKey(Character.toString(source.getPos()));
+            return dic.getSynsetAt(POSSource, source.getId());
         } catch (JWNLException e) {
-            final String errMessage = "Malformed synset id: " + source + ". Error: " +  e.getClass().getSimpleName() + ": " + e.getMessage();
+            final String errMessage = "Malformed synset id: " + source + ". Error: " + e.getClass().getSimpleName() + ": " + e.getMessage();
             log.error(errMessage, e);
             throw new LinguisticOracleException(errMessage, e);
         }
-        return null;
     }
 }
