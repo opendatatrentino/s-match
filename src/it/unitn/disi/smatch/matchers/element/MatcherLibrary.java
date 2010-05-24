@@ -5,9 +5,9 @@ import it.unitn.disi.smatch.components.Configurable;
 import it.unitn.disi.smatch.components.ConfigurableException;
 import it.unitn.disi.smatch.data.ling.IAtomicConceptOfLabel;
 import it.unitn.disi.smatch.data.ling.ISense;
-import it.unitn.disi.smatch.data.mappings.ContextMapping;
 import it.unitn.disi.smatch.data.mappings.IContextMapping;
 import it.unitn.disi.smatch.data.mappings.IMappingElement;
+import it.unitn.disi.smatch.data.mappings.IMappingFactory;
 import it.unitn.disi.smatch.data.trees.IContext;
 import it.unitn.disi.smatch.data.trees.INode;
 import it.unitn.disi.smatch.oracles.*;
@@ -21,12 +21,14 @@ import java.util.List;
 import java.util.Properties;
 
 /**
- * Performs all element level matching routines and provides the library of element level matchers. Accepts the
+ * Performs all element level matching routines and provides the library of element level matchers. Needs the
  * following configuration parameters:
  * <p/>
- * senseMatcher  - an instance of ISenseMatcher
+ * senseMatcher - an instance of ISenseMatcher
  * <p/>
  * linguisticOracle - an instance of ILinguisticOracle
+ * <p/>
+ * Accepts the following configuration parameters:
  * <p/>
  * useWeakSemanticsElementLevelMatchersLibrary - exploit only WordNet (false) or use other element level semantic
  * matchers like string and gloss based matchers (true)
@@ -35,6 +37,8 @@ import java.util.Properties;
  * <p/>
  * senseGlossMatchers - a ; separated list of class names implementing ISenseGlossBasedElementLevelSemanticMatcher
  * interface
+ * <p/>
+ * mappingFactory - an instance of IMappingFactory
  *
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
  * @author Aliaksandr Autayeu avtaev@gmail.com
@@ -63,11 +67,18 @@ public class MatcherLibrary extends Configurable implements IMatcherLibrary {
     private static final String SENSE_GLOSS_MATCHERS_KEY = "senseGlossMatchers";
     private List<ISenseGlossBasedElementLevelSemanticMatcher> senseGlossMatchers = new ArrayList<ISenseGlossBasedElementLevelSemanticMatcher>();
 
+    private static final String MAPPING_FACTORY_KEY = "mappingFactory";
+    protected IMappingFactory mappingFactory = null;
+
     @Override
-    public void setProperties(Properties newProperties) throws ConfigurableException {
-        if (!newProperties.equals(properties)) {
+    public boolean setProperties(Properties newProperties) throws ConfigurableException {
+        Properties oldProperties = new Properties();
+        oldProperties.putAll(properties);
+
+        boolean result = super.setProperties(newProperties);
+        if (result) {
             if (newProperties.containsKey(SENSE_MATCHER_KEY)) {
-                senseMatcher = (ISenseMatcher) configureComponent(senseMatcher, properties, newProperties, "sense matcher", SENSE_MATCHER_KEY, ISenseMatcher.class);
+                senseMatcher = (ISenseMatcher) configureComponent(senseMatcher, oldProperties, newProperties, "sense matcher", SENSE_MATCHER_KEY, ISenseMatcher.class);
             } else {
                 final String errMessage = "Cannot find configuration key " + SENSE_MATCHER_KEY;
                 log.error(errMessage);
@@ -75,7 +86,7 @@ public class MatcherLibrary extends Configurable implements IMatcherLibrary {
             }
 
             if (newProperties.containsKey(LINGUISTIC_ORACLE_KEY)) {
-                linguisticOracle = (ILinguisticOracle) configureComponent(linguisticOracle, properties, newProperties, "linguistic oracle", LINGUISTIC_ORACLE_KEY, ILinguisticOracle.class);
+                linguisticOracle = (ILinguisticOracle) configureComponent(linguisticOracle, oldProperties, newProperties, "linguistic oracle", LINGUISTIC_ORACLE_KEY, ILinguisticOracle.class);
             } else {
                 final String errMessage = "Cannot find configuration key " + LINGUISTIC_ORACLE_KEY;
                 log.error(errMessage);
@@ -119,16 +130,22 @@ public class MatcherLibrary extends Configurable implements IMatcherLibrary {
                 }
             }
 
-            properties.clear();
-            properties.putAll(newProperties);
+            if (newProperties.containsKey(MAPPING_FACTORY_KEY)) {
+                mappingFactory = (IMappingFactory) configureComponent(mappingFactory, oldProperties, newProperties, "mapping factory", MAPPING_FACTORY_KEY, IMappingFactory.class);
+            } else {
+                final String errMessage = "Cannot find configuration key " + MAPPING_FACTORY_KEY;
+                log.error(errMessage);
+                throw new ConfigurableException(errMessage);
+            }
         }
+        return result;
     }
 
     public IContextMapping<IAtomicConceptOfLabel> elementLevelMatching(IContext sourceContext, IContext targetContext) throws MatcherLibraryException {
         // Calculates relations between all ACoLs in both contexts and produces a mapping between them.
         // Corresponds to Step 3 of the semantic matching algorithm.
 
-        IContextMapping<IAtomicConceptOfLabel> result = new ContextMapping<IAtomicConceptOfLabel>(sourceContext, targetContext);
+        IContextMapping<IAtomicConceptOfLabel> result = mappingFactory.getACoLMappingInstance(sourceContext, targetContext);
 
         long counter = 0;
         long total = getACoLCount(sourceContext) * getACoLCount(targetContext);

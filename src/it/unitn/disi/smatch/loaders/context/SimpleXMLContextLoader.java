@@ -18,7 +18,9 @@ import java.util.HashMap;
 import java.util.Properties;
 
 /**
- * Loader for XML format.
+ * Loader for XML format. Reads uniqueStrings boolean parameter which configures whether create all strings as
+ * separate instances or save memory by reusing string instances. False by default, it is useful for
+ * contexts with a lot of repetition on the level of labels or label tokens.
  *
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
@@ -47,15 +49,14 @@ public class SimpleXMLContextLoader extends Configurable implements IContextLoad
     private final HashMap<String, String> unique = new HashMap<String, String>();
 
     @Override
-    public void setProperties(Properties newProperties) throws ConfigurableException {
-        if (!newProperties.equals(properties)) {
+    public boolean setProperties(Properties newProperties) throws ConfigurableException {
+        boolean result = super.setProperties(newProperties);
+        if (result) {
             if (newProperties.containsKey(UNIQUE_STRINGS_KEY)) {
                 uniqueStrings = Boolean.parseBoolean(newProperties.getProperty(UNIQUE_STRINGS_KEY));
             }
-
-            properties.clear();
-            properties.putAll(newProperties);
         }
+        return result;
     }
 
     public SimpleXMLContextLoader() throws ContextLoaderException {

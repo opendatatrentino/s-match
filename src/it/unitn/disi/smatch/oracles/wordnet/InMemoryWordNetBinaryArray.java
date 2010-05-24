@@ -22,6 +22,12 @@ import java.util.*;
 
 /**
  * Implements version of WN matcher which use a fast internal data structure.
+ * <p/>
+ * Needs several string configuration parameters pointing to files with cache. See default S-Match configuration
+ * file for examples.
+ * <p/>
+ * Accepts loadArray boolean configuration parameter which allows to skip loading arrays into memory.
+ * By default equals true, it is useful during generation of WordNet caches when it should be set to false.
  *
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
  * @author Aliaksandr Autayeu avtaev@gmail.com
@@ -54,8 +60,9 @@ public class InMemoryWordNetBinaryArray extends Configurable implements ISenseMa
     private long[] nominalizations = null;
 
     @Override
-    public void setProperties(Properties newProperties) throws ConfigurableException {
-        if (!newProperties.equals(properties)) {
+    public boolean setProperties(Properties newProperties) throws ConfigurableException {
+        boolean result = super.setProperties(newProperties);
+        if (result) {
             boolean loadArrays = true;
             if (newProperties.containsKey(LOAD_ARRAYS_KEY)) {
                 loadArrays = Boolean.parseBoolean(newProperties.getProperty(LOAD_ARRAYS_KEY));
@@ -72,10 +79,8 @@ public class InMemoryWordNetBinaryArray extends Configurable implements ISenseMa
                 nominalizations = readArray(newProperties, NOMINALIZATION_KEY, "nominalizations");
                 log.info("Loading WordNet cache to memory finished");
             }
-
-            properties.clear();
-            properties.putAll(newProperties);
         }
+        return result;
     }
 
     public char getRelation(List<ISense> sourceSenses, List<ISense> targetSenses) {

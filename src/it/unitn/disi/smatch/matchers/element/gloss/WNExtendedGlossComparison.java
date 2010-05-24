@@ -12,8 +12,13 @@ import java.util.Properties;
 import java.util.StringTokenizer;
 
 /**
- * Implements WNExtendedGlossComparison matcher.
- * see Element Level Semantic matchers paper for more details.
+ * Implements WNExtendedGlossComparison matcher. See Element Level Semantic matchers paper for more details.
+ * <p/>
+ * Accepts the following parameters:
+ * <p/>
+ * threshold - integer parameter, which by default equals 5.
+ * <p/>
+ * meaninglessWords - string parameter which indicates words to ignore. Check the source file for default value.
  *
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
  * @author Aliaksandr Autayeu avtaev@gmail.com
@@ -30,8 +35,9 @@ public class WNExtendedGlossComparison extends BasicGlossMatcher implements ISen
     private String meaninglessWords = "of on to their than from for by in at is are have has the a as with your etc our into its his her which him among those against ";
 
     @Override
-    public void setProperties(Properties newProperties) throws ConfigurableException {
-        if (!newProperties.equals(properties)) {
+    public boolean setProperties(Properties newProperties) throws ConfigurableException {
+        boolean result = super.setProperties(newProperties);
+        if (result) {
             if (newProperties.containsKey(THRESHOLD_KEY)) {
                 threshold = Integer.parseInt(newProperties.getProperty(THRESHOLD_KEY));
             }
@@ -39,10 +45,8 @@ public class WNExtendedGlossComparison extends BasicGlossMatcher implements ISen
             if (newProperties.containsKey(MEANINGLESS_WORDS_KEY)) {
                 meaninglessWords = newProperties.getProperty(MEANINGLESS_WORDS_KEY) + " ";
             }
-
-            properties.clear();
-            properties.putAll(newProperties);
         }
+        return result;
     }
 
 

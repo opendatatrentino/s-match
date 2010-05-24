@@ -2,7 +2,6 @@ package it.unitn.disi.smatch.matchers.structure.tree;
 
 import it.unitn.disi.smatch.SMatchConstants;
 import it.unitn.disi.smatch.data.ling.IAtomicConceptOfLabel;
-import it.unitn.disi.smatch.data.mappings.ContextMapping;
 import it.unitn.disi.smatch.data.mappings.IContextMapping;
 import it.unitn.disi.smatch.data.trees.IContext;
 import it.unitn.disi.smatch.data.trees.INode;
@@ -23,7 +22,7 @@ public class DefaultTreeMatcher extends BaseTreeMatcher implements ITreeMatcher 
     private static final Logger log = Logger.getLogger(DefaultTreeMatcher.class);
 
     public IContextMapping<INode> treeMatch(IContext sourceContext, IContext targetContext, IContextMapping<IAtomicConceptOfLabel> acolMapping) throws TreeMatcherException {
-        IContextMapping<INode> mapping = new ContextMapping<INode>(sourceContext, targetContext);
+        IContextMapping<INode> mapping = mappingFactory.getContextMappingInstance(sourceContext, targetContext);
 
         // semantic relation for particular node matching task
         char relation;

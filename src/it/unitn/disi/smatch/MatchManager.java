@@ -4,6 +4,7 @@ import it.unitn.disi.smatch.classifiers.IContextClassifier;
 import it.unitn.disi.smatch.components.Configurable;
 import it.unitn.disi.smatch.components.ConfigurableException;
 import it.unitn.disi.smatch.data.ling.IAtomicConceptOfLabel;
+import it.unitn.disi.smatch.data.mappings.IMappingFactory;
 import it.unitn.disi.smatch.data.trees.Context;
 import it.unitn.disi.smatch.data.trees.IContext;
 import it.unitn.disi.smatch.data.trees.INode;
@@ -101,6 +102,9 @@ public class MatchManager extends Configurable implements IMatchManager {
 
     private static final String LINGUISTIC_ORACLE_KEY = "LinguisticOracle";
     private ILinguisticOracle linguisticOracle = null;
+
+    private static final String MAPPING_FACTORY_KEY = "MappingFactory";
+    private IMappingFactory mappingFactory = null;
 
     public static IMatchManager getInstance() throws SMatchException {
         return new MatchManager();
@@ -230,28 +234,30 @@ public class MatchManager extends Configurable implements IMatchManager {
     }
 
     @Override
-    public void setProperties(Properties newProperties) throws ConfigurableException {
+    public boolean setProperties(Properties newProperties) throws ConfigurableException {
         if (log.isEnabledFor(Level.INFO)) {
             log.info("Loading configuration...");
         }
-        if (!newProperties.equals(properties)) {
+        Properties oldProperties = new Properties();
+        oldProperties.putAll(properties);
+        boolean result = super.setProperties(newProperties);
+        if (result) {
             // global ones
-            linguisticOracle = (ILinguisticOracle) configureComponent(linguisticOracle, properties, newProperties, "linguistic oracle", LINGUISTIC_ORACLE_KEY, ILinguisticOracle.class);
-            senseMatcher = (ISenseMatcher) configureComponent(senseMatcher, properties, newProperties, "sense matcher", SENSE_MATCHER_KEY, ISenseMatcher.class);
+            linguisticOracle = (ILinguisticOracle) configureComponent(linguisticOracle, oldProperties, newProperties, "linguistic oracle", LINGUISTIC_ORACLE_KEY, ILinguisticOracle.class);
+            senseMatcher = (ISenseMatcher) configureComponent(senseMatcher, oldProperties, newProperties, "sense matcher", SENSE_MATCHER_KEY, ISenseMatcher.class);
+            mappingFactory = (IMappingFactory) configureComponent(mappingFactory, oldProperties, newProperties, "mapping factory", MAPPING_FACTORY_KEY, IMappingFactory.class);
 
-            contextLoader = (IContextLoader) configureComponent(contextLoader, properties, newProperties, "context loader", CONTEXT_LOADER_KEY, IContextLoader.class);
-            contextRenderer = (IContextRenderer) configureComponent(contextRenderer, properties, newProperties, "context renderer", CONTEXT_RENDERER_KEY, IContextRenderer.class);
-            mappingLoader = (IMappingLoader) configureComponent(mappingLoader, properties, newProperties, "mapping loader", MAPPING_LOADER_KEY, IMappingLoader.class);
-            mappingRenderer = (IMappingRenderer) configureComponent(mappingRenderer, properties, newProperties, "mapping renderer", MAPPING_RENDERER_KEY, IMappingRenderer.class);
-            mappingFilter = (IMappingFilter) configureComponent(mappingFilter, properties, newProperties, "mapping filter", MAPPING_FILTER_KEY, IMappingFilter.class);
-            contextPreprocessor = (IContextPreprocessor) configureComponent(contextPreprocessor, properties, newProperties, "context preprocessor", CONTEXT_PREPROCESSOR_KEY, IContextPreprocessor.class);
-            contextClassifier = (IContextClassifier) configureComponent(contextClassifier, properties, newProperties, "context classifier", CONTEXT_CLASSIFIER_KEY, IContextClassifier.class);
-            matcherLibrary = (IMatcherLibrary) configureComponent(matcherLibrary, properties, newProperties, "matching library", MATCHER_LIBRARY_KEY, IMatcherLibrary.class);
-            treeMatcher = (ITreeMatcher) configureComponent(treeMatcher, properties, newProperties, "tree matcher", TREE_MATCHER_KEY, ITreeMatcher.class);
-
-            properties.clear();
-            properties.putAll(newProperties);
+            contextLoader = (IContextLoader) configureComponent(contextLoader, oldProperties, newProperties, "context loader", CONTEXT_LOADER_KEY, IContextLoader.class);
+            contextRenderer = (IContextRenderer) configureComponent(contextRenderer, oldProperties, newProperties, "context renderer", CONTEXT_RENDERER_KEY, IContextRenderer.class);
+            mappingLoader = (IMappingLoader) configureComponent(mappingLoader, oldProperties, newProperties, "mapping loader", MAPPING_LOADER_KEY, IMappingLoader.class);
+            mappingRenderer = (IMappingRenderer) configureComponent(mappingRenderer, oldProperties, newProperties, "mapping renderer", MAPPING_RENDERER_KEY, IMappingRenderer.class);
+            mappingFilter = (IMappingFilter) configureComponent(mappingFilter, oldProperties, newProperties, "mapping filter", MAPPING_FILTER_KEY, IMappingFilter.class);
+            contextPreprocessor = (IContextPreprocessor) configureComponent(contextPreprocessor, oldProperties, newProperties, "context preprocessor", CONTEXT_PREPROCESSOR_KEY, IContextPreprocessor.class);
+            contextClassifier = (IContextClassifier) configureComponent(contextClassifier, oldProperties, newProperties, "context classifier", CONTEXT_CLASSIFIER_KEY, IContextClassifier.class);
+            matcherLibrary = (IMatcherLibrary) configureComponent(matcherLibrary, oldProperties, newProperties, "matching library", MATCHER_LIBRARY_KEY, IMatcherLibrary.class);
+            treeMatcher = (ITreeMatcher) configureComponent(treeMatcher, oldProperties, newProperties, "tree matcher", TREE_MATCHER_KEY, ITreeMatcher.class);
         }
+        return result;
     }
 
     public Properties getProperties() {

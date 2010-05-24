@@ -56,6 +56,7 @@ public class ClassFactory {
      * @return instance of the class
      * @throws SMatchException SMatchException
      */
+    @SuppressWarnings("unchecked")
     public static Object getClassInstance(String className,
                                           Class[] attrTypes,
                                           Object[] attrValues) throws SMatchException {

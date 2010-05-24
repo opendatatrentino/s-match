@@ -1,10 +1,10 @@
 package it.unitn.disi.smatch.filters;
 
 import it.unitn.disi.smatch.SMatchConstants;
-import it.unitn.disi.smatch.components.Configurable;
 import it.unitn.disi.smatch.components.ConfigurableException;
+import it.unitn.disi.smatch.data.mappings.IContextMapping;
+import it.unitn.disi.smatch.data.mappings.IMappingElement;
 import it.unitn.disi.smatch.data.trees.INode;
-import it.unitn.disi.smatch.data.mappings.*;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
@@ -13,11 +13,11 @@ import java.util.Properties;
 /**
  * Retains only specified kind of links in the mapping. Accepts relations kinds in a parameter retainRelations.
  * By default retains only equivalences (=). For other relation kinds see constants in
- * {@link it.unitn.disi.smatch.data.mappings.IMappingElement}. 
+ * {@link it.unitn.disi.smatch.data.mappings.IMappingElement}.
  *
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
-public class RetainRelationsMappingFilter extends Configurable implements IMappingFilter {
+public class RetainRelationsMappingFilter extends BaseFilter implements IMappingFilter {
 
     private static final Logger log = Logger.getLogger(RetainRelationsMappingFilter.class);
 
@@ -25,14 +25,14 @@ public class RetainRelationsMappingFilter extends Configurable implements IMappi
     private String retainRelations = "=";
 
     @Override
-    public void setProperties(Properties newProperties) throws ConfigurableException {
-        if (!newProperties.equals(properties)) {
+    public boolean setProperties(Properties newProperties) throws ConfigurableException {
+        boolean result = super.setProperties(newProperties);
+        if (result) {
             if (newProperties.containsKey(RETAIN_RELATIONS_KEY)) {
                 retainRelations = newProperties.getProperty(RETAIN_RELATIONS_KEY);
             }
         }
-        properties.clear();
-        properties.putAll(newProperties);
+        return result;
     }
 
 
@@ -42,7 +42,7 @@ public class RetainRelationsMappingFilter extends Configurable implements IMappi
         }
         long start = System.currentTimeMillis();
 
-        IContextMapping<INode> result = new ContextMapping<INode>(mapping.getSourceContext(), mapping.getTargetContext());
+        IContextMapping<INode> result = mappingFactory.getContextMappingInstance(mapping.getSourceContext(), mapping.getTargetContext());
 
         long counter = 0;
         long total = mapping.size();

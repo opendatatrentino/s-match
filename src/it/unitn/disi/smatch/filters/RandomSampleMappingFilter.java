@@ -1,12 +1,10 @@
 package it.unitn.disi.smatch.filters;
 
 import it.unitn.disi.smatch.SMatchConstants;
-import it.unitn.disi.smatch.components.Configurable;
 import it.unitn.disi.smatch.components.ConfigurableException;
-import it.unitn.disi.smatch.data.trees.INode;
-import it.unitn.disi.smatch.data.mappings.ContextMapping;
 import it.unitn.disi.smatch.data.mappings.IContextMapping;
 import it.unitn.disi.smatch.data.mappings.IMappingElement;
+import it.unitn.disi.smatch.data.trees.INode;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
@@ -19,7 +17,7 @@ import java.util.Random;
  *
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
-public class RandomSampleMappingFilter extends Configurable implements IMappingFilter {
+public class RandomSampleMappingFilter extends BaseFilter implements IMappingFilter {
 
     private static final Logger log = Logger.getLogger(RandomSampleMappingFilter.class);
 
@@ -27,14 +25,14 @@ public class RandomSampleMappingFilter extends Configurable implements IMappingF
     private int sampleSize = 100;
 
     @Override
-    public void setProperties(Properties newProperties) throws ConfigurableException {
-        if (!newProperties.equals(properties)) {
+    public boolean setProperties(Properties newProperties) throws ConfigurableException {
+        boolean result = super.setProperties(newProperties);
+        if (result) {
             if (newProperties.containsKey(SAMPLE_SIZE_KEY)) {
                 sampleSize = Integer.parseInt(newProperties.getProperty(SAMPLE_SIZE_KEY));
             }
         }
-        properties.clear();
-        properties.putAll(newProperties);
+        return result;
     }
 
     public IContextMapping<INode> filter(IContextMapping<INode> mapping) {
@@ -43,7 +41,7 @@ public class RandomSampleMappingFilter extends Configurable implements IMappingF
         }
         long start = System.currentTimeMillis();
 
-        IContextMapping<INode> result = new ContextMapping<INode>(mapping.getSourceContext(), mapping.getTargetContext());
+        IContextMapping<INode> result = mappingFactory.getContextMappingInstance(mapping.getSourceContext(), mapping.getTargetContext());
 
         long counter = 0;
         long total = mapping.size();

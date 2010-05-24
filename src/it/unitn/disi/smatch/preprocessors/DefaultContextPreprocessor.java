@@ -28,7 +28,9 @@ import java.util.*;
 /**
  * Performs all the operations related to linguistic preprocessing.
  * It also contains some heuristics to perform sense disambiguation.
- * Corresponds to Step 1 and 2 in the semantic matching algorithm
+ * Corresponds to Step 1 and 2 in the semantic matching algorithm.
+ * <p/>
+ * Needs and accepts several configuration parameters. See source file for more information.
  *
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
  * @author Aliaksandr Autayeu avtaev@gmail.com
@@ -86,8 +88,12 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
 
 
     @Override
-    public void setProperties(Properties newProperties) throws ConfigurableException {
-        if (!newProperties.equals(properties)) {
+    public boolean setProperties(Properties newProperties) throws ConfigurableException {
+        Properties oldProperties = new Properties();
+        oldProperties.putAll(properties);
+
+        boolean result = super.setProperties(newProperties);
+        if (result) {
             boolean loadArrays = true;
             if (newProperties.containsKey(LOAD_ARRAYS_KEY)) {
                 loadArrays = Boolean.parseBoolean(newProperties.getProperty(LOAD_ARRAYS_KEY));
@@ -107,7 +113,7 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
             }
 
             if (newProperties.containsKey(SENSE_MATCHER_KEY)) {
-                senseMatcher = (ISenseMatcher) configureComponent(senseMatcher, properties, newProperties, "sense matcher", SENSE_MATCHER_KEY, ISenseMatcher.class);
+                senseMatcher = (ISenseMatcher) configureComponent(senseMatcher, oldProperties, newProperties, "sense matcher", SENSE_MATCHER_KEY, ISenseMatcher.class);
             } else {
                 final String errMessage = "Cannot find configuration key " + SENSE_MATCHER_KEY;
                 log.error(errMessage);
@@ -115,7 +121,7 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
             }
 
             if (newProperties.containsKey(LINGUISTIC_ORACLE_KEY)) {
-                linguisticOracle = (ILinguisticOracle) configureComponent(linguisticOracle, properties, newProperties, "linguistic oracle", LINGUISTIC_ORACLE_KEY, ILinguisticOracle.class);
+                linguisticOracle = (ILinguisticOracle) configureComponent(linguisticOracle, oldProperties, newProperties, "linguistic oracle", LINGUISTIC_ORACLE_KEY, ILinguisticOracle.class);
             } else {
                 final String errMessage = "Cannot find configuration key " + LINGUISTIC_ORACLE_KEY;
                 log.error(errMessage);
@@ -149,10 +155,8 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
             if (newProperties.containsKey(NUMBER_CHARACTERS_KEY)) {
                 numberCharacters = newProperties.getProperty(NUMBER_CHARACTERS_KEY);
             }
-
-            properties.clear();
-            properties.putAll(newProperties);
         }
+        return result;
     }
 
     /**
@@ -993,6 +997,7 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
      *
      * @param fileName the file name from which the hashmap will be read
      * @return multiwords hashmap
+     * @throws SMatchException SMatchException
      */
     @SuppressWarnings("unchecked")
     private static HashMap<String, ArrayList<ArrayList<String>>> readHash(String fileName) throws SMatchException {

@@ -35,7 +35,7 @@ public class DefaultNodeMatcher extends BaseNodeMatcher implements INodeMatcher 
             boolean isOpposite;
 
             // ACoLs -> its DIMACS variable number
-            HashMap<IAtomicConceptOfLabel, Integer> hashConceptNumber = new HashMap<IAtomicConceptOfLabel, Integer>();
+            HashMap<IAtomicConceptOfLabel, String> hashConceptNumber = new HashMap<IAtomicConceptOfLabel, String>();
             // number of variables in SAT problem
             Integer numberOfVariables;
             // number of clauses in SAT problem

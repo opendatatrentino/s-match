@@ -1,5 +1,7 @@
 package it.unitn.disi.smatch.data.ling;
 
+import it.unitn.disi.smatch.data.matrices.IndexedObject;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -12,7 +14,7 @@ import java.util.List;
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
-public class AtomicConceptOfLabel implements IAtomicConceptOfLabel {
+public class AtomicConceptOfLabel extends IndexedObject implements IAtomicConceptOfLabel {
 
     private int id;
     private String token;

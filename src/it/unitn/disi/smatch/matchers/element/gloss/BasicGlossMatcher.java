@@ -13,7 +13,11 @@ import java.util.List;
 import java.util.Properties;
 
 /**
- * Matches glosses of word senses.
+ * Matches glosses of word senses. Needs the following configuration parameters:
+ * <p/>
+ * senseMatcher - an instance of ISenseMatcher
+ * <p/>
+ * linguisticOracle - an instance of ILinguisticOracle
  *
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
  * @author Aliaksandr Autayeu avtaev@gmail.com
@@ -26,14 +30,18 @@ public class BasicGlossMatcher extends Configurable {
     private static final String LINGUISTIC_ORACLE_KEY = "linguisticOracle";
     private ILinguisticOracle linguisticOracle = null;
 
-    private static final String SENSE_MATCHER_KEY = "SenseMatcher";
+    private static final String SENSE_MATCHER_KEY = "senseMatcher";
     private ISenseMatcher senseMatcher = null;
 
     @Override
-    public void setProperties(Properties newProperties) throws ConfigurableException {
-        if (!newProperties.equals(properties)) {
+    public boolean setProperties(Properties newProperties) throws ConfigurableException {
+        Properties oldProperties = new Properties();
+        oldProperties.putAll(properties);
+
+        boolean result = super.setProperties(newProperties);
+        if (result) {
             if (newProperties.containsKey(SENSE_MATCHER_KEY)) {
-                senseMatcher = (ISenseMatcher) configureComponent(senseMatcher, properties, newProperties, "sense matcher", SENSE_MATCHER_KEY, ISenseMatcher.class);
+                senseMatcher = (ISenseMatcher) configureComponent(senseMatcher, oldProperties, newProperties, "sense matcher", SENSE_MATCHER_KEY, ISenseMatcher.class);
             } else {
                 final String errMessage = "Cannot find configuration key " + SENSE_MATCHER_KEY;
                 log.error(errMessage);
@@ -41,16 +49,14 @@ public class BasicGlossMatcher extends Configurable {
             }
 
             if (newProperties.containsKey(LINGUISTIC_ORACLE_KEY)) {
-                linguisticOracle = (ILinguisticOracle) configureComponent(linguisticOracle, properties, newProperties, "linguistic oracle", LINGUISTIC_ORACLE_KEY, ILinguisticOracle.class);
+                linguisticOracle = (ILinguisticOracle) configureComponent(linguisticOracle, oldProperties, newProperties, "linguistic oracle", LINGUISTIC_ORACLE_KEY, ILinguisticOracle.class);
             } else {
                 final String errMessage = "Cannot find configuration key " + LINGUISTIC_ORACLE_KEY;
                 log.error(errMessage);
                 throw new ConfigurableException(errMessage);
             }
-
-            properties.clear();
-            properties.putAll(newProperties);
         }
+        return result;
     }
 
     //Next 4 method are used by element level matchers to calculate relations between words

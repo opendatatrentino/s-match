@@ -1,5 +1,7 @@
 package it.unitn.disi.smatch.data.ling;
 
+import it.unitn.disi.smatch.data.matrices.IIndexedObject;
+
 import java.util.Iterator;
 import java.util.List;
 
@@ -10,7 +12,7 @@ import java.util.List;
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
-public interface IAtomicConceptOfLabel {
+public interface IAtomicConceptOfLabel extends IIndexedObject {
 
     /**
      * Returns the token(s) corresponding to the atomic concept.

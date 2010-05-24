@@ -3,24 +3,23 @@ package it.unitn.disi.smatch.matchers.structure.tree;
 import it.unitn.disi.smatch.SMatchConstants;
 import it.unitn.disi.smatch.components.ConfigurableException;
 import it.unitn.disi.smatch.data.ling.IAtomicConceptOfLabel;
-import it.unitn.disi.smatch.data.trees.IContext;
-import it.unitn.disi.smatch.data.trees.INode;
-import it.unitn.disi.smatch.data.mappings.ContextMapping;
 import it.unitn.disi.smatch.data.mappings.IContextMapping;
 import it.unitn.disi.smatch.data.mappings.IMappingElement;
 import it.unitn.disi.smatch.data.mappings.ReversingMappingElement;
+import it.unitn.disi.smatch.data.trees.IContext;
+import it.unitn.disi.smatch.data.trees.INode;
 import it.unitn.disi.smatch.matchers.structure.node.OptimizedStageNodeMatcher;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Properties;
 
 /**
- * Matches first disjoint, then subsumptions, then joins subsumption into equivalence.
- *
- * For more details see:
- * <p/>
- * <a href="http://eprints.biblio.unitn.it/archive/00001525/">http://eprints.biblio.unitn.it/archive/00001525/</a>
+ * Matches first disjoint, then subsumptions, then joins subsumption into equivalence. For more details see technical
+ * report <a href="http://eprints.biblio.unitn.it/archive/00001525/">http://eprints.biblio.unitn.it/archive/00001525/</a>
  * <p/>
  * Giunchiglia, Fausto and Maltese, Vincenzo and Autayeu, Aliaksandr. Computing minimal mappings.
  * Technical Report DISI-08-078, Department of Information Engineering and Computer Science, University of Trento.
@@ -48,16 +47,18 @@ public class OptimizedStageTreeMatcher extends BaseTreeMatcher implements ITreeM
     private boolean direction;
 
     @Override
-    public void setProperties(Properties newProperties) throws ConfigurableException {
-        super.setProperties(newProperties);
-
-        if (nodeMatcher instanceof OptimizedStageNodeMatcher) {
-            smatchMatcher = (OptimizedStageNodeMatcher) nodeMatcher;
-        } else {
-            final String errMessage = "OptimizedStageTreeMatcher works only with OptimizedStageNodeMatcher";
-            log.error(errMessage);
-            throw new TreeMatcherException(errMessage);
+    public boolean setProperties(Properties newProperties) throws ConfigurableException {
+        boolean result = super.setProperties(newProperties);
+        if (result) {
+            if (nodeMatcher instanceof OptimizedStageNodeMatcher) {
+                smatchMatcher = (OptimizedStageNodeMatcher) nodeMatcher;
+            } else {
+                final String errMessage = "OptimizedStageTreeMatcher works only with OptimizedStageNodeMatcher";
+                log.error(errMessage);
+                throw new TreeMatcherException(errMessage);
+            }
         }
+        return result;
     }
 
     public IContextMapping<INode> treeMatch(IContext sourceContext, IContext targetContext, IContextMapping<IAtomicConceptOfLabel> acolMapping) throws TreeMatcherException {
@@ -178,7 +179,7 @@ public class OptimizedStageTreeMatcher extends BaseTreeMatcher implements ITreeM
     }
 
     private IContextMapping<INode> treeEquiv(HashSet<IMappingElement<INode>> mapping, IContext sourceContext, IContext targetContext) {
-        IContextMapping<INode> result = new ContextMapping<INode>(sourceContext, targetContext);
+        IContextMapping<INode> result = mappingFactory.getContextMappingInstance(sourceContext, targetContext);
         if (log.isEnabledFor(Level.INFO)) {
             log.info("Mapping before TreeEquiv: " + mapping.size());
         }

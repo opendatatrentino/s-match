@@ -25,6 +25,8 @@ import java.util.*;
 
 /**
  * Implements a Linguistic Oracle and Sense Matcher using WordNet.
+ * <p/>
+ * Needs  JWNLPropertiesPath string parameter which should point to a JWNL configuration file.
  *
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
  * @author Aliaksandr Autayeu avtaev@gmail.com
@@ -43,8 +45,9 @@ public class WordNet extends Configurable implements ILinguisticOracle, ISenseMa
     }
 
     @Override
-    public void setProperties(Properties newProperties) throws ConfigurableException {
-        if (!newProperties.equals(properties)) {
+    public boolean setProperties(Properties newProperties) throws ConfigurableException {
+        boolean result = super.setProperties(newProperties);
+        if (result) {
             if (newProperties.containsKey(JWNL_PROPERTIES_PATH_KEY)) {
                 // initialize JWNL (this must be done before JWNL library can be used)
                 try {
@@ -66,10 +69,8 @@ public class WordNet extends Configurable implements ILinguisticOracle, ISenseMa
                 log.error(errMessage);
                 throw new ConfigurableException(errMessage);
             }
-
-            properties.clear();
-            properties.putAll(newProperties);
         }
+        return result;
     }
 
     public List<ISense> getSenses(String label) throws LinguisticOracleException {

@@ -7,7 +7,7 @@ import java.util.Map;
 
 /**
  * Default mapping implementation. Permits only one relation between source and target. Maps source and target pairs to
- * the index of the relation character stored in a string. 
+ * the index of the relation character stored in a string.
  *
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
@@ -179,7 +179,7 @@ public class Mapping<T> extends AbstractSet<IMappingElement<T>> implements IMapp
             if (IMappingElement.IDK != relation) {
                 if (relation != relations.charAt(idx)) {
                     relations.setCharAt(idx, relation);
-                    return  true;
+                    return true;
                 }
                 return false;
             } else {

@@ -3,9 +3,9 @@ package it.unitn.disi.smatch.matchers.structure.node;
 import it.unitn.disi.smatch.components.Configurable;
 import it.unitn.disi.smatch.components.ConfigurableException;
 import it.unitn.disi.smatch.data.ling.IAtomicConceptOfLabel;
-import it.unitn.disi.smatch.data.trees.INode;
 import it.unitn.disi.smatch.data.mappings.IContextMapping;
 import it.unitn.disi.smatch.data.mappings.IMappingElement;
+import it.unitn.disi.smatch.data.trees.INode;
 import it.unitn.disi.smatch.deciders.ISATSolver;
 import it.unitn.disi.smatch.deciders.SATSolverException;
 import org.apache.log4j.Logger;
@@ -13,7 +13,8 @@ import org.apache.log4j.Logger;
 import java.util.*;
 
 /**
- * Contains routines used by other matchers.
+ * Contains routines used by other matchers. Needs SATSolver configuration parameter pointing to a class implementing
+ * {@link it.unitn.disi.smatch.deciders.ISATSolver} to solve SAT problems.
  *
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
@@ -25,13 +26,21 @@ public class BaseNodeMatcher extends Configurable {
     protected ISATSolver satSolver = null;
 
     @Override
-    public void setProperties(Properties newProperties) throws ConfigurableException {
-        if (!newProperties.equals(properties)) {
-            satSolver = (ISATSolver) configureComponent(satSolver, properties, newProperties, "SAT solver", SAT_SOLVER_KEY, ISATSolver.class);
+    public boolean setProperties(Properties newProperties) throws ConfigurableException {
+        Properties oldProperties = new Properties();
+        oldProperties.putAll(properties);
 
-            properties.clear();
-            properties.putAll(newProperties);
+        boolean result = super.setProperties(newProperties);
+        if (result) {
+            if (newProperties.containsKey(SAT_SOLVER_KEY)) {
+                satSolver = (ISATSolver) configureComponent(satSolver, oldProperties, newProperties, "SAT solver", SAT_SOLVER_KEY, ISATSolver.class);
+            } else {
+                final String errMessage = "Cannot find configuration key " + SAT_SOLVER_KEY;
+                log.error(errMessage);
+                throw new ConfigurableException(errMessage);
+            }
         }
+        return result;
     }
 
     /**
@@ -43,7 +52,7 @@ public class BaseNodeMatcher extends Configurable {
      * @param targetNode        target node
      * @return axiom string and axiom count
      */
-    protected static Object[] mkAxioms(HashMap<IAtomicConceptOfLabel, Integer> hashConceptNumber, IContextMapping<IAtomicConceptOfLabel> acolMapping, INode sourceNode, INode targetNode) {
+    protected static Object[] mkAxioms(HashMap<IAtomicConceptOfLabel, String> hashConceptNumber, IContextMapping<IAtomicConceptOfLabel> acolMapping, INode sourceNode, INode targetNode) {
         StringBuilder axioms = new StringBuilder();
         Integer numberOfClauses = 0;
         // create DIMACS variables for all acols in the matching task
@@ -57,19 +66,19 @@ public class BaseNodeMatcher extends Configurable {
                 char relation = acolMapping.getRelation(sourceACoL, targetACoL);
                 if (IMappingElement.IDK != relation) {
                     //get the numbers of DIMACS variables corresponding to ACoLs
-                    String sourceVarNumber = (hashConceptNumber.get(sourceACoL)).toString();
-                    String targetVarNumber = (hashConceptNumber.get(targetACoL)).toString();
+                    String sourceVarNumber = hashConceptNumber.get(sourceACoL);
+                    String targetVarNumber = hashConceptNumber.get(targetACoL);
                     if (IMappingElement.LESS_GENERAL == relation) {
                         String tmp = "-" + sourceVarNumber + " " + targetVarNumber + " 0\n";
                         //if not already present add to axioms
                         if ((axioms.indexOf(tmp) != 0) || (axioms.indexOf("\0" + tmp) == -1)) {
-                            axioms.append("-").append(sourceVarNumber).append(" ").append(targetVarNumber).append(" 0\n");
+                            axioms.append(tmp);
                             numberOfClauses++;
                         }
                     } else if (IMappingElement.MORE_GENERAL == relation) {
                         String tmp = sourceVarNumber + " -" + targetVarNumber + " 0\n";
                         if ((axioms.indexOf(tmp) != 0) || (axioms.indexOf("\0" + tmp) == -1)) {
-                            axioms.append(sourceVarNumber).append(" -").append(targetVarNumber).append(" 0\n");
+                            axioms.append(tmp);
                             numberOfClauses++;
                         }
                     } else if (IMappingElement.EQUIVALENCE == relation) {
@@ -77,19 +86,19 @@ public class BaseNodeMatcher extends Configurable {
                             //add clauses for less and more generality
                             String tmp = "-" + sourceVarNumber + " " + targetVarNumber + " 0\n";
                             if ((axioms.indexOf(tmp) != 0) || (axioms.indexOf("\0" + tmp) == -1)) {
-                                axioms.append("-").append(sourceVarNumber).append(" ").append(targetVarNumber).append(" 0\n");
+                                axioms.append(tmp);
                                 numberOfClauses++;
                             }
                             tmp = sourceVarNumber + " -" + targetVarNumber + " 0\n";
                             if ((axioms.indexOf(tmp) != 0) || (axioms.indexOf("\0" + tmp) == -1)) {
-                                axioms.append(sourceVarNumber).append(" -").append(targetVarNumber).append(" 0\n");
+                                axioms.append(tmp);
                                 numberOfClauses++;
                             }
                         }
                     } else if (IMappingElement.DISJOINT == relation) {
                         String tmp = "-" + sourceVarNumber + " -" + targetVarNumber + " 0\n";
                         if ((axioms.indexOf(tmp) != 0) || (axioms.indexOf("\0" + tmp) == -1)) {
-                            axioms.append("-").append(sourceVarNumber).append(" -").append(targetVarNumber).append(" 0\n");
+                            axioms.append(tmp);
                             numberOfClauses++;
                         }
                     }
@@ -99,15 +108,14 @@ public class BaseNodeMatcher extends Configurable {
         return new Object[]{axioms.toString(), numberOfClauses};
     }
 
-    private static void createVariables(HashMap<IAtomicConceptOfLabel, Integer> hashConceptNumber, INode node) {
+    private static void createVariables(HashMap<IAtomicConceptOfLabel, String> hashConceptNumber, INode node) {
         // creates DIMACS variables for all concepts in the node matching task
         for (Iterator<IAtomicConceptOfLabel> i = node.getNodeData().getNodeMatchingTaskACoLs(); i.hasNext();) {
             IAtomicConceptOfLabel sourceACoL = i.next();
             //create corresponding to id variable number
             //and put it as a value of hash table with key equal to ACoL
             if (!hashConceptNumber.containsKey(sourceACoL)) {
-                Integer value = hashConceptNumber.size() + 1;
-                hashConceptNumber.put(sourceACoL, value);
+                hashConceptNumber.put(sourceACoL, Integer.toString(hashConceptNumber.size() + 1));
             }
         }
     }
@@ -122,7 +130,7 @@ public class BaseNodeMatcher extends Configurable {
      * @param node              node
      * @return formula with DIMACS variables
      */
-    protected ArrayList<ArrayList<String>> parseFormula(HashMap<IAtomicConceptOfLabel, Integer> hashConceptNumber,
+    protected ArrayList<ArrayList<String>> parseFormula(HashMap<IAtomicConceptOfLabel, String> hashConceptNumber,
                                                         Map<String, IAtomicConceptOfLabel> acolsMap, INode node) {
         ArrayList<ArrayList<String>> representation = new ArrayList<ArrayList<String>>();
         boolean saved_negation = false;
@@ -140,7 +148,7 @@ public class BaseNodeMatcher extends Configurable {
                     saved_negation = true;
                     continue;
                 }
-                String var_num = hashConceptNumber.get(acolsMap.get(var)).toString();
+                String var_num = hashConceptNumber.get(acolsMap.get(var));
                 if (negation || saved_negation) {
                     saved_negation = false;
                     var_num = "-" + var_num;
@@ -169,7 +177,7 @@ public class BaseNodeMatcher extends Configurable {
         return dimacs.toString();
     }
 
-    protected static int negateFormulaInList(HashMap<IAtomicConceptOfLabel, Integer> hashConceptNumber, ArrayList<ArrayList<String>> pivot, ArrayList<ArrayList<String>> result) {
+    protected static int negateFormulaInList(HashMap<IAtomicConceptOfLabel, String> hashConceptNumber, ArrayList<ArrayList<String>> pivot, ArrayList<ArrayList<String>> result) {
         result.clear();
         ArrayList<String> firstClause = new ArrayList<String>();
         int numberOfVariables = hashConceptNumber.size();
@@ -179,10 +187,11 @@ public class BaseNodeMatcher extends Configurable {
             }
             if (v.size() > 1) {
                 numberOfVariables++;
-                String lsn = Integer.toString(numberOfVariables);
-                firstClause.add("-" + lsn);
+                final String lsn = Integer.toString(numberOfVariables);
+                final String negatedLSN = "-" + lsn;
+                firstClause.add(negatedLSN);
                 ArrayList<String> longClause = new ArrayList<String>();
-                longClause.add("-" + lsn);
+                longClause.add(negatedLSN);
                 for (String var : v) {
                     longClause.add(var);
                     ArrayList<String> tmp = new ArrayList<String>();
@@ -193,8 +202,9 @@ public class BaseNodeMatcher extends Configurable {
                 result.add(longClause);
             }
         }
-        if (firstClause.size() > 0)
+        if (firstClause.size() > 0) {
             result.add(firstClause);
+        }
         return numberOfVariables;
     }
 
@@ -230,7 +240,7 @@ public class BaseNodeMatcher extends Configurable {
     }
 
     protected static String changeSign(String strClause) {
-        if (strClause.trim().startsWith("-")) {
+        if ('-' == strClause.charAt(0)) {
             strClause = strClause.substring(1);
         } else {
             strClause = "-" + strClause;

@@ -11,7 +11,8 @@ import java.util.List;
 import java.util.Properties;
 
 /**
- * Implements WNHierarchy matcher. See Element Level Semantic matchers paper for more details.
+ * Implements WNHierarchy matcher. See Element Level Semantic matchers paper for more details. Accepts depth integer
+ * parameter, which by default equals 2.
  *
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
  * @author Aliaksandr Autayeu avtaev@gmail.com
@@ -25,8 +26,9 @@ public class WNHierarchy extends Configurable implements ISenseGlossBasedElement
     private int depth = 2;
 
     @Override
-    public void setProperties(Properties newProperties) throws ConfigurableException {
-        if (!newProperties.equals(properties)) {
+    public boolean setProperties(Properties newProperties) throws ConfigurableException {
+        boolean result = super.setProperties(newProperties);
+        if (result) {
             if (newProperties.containsKey(DEPTH_KEY)) {
                 depth = Integer.parseInt(newProperties.getProperty(DEPTH_KEY));
             } else {
@@ -34,10 +36,8 @@ public class WNHierarchy extends Configurable implements ISenseGlossBasedElement
                 log.error(errMessage);
                 throw new ConfigurableException(errMessage);
             }
-
-            properties.clear();
-            properties.putAll(newProperties);
         }
+        return result;
     }
 
     /**

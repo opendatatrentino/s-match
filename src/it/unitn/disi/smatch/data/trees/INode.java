@@ -1,5 +1,7 @@
 package it.unitn.disi.smatch.data.trees;
 
+import it.unitn.disi.smatch.data.matrices.IIndexedObject;
+
 import javax.swing.tree.MutableTreeNode;
 import java.util.Iterator;
 
@@ -8,7 +10,7 @@ import java.util.Iterator;
  *
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
-public interface INode extends MutableTreeNode {
+public interface INode extends MutableTreeNode, IIndexedObject {
 
     /**
      * Returns the child node at index childIndex.

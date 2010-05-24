@@ -1,11 +1,12 @@
 package it.unitn.disi.smatch.loaders.mapping;
 
 import it.unitn.disi.smatch.components.Configurable;
-import it.unitn.disi.smatch.data.trees.IContext;
-import it.unitn.disi.smatch.data.trees.INode;
-import it.unitn.disi.smatch.data.mappings.ContextMapping;
+import it.unitn.disi.smatch.components.ConfigurableException;
 import it.unitn.disi.smatch.data.mappings.IContextMapping;
 import it.unitn.disi.smatch.data.mappings.IMappingElement;
+import it.unitn.disi.smatch.data.mappings.IMappingFactory;
+import it.unitn.disi.smatch.data.trees.IContext;
+import it.unitn.disi.smatch.data.trees.INode;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
@@ -15,9 +16,13 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Properties;
 
 /**
  * Loads the mapping as written by {@link it.unitn.disi.smatch.renderers.mapping.PlainMappingRenderer}.
+ * <p/>
+ * Needs mappingFactory configuration parameter, which should point to an instance of a class implementing
+ * {@link it.unitn.disi.smatch.data.mappings.IMappingFactory} interface.
  *
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
@@ -25,12 +30,33 @@ public class PlainMappingLoader extends Configurable implements IMappingLoader {
 
     private static final Logger log = Logger.getLogger(PlainMappingLoader.class);
 
+    private static final String MAPPING_FACTORY_KEY = "mappingFactory";
+    protected IMappingFactory mappingFactory = null;
+
+    @Override
+    public boolean setProperties(Properties newProperties) throws ConfigurableException {
+        Properties oldProperties = new Properties();
+        oldProperties.putAll(properties);
+
+        boolean result = super.setProperties(newProperties);
+        if (result) {
+            if (newProperties.containsKey(MAPPING_FACTORY_KEY)) {
+                mappingFactory = (IMappingFactory) configureComponent(mappingFactory, oldProperties, newProperties, "mapping factory", MAPPING_FACTORY_KEY, IMappingFactory.class);
+            } else {
+                final String errMessage = "Cannot find configuration key " + MAPPING_FACTORY_KEY;
+                log.error(errMessage);
+                throw new ConfigurableException(errMessage);
+            }
+        }
+        return result;
+    }
+
     public IContextMapping<INode> loadMapping(IContext source, IContext target, String fileName) throws MappingLoaderException {
         if (log.isEnabledFor(Level.INFO)) {
             log.info("Loading mapping: " + fileName);
         }
 
-        IContextMapping<INode> mapping = new ContextMapping<INode>(source, target);
+        IContextMapping<INode> mapping = mappingFactory.getContextMappingInstance(source, target);
 
         HashMap<String, INode> sNodes = createHash(source);
         HashMap<String, INode> tNodes = createHash(target);

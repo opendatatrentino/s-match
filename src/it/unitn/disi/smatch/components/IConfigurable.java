@@ -14,17 +14,19 @@ public interface IConfigurable {
      * reconfigure or reload subcomponents.
      *
      * @param newProperties a new configuration
-     * @throws it.unitn.disi.smatch.SMatchException
-     *          SMatchException
+     * @return true if properties have been changed
+     * @throws ConfigurableException ConfigurableException
      */
-    void setProperties(Properties newProperties) throws ConfigurableException;
+    boolean setProperties(Properties newProperties) throws ConfigurableException;
 
     /**
      * Sets component configuration by reading it from a file.
+     *
      * @param fileName .properties file name
+     * @return true if properties have been changed
      * @throws ConfigurableException ConfigurableException
      */
-    void setProperties(String fileName) throws ConfigurableException;
+    boolean setProperties(String fileName) throws ConfigurableException;
 
     Properties getProperties();
 }

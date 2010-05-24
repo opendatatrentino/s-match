@@ -40,7 +40,7 @@ public class OptimizedStageNodeMatcher extends BaseNodeMatcher implements INodeM
         if (null != sourceCNodeFormula && null != targetCNodeFormula && !"".equals(sourceCNodeFormula) && !"".equals(targetCNodeFormula) &&
                 null != sourceCLabFormula && null != targetCLabFormula && !"".equals(sourceCLabFormula) && !"".equals(targetCLabFormula)
                 ) {
-            HashMap<IAtomicConceptOfLabel, Integer> hashConceptNumber = new HashMap<IAtomicConceptOfLabel, Integer>();
+            HashMap<IAtomicConceptOfLabel, String> hashConceptNumber = new HashMap<IAtomicConceptOfLabel, String>();
             Object[] obj = mkAxioms(hashConceptNumber, acolMapping, sourceNode, targetNode);
             String axioms = (String) obj[0];
             int num_of_axiom_clauses = (Integer) obj[1];
@@ -84,7 +84,7 @@ public class OptimizedStageNodeMatcher extends BaseNodeMatcher implements INodeM
                 null != sourceCLabFormula && null != targetCLabFormula && !"".equals(sourceCLabFormula) && !"".equals(targetCLabFormula)
                 ) {
             if (sourceNode.getNodeData().getSource()) {
-                HashMap<IAtomicConceptOfLabel, Integer> hashConceptNumber = new HashMap<IAtomicConceptOfLabel, Integer>();
+                HashMap<IAtomicConceptOfLabel, String> hashConceptNumber = new HashMap<IAtomicConceptOfLabel, String>();
                 Object[] obj = mkAxioms(hashConceptNumber, acolMapping, sourceNode, targetNode);
                 String axioms = (String) obj[0];
                 int num_of_axiom_clauses = (Integer) obj[1];
@@ -103,7 +103,7 @@ public class OptimizedStageNodeMatcher extends BaseNodeMatcher implements INodeM
                 result = isUnsatisfiable(DIMACSproblem);
             } else {
                 //swap source, target and relation
-                HashMap<IAtomicConceptOfLabel, Integer> hashConceptNumber = new HashMap<IAtomicConceptOfLabel, Integer>();
+                HashMap<IAtomicConceptOfLabel, String> hashConceptNumber = new HashMap<IAtomicConceptOfLabel, String>();
                 Object[] obj = mkAxioms(hashConceptNumber, acolMapping, targetNode, sourceNode);
                 String axioms = (String) obj[0];
                 int num_of_axiom_clauses = (Integer) obj[1];

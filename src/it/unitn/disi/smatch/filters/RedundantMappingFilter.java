@@ -1,8 +1,6 @@
 package it.unitn.disi.smatch.filters;
 
 import it.unitn.disi.smatch.SMatchConstants;
-import it.unitn.disi.smatch.components.Configurable;
-import it.unitn.disi.smatch.data.mappings.ContextMapping;
 import it.unitn.disi.smatch.data.mappings.IContextMapping;
 import it.unitn.disi.smatch.data.mappings.IMappingElement;
 import it.unitn.disi.smatch.data.trees.INode;
@@ -13,7 +11,7 @@ import java.util.Iterator;
 
 /**
  * Filters mapping removing all links which logically follow from the other links in the mapping.
- *
+ * <p/>
  * For more details see:
  * <p/>
  * <a href="http://eprints.biblio.unitn.it/archive/00001525/">http://eprints.biblio.unitn.it/archive/00001525/</a>
@@ -24,7 +22,7 @@ import java.util.Iterator;
  *
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
-public class RedundantMappingFilter extends Configurable implements IMappingFilter {
+public class RedundantMappingFilter extends BaseFilter implements IMappingFilter {
 
     private static final Logger log = Logger.getLogger(RedundantMappingFilter.class);
 
@@ -38,7 +36,7 @@ public class RedundantMappingFilter extends Configurable implements IMappingFilt
         long total = (long) mapping.size();
         long reportInt = (total / 20) + 1;//i.e. report every 5%
 
-        IContextMapping<INode> result = new ContextMapping<INode>(mapping.getSourceContext(), mapping.getTargetContext());
+        IContextMapping<INode> result = mappingFactory.getContextMappingInstance(mapping.getSourceContext(), mapping.getTargetContext());
 
         for (IMappingElement<INode> e : mapping) {
             if (!isRedundant(mapping, e)) {

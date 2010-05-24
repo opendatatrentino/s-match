@@ -8,9 +8,12 @@ import it.unitn.disi.smatch.matchers.element.IStringBasedElementLevelSemanticMat
 import java.util.Properties;
 
 /**
- * Optimized edit distance.
- * http://www.merriampark.com/ldjava.htm
- * Levenshtein Distance Algorithm: Java Implementation by Chas Emerick.
+ * Optimized edit distance. Levenshtein Distance Algorithm: Java Implementation by Chas Emerick.
+ * {@url http://www.merriampark.com/ldjava.htm}
+ * <p/>
+ * Accepts the following parameters:
+ * <p/>
+ * threshold - float parameter, which by default equals 0.9.
  *
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
@@ -20,15 +23,14 @@ public class EditDistanceOptimized extends Configurable implements IStringBasedE
     private double threshold = 0.9;
 
     @Override
-    public void setProperties(Properties newProperties) throws ConfigurableException {
-        if (!newProperties.equals(properties)) {
+    public boolean setProperties(Properties newProperties) throws ConfigurableException {
+        boolean result = super.setProperties(newProperties);
+        if (result) {
             if (newProperties.containsKey(THRESHOLD_KEY)) {
                 threshold = Double.parseDouble(newProperties.getProperty(THRESHOLD_KEY));
             }
-
-            properties.clear();
-            properties.putAll(newProperties);
         }
+        return result;
     }
 
     /**

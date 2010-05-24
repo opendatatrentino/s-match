@@ -30,7 +30,7 @@ public class RedundantGeneratorMappingFilter extends Configurable implements IMa
         IContext targetContext = mapping.getTargetContext();
 
         long counter = 0;
-        long total = (long) (sourceContext.getRoot().getDescendantCount() + 1) * (long) (targetContext.getRoot().getDescendantCount() + 1);
+        long total = 2 * (long) (sourceContext.getRoot().getDescendantCount() + 1) * (long) (targetContext.getRoot().getDescendantCount() + 1);
         long reportInt = (total / 20) + 1;//i.e. report every 5%
 
         for (Iterator<INode> i = sourceContext.getRoot().getSubtree(); i.hasNext();) {
@@ -46,22 +46,30 @@ public class RedundantGeneratorMappingFilter extends Configurable implements IMa
             }
         }
 
-        // there is no concurrent modification here, because we do not add or remove links, just edit them
-        for (IMappingElement<INode> e : mapping) {
-            switch (e.getRelation()) {
-                case IMappingElement.ENTAILED_LESS_GENERAL: {
-                    mapping.setRelation(e.getSource(), e.getTarget(), IMappingElement.LESS_GENERAL);
-                    break;
+        for (Iterator<INode> i = sourceContext.getRoot().getSubtree(); i.hasNext();) {
+            INode source = i.next();
+            for (Iterator<INode> j = targetContext.getRoot().getSubtree(); j.hasNext();) {
+                INode target = j.next();
+                switch (mapping.getRelation(source, target)) {
+                    case IMappingElement.ENTAILED_LESS_GENERAL: {
+                        mapping.setRelation(source, target, IMappingElement.LESS_GENERAL);
+                        break;
+                    }
+                    case IMappingElement.ENTAILED_MORE_GENERAL: {
+                        mapping.setRelation(source, target, IMappingElement.MORE_GENERAL);
+                        break;
+                    }
+                    case IMappingElement.ENTAILED_DISJOINT: {
+                        mapping.setRelation(source, target, IMappingElement.DISJOINT);
+                        break;
+                    }
+                    default: {
+                    }
                 }
-                case IMappingElement.ENTAILED_MORE_GENERAL: {
-                    mapping.setRelation(e.getSource(), e.getTarget(), IMappingElement.MORE_GENERAL);
-                    break;
-                }
-                case IMappingElement.ENTAILED_DISJOINT: {
-                    mapping.setRelation(e.getSource(), e.getTarget(), IMappingElement.DISJOINT);
-                    break;
-                }
-                default: {
+
+                counter++;
+                if ((SMatchConstants.LARGE_TASK < total) && (0 == (counter % reportInt)) && log.isEnabledFor(Level.INFO)) {
+                    log.info(100 * counter / total + "%");
                 }
             }
         }

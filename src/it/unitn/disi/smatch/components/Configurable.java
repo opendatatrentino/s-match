@@ -34,15 +34,18 @@ public abstract class Configurable implements IConfigurable {
         this.properties = properties;
     }
 
-    public void setProperties(Properties newProperties) throws ConfigurableException {
-        properties.clear();
-        properties.putAll(newProperties);
+    public boolean setProperties(Properties newProperties) throws ConfigurableException {
+        boolean result = !newProperties.equals(properties);
+        if (result) {
+            properties.clear();
+            properties.putAll(newProperties);
+        }
+        return result;
     }
 
-    public void setProperties(String fileName) throws ConfigurableException {
-        setProperties(loadProperties(fileName));
+    public boolean setProperties(String fileName) throws ConfigurableException {
+        return setProperties(loadProperties(fileName));
     }
-
 
     public Properties getProperties() {
         return properties;
@@ -86,7 +89,7 @@ public abstract class Configurable implements IConfigurable {
         return tokenName + "." + simpleClassName + ".";
     }
 
-    protected IConfigurable configureComponent(IConfigurable component, Properties oldProperties, Properties newProperties, String componentName, String componentKey, Class componentInterface) throws ConfigurableException {
+    public static IConfigurable configureComponent(IConfigurable component, Properties oldProperties, Properties newProperties, String componentName, String componentKey, Class componentInterface) throws ConfigurableException {
         IConfigurable result = null;
         boolean addToGlobal = false;
 
@@ -186,7 +189,7 @@ public abstract class Configurable implements IConfigurable {
      * @return Properties instance
      * @throws ConfigurableException ConfigurableException
      */
-    private Properties loadProperties(String filename) throws ConfigurableException {
+    public static Properties loadProperties(String filename) throws ConfigurableException {
         log.info("Loading properties from " + filename);
         Properties properties = new Properties();
         FileInputStream input = null;

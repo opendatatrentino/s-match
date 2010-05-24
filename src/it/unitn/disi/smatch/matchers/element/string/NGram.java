@@ -9,8 +9,13 @@ import java.util.ArrayList;
 import java.util.Properties;
 
 /**
- * Implements NGram matcher.
- * See Element Level Semantic matchers paper for more details.
+ * Implements NGram matcher. See Element Level Semantic matchers paper for more details.
+ * <p/>
+ * Accepts the following parameters:
+ * <p/>
+ * threshold - float parameter, which by default equals 0.9.
+ * <p/>
+ * gramlength - integer parameter which by default equals 3.
  *
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
  * @author Aliaksandr Autayeu avtaev@gmail.com
@@ -18,14 +23,15 @@ import java.util.Properties;
 public class NGram extends Configurable implements IStringBasedElementLevelSemanticMatcher {
 
     private static final String GRAM_LENGTH_KEY = "gramlength";
-    private int gramlength = 3;
+    protected int gramlength = 3;
 
     private static final String THRESHOLD_KEY = "threshold";
-    private double threshold = 0.9;
+    protected double threshold = 0.9;
 
     @Override
-    public void setProperties(Properties newProperties) throws ConfigurableException {
-        if (!newProperties.equals(properties)) {
+    public boolean setProperties(Properties newProperties) throws ConfigurableException {
+        boolean result = super.setProperties(newProperties);
+        if (result) {
             if (newProperties.containsKey(GRAM_LENGTH_KEY)) {
                 gramlength = Integer.parseInt(newProperties.getProperty(GRAM_LENGTH_KEY));
             }
@@ -33,10 +39,8 @@ public class NGram extends Configurable implements IStringBasedElementLevelSeman
             if (newProperties.containsKey(THRESHOLD_KEY)) {
                 threshold = Double.parseDouble(newProperties.getProperty(THRESHOLD_KEY));
             }
-
-            properties.clear();
-            properties.putAll(newProperties);
         }
+        return result;
     }
 
 

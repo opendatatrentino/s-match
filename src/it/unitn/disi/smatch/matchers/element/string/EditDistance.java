@@ -8,8 +8,11 @@ import it.unitn.disi.smatch.matchers.element.IStringBasedElementLevelSemanticMat
 import java.util.Properties;
 
 /**
- * Implements Edit Distance matcher.
- * See Element Level Semantic matchers paper for more details.
+ * Implements Edit Distance matcher. See Element Level Semantic matchers paper for more details.
+ * <p/>
+ * Accepts the following parameters:
+ * <p/>
+ * threshold - float parameter, which by default equals 0.9.
  *
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
  * @author Aliaksandr Autayeu avtaev@gmail.com
@@ -24,15 +27,14 @@ public class EditDistance extends Configurable implements IStringBasedElementLev
     private double threshold = 0.9;
 
     @Override
-    public void setProperties(Properties newProperties) throws ConfigurableException {
-        if (!newProperties.equals(properties)) {
+    public boolean setProperties(Properties newProperties) throws ConfigurableException {
+        boolean result = super.setProperties(newProperties);
+        if (result) {
             if (newProperties.containsKey(THRESHOLD_KEY)) {
                 threshold = Double.parseDouble(newProperties.getProperty(THRESHOLD_KEY));
             }
-
-            properties.clear();
-            properties.putAll(newProperties);
         }
+        return result;
     }
 
 

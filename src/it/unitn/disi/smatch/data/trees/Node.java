@@ -1,6 +1,7 @@
 package it.unitn.disi.smatch.data.trees;
 
 import it.unitn.disi.smatch.data.ling.IAtomicConceptOfLabel;
+import it.unitn.disi.smatch.data.matrices.IndexedObject;
 
 import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeNode;
@@ -14,7 +15,7 @@ import java.util.*;
  *
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
-public class Node implements INode, INodeData {
+public class Node extends IndexedObject implements INode, INodeData {
 
     private INode parent;
     private List<INode> children;
@@ -41,6 +42,7 @@ public class Node implements INode, INodeData {
     private static final Iterator<IAtomicConceptOfLabel> EMPTY_ACOL_ITERATOR = Collections.<IAtomicConceptOfLabel>emptyList().iterator();
 
     // iterator which iterates over all parent nodes
+
     private static final class Ancestors implements Iterator<INode> {
         private INode current;
 
@@ -66,6 +68,7 @@ public class Node implements INode, INodeData {
     }
 
     // start with a start node and then iterates over nodes from iterator i
+
     private static final class StartIterator implements Iterator<INode> {
         private INode start;
         private Iterator<INode> i;
@@ -127,6 +130,7 @@ public class Node implements INode, INodeData {
     }
 
     // iterates over acols of a node and all acols of all parent nodes
+
     private static final class NodeMatchingTaskACoLs implements Iterator<IAtomicConceptOfLabel> {
         private Iterator<INode> ancestors;
         private Iterator<IAtomicConceptOfLabel> current;
@@ -172,6 +176,7 @@ public class Node implements INode, INodeData {
         cLabFormula = "";
         cNodeFormula = "";
         acols = null;
+        index = -1;
     }
 
     /**
