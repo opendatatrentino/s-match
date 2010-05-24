@@ -1,9 +1,12 @@
 package it.unitn.disi.smatch.data.mappings;
 
-import java.util.AbstractSet;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import it.unitn.disi.smatch.components.Configurable;
+import it.unitn.disi.smatch.components.ConfigurableException;
+import it.unitn.disi.smatch.data.ling.IAtomicConceptOfLabel;
+import it.unitn.disi.smatch.data.trees.IContext;
+import it.unitn.disi.smatch.data.trees.INode;
+
+import java.util.*;
 
 /**
  * Default mapping implementation. Permits only one relation between source and target. Maps source and target pairs to
@@ -11,7 +14,17 @@ import java.util.Map;
  *
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
-public class Mapping<T> extends AbstractSet<IMappingElement<T>> implements IMapping<T> {
+public class HashMapping<T> extends AbstractSet<IMappingElement<T>> implements IContextMapping<T>, IMappingFactory {
+
+    private IContext sourceContext;
+    private IContext targetContext;
+
+    protected Properties properties;
+
+    // source+target pairs mapped to index of relations
+    private Map<NodePair<T, T>, Integer> entries;
+    // relations for the above pairs
+    private StringBuilder relations;
 
     private static class NodePair<K, V> {
         final K key;
@@ -57,14 +70,61 @@ public class Mapping<T> extends AbstractSet<IMappingElement<T>> implements IMapp
         }
     }
 
-    // source+target pairs mapped to index of relations
-    private Map<NodePair<T, T>, Integer> entries;
-    // relations for the above pairs
-    private StringBuilder relations;
+    public HashMapping(IContext sourceContext, IContext targetContext) {
+        this.sourceContext = sourceContext;
+        this.targetContext = targetContext;
+        properties = new Properties();
+    }
 
-    public Mapping() {
+    public HashMapping(Properties properties) {
+        this.properties = properties;
+    }
+
+    public HashMapping() {
         entries = new HashMap<NodePair<T, T>, Integer>();
         relations = new StringBuilder();
+    }
+
+    public Properties getProperties() {
+        return properties;
+    }
+
+    public boolean setProperties(Properties newProperties) throws ConfigurableException {
+        boolean result = !newProperties.equals(properties);
+        if (result) {
+            properties.clear();
+            properties.putAll(newProperties);
+        }
+
+        return result;
+    }
+
+    public boolean setProperties(String fileName) throws ConfigurableException {
+        return setProperties(Configurable.loadProperties(fileName));
+    }
+
+    public IContext getSourceContext() {
+        return sourceContext;
+    }
+
+    public IContext getTargetContext() {
+        return targetContext;
+    }
+
+    public void setSourceContext(IContext newContext) {
+        sourceContext = newContext;
+    }
+
+    public void setTargetContext(IContext newContext) {
+        targetContext = newContext;
+    }
+
+    public IContextMapping<INode> getContextMappingInstance(IContext source, IContext target) {
+        return new HashMapping<INode>(source, target);
+    }
+
+    public IContextMapping<IAtomicConceptOfLabel> getACoLMappingInstance(IContext source, IContext target) {
+        return new HashMapping<IAtomicConceptOfLabel>(source, target);
     }
 
     public int size() {
