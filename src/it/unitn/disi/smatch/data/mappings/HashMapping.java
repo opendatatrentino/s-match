@@ -71,12 +71,14 @@ public class HashMapping<T> extends AbstractSet<IMappingElement<T>> implements I
     }
 
     public HashMapping(IContext sourceContext, IContext targetContext) {
+        this();
         this.sourceContext = sourceContext;
         this.targetContext = targetContext;
         properties = new Properties();
     }
 
     public HashMapping(Properties properties) {
+        this();
         this.properties = properties;
     }
 
