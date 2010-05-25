@@ -1,5 +1,6 @@
 package it.unitn.disi.smatch.data.trees;
 
+import it.unitn.disi.smatch.data.ling.AtomicConceptOfLabel;
 import it.unitn.disi.smatch.data.ling.IAtomicConceptOfLabel;
 import it.unitn.disi.smatch.data.matrices.IndexedObject;
 
@@ -441,6 +442,10 @@ public class Node extends IndexedObject implements INode, INodeData {
         } else {
             return acols.iterator();
         }
+    }
+
+    public IAtomicConceptOfLabel createACoL() {
+        return new AtomicConceptOfLabel();
     }
 
     public void addACoL(IAtomicConceptOfLabel acol) {

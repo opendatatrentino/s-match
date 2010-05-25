@@ -2,7 +2,6 @@ package it.unitn.disi.smatch.loaders.context;
 
 import it.unitn.disi.smatch.components.Configurable;
 import it.unitn.disi.smatch.components.ConfigurableException;
-import it.unitn.disi.smatch.data.ling.AtomicConceptOfLabel;
 import it.unitn.disi.smatch.data.ling.IAtomicConceptOfLabel;
 import it.unitn.disi.smatch.data.trees.Context;
 import it.unitn.disi.smatch.data.trees.IContext;
@@ -126,7 +125,7 @@ public class SimpleXMLContextLoader extends Configurable implements IContextLoad
             node.getNodeData().setId(atts.getValue("id"));
             pathToRoot.addLast(node);
         } else if ("token".equals(localName)) {
-            acol = new AtomicConceptOfLabel();
+            acol = pathToRoot.getLast().getNodeData().createACoL();
             acol.setId(Integer.parseInt(atts.getValue("id")));
         } else if ("sense".equals(localName)) {
             acol.createSense(atts.getValue("pos").charAt(0), Long.parseLong(atts.getValue("id")));

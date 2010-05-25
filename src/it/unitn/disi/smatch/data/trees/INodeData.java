@@ -112,6 +112,13 @@ public interface INodeData {
     Iterator<IAtomicConceptOfLabel> getACoLs();
 
     /**
+     * Creates an instance of an ACoL.
+     *
+     * @return an instance of an ACoL
+     */
+    IAtomicConceptOfLabel createACoL();
+
+    /**
      * Adds atomic concept of label to the node acols.
      *
      * @param acol atomic concept of label

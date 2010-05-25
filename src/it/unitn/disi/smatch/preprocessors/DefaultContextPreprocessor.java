@@ -4,7 +4,6 @@ import it.unitn.disi.smatch.SMatchConstants;
 import it.unitn.disi.smatch.SMatchException;
 import it.unitn.disi.smatch.components.Configurable;
 import it.unitn.disi.smatch.components.ConfigurableException;
-import it.unitn.disi.smatch.data.ling.AtomicConceptOfLabel;
 import it.unitn.disi.smatch.data.ling.IAtomicConceptOfLabel;
 import it.unitn.disi.smatch.data.ling.ISense;
 import it.unitn.disi.smatch.data.trees.IContext;
@@ -258,9 +257,7 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
                 String lemma = linguisticOracle.getBaseForm(labelOfNode);
 
                 // create atomic node of label
-                IAtomicConceptOfLabel ACoL = new AtomicConceptOfLabel(id_tok, labelOfNode, lemma);
-                // attach senses obtained from the oracle to the node
-                node.getNodeData().addACoL(ACoL);
+                IAtomicConceptOfLabel ACoL = createACoL(node, id_tok, labelOfNode, lemma);
                 // to token ids
                 meaningfulTokens = meaningfulTokens + id_tok + " ";
                 // add senses to ACoL
@@ -313,9 +310,7 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
                             String lemma = linguisticOracle.getBaseForm(token);
 
                             // create atomic node of label
-                            IAtomicConceptOfLabel ACoL = new AtomicConceptOfLabel(id_tok, token, lemma);
-                            // add it to node
-                            node.getNodeData().addACoL(ACoL);
+                            IAtomicConceptOfLabel ACoL = createACoL(node, id_tok, token, lemma);
                             // mark id as meaningful
                             meaningfulTokens = meaningfulTokens + id_tok + " ";
                             // if there no WN senses
@@ -338,9 +333,7 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
                 // add to list of processed labels
                 tokensOfNodeLabel.add(token);
                 // create atomic node of label
-                IAtomicConceptOfLabel ACoL = new AtomicConceptOfLabel(id_tok, token, token);
-                // attach senses obtained from the oracle to the node
-                node.getNodeData().addACoL(ACoL);
+                IAtomicConceptOfLabel ACoL = createACoL(node, id_tok, token, token);
                 // to token ids
                 meaningfulTokens = meaningfulTokens + id_tok + " ";
             }
@@ -351,6 +344,15 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
             log.error(errMessage, e);
             throw new ContextPreprocessorException(errMessage, e);
         }
+    }
+
+    private IAtomicConceptOfLabel createACoL(INode node, int id, String token, String lemma) {
+        IAtomicConceptOfLabel result = node.getNodeData().createACoL();
+        result.setId(id);
+        result.setToken(token);
+        result.setLemma(lemma);
+        node.getNodeData().addACoL(result);
+        return result;
     }
 
     /**
