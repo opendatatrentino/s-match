@@ -12,10 +12,7 @@ import it.unitn.disi.smatch.matchers.structure.node.OptimizedStageNodeMatcher;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * Matches first disjoint, then subsumptions, then joins subsumption into equivalence. For more details see technical
@@ -36,6 +33,7 @@ public class OptimizedStageTreeMatcher extends BaseTreeMatcher implements ITreeM
     private Map<String, IAtomicConceptOfLabel> targetAcols;
 
     private IContextMapping<IAtomicConceptOfLabel> acolMapping;
+    private Map<INode, ArrayList<IAtomicConceptOfLabel>> nmtAcols;
 
     // need another mapping because here we allow < and > between the same pair of nodes
     private HashSet<IMappingElement<INode>> mapping;
@@ -77,6 +75,7 @@ public class OptimizedStageTreeMatcher extends BaseTreeMatcher implements ITreeM
         targetAcols = createAcolsMap(targetContext);
 
         mapping = new HashSet<IMappingElement<INode>>();
+        nmtAcols = new HashMap<INode, ArrayList<IAtomicConceptOfLabel>>();
 
         log.info("DJ...");
         treeDisjoint(sourceContext.getRoot(), targetContext.getRoot());
@@ -123,7 +122,7 @@ public class OptimizedStageTreeMatcher extends BaseTreeMatcher implements ITreeM
             return;
         }
 
-        if (smatchMatcher.nodeDisjoint(acolMapping, sourceAcols, targetAcols, n1, n2)) {
+        if (smatchMatcher.nodeDisjoint(acolMapping, nmtAcols, sourceAcols, targetAcols, n1, n2)) {
             addRelation(n1, n2, IMappingElement.DISJOINT);
             // we skip n2 subtree, so adjust the counter
             final long skipTo = counter + n2.getDescendantCount();
@@ -152,7 +151,7 @@ public class OptimizedStageTreeMatcher extends BaseTreeMatcher implements ITreeM
         }
 
         progress();
-        if (!smatchMatcher.nodeSubsumedBy(acolMapping, sourceAcols, targetAcols, n1, n2)) {
+        if (!smatchMatcher.nodeSubsumedBy(acolMapping, nmtAcols, sourceAcols, targetAcols, n1, n2)) {
             for (Iterator<INode> i = n1.getChildren(); i.hasNext();) {
                 treeSubsumedBy(i.next(), n2);
             }

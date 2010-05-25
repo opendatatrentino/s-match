@@ -8,6 +8,8 @@ import it.unitn.disi.smatch.data.trees.INode;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -34,11 +36,13 @@ public class DefaultTreeMatcher extends BaseTreeMatcher implements ITreeMatcher 
         Map<String, IAtomicConceptOfLabel> sourceAcols = createAcolsMap(sourceContext);
         Map<String, IAtomicConceptOfLabel> targetAcols = createAcolsMap(targetContext);
 
+        Map<INode, ArrayList<IAtomicConceptOfLabel>> nmtAcols = new HashMap<INode, ArrayList<IAtomicConceptOfLabel>>();
+
         for (Iterator<INode> i = sourceContext.getRoot().getSubtree(); i.hasNext();) {
             INode sourceNode = i.next();
             for (Iterator<INode> j = targetContext.getRoot().getSubtree(); j.hasNext();) {
                 INode targetNode = j.next();
-                relation = nodeMatcher.nodeMatch(acolMapping, sourceAcols, targetAcols, sourceNode, targetNode);
+                relation = nodeMatcher.nodeMatch(acolMapping, nmtAcols, sourceAcols, targetAcols, sourceNode, targetNode);
                 mapping.setRelation(sourceNode, targetNode, relation);
 
                 counter++;

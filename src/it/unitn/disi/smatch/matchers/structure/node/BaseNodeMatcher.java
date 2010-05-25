@@ -47,59 +47,65 @@ public class BaseNodeMatcher extends Configurable {
      * Makes axioms for a CNF formula out of relations between atomic concepts.
      *
      * @param hashConceptNumber HashMap for atomic concept of labels with its id
+     * @param nmtAcols          node -> list of node matching task acols
      * @param acolMapping       mapping between atomic concepts
      * @param sourceNode        source node
      * @param targetNode        target node
      * @return axiom string and axiom count
      */
-    protected static Object[] mkAxioms(HashMap<IAtomicConceptOfLabel, String> hashConceptNumber, IContextMapping<IAtomicConceptOfLabel> acolMapping, INode sourceNode, INode targetNode) {
+    protected static Object[] mkAxioms(HashMap<IAtomicConceptOfLabel, String> hashConceptNumber,
+                                       Map<INode, ArrayList<IAtomicConceptOfLabel>> nmtAcols,
+                                       IContextMapping<IAtomicConceptOfLabel> acolMapping,
+                                       INode sourceNode, INode targetNode) {
         StringBuilder axioms = new StringBuilder();
         Integer numberOfClauses = 0;
         // create DIMACS variables for all acols in the matching task
-        createVariables(hashConceptNumber, sourceNode);
-        createVariables(hashConceptNumber, targetNode);
+        createVariables(hashConceptNumber, nmtAcols, sourceNode);
+        createVariables(hashConceptNumber, nmtAcols, targetNode);
 
-        for (Iterator<IAtomicConceptOfLabel> i = sourceNode.getNodeData().getNodeMatchingTaskACoLs(); i.hasNext();) {
-            IAtomicConceptOfLabel sourceACoL = i.next();
-            for (Iterator<IAtomicConceptOfLabel> j = targetNode.getNodeData().getNodeMatchingTaskACoLs(); j.hasNext();) {
-                IAtomicConceptOfLabel targetACoL = j.next();
-                char relation = acolMapping.getRelation(sourceACoL, targetACoL);
-                if (IMappingElement.IDK != relation) {
-                    //get the numbers of DIMACS variables corresponding to ACoLs
-                    String sourceVarNumber = hashConceptNumber.get(sourceACoL);
-                    String targetVarNumber = hashConceptNumber.get(targetACoL);
-                    if (IMappingElement.LESS_GENERAL == relation) {
-                        String tmp = "-" + sourceVarNumber + " " + targetVarNumber + " 0\n";
-                        //if not already present add to axioms
-                        if ((axioms.indexOf(tmp) != 0) || (axioms.indexOf("\0" + tmp) == -1)) {
-                            axioms.append(tmp);
-                            numberOfClauses++;
-                        }
-                    } else if (IMappingElement.MORE_GENERAL == relation) {
-                        String tmp = sourceVarNumber + " -" + targetVarNumber + " 0\n";
-                        if ((axioms.indexOf(tmp) != 0) || (axioms.indexOf("\0" + tmp) == -1)) {
-                            axioms.append(tmp);
-                            numberOfClauses++;
-                        }
-                    } else if (IMappingElement.EQUIVALENCE == relation) {
-                        if (!sourceVarNumber.equals(targetVarNumber)) {
-                            //add clauses for less and more generality
+        ArrayList<IAtomicConceptOfLabel> sourceACols = nmtAcols.get(sourceNode);
+        ArrayList<IAtomicConceptOfLabel> targetACols = nmtAcols.get(targetNode);
+        if (null != sourceACols && null != targetACols) {
+            for (IAtomicConceptOfLabel sourceACoL : sourceACols) {
+                for (IAtomicConceptOfLabel targetACoL : targetACols) {
+                    char relation = acolMapping.getRelation(sourceACoL, targetACoL);
+                    if (IMappingElement.IDK != relation) {
+                        //get the numbers of DIMACS variables corresponding to ACoLs
+                        String sourceVarNumber = hashConceptNumber.get(sourceACoL);
+                        String targetVarNumber = hashConceptNumber.get(targetACoL);
+                        if (IMappingElement.LESS_GENERAL == relation) {
                             String tmp = "-" + sourceVarNumber + " " + targetVarNumber + " 0\n";
+                            //if not already present add to axioms
                             if ((axioms.indexOf(tmp) != 0) || (axioms.indexOf("\0" + tmp) == -1)) {
                                 axioms.append(tmp);
                                 numberOfClauses++;
                             }
-                            tmp = sourceVarNumber + " -" + targetVarNumber + " 0\n";
+                        } else if (IMappingElement.MORE_GENERAL == relation) {
+                            String tmp = sourceVarNumber + " -" + targetVarNumber + " 0\n";
                             if ((axioms.indexOf(tmp) != 0) || (axioms.indexOf("\0" + tmp) == -1)) {
                                 axioms.append(tmp);
                                 numberOfClauses++;
                             }
-                        }
-                    } else if (IMappingElement.DISJOINT == relation) {
-                        String tmp = "-" + sourceVarNumber + " -" + targetVarNumber + " 0\n";
-                        if ((axioms.indexOf(tmp) != 0) || (axioms.indexOf("\0" + tmp) == -1)) {
-                            axioms.append(tmp);
-                            numberOfClauses++;
+                        } else if (IMappingElement.EQUIVALENCE == relation) {
+                            if (!sourceVarNumber.equals(targetVarNumber)) {
+                                //add clauses for less and more generality
+                                String tmp = "-" + sourceVarNumber + " " + targetVarNumber + " 0\n";
+                                if ((axioms.indexOf(tmp) != 0) || (axioms.indexOf("\0" + tmp) == -1)) {
+                                    axioms.append(tmp);
+                                    numberOfClauses++;
+                                }
+                                tmp = sourceVarNumber + " -" + targetVarNumber + " 0\n";
+                                if ((axioms.indexOf(tmp) != 0) || (axioms.indexOf("\0" + tmp) == -1)) {
+                                    axioms.append(tmp);
+                                    numberOfClauses++;
+                                }
+                            }
+                        } else if (IMappingElement.DISJOINT == relation) {
+                            String tmp = "-" + sourceVarNumber + " -" + targetVarNumber + " 0\n";
+                            if ((axioms.indexOf(tmp) != 0) || (axioms.indexOf("\0" + tmp) == -1)) {
+                                axioms.append(tmp);
+                                numberOfClauses++;
+                            }
                         }
                     }
                 }
@@ -108,10 +114,20 @@ public class BaseNodeMatcher extends Configurable {
         return new Object[]{axioms.toString(), numberOfClauses};
     }
 
-    private static void createVariables(HashMap<IAtomicConceptOfLabel, String> hashConceptNumber, INode node) {
+    private static void createVariables(HashMap<IAtomicConceptOfLabel, String> hashConceptNumber, Map<INode, ArrayList<IAtomicConceptOfLabel>> nmtAcols, INode node) {
         // creates DIMACS variables for all concepts in the node matching task
-        for (Iterator<IAtomicConceptOfLabel> i = node.getNodeData().getNodeMatchingTaskACoLs(); i.hasNext();) {
-            IAtomicConceptOfLabel sourceACoL = i.next();
+        ArrayList<IAtomicConceptOfLabel> acols = nmtAcols.get(node);
+        if (null == acols) {
+            //create acols list and cache it
+            acols = new ArrayList<IAtomicConceptOfLabel>();
+            INode curNode = node;
+            while (null != curNode) {
+                acols.addAll(curNode.getNodeData().getACoLsList());
+                curNode = curNode.getParent();
+            }
+            nmtAcols.put(node, acols);
+        }
+        for (IAtomicConceptOfLabel sourceACoL : acols) {
             //create corresponding to id variable number
             //and put it as a value of hash table with key equal to ACoL
             if (!hashConceptNumber.containsKey(sourceACoL)) {

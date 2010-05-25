@@ -130,38 +130,6 @@ public class Node extends IndexedObject implements INode, INodeData {
         }
     }
 
-    // iterates over acols of a node and all acols of all parent nodes
-
-    private static final class NodeMatchingTaskACoLs implements Iterator<IAtomicConceptOfLabel> {
-        private Iterator<INode> ancestors;
-        private Iterator<IAtomicConceptOfLabel> current;
-
-        public NodeMatchingTaskACoLs(INode start) {
-            if (null == start) {
-                throw new IllegalArgumentException("argument is null");
-            }
-            ancestors = start.getAncestors();
-            current = start.getNodeData().getACoLs();
-        }
-
-        public boolean hasNext() {
-            boolean result = current.hasNext();
-            while (!result && ancestors.hasNext()) {
-                current = ancestors.next().getNodeData().getACoLs();
-                result = current.hasNext();
-            }
-            return result;
-        }
-
-        public IAtomicConceptOfLabel next() {
-            return current.next();
-        }
-
-        public void remove() {
-            throw new UnsupportedOperationException();
-        }
-    }
-
     public Node() {
         parent = null;
         children = null;
@@ -444,6 +412,14 @@ public class Node extends IndexedObject implements INode, INodeData {
         }
     }
 
+    public List<IAtomicConceptOfLabel> getACoLsList() {
+        if (null == acols) {
+            return Collections.emptyList();
+        } else {
+            return Collections.unmodifiableList(acols);
+        }
+    }
+
     public IAtomicConceptOfLabel createACoL() {
         return new AtomicConceptOfLabel();
     }
@@ -469,10 +445,6 @@ public class Node extends IndexedObject implements INode, INodeData {
 
     public void removeACoL(IAtomicConceptOfLabel acol) {
         acols.remove(acol);
-    }
-
-    public Iterator<IAtomicConceptOfLabel> getNodeMatchingTaskACoLs() {
-        return new NodeMatchingTaskACoLs(this);
     }
 
     public void setUserObject(Object object) {

@@ -18,6 +18,7 @@ import java.util.Map;
 public class DefaultNodeMatcher extends BaseNodeMatcher implements INodeMatcher {
 
     public char nodeMatch(IContextMapping<IAtomicConceptOfLabel> acolMapping,
+                          Map<INode, ArrayList<IAtomicConceptOfLabel>> nmtAcols,
                           Map<String, IAtomicConceptOfLabel> sourceACoLs, Map<String, IAtomicConceptOfLabel> targetACoLs,
                           INode sourceNode, INode targetNode) throws NodeMatcherException {
         char result = IMappingElement.IDK;
@@ -41,7 +42,7 @@ public class DefaultNodeMatcher extends BaseNodeMatcher implements INodeMatcher 
             // number of clauses in SAT problem
             Integer numberOfClauses;
 
-            Object[] obj = mkAxioms(hashConceptNumber, acolMapping, sourceNode, targetNode);
+            Object[] obj = mkAxioms(hashConceptNumber, nmtAcols, acolMapping, sourceNode, targetNode);
             String axioms = (String) obj[0];
             int num_of_axiom_clauses = (Integer) obj[1];
             // parse formulas with acols into formulas with DIMACS variables

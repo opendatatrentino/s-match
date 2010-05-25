@@ -3,6 +3,7 @@ package it.unitn.disi.smatch.data.trees;
 import it.unitn.disi.smatch.data.ling.IAtomicConceptOfLabel;
 
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * An interface to the data part of the node.
@@ -112,6 +113,13 @@ public interface INodeData {
     Iterator<IAtomicConceptOfLabel> getACoLs();
 
     /**
+     * Returns unmodifiable list of the acols of the receiver.
+     *
+     * @return unmodifiable list of the acols of the receiver
+     */
+    List<IAtomicConceptOfLabel> getACoLsList();
+
+    /**
      * Creates an instance of an ACoL.
      *
      * @return an instance of an ACoL
@@ -146,14 +154,6 @@ public interface INodeData {
      * @param acol acol to remove
      */
     void removeACoL(IAtomicConceptOfLabel acol);
-
-    /**
-     * Returns list of atomic concepts for the node matching task. Basically, it returns all concepts from this node
-     * and all concepts from all parent nodes.
-     *
-     * @return atomic concepts for the node matching task
-     */
-    Iterator<IAtomicConceptOfLabel> getNodeMatchingTaskACoLs();
 
     Object getUserObject();
 
