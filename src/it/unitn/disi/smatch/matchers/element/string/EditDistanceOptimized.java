@@ -9,7 +9,7 @@ import java.util.Properties;
 
 /**
  * Optimized edit distance. Levenshtein Distance Algorithm: Java Implementation by Chas Emerick.
- * {@url http://www.merriampark.com/ldjava.htm}
+ * <a href="http://www.merriampark.com/ldjava.htm">http://www.merriampark.com/ldjava.htm</a>
  * <p/>
  * Accepts the following parameters:
  * <p/>

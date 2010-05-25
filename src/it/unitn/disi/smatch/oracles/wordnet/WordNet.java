@@ -342,24 +342,24 @@ public class WordNet extends Configurable implements ILinguisticOracle, ISenseMa
     /**
      * traverses PointerTargetTree.
      *
-     * @param syn
-     * @param ptnl
-     * @param source
-     * @return
+     * @param syn synonyms
+     * @param ptnl target node list
+     * @param source source synset
+     * @return if source was found
      */
     private static boolean traverseTree(PointerTargetTree syn, PointerTargetNodeList ptnl, Synset source) {
         java.util.List MGListsList = syn.toList();
-        for (int j = 0; j < MGListsList.size(); j++) {
-            PointerTargetNodeList MGList = (PointerTargetNodeList) MGListsList.get(j);
-            for (Iterator synIt = MGList.iterator(); synIt.hasNext();) {
-                Synset toAdd = ((PointerTargetNode) synIt.next()).getSynset();
+        for (Object aMGListsList : MGListsList) {
+            PointerTargetNodeList MGList = (PointerTargetNodeList) aMGListsList;
+            for (Object aMGList : MGList) {
+                Synset toAdd = ((PointerTargetNode) aMGList).getSynset();
                 if (toAdd.equals(source)) {
                     return true;
                 }
             }
         }
-        for (Iterator synIt = ptnl.iterator(); synIt.hasNext();) {
-            Synset toAdd = ((PointerTargetNode) synIt.next()).getSynset();
+        for (Object aPtnl : ptnl) {
+            Synset toAdd = ((PointerTargetNode) aPtnl).getSynset();
             if (toAdd.equals(source)) {
                 return true;
             }
@@ -370,8 +370,8 @@ public class WordNet extends Configurable implements ILinguisticOracle, ISenseMa
     /**
      * Checks unidirectionality of semantic relations in the list.
      *
-     * @param list
-     * @return
+     * @param list a list with relations
+     * @return true if relations in the list are unidirectional
      */
     private boolean isUnidirestionalList(RelationshipList list) {
         if (list.size() > 0) {

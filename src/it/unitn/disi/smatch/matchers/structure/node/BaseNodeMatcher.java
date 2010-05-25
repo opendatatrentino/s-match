@@ -134,8 +134,10 @@ public class BaseNodeMatcher extends Configurable {
             nmtAcols.put(node, acols);
 
             // cache also acol ids for node - for the nodes above it they should be cached already
-            for (IAtomicConceptOfLabel acol : node.getNodeData().getACoLsList()) {
-                acolsMap.put(node.getNodeData().getId() + "." + Integer.toString(acol.getId()), acol);
+            if (node != null) {
+                for (IAtomicConceptOfLabel acol : node.getNodeData().getACoLsList()) {
+                    acolsMap.put(node.getNodeData().getId() + "." + Integer.toString(acol.getId()), acol);
+                }
             }
         }
         for (IAtomicConceptOfLabel sourceACoL : acols) {

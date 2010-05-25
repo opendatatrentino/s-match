@@ -271,7 +271,7 @@ public class InMemoryWordNetBinaryArray extends Configurable implements ISenseMa
         log.info("Done");
     }
 
-    public static void writeNominalizations(Properties properties) throws SMatchException {
+    private static void writeNominalizations(Properties properties) throws SMatchException {
         log.info("Creating nominalizations array...");
         HashSet<Long> keys = new HashSet<Long>();
         int count = 0;
@@ -307,7 +307,7 @@ public class InMemoryWordNetBinaryArray extends Configurable implements ISenseMa
         }
     }
 
-    public static void writeSynonymsAdj(Properties properties) throws SMatchException {
+    private static void writeSynonymsAdj(Properties properties) throws SMatchException {
         log.info("Creating adjective synonyms array...");
         HashSet<Long> keys = new HashSet<Long>();
         int count = 0;
@@ -349,7 +349,7 @@ public class InMemoryWordNetBinaryArray extends Configurable implements ISenseMa
         }
     }
 
-    public static void writeOppAdverbs(Properties properties) throws SMatchException {
+    private static void writeOppAdverbs(Properties properties) throws SMatchException {
         log.info("Creating adverb antonyms array...");
         HashSet<Long> keys = new HashSet<Long>();
 
@@ -392,7 +392,7 @@ public class InMemoryWordNetBinaryArray extends Configurable implements ISenseMa
         }
     }
 
-    public static void writeOppAdjectives(Properties properties) throws SMatchException {
+    private static void writeOppAdjectives(Properties properties) throws SMatchException {
         log.info("Creating adjective antonyms array...");
         HashSet<Long> keys = new HashSet<Long>();
 
@@ -426,7 +426,7 @@ public class InMemoryWordNetBinaryArray extends Configurable implements ISenseMa
         }
     }
 
-    public static void writeOppNouns(Properties properties) throws SMatchException {
+    private static void writeOppNouns(Properties properties) throws SMatchException {
         log.info("Creating noun antonyms array...");
         HashSet<Long> keys = new HashSet<Long>();
 
@@ -462,7 +462,7 @@ public class InMemoryWordNetBinaryArray extends Configurable implements ISenseMa
         }
     }
 
-    public static void writeNounMG(Properties properties) throws SMatchException {
+    private static void writeNounMG(Properties properties) throws SMatchException {
         log.info("Creating noun mg array...");
         HashSet<Long> keys = new HashSet<Long>();
 
@@ -504,7 +504,7 @@ public class InMemoryWordNetBinaryArray extends Configurable implements ISenseMa
         }
     }
 
-    public static void writeVerbMG(Properties properties) throws SMatchException {
+    private static void writeVerbMG(Properties properties) throws SMatchException {
         log.info("Creating verb mg array...");
         HashSet<Long> keys = new HashSet<Long>();
 

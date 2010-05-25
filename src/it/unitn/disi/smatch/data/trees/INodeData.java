@@ -88,11 +88,14 @@ public interface INodeData {
 
     /**
      * Returns the acol at index index.
+     * @param index index
+     * @return acol at index index 
      */
     IAtomicConceptOfLabel getACoLAt(int index);
 
     /**
      * Returns the number of acols.
+     * @return number of acols
      */
     int getACoLCount();
 

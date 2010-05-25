@@ -66,23 +66,23 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
     private boolean debugUnrecognizedWords = false;
 
     // the words which are cut off from the area of discourse
-    public static final String MEANINGLESS_WORDS_KEY = "meaninglessWords";
+    private static final String MEANINGLESS_WORDS_KEY = "meaninglessWords";
     private String meaninglessWords = "of on to their than from for by in at is are have has the a as with your etc our into its his her which him among those against ";
 
     // the words which are treated as logical and (&)
-    public static final String AND_WORDS_KEY = "andWords";
+    private static final String AND_WORDS_KEY = "andWords";
     private String andWords = " + & ^ ";
 
     // the words which are treated as logical or (|)
-    public static final String OR_WORDS_KEY = "orWords";
+    private static final String OR_WORDS_KEY = "orWords";
     private String orWords = " and or | , ";
 
     // the words which are treated as logical not (~)
-    public static final String NOT_WORDS_KEY = "notWords";
+    private static final String NOT_WORDS_KEY = "notWords";
     private String notWords = " except non without ";
 
     // Number characters for linguistic preprocessing.
-    public static final String NUMBER_CHARACTERS_KEY = "numberCharacters";
+    private static final String NUMBER_CHARACTERS_KEY = "numberCharacters";
     private String numberCharacters = "1234567890";
 
 
@@ -333,7 +333,7 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
                 // add to list of processed labels
                 tokensOfNodeLabel.add(token);
                 // create atomic node of label
-                IAtomicConceptOfLabel ACoL = createACoL(node, id_tok, token, token);
+                createACoL(node, id_tok, token, token);
                 // to token ids
                 meaningfulTokens = meaningfulTokens + id_tok + " ";
             }

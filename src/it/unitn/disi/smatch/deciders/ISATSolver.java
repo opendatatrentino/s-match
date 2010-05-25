@@ -7,8 +7,9 @@ import it.unitn.disi.smatch.components.IConfigurable;
  * which takes as an input DIMACS string and returns true if it is satisfiable.
  *
  * DIMACS format is described in the note:
- * DIMACS Challenge - Satisfiability - Suggested Format
- * for example here: http://www.domagoj-babic.com/uploads/ResearchProjects/Spear/dimacs-cnf.pdf 
+ * DIMACS Challenge - Satisfiability - Suggested Format, which can be found for example here:
+ * <a href="http://www.domagoj-babic.com/uploads/ResearchProjects/Spear/dimacs-cnf.pdf">
+ * http://www.domagoj-babic.com/uploads/ResearchProjects/Spear/dimacs-cnf.pdf</a> 
  *
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
  * @author Aliaksandr Autayeu avtaev@gmail.com

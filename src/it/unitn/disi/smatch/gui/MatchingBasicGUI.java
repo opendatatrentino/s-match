@@ -618,7 +618,6 @@ public class MatchingBasicGUI extends JPanel
     private String runMatcher() throws ConfigurableException {
 
         String sourceFileName = sourceFileTxt.getText();
-        String targetFileName = targetFileTxt.getText();
 
         String outputFolder = sourceFileName.substring(0, sourceFileName.lastIndexOf(File.separator) + 1);
 

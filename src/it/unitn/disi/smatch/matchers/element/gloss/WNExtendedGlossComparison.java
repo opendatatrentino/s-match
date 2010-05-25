@@ -31,7 +31,7 @@ public class WNExtendedGlossComparison extends BasicGlossMatcher implements ISen
     private int threshold = 5;
 
     // the words which are cut off from the area of discourse
-    public static final String MEANINGLESS_WORDS_KEY = "meaninglessWords";
+    private static final String MEANINGLESS_WORDS_KEY = "meaninglessWords";
     private String meaninglessWords = "of on to their than from for by in at is are have has the a as with your etc our into its his her which him among those against ";
 
     @Override

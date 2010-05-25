@@ -32,7 +32,7 @@ public class CNFContextClassifier extends Configurable implements IContextClassi
      * @param in node to process
      * @throws ContextClassifierException ContextClassifierException
      */
-    public void buildCNode(INode in) throws ContextClassifierException {
+    private void buildCNode(INode in) throws ContextClassifierException {
         StringBuilder path = new StringBuilder();
         INodeData nd = in.getNodeData();
         String formula = toCNF(in, nd.getcLabFormula());
