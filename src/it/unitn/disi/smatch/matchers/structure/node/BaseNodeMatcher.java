@@ -125,8 +125,18 @@ public class BaseNodeMatcher extends Configurable {
         ArrayList<IAtomicConceptOfLabel> acols = nmtAcols.get(node);
         if (null == acols) {
             // create acols list and cache it
-            acols = new ArrayList<IAtomicConceptOfLabel>();
+
+            // count acols to allocate properly sized list
+            int acolCount = 0;
             INode curNode = node;
+            while (null != curNode) {
+                acolCount = acolCount + curNode.getNodeData().getACoLCount();
+                curNode = curNode.getParent();
+            }
+
+            // collect acols
+            acols = new ArrayList<IAtomicConceptOfLabel>(acolCount);
+            curNode = node;
             while (null != curNode) {
                 acols.addAll(curNode.getNodeData().getACoLsList());
                 curNode = curNode.getParent();
