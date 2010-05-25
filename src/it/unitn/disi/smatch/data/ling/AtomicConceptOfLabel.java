@@ -99,7 +99,11 @@ public class AtomicConceptOfLabel extends IndexedObject implements IAtomicConcep
     }
 
     public List<ISense> getSenseList() {
-        return Collections.unmodifiableList(senses);
+        if (null != senses) {
+            return Collections.unmodifiableList(senses);
+        } else {
+            return Collections.emptyList();
+        }
     }
 
     public ISense createSense(char pos, long id) {
