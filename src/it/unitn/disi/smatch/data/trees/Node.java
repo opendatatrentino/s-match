@@ -37,13 +37,7 @@ public class Node extends IndexedObject implements INode, INodeData {
     // node counter to set unique node id during creation
     private static long countNode = 0;
 
-    // iterator for nodes which have no children
-    private static final Iterator<INode> EMPTY_NODE_ITERATOR = Collections.<INode>emptyList().iterator();
-    // iterator for nodes which have no acols
-    private static final Iterator<IAtomicConceptOfLabel> EMPTY_ACOL_ITERATOR = Collections.<IAtomicConceptOfLabel>emptyList().iterator();
-
     // iterator which iterates over all parent nodes
-
     private static final class Ancestors implements Iterator<INode> {
         private INode current;
 
@@ -69,7 +63,6 @@ public class Node extends IndexedObject implements INode, INodeData {
     }
 
     // start with a start node and then iterates over nodes from iterator i
-
     private static final class StartIterator implements Iterator<INode> {
         private INode start;
         private Iterator<INode> i;
@@ -186,7 +179,7 @@ public class Node extends IndexedObject implements INode, INodeData {
 
     public Iterator<INode> getChildren() {
         if (null == children) {
-            return EMPTY_NODE_ITERATOR;
+            return Collections.<INode>emptyList().iterator();
         } else {
             return children.iterator();
         }
@@ -406,7 +399,7 @@ public class Node extends IndexedObject implements INode, INodeData {
 
     public Iterator<IAtomicConceptOfLabel> getACoLs() {
         if (null == acols) {
-            return EMPTY_ACOL_ITERATOR;
+            return Collections.<IAtomicConceptOfLabel>emptyList().iterator();
         } else {
             return acols.iterator();
         }
