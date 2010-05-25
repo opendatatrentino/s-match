@@ -71,8 +71,8 @@ public class OptimizedStageTreeMatcher extends BaseTreeMatcher implements ITreeM
             sourceNode.getNodeData().setSource(true);
         }
 
-        sourceAcols = createAcolsMap(sourceContext);
-        targetAcols = createAcolsMap(targetContext);
+        sourceAcols = new HashMap<String, IAtomicConceptOfLabel>();
+        targetAcols = new HashMap<String, IAtomicConceptOfLabel>();
 
         mapping = new HashSet<IMappingElement<INode>>();
         nmtAcols = new HashMap<INode, ArrayList<IAtomicConceptOfLabel>>();

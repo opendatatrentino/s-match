@@ -48,6 +48,8 @@ public class BaseNodeMatcher extends Configurable {
      *
      * @param hashConceptNumber HashMap for atomic concept of labels with its id
      * @param nmtAcols          node -> list of node matching task acols
+     * @param sourceACoLs       acol id -> acol object
+     * @param targetACoLs       acol id -> acol object
      * @param acolMapping       mapping between atomic concepts
      * @param sourceNode        source node
      * @param targetNode        target node
@@ -55,13 +57,15 @@ public class BaseNodeMatcher extends Configurable {
      */
     protected static Object[] mkAxioms(HashMap<IAtomicConceptOfLabel, String> hashConceptNumber,
                                        Map<INode, ArrayList<IAtomicConceptOfLabel>> nmtAcols,
+                                       Map<String, IAtomicConceptOfLabel> sourceACoLs,
+                                       Map<String, IAtomicConceptOfLabel> targetACoLs,
                                        IContextMapping<IAtomicConceptOfLabel> acolMapping,
                                        INode sourceNode, INode targetNode) {
         StringBuilder axioms = new StringBuilder();
         Integer numberOfClauses = 0;
         // create DIMACS variables for all acols in the matching task
-        createVariables(hashConceptNumber, nmtAcols, sourceNode);
-        createVariables(hashConceptNumber, nmtAcols, targetNode);
+        createVariables(hashConceptNumber, nmtAcols, sourceACoLs, sourceNode);
+        createVariables(hashConceptNumber, nmtAcols, targetACoLs, targetNode);
 
         ArrayList<IAtomicConceptOfLabel> sourceACols = nmtAcols.get(sourceNode);
         ArrayList<IAtomicConceptOfLabel> targetACols = nmtAcols.get(targetNode);
@@ -114,11 +118,13 @@ public class BaseNodeMatcher extends Configurable {
         return new Object[]{axioms.toString(), numberOfClauses};
     }
 
-    private static void createVariables(HashMap<IAtomicConceptOfLabel, String> hashConceptNumber, Map<INode, ArrayList<IAtomicConceptOfLabel>> nmtAcols, INode node) {
+    private static void createVariables(HashMap<IAtomicConceptOfLabel, String> hashConceptNumber,
+                                        Map<INode, ArrayList<IAtomicConceptOfLabel>> nmtAcols,
+                                        Map<String, IAtomicConceptOfLabel> acolsMap, INode node) {
         // creates DIMACS variables for all concepts in the node matching task
         ArrayList<IAtomicConceptOfLabel> acols = nmtAcols.get(node);
         if (null == acols) {
-            //create acols list and cache it
+            // create acols list and cache it
             acols = new ArrayList<IAtomicConceptOfLabel>();
             INode curNode = node;
             while (null != curNode) {
@@ -126,10 +132,15 @@ public class BaseNodeMatcher extends Configurable {
                 curNode = curNode.getParent();
             }
             nmtAcols.put(node, acols);
+
+            // cache also acol ids for node - for the nodes above it they should be cached already
+            for (IAtomicConceptOfLabel acol : node.getNodeData().getACoLsList()) {
+                acolsMap.put(node.getNodeData().getId() + "." + Integer.toString(acol.getId()), acol);
+            }
         }
         for (IAtomicConceptOfLabel sourceACoL : acols) {
-            //create corresponding to id variable number
-            //and put it as a value of hash table with key equal to ACoL
+            // create corresponding to id variable number
+            // and put it as a value of hash table with key equal to ACoL
             if (!hashConceptNumber.containsKey(sourceACoL)) {
                 hashConceptNumber.put(sourceACoL, Integer.toString(hashConceptNumber.size() + 1));
             }

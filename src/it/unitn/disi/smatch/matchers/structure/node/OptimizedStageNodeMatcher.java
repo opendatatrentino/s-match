@@ -42,7 +42,7 @@ public class OptimizedStageNodeMatcher extends BaseNodeMatcher implements INodeM
                 null != sourceCLabFormula && null != targetCLabFormula && !"".equals(sourceCLabFormula) && !"".equals(targetCLabFormula)
                 ) {
             HashMap<IAtomicConceptOfLabel, String> hashConceptNumber = new HashMap<IAtomicConceptOfLabel, String>();
-            Object[] obj = mkAxioms(hashConceptNumber, nmtAcols, acolMapping, sourceNode, targetNode);
+            Object[] obj = mkAxioms(hashConceptNumber, nmtAcols, sourceACoLs, targetACoLs, acolMapping, sourceNode, targetNode);
             String axioms = (String) obj[0];
             int num_of_axiom_clauses = (Integer) obj[1];
 
@@ -88,7 +88,7 @@ public class OptimizedStageNodeMatcher extends BaseNodeMatcher implements INodeM
                 ) {
             if (sourceNode.getNodeData().getSource()) {
                 HashMap<IAtomicConceptOfLabel, String> hashConceptNumber = new HashMap<IAtomicConceptOfLabel, String>();
-                Object[] obj = mkAxioms(hashConceptNumber, nmtAcols, acolMapping, sourceNode, targetNode);
+                Object[] obj = mkAxioms(hashConceptNumber, nmtAcols, sourceACoLs, targetACoLs, acolMapping, sourceNode, targetNode);
                 String axioms = (String) obj[0];
                 int num_of_axiom_clauses = (Integer) obj[1];
 
@@ -107,7 +107,7 @@ public class OptimizedStageNodeMatcher extends BaseNodeMatcher implements INodeM
             } else {
                 //swap source, target and relation
                 HashMap<IAtomicConceptOfLabel, String> hashConceptNumber = new HashMap<IAtomicConceptOfLabel, String>();
-                Object[] obj = mkAxioms(hashConceptNumber, nmtAcols, acolMapping, targetNode, sourceNode);
+                Object[] obj = mkAxioms(hashConceptNumber, nmtAcols, targetACoLs, sourceACoLs, acolMapping, targetNode, sourceNode);
                 String axioms = (String) obj[0];
                 int num_of_axiom_clauses = (Integer) obj[1];
 

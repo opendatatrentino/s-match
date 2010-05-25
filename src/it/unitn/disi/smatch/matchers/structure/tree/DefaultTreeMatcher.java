@@ -33,8 +33,8 @@ public class DefaultTreeMatcher extends BaseTreeMatcher implements ITreeMatcher 
         long total = (long) (sourceContext.getRoot().getDescendantCount() + 1) * (long) (targetContext.getRoot().getDescendantCount() + 1);
         long reportInt = (total / 20) + 1;//i.e. report every 5%
 
-        Map<String, IAtomicConceptOfLabel> sourceAcols = createAcolsMap(sourceContext);
-        Map<String, IAtomicConceptOfLabel> targetAcols = createAcolsMap(targetContext);
+        Map<String, IAtomicConceptOfLabel> sourceAcols = new HashMap<String, IAtomicConceptOfLabel>();
+        Map<String, IAtomicConceptOfLabel> targetAcols = new HashMap<String, IAtomicConceptOfLabel>();
 
         Map<INode, ArrayList<IAtomicConceptOfLabel>> nmtAcols = new HashMap<INode, ArrayList<IAtomicConceptOfLabel>>();
 
