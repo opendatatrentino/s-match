@@ -10,7 +10,6 @@ import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 /**
@@ -30,7 +29,7 @@ public class DefaultTreeMatcher extends BaseTreeMatcher implements ITreeMatcher 
         char relation;
 
         long counter = 0;
-        long total = (long) (sourceContext.getRoot().getDescendantCount() + 1) * (long) (targetContext.getRoot().getDescendantCount() + 1);
+        long total = (long) sourceContext.getNodesList().size() * (long) targetContext.getNodesList().size();
         long reportInt = (total / 20) + 1;//i.e. report every 5%
 
         Map<String, IAtomicConceptOfLabel> sourceAcols = new HashMap<String, IAtomicConceptOfLabel>();
@@ -38,10 +37,8 @@ public class DefaultTreeMatcher extends BaseTreeMatcher implements ITreeMatcher 
 
         Map<INode, ArrayList<IAtomicConceptOfLabel>> nmtAcols = new HashMap<INode, ArrayList<IAtomicConceptOfLabel>>();
 
-        for (Iterator<INode> i = sourceContext.getRoot().getSubtree(); i.hasNext();) {
-            INode sourceNode = i.next();
-            for (Iterator<INode> j = targetContext.getRoot().getSubtree(); j.hasNext();) {
-                INode targetNode = j.next();
+        for (INode sourceNode : sourceContext.getNodesList()) {
+            for (INode targetNode : targetContext.getNodesList()) {
                 relation = nodeMatcher.nodeMatch(acolMapping, nmtAcols, sourceAcols, targetAcols, sourceNode, targetNode);
                 mapping.setRelation(sourceNode, targetNode, relation);
 

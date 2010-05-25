@@ -5,8 +5,6 @@ import it.unitn.disi.smatch.data.matrices.IMatchMatrixFactory;
 import it.unitn.disi.smatch.data.trees.IContext;
 import it.unitn.disi.smatch.data.trees.INode;
 
-import java.util.Iterator;
-
 /**
  * Mapping between acols based on a matrix.
  *
@@ -30,9 +28,8 @@ public class ACoLMatrixMapping extends MatrixMapping<IAtomicConceptOfLabel> {
 
     private int getACoLCount(IContext c) {
         int result = 0;
-        for (Iterator<INode> i = c.getRoot().getSubtree(); i.hasNext();) {
-            for (Iterator<IAtomicConceptOfLabel> j = i.next().getNodeData().getACoLs(); j.hasNext();) {
-                IAtomicConceptOfLabel acol = j.next();
+        for (INode node : c.getNodesList()) {
+            for (IAtomicConceptOfLabel acol : node.getNodeData().getACoLsList()) {
                 acol.setIndex(result);
                 result++;
             }

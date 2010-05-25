@@ -9,7 +9,7 @@ import it.unitn.disi.smatch.data.trees.INode;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
-import java.util.Iterator;
+import java.util.List;
 
 /**
  * Generates entailed links which logically follow from the links in the mapping.
@@ -33,12 +33,9 @@ public class RedundantGeneratorMappingFilter extends Configurable implements IMa
         long total = 2 * (long) (sourceContext.getRoot().getDescendantCount() + 1) * (long) (targetContext.getRoot().getDescendantCount() + 1);
         long reportInt = (total / 20) + 1;//i.e. report every 5%
 
-        for (Iterator<INode> i = sourceContext.getRoot().getSubtree(); i.hasNext();) {
-            INode source = i.next();
-            for (Iterator<INode> j = targetContext.getRoot().getSubtree(); j.hasNext();) {
-                INode target = j.next();
+        for (INode source : sourceContext.getNodesList()) {
+            for (INode target : targetContext.getNodesList()) {
                 mapping.setRelation(source, target, computeMapping(mapping, source, target));
-
                 counter++;
                 if ((SMatchConstants.LARGE_TASK < total) && (0 == (counter % reportInt)) && log.isEnabledFor(Level.INFO)) {
                     log.info(100 * counter / total + "%");
@@ -46,10 +43,8 @@ public class RedundantGeneratorMappingFilter extends Configurable implements IMa
             }
         }
 
-        for (Iterator<INode> i = sourceContext.getRoot().getSubtree(); i.hasNext();) {
-            INode source = i.next();
-            for (Iterator<INode> j = targetContext.getRoot().getSubtree(); j.hasNext();) {
-                INode target = j.next();
+        for (INode source : sourceContext.getNodesList()) {
+            for (INode target : targetContext.getNodesList()) {
                 switch (mapping.getRelation(source, target)) {
                     case IMappingElement.ENTAILED_LESS_GENERAL: {
                         mapping.setRelation(source, target, IMappingElement.LESS_GENERAL);
@@ -81,7 +76,7 @@ public class RedundantGeneratorMappingFilter extends Configurable implements IMa
         return mapping;
     }
 
-    private char computeMapping(IContextMapping<INode> mapping, INode source, INode target) {
+    protected char computeMapping(IContextMapping<INode> mapping, INode source, INode target) {
         final char relation = mapping.getRelation(source, target);
         if (IMappingElement.DISJOINT == relation) {
             return IMappingElement.DISJOINT;
@@ -165,54 +160,53 @@ public class RedundantGeneratorMappingFilter extends Configurable implements IMa
     // and then all the rest is not removed because of the "gap"
 
     protected boolean verifyCondition1(IContextMapping<INode> mapping, INode source, INode target) {
-        return findRelation(mapping, IMappingElement.LESS_GENERAL, source.getAncestors(), target) ||
-                findRelation(mapping, IMappingElement.LESS_GENERAL, source, target.getDescendants()) ||
-                findRelation(mapping, IMappingElement.LESS_GENERAL, source.getAncestors(), target.getDescendants()) ||
+        return findRelation(mapping, IMappingElement.LESS_GENERAL, source.getAncestorsList(), target) ||
+                findRelation(mapping, IMappingElement.LESS_GENERAL, source, target.getDescendantsList()) ||
+                findRelation(mapping, IMappingElement.LESS_GENERAL, source.getAncestorsList(), target.getDescendantsList()) ||
 
-                findRelation(mapping, IMappingElement.EQUIVALENCE, source.getAncestors(), target) ||
-                findRelation(mapping, IMappingElement.EQUIVALENCE, source, target.getDescendants()) ||
-                findRelation(mapping, IMappingElement.EQUIVALENCE, source.getAncestors(), target.getDescendants());
+                findRelation(mapping, IMappingElement.EQUIVALENCE, source.getAncestorsList(), target) ||
+                findRelation(mapping, IMappingElement.EQUIVALENCE, source, target.getDescendantsList()) ||
+                findRelation(mapping, IMappingElement.EQUIVALENCE, source.getAncestorsList(), target.getDescendantsList());
     }
 
     protected boolean verifyCondition2(IContextMapping<INode> mapping, INode source, INode target) {
-        return findRelation(mapping, IMappingElement.MORE_GENERAL, source, target.getAncestors()) ||
-                findRelation(mapping, IMappingElement.MORE_GENERAL, source.getDescendants(), target) ||
-                findRelation(mapping, IMappingElement.MORE_GENERAL, source.getDescendants(), target.getAncestors()) ||
+        return findRelation(mapping, IMappingElement.MORE_GENERAL, source, target.getAncestorsList()) ||
+                findRelation(mapping, IMappingElement.MORE_GENERAL, source.getDescendantsList(), target) ||
+                findRelation(mapping, IMappingElement.MORE_GENERAL, source.getDescendantsList(), target.getAncestorsList()) ||
 
-                findRelation(mapping, IMappingElement.EQUIVALENCE, source, target.getAncestors()) ||
-                findRelation(mapping, IMappingElement.EQUIVALENCE, source.getDescendants(), target) ||
-                findRelation(mapping, IMappingElement.EQUIVALENCE, source.getDescendants(), target.getAncestors());
+                findRelation(mapping, IMappingElement.EQUIVALENCE, source, target.getAncestorsList()) ||
+                findRelation(mapping, IMappingElement.EQUIVALENCE, source.getDescendantsList(), target) ||
+                findRelation(mapping, IMappingElement.EQUIVALENCE, source.getDescendantsList(), target.getAncestorsList());
     }
 
     protected boolean verifyCondition3(IContextMapping<INode> mapping, INode source, INode target) {
-        return findRelation(mapping, IMappingElement.DISJOINT, source, target.getAncestors()) ||
-                findRelation(mapping, IMappingElement.DISJOINT, source.getAncestors(), target) ||
-                findRelation(mapping, IMappingElement.DISJOINT, source.getAncestors(), target.getAncestors());
+        return findRelation(mapping, IMappingElement.DISJOINT, source, target.getAncestorsList()) ||
+                findRelation(mapping, IMappingElement.DISJOINT, source.getAncestorsList(), target) ||
+                findRelation(mapping, IMappingElement.DISJOINT, source.getAncestorsList(), target.getAncestorsList());
     }
 
-    public boolean findRelation(IContextMapping<INode> mapping, char relation, Iterator<INode> sourceNodes, INode targetNode) {
-        while (sourceNodes.hasNext()) {
-            if (relation == getRelation(mapping, sourceNodes.next(), targetNode)) {
+    protected boolean findRelation(IContextMapping<INode> mapping, char relation, List<INode> sourceNodes, INode targetNode) {
+        for (INode sourceNode : sourceNodes) {
+            if (relation == getRelation(mapping, sourceNode, targetNode)) {
                 return true;
             }
         }
         return false;
     }
 
-    public boolean findRelation(IContextMapping<INode> mapping, char relation, INode sourceNode, Iterator<INode> targetNodes) {
-        while (targetNodes.hasNext()) {
-            if (relation == getRelation(mapping, sourceNode, targetNodes.next())) {
+    protected boolean findRelation(IContextMapping<INode> mapping, char relation, INode sourceNode, List<INode> targetNodes) {
+        for (INode targetNode : targetNodes) {
+            if (relation == getRelation(mapping, sourceNode, targetNode)) {
                 return true;
             }
         }
         return false;
     }
 
-    public boolean findRelation(IContextMapping<INode> mapping, char relation, Iterator<INode> sourceNodes, Iterator<INode> targetNodes) {
-        while (sourceNodes.hasNext()) {
-            INode sourceNode = sourceNodes.next();
-            while (targetNodes.hasNext()) {
-                if (relation == getRelation(mapping, sourceNode, targetNodes.next())) {
+    protected boolean findRelation(IContextMapping<INode> mapping, char relation, List<INode> sourceNodes, List<INode> targetNodes) {
+        for (INode sourceNode : sourceNodes) {
+            for (INode targetNode : targetNodes) {
+                if (relation == getRelation(mapping, sourceNode, targetNode)) {
                     return true;
                 }
             }

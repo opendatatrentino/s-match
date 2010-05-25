@@ -20,6 +20,10 @@ public class Node extends IndexedObject implements INode, INodeData {
 
     private INode parent;
     private ArrayList<INode> children;
+    private ArrayList<INode> ancestors;
+    private int ancestorCount;
+    private ArrayList<INode> descendants;
+    private int descendantCount; 
 
     // id is needed to store cNodeFormulas correctly.
     // cNodeFormula is made of cLabFormulas, each of which refers to tokens and tokens should have unique id
@@ -63,7 +67,7 @@ public class Node extends IndexedObject implements INode, INodeData {
     }
 
     // start with a start node and then iterates over nodes from iterator i
-    private static final class StartIterator implements Iterator<INode> {
+    static final class StartIterator implements Iterator<INode> {
         private INode start;
         private Iterator<INode> i;
 
@@ -94,7 +98,7 @@ public class Node extends IndexedObject implements INode, INodeData {
         }
     }
 
-    private static final class BreadthFirstSearch implements Iterator<INode> {
+    static final class BreadthFirstSearch implements Iterator<INode> {
         private Deque<INode> queue;
 
         public BreadthFirstSearch(INode start) {
@@ -126,6 +130,11 @@ public class Node extends IndexedObject implements INode, INodeData {
     public Node() {
         parent = null;
         children = null;
+        ancestors = null;
+        ancestorCount = -1;
+        descendants = null;
+        descendantCount = -1;
+
 
         source = false;
         // need to set node id to keep track of acols in c@node formulas
@@ -182,6 +191,14 @@ public class Node extends IndexedObject implements INode, INodeData {
             return Collections.<INode>emptyList().iterator();
         } else {
             return children.iterator();
+        }
+    }
+
+    public List<INode> getChildrenList() {
+        if (null != children) {
+            return Collections.unmodifiableList(children);
+        } else {
+            return Collections.emptyList();
         }
     }
 
@@ -262,23 +279,32 @@ public class Node extends IndexedObject implements INode, INodeData {
     }
 
     public int getAncestorCount() {
-        INode parent;
-        int levels = 0;
-
-        parent = this;
-        while ((parent = parent.getParent()) != null) {
-            levels++;
+        if (-1 == ancestorCount) {
+            if (null == ancestors) {
+                ancestorCount = 0;
+                if (null != parent) {
+                    ancestorCount = parent.getAncestorCount() + 1;
+                }
+            } else {
+                ancestorCount = ancestors.size();
+            }
         }
-
-        return levels;
+        return ancestorCount;
     }
 
     public Iterator<INode> getAncestors() {
         return new Ancestors(this);
     }
 
-    public Iterator<INode> getSupertree() {
-        return new StartIterator(this, getAncestors());
+    public List<INode> getAncestorsList() {
+        if (null == ancestors) {
+            ancestors = new ArrayList<INode>(getAncestorCount());
+            if (null != parent) {
+                ancestors.add(parent);
+                ancestors.addAll(parent.getAncestorsList());
+            }
+        }
+        return Collections.unmodifiableList(ancestors);
     }
 
     public int getLevel() {
@@ -286,16 +312,36 @@ public class Node extends IndexedObject implements INode, INodeData {
     }
 
     public int getDescendantCount() {
-        int result = 0;
-        for (Iterator<INode> i = getDescendants(); i.hasNext();) {
-            i.next();
-            result++;
+        if (-1 == descendantCount) {
+            if (null == descendants) {
+                descendantCount = 0;
+                for (Iterator<INode> i = getDescendants(); i.hasNext();) {
+                    i.next();
+                    descendantCount++;
+                }
+            } else {
+                descendantCount = descendants.size();
+            }
         }
-        return result;
+        return descendantCount;
     }
 
     public Iterator<INode> getDescendants() {
         return new BreadthFirstSearch(this);
+    }
+
+    public List<INode> getDescendantsList() {
+        if (null == descendants) {
+            descendants = new ArrayList<INode>(getChildCount());
+            if (null != children) {
+                descendants.addAll(children);
+                for (INode child : children) {
+                    descendants.addAll(child.getDescendantsList());
+                }
+                descendants.trimToSize();
+            }
+        }
+        return Collections.unmodifiableList(descendants);
     }
 
     public Iterator<INode> getSubtree() {

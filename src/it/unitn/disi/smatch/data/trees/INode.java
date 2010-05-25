@@ -4,6 +4,7 @@ import it.unitn.disi.smatch.data.matrices.IIndexedObject;
 
 import javax.swing.tree.MutableTreeNode;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * An interface to a node.
@@ -37,6 +38,13 @@ public interface INode extends MutableTreeNode, IIndexedObject {
      * @return the iterator over the children of the receiver
      */
     Iterator<INode> getChildren();
+
+    /**
+     * Returns unmodifiable list of receivers children.
+     *
+     * @return unmodifiable list of receivers children
+     */
+    List<INode> getChildrenList();
 
     /**
      * Creates a child to the given node as the last child.
@@ -129,12 +137,11 @@ public interface INode extends MutableTreeNode, IIndexedObject {
     Iterator<INode> getAncestors();
 
     /**
-     * Returns ancestors of the receiver including receiver. The returned list is ordered from the parent node
-     * to the root.
+     * Returns unmodifiable list of receivers ancestors.
      *
-     * @return ancestors of the receiver including receiver
+     * @return unmodifiable list of receivers ancestors
      */
-    Iterator<INode> getSupertree();
+    List<INode> getAncestorsList();
 
     /**
      * Returns the number of levels above this node -- the distance from
@@ -159,11 +166,11 @@ public interface INode extends MutableTreeNode, IIndexedObject {
     Iterator<INode> getDescendants();
 
     /**
-     * Returns descendants of the receiver including receiver. The descendants are ordered breadth first.
+     * Returns unmodifiable list of receivers descendants.
      *
-     * @return descendants of the receiver including receiver
+     * @return unmodifiable list of receivers children
      */
-    Iterator<INode> getSubtree();
+    List<INode> getDescendantsList();
 
     /**
      * Returns interface to the node metadata.

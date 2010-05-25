@@ -28,21 +28,21 @@ public class OptimizedStageTreeMatcher extends BaseTreeMatcher implements ITreeM
 
     private static final Logger log = Logger.getLogger(OptimizedStageTreeMatcher.class);
 
-    private OptimizedStageNodeMatcher smatchMatcher;
-    private Map<String, IAtomicConceptOfLabel> sourceAcols;
-    private Map<String, IAtomicConceptOfLabel> targetAcols;
+    protected OptimizedStageNodeMatcher smatchMatcher;
+    protected Map<String, IAtomicConceptOfLabel> sourceAcols;
+    protected Map<String, IAtomicConceptOfLabel> targetAcols;
 
-    private IContextMapping<IAtomicConceptOfLabel> acolMapping;
-    private Map<INode, ArrayList<IAtomicConceptOfLabel>> nmtAcols;
+    protected IContextMapping<IAtomicConceptOfLabel> acolMapping;
+    protected Map<INode, ArrayList<IAtomicConceptOfLabel>> nmtAcols;
 
     // need another mapping because here we allow < and > between the same pair of nodes
-    private HashSet<IMappingElement<INode>> mapping;
+    protected HashSet<IMappingElement<INode>> mapping;
 
-    private long counter = 0;
-    private long total;
-    private long reportInt;
+    protected long counter = 0;
+    protected long total;
+    protected long reportInt;
 
-    private boolean direction;
+    protected boolean direction;
 
     @Override
     public boolean setProperties(Properties newProperties) throws ConfigurableException {
@@ -62,11 +62,10 @@ public class OptimizedStageTreeMatcher extends BaseTreeMatcher implements ITreeM
     public IContextMapping<INode> treeMatch(IContext sourceContext, IContext targetContext, IContextMapping<IAtomicConceptOfLabel> acolMapping) throws TreeMatcherException {
         this.acolMapping = acolMapping;
 
-        total = (long) (sourceContext.getRoot().getDescendantCount() + 1) * (long) (targetContext.getRoot().getDescendantCount() + 1);
+        total = (long) sourceContext.getNodesList().size() * (long) targetContext.getNodesList().size();
         reportInt = (total / 20) + 1;//i.e. report every 5%
 
-        for (Iterator<INode> i = sourceContext.getRoot().getSubtree(); i.hasNext();) {
-            INode sourceNode = i.next();
+        for (INode sourceNode : sourceContext.getNodesList()) {
             // this is to distinguish below, in matcher, for axiom creation
             sourceNode.getNodeData().setSource(true);
         }
@@ -104,17 +103,17 @@ public class OptimizedStageTreeMatcher extends BaseTreeMatcher implements ITreeM
         return result;
     }
 
-    private void treeDisjoint(INode n1, INode n2) throws TreeMatcherException {
+    protected void treeDisjoint(INode n1, INode n2) throws TreeMatcherException {
         nodeTreeDisjoint(n1, n2);
-        for (Iterator<INode> i = n1.getChildren(); i.hasNext();) {
-            treeDisjoint(i.next(), n2);
+        for (INode child : n1.getChildrenList()) {
+            treeDisjoint(child, n2);
         }
     }
 
-    private void nodeTreeDisjoint(INode n1, INode n2) throws TreeMatcherException {
-        if (findRelation(n1.getAncestors(), n2, IMappingElement.DISJOINT)) {
+    protected void nodeTreeDisjoint(INode n1, INode n2) throws TreeMatcherException {
+        if (findRelation(n1.getAncestorsList(), n2, IMappingElement.DISJOINT)) {
             // we skip n2 subtree, so adjust the counter
-            final long skipTo = counter + n2.getDescendantCount();
+            final long skipTo = counter + n2.getDescendantsList().size();
             while (counter < skipTo) {
                 progress();
             }
@@ -125,7 +124,7 @@ public class OptimizedStageTreeMatcher extends BaseTreeMatcher implements ITreeM
         if (smatchMatcher.nodeDisjoint(acolMapping, nmtAcols, sourceAcols, targetAcols, n1, n2)) {
             addRelation(n1, n2, IMappingElement.DISJOINT);
             // we skip n2 subtree, so adjust the counter
-            final long skipTo = counter + n2.getDescendantCount();
+            final long skipTo = counter + n2.getDescendantsList().size();
             while (counter < skipTo) {
                 progress();
             }
@@ -134,15 +133,15 @@ public class OptimizedStageTreeMatcher extends BaseTreeMatcher implements ITreeM
 
         progress();
 
-        for (Iterator<INode> i = n2.getChildren(); i.hasNext();) {
-            nodeTreeDisjoint(n1, i.next());
+        for (INode child : n2.getChildrenList()) {
+            nodeTreeDisjoint(n1, child);
         }
     }
 
-    private boolean treeSubsumedBy(INode n1, INode n2) throws TreeMatcherException {
+    protected boolean treeSubsumedBy(INode n1, INode n2) throws TreeMatcherException {
         if (findRelation(n1, n2, IMappingElement.DISJOINT)) {
             // we skip n1 subtree, so adjust the counter
-            final long skipTo = counter + n1.getDescendantCount();
+            final long skipTo = counter + n1.getDescendantsList().size();
             while (counter < skipTo) {
                 progress();
             }
@@ -152,13 +151,13 @@ public class OptimizedStageTreeMatcher extends BaseTreeMatcher implements ITreeM
 
         progress();
         if (!smatchMatcher.nodeSubsumedBy(acolMapping, nmtAcols, sourceAcols, targetAcols, n1, n2)) {
-            for (Iterator<INode> i = n1.getChildren(); i.hasNext();) {
-                treeSubsumedBy(i.next(), n2);
+            for (INode child : n1.getChildrenList()) {
+                treeSubsumedBy(child, n2);
             }
         } else {
             boolean lastNodeFound = false;
-            for (Iterator<INode> i = n2.getChildren(); i.hasNext();) {
-                if (treeSubsumedBy(n1, i.next())) {
+            for (INode child : n2.getChildrenList()) {
+                if (treeSubsumedBy(n1, child)) {
                     lastNodeFound = true;
                 }
             }
@@ -167,7 +166,7 @@ public class OptimizedStageTreeMatcher extends BaseTreeMatcher implements ITreeM
             }
 
             // we skip n1 subtree, so adjust the counter
-            final long skipTo = counter + n1.getDescendantCount();
+            final long skipTo = counter + n1.getDescendantsList().size();
             while (counter < skipTo) {
                 progress();
             }
@@ -177,7 +176,7 @@ public class OptimizedStageTreeMatcher extends BaseTreeMatcher implements ITreeM
         return false;
     }
 
-    private IContextMapping<INode> treeEquiv(HashSet<IMappingElement<INode>> mapping, IContext sourceContext, IContext targetContext) {
+    protected IContextMapping<INode> treeEquiv(HashSet<IMappingElement<INode>> mapping, IContext sourceContext, IContext targetContext) {
         IContextMapping<INode> result = mappingFactory.getContextMappingInstance(sourceContext, targetContext);
         if (log.isEnabledFor(Level.INFO)) {
             log.info("Mapping before TreeEquiv: " + mapping.size());
@@ -209,7 +208,7 @@ public class OptimizedStageTreeMatcher extends BaseTreeMatcher implements ITreeM
         return result;
     }
 
-    private void addSubsumptionRelation(INode n1, INode n2) {
+    protected void addSubsumptionRelation(INode n1, INode n2) {
         if (direction) {
             mapping.add(createMappingElement(n1, n2, IMappingElement.LESS_GENERAL));
         } else {
@@ -217,18 +216,16 @@ public class OptimizedStageTreeMatcher extends BaseTreeMatcher implements ITreeM
         }
     }
 
-
-    private void addRelation(INode n1, INode n2, char relation) {
+    protected void addRelation(INode n1, INode n2, char relation) {
         mapping.add(createMappingElement(n1, n2, relation));
     }
 
-    private boolean findRelation(INode sourceNode, INode targetNode, char relation) {
+    protected boolean findRelation(INode sourceNode, INode targetNode, char relation) {
         return mapping.contains(createMappingElement(sourceNode, targetNode, relation));
     }
 
-    private boolean findRelation(Iterator<INode> sourceNodes, INode targetNode, char relation) {
-        while (sourceNodes.hasNext()) {
-            INode sourceNode = sourceNodes.next();
+    protected boolean findRelation(List<INode> sourceNodes, INode targetNode, char relation) {
+        for (INode sourceNode : sourceNodes) {
             if (mapping.contains(createMappingElement(sourceNode, targetNode, relation))) {
                 return true;
             }
@@ -236,14 +233,14 @@ public class OptimizedStageTreeMatcher extends BaseTreeMatcher implements ITreeM
         return false;
     }
 
-    private void progress() {
+    protected void progress() {
         counter++;
         if ((SMatchConstants.LARGE_TASK < total) && (0 == (counter % reportInt)) && log.isEnabledFor(Level.INFO)) {
             log.info(100 * counter / total + "%");
         }
     }
 
-    private static IMappingElement<INode> createMappingElement(INode source, INode target, char relation) {
+    protected static IMappingElement<INode> createMappingElement(INode source, INode target, char relation) {
         return new ReversingMappingElement(source, target, relation);
     }
 }

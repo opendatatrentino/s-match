@@ -201,7 +201,7 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
         int total = context.getRoot().getDescendantCount() + 1;
         int reportInt = (total / 20) + 1;//i.e. report every 5%
 
-        for (Iterator<INode> i = context.getRoot().getSubtree(); i.hasNext();) {
+        for (Iterator<INode> i = context.getNodes(); i.hasNext();) {
             processNode(i.next());
 
             counter++;
@@ -616,7 +616,7 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
      * @throws ContextPreprocessorException ContextPreprocessorException
      */
     private IContext findMultiwordsInContextStructure(IContext context) throws ContextPreprocessorException {
-        for (Iterator<INode> i = context.getRoot().getSubtree(); i.hasNext();) {
+        for (Iterator<INode> i = context.getNodes(); i.hasNext();) {
             INode sourceNode = i.next();
             // sense disambiguation within the context structure
             // for all ACoLs in the source node
@@ -654,7 +654,7 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
     private void senseFiltering(IContext context) throws SenseMatcherException {
         HashMap<IAtomicConceptOfLabel, List<ISense>> refinedSenses = new HashMap<IAtomicConceptOfLabel, List<ISense>>();
 
-        for (Iterator<INode> i = context.getRoot().getSubtree(); i.hasNext();) {
+        for (Iterator<INode> i = context.getNodes(); i.hasNext();) {
             INode sourceNode = i.next();
             // if node is complex
             if (1 < sourceNode.getNodeData().getACoLCount()) {
@@ -702,7 +702,7 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
         // Loop on senses of the all concepts and assign to them
         // senses mark as refined on the previous step
         // If there are no refined senses save the original ones
-        for (Iterator<INode> i = context.getRoot().getSubtree(); i.hasNext();) {
+        for (Iterator<INode> i = context.getNodes(); i.hasNext();) {
             for (Iterator<IAtomicConceptOfLabel> j = i.next().getNodeData().getACoLs(); j.hasNext();) {
                 IAtomicConceptOfLabel acol = j.next();
                 List<ISense> refined = refinedSenses.get(acol);

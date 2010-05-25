@@ -11,13 +11,12 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Iterator;
 
 /**
  * Loads context from a tab-separated file. Expects a single-rooted hierarchy, otherwise adds an artificial "Top" node.
  * Each line of the file should contain one label, indented with a number of tabs equal to the level of the node.
  * For example:
- *
+ * <p/>
  * Courses
  * \tCollege of Arts and Sciences
  * \t\tEarth and Atmospheric Sciences
@@ -26,7 +25,7 @@ import java.util.Iterator;
  * \t\t\tAmerica History
  * \t\t\tAncient European History
  * \t\tComputer Science
- * 
+ *
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
  * @author Aliaksandr Autayeu avtaev@gmail.com
  * @author Juan Pane pane@disi.unitn.it
@@ -35,7 +34,7 @@ public class TabContextLoader extends Configurable implements IContextLoader {
 
     private static final Logger log = Logger.getLogger(TabContextLoader.class);
 
-    private int nodesParsed = 0;
+    protected int nodesParsed = 0;
 
     public IContext loadContext(String fileName) throws ContextLoaderException {
         IContext result = null;
@@ -44,13 +43,7 @@ public class TabContextLoader extends Configurable implements IContextLoader {
             try {
                 result = process(input);
                 log.info("Parsed nodes: " + nodesParsed);
-
-                // create ids for nodes
-                nodesParsed = 0;
-                for (Iterator<INode> i = result.getRoot().getSubtree(); i.hasNext();) {
-                    i.next().getNodeData().setId("n" + Integer.toString(nodesParsed));
-                    nodesParsed++;
-                }
+                createIds(result);
             } finally {
                 input.close();
             }
@@ -60,6 +53,14 @@ public class TabContextLoader extends Configurable implements IContextLoader {
             throw new ContextLoaderException(errMessage, e);
         }
         return result;
+    }
+
+    protected void createIds(IContext result) {
+        nodesParsed = 0;
+        for (INode node : result.getNodesList()) {
+            node.getNodeData().setId("n" + Integer.toString(nodesParsed));
+            nodesParsed++;
+        }
     }
 
     private IContext process(BufferedReader input) throws IOException {

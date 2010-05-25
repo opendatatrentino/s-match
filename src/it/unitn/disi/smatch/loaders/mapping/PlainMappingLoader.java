@@ -15,7 +15,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Properties;
 
 /**
@@ -172,7 +171,7 @@ public class PlainMappingLoader extends Configurable implements IMappingLoader {
      * @param node the interface of data structure of input node
      * @return the string of the path from root to node
      */
-    private String getNodePathToRoot(INode node) {
+    protected String getNodePathToRoot(INode node) {
         StringBuilder sb = new StringBuilder();
         INode parent = node;
         while (null != parent) {
@@ -193,12 +192,11 @@ public class PlainMappingLoader extends Configurable implements IMappingLoader {
      * @param context a context
      * @return a hash table which contains path from root to node for each node
      */
-    private HashMap<String, INode> createHash(IContext context) {
+    protected HashMap<String, INode> createHash(IContext context) {
         HashMap<String, INode> result = new HashMap<String, INode>();
 
         int nodeCount = 0;
-        for (Iterator<INode> i = context.getRoot().getSubtree(); i.hasNext();) {
-            INode node = i.next();
+        for (INode node : context.getNodesList()) {
             result.put(getNodePathToRoot(node), node);
             nodeCount++;
         }

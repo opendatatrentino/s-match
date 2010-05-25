@@ -16,7 +16,6 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
@@ -150,14 +149,10 @@ public class MatcherLibrary extends Configurable implements IMatcherLibrary {
         long counter = 0;
         long total = getACoLCount(sourceContext) * getACoLCount(targetContext);
         long reportInt = (total / 20) + 1;//i.e. report every 5%
-        for (Iterator<INode> i = sourceContext.getRoot().getSubtree(); i.hasNext();) {
-            INode sourceNode = i.next();
-            for (Iterator<IAtomicConceptOfLabel> ii = sourceNode.getNodeData().getACoLs(); ii.hasNext();) {
-                IAtomicConceptOfLabel sourceACoL = ii.next();
-                for (Iterator<INode> j = targetContext.getRoot().getSubtree(); j.hasNext();) {
-                    INode targetNode = j.next();
-                    for (Iterator<IAtomicConceptOfLabel> jj = targetNode.getNodeData().getACoLs(); jj.hasNext();) {
-                        IAtomicConceptOfLabel targetACoL = jj.next();
+        for (INode sourceNode : sourceContext.getNodesList()) {
+            for (IAtomicConceptOfLabel sourceACoL : sourceNode.getNodeData().getACoLsList()) {
+                for (INode targetNode : targetContext.getNodesList()) {
+                    for (IAtomicConceptOfLabel targetACoL : targetNode.getNodeData().getACoLsList()) {
                         //Use Element level semantic matchers library
                         //to check the relation holding between two ACoLs represented by lists of WN senses and tokens
                         final char relation = getRelation(sourceACoL, targetACoL);
@@ -182,7 +177,7 @@ public class MatcherLibrary extends Configurable implements IMatcherLibrary {
      * @return relation between concepts
      * @throws MatcherLibraryException MatcherLibraryException
      */
-    public char getRelation(IAtomicConceptOfLabel sourceACoL, IAtomicConceptOfLabel targetACoL) throws MatcherLibraryException {
+    protected char getRelation(IAtomicConceptOfLabel sourceACoL, IAtomicConceptOfLabel targetACoL) throws MatcherLibraryException {
         try {
             char relation = senseMatcher.getRelation(sourceACoL.getSenseList(), targetACoL.getSenseList());
 
@@ -194,7 +189,7 @@ public class MatcherLibrary extends Configurable implements IMatcherLibrary {
                     //if they did not find relation
                     if (IMappingElement.IDK == relation) {
                         //use sense and gloss based matchers
-                        relation = getRelationFromSenseGlossMatchers(sourceACoL.getSenses(), targetACoL.getSenses());
+                        relation = getRelationFromSenseGlossMatchers(sourceACoL.getSenseList(), targetACoL.getSenseList());
                     }
                 }
             }
@@ -232,19 +227,21 @@ public class MatcherLibrary extends Configurable implements IMatcherLibrary {
      * @return semantic relation between two sets of senses
      * @throws MatcherLibraryException MatcherLibraryException
      */
-    private char getRelationFromSenseGlossMatchers(Iterator<ISense> sourceSenses, Iterator<ISense> targetSenses) throws MatcherLibraryException {
+    private char getRelationFromSenseGlossMatchers(List<ISense> sourceSenses, List<ISense> targetSenses) throws MatcherLibraryException {
         try {
             char relation = IMappingElement.IDK;
-            while (sourceSenses.hasNext()) {
-                ISynset sourceSynset = linguisticOracle.getISynset(sourceSenses.next());
-                while (targetSenses.hasNext()) {
-                    ISynset targetSynset = linguisticOracle.getISynset(targetSenses.next());
-                    int k = 0;
-                    while ((relation == IMappingElement.IDK) && (k < senseGlossMatchers.size())) {
-                        relation = senseGlossMatchers.get(k).match(sourceSynset, targetSynset);
-                        k++;
+            if (0 < senseGlossMatchers.size()) {
+                for (ISense sourceSense : sourceSenses) {
+                    ISynset sourceSynset = linguisticOracle.getISynset(sourceSense);
+                    for (ISense targetSense : targetSenses) {
+                        ISynset targetSynset = linguisticOracle.getISynset(targetSense);
+                        int k = 0;
+                        while ((relation == IMappingElement.IDK) && (k < senseGlossMatchers.size())) {
+                            relation = senseGlossMatchers.get(k).match(sourceSynset, targetSynset);
+                            k++;
+                        }
+                        return relation;
                     }
-                    return relation;
                 }
             }
             return relation;
@@ -255,14 +252,12 @@ public class MatcherLibrary extends Configurable implements IMatcherLibrary {
         }
     }
 
-    private long getACoLCount(IContext context) {
+    protected long getACoLCount(IContext context) {
         long result = 0;
-        for (Iterator<INode> i = context.getRoot().getSubtree(); i.hasNext();) {
-            for (Iterator<IAtomicConceptOfLabel> j = i.next().getNodeData().getACoLs(); j.hasNext();) {
-                j.next();
-                result++;
-            }
+        for (INode node : context.getNodesList()) {
+            result = result + node.getNodeData().getACoLCount();
         }
         return result;
     }
+
 }

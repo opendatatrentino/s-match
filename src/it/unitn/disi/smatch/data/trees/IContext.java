@@ -1,5 +1,8 @@
 package it.unitn.disi.smatch.data.trees;
 
+import java.util.Iterator;
+import java.util.List;
+
 /**
  * An interface for the context data structure. A context is basically a tree made of nodes with natural language
  * labels, organized into a hierarchy with mostly (assumed) subsumption and is-a relations between the nodes.
@@ -58,4 +61,18 @@ public interface IContext {
      * @return the root node
      */
     INode createRoot(String name);
+
+    /**
+     * Returns iterator over all context nodes.
+     *
+     * @return iterator over all context nodes
+     */
+    Iterator<INode> getNodes();
+
+    /**
+     * Returns unmodifiable list of all context nodes.
+     *
+     * @return unmodifiable list of all context nodes
+     */
+    List<INode> getNodesList();
 }

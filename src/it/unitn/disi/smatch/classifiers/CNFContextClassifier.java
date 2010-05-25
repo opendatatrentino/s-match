@@ -10,8 +10,6 @@ import orbital.moon.logic.ClassicalLogic;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
-import java.util.Iterator;
-
 /**
  * Create concept at node formulas for each node of the context.
  * Converts concept at node formula into CNF.
@@ -23,10 +21,8 @@ public class CNFContextClassifier extends Configurable implements IContextClassi
     private static final Logger log = Logger.getLogger(CNFContextClassifier.class);
 
     public void buildCNodeFormulas(IContext context) throws ContextClassifierException {
-        if (context.hasRoot()) {
-            for (Iterator<INode> i = context.getRoot().getSubtree(); i.hasNext();) {
-                buildCNode(i.next());
-            }
+        for (INode node : context.getNodesList()) {
+            buildCNode(node);
         }
     }
 
