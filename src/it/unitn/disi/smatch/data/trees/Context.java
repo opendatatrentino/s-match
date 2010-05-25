@@ -52,7 +52,7 @@ public class Context implements IContext {
 
     public Iterator<INode> getNodes() {
         if (hasRoot()) {
-            return new Node.StartIterator(root, root.getChildren());
+            return new Node.StartIterator(root, root.getDescendants());
         } else {
             return Collections.<INode>emptyList().iterator();
         }
@@ -66,6 +66,7 @@ public class Context implements IContext {
                 nodes = new ArrayList<INode>();
                 nodes.add(root);
                 nodes.addAll(root.getDescendantsList());
+                nodes.trimToSize();
                 return Collections.unmodifiableList(nodes);
             } else {
                 return Collections.emptyList();
