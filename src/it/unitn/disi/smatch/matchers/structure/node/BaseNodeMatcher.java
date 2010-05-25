@@ -80,13 +80,13 @@ public class BaseNodeMatcher extends Configurable {
                         if (IMappingElement.LESS_GENERAL == relation) {
                             String tmp = "-" + sourceVarNumber + " " + targetVarNumber + " 0\n";
                             //if not already present add to axioms
-                            if ((axioms.indexOf(tmp) != 0) || (axioms.indexOf("\0" + tmp) == -1)) {
+                            if (-1 == axioms.indexOf(tmp)) {
                                 axioms.append(tmp);
                                 numberOfClauses++;
                             }
                         } else if (IMappingElement.MORE_GENERAL == relation) {
                             String tmp = sourceVarNumber + " -" + targetVarNumber + " 0\n";
-                            if ((axioms.indexOf(tmp) != 0) || (axioms.indexOf("\0" + tmp) == -1)) {
+                            if (-1 == axioms.indexOf(tmp)) {
                                 axioms.append(tmp);
                                 numberOfClauses++;
                             }
@@ -94,19 +94,19 @@ public class BaseNodeMatcher extends Configurable {
                             if (!sourceVarNumber.equals(targetVarNumber)) {
                                 //add clauses for less and more generality
                                 String tmp = "-" + sourceVarNumber + " " + targetVarNumber + " 0\n";
-                                if ((axioms.indexOf(tmp) != 0) || (axioms.indexOf("\0" + tmp) == -1)) {
+                                if (-1 == axioms.indexOf(tmp)) {
                                     axioms.append(tmp);
                                     numberOfClauses++;
                                 }
                                 tmp = sourceVarNumber + " -" + targetVarNumber + " 0\n";
-                                if ((axioms.indexOf(tmp) != 0) || (axioms.indexOf("\0" + tmp) == -1)) {
+                                if (-1 == axioms.indexOf(tmp)) {
                                     axioms.append(tmp);
                                     numberOfClauses++;
                                 }
                             }
                         } else if (IMappingElement.DISJOINT == relation) {
                             String tmp = "-" + sourceVarNumber + " -" + targetVarNumber + " 0\n";
-                            if ((axioms.indexOf(tmp) != 0) || (axioms.indexOf("\0" + tmp) == -1)) {
+                            if (-1 == axioms.indexOf(tmp)) {
                                 axioms.append(tmp);
                                 numberOfClauses++;
                             }
