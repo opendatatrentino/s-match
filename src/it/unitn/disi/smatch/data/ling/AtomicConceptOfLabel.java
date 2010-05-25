@@ -20,7 +20,7 @@ public class AtomicConceptOfLabel extends IndexedObject implements IAtomicConcep
     private String token;
     private String lemma;
 
-    private List<ISense> senses = new ArrayList<ISense>();
+    private ArrayList<ISense> senses;
     private static final Iterator<ISense> EMPTY_SENSE_ITERATOR = Collections.<ISense>emptyList().iterator();
 
     public AtomicConceptOfLabel() {
@@ -83,6 +83,10 @@ public class AtomicConceptOfLabel extends IndexedObject implements IAtomicConcep
             throw new IllegalArgumentException("argument is null");
         }
 
+        if (null == senses) {
+            return -1;
+        }
+
         return senses.indexOf(sense);
     }
 
@@ -123,6 +127,8 @@ public class AtomicConceptOfLabel extends IndexedObject implements IAtomicConcep
     }
 
     public void removeSense(int index) {
+        // checks children and throws exception in case
+        getSenseAt(index);
         senses.remove(index);
     }
 
@@ -132,6 +138,12 @@ public class AtomicConceptOfLabel extends IndexedObject implements IAtomicConcep
         }
 
         removeSense(getSenseIndex(sense));
+    }
+
+    public void trim() {
+        if (null != senses) {
+            senses.trimToSize();
+        }
     }
 
     public String toString() {

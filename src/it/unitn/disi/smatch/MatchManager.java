@@ -144,6 +144,11 @@ public class MatchManager extends Configurable implements IMatchManager {
 
         log.info("Loading context from: " + fileName);
         final IContext result = contextLoader.loadContext(fileName);
+        if (result instanceof Context) {
+            log.debug("Trimming context...");
+            ((Context) result).trim();
+            log.debug("Trimming context finished");
+        }
         log.info("Loading context finished");
         return result;
     }

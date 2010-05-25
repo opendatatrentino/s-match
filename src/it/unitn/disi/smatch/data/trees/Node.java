@@ -19,7 +19,7 @@ import java.util.*;
 public class Node extends IndexedObject implements INode, INodeData {
 
     private INode parent;
-    private List<INode> children;
+    private ArrayList<INode> children;
 
     // id is needed to store cNodeFormulas correctly.
     // cNodeFormula is made of cLabFormulas, each of which refers to tokens and tokens should have unique id
@@ -32,7 +32,7 @@ public class Node extends IndexedObject implements INode, INodeData {
     private boolean source;
     private Object userObject;
 
-    private List<IAtomicConceptOfLabel> acols;
+    private ArrayList<IAtomicConceptOfLabel> acols;
 
     // node counter to set unique node id during creation
     private static long countNode = 0;
@@ -523,6 +523,23 @@ public class Node extends IndexedObject implements INode, INodeData {
     public void setParent(MutableTreeNode newParent) {
         if (newParent instanceof INode) {
             setParent((Node) newParent);
+        }
+    }
+
+    public void trim() {
+        if (null != acols) {
+            acols.trimToSize();
+            for (IAtomicConceptOfLabel acol : acols) {
+                if (acol instanceof AtomicConceptOfLabel) {
+                    ((AtomicConceptOfLabel) acol).trim();
+                }
+            }
+        }
+        if (null != children) {
+            children.trimToSize();
+            for (INode child : children) {
+                ((Node) child).trim();
+            }
         }
     }
 }

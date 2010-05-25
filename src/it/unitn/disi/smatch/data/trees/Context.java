@@ -41,4 +41,10 @@ public class Context implements IContext {
         root = new Node(name);
         return root;
     }
+
+    public void trim() {
+        if (root instanceof Node) {
+            ((Node) root).trim();
+        }
+    }
 }
