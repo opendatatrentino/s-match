@@ -83,6 +83,9 @@ public class SimpleXMLContextRenderer extends Configurable implements IContextRe
         INodeData curNodeData = curNode.getNodeData();
         AttributesImpl atts = new AttributesImpl();
         atts.addAttribute("", "", "id", "CDATA", curNodeData.getId());
+        if (curNode.hasParent()) {
+            atts.addAttribute("", "", "parent-id", "CDATA", curNode.getParent().getNodeData().getId());
+        }
         hd.startElement("", "", "node", atts);
 
         renderString(hd, "name", curNodeData.getName());
