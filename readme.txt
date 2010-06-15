@@ -31,16 +31,17 @@ all-cw.sh (Linux). This will execute the following steps:
   d) match the trees with the minimal matching algorithm
         
 The script will render the results of the
-step c) into: test-data/cw/result-SMatchDefault-cw.txt 
-step d) into: test-data/cw/result-SMatchDefaultMinimal-cw.txt
+step c) into: test-data/cw/result-cw.txt 
+step d) into: test-data/cw/result-minimal-cw.txt
 
 4.2 GUI
 
 Run bin\runGUI.cmd or bin/runGUI.sh
 
-Access S-Match Wiki for an updated version of GettingStarted:
+4.3 S-Match Wiki
 
-http://sourceforge.net/apps/trac/s-match/wiki/GettingStarted
+Access S-Match Wiki for more information:
+http://sourceforge.net/apps/trac/s-match/wiki/
 
 5. Documentation
 
