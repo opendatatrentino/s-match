@@ -1,0 +1,14 @@
+2010.06.15
+ * improved CLI & API
+ * added API demos
+ * refactored configuration to be component-based
+ * refactored datastructures for iterator-style (e.g. database) access
+ * refactored datastructures for sparse mappings
+ * improved speed
+ * updated third-party libraries
+ * refactored match manager for better integration
+ * added simple XML loaders and savers
+ * improved code comments
+
+2010.03.15
+ * initial release
