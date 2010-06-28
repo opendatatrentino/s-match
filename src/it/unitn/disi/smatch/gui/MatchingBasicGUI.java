@@ -164,7 +164,8 @@ public class MatchingBasicGUI extends JPanel
         //add the legend
         add(createLegend(), constraintLegend);
 
-        mm = new MatchManager();
+        String defaultConfigFile = ".." + File.separator + "conf" + File.separator + "s-match.properties";
+        mm = new MatchManager(defaultConfigFile);
     }
 
 
@@ -639,6 +640,8 @@ public class MatchingBasicGUI extends JPanel
         mm.setProperties(minimalConfigFile);
         mapping = mm.online(sourceContext, targetContext);
         mm.renderMapping(mapping, outputFolder + "result-minimal.txt");
+
+        mm.setProperties(defaultConfigFile);
 
         return outputFolder + "result-default.txt";
     }
