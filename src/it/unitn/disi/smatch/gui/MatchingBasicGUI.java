@@ -469,7 +469,7 @@ public class MatchingBasicGUI extends JPanel
         JPanel legend = new JPanel();
         legend.setLayout(new GridLayout(3, 1));
 
-        JLabel equal = new JLabel("- equals");
+        JLabel equal = new JLabel("- equivalent");
         equal.setFont(plaintext);
         equal.setForeground(Color.GREEN);
         equal.setPreferredSize(lsize);
@@ -510,13 +510,6 @@ public class MatchingBasicGUI extends JPanel
         fileSelectorPanel.setLayout(layout);
         GridBagConstraints c = new GridBagConstraints();
 
-        JLabel title = new JLabel("Source and Target files should be in tab indented format:");
-        c.gridx = 0;
-        c.gridy = 0;
-        c.gridwidth = 3;
-        fileSelectorPanel.add(title, c);
-        c.gridwidth = 1; //reset grid width
-
         //create labels
 
         JLabel sourceFileLbl = new JLabel("Source file: ");
@@ -527,9 +520,9 @@ public class MatchingBasicGUI extends JPanel
         JLabel labels[] = {sourceFileLbl, targetFileLbl, mappingFileLbl};
 
         //create text areas
-        sourceFileTxt = new JTextField(40);
-        targetFileTxt = new JTextField(40);
-        mappingFileTxt = new JTextField(40);
+        sourceFileTxt = new JTextField(20);
+        targetFileTxt = new JTextField(20);
+        mappingFileTxt = new JTextField(20);
 
         JTextField textFields[] = {sourceFileTxt, targetFileTxt, mappingFileTxt};
         //create buttons
