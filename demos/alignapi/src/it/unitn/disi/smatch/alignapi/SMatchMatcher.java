@@ -8,10 +8,10 @@ import fr.inrialpes.exmo.ontowrap.OntowrapException;
 import it.unitn.disi.smatch.IMatchManager;
 import it.unitn.disi.smatch.MatchManager;
 import it.unitn.disi.smatch.components.ConfigurableException;
-import it.unitn.disi.smatch.data.trees.IContext;
-import it.unitn.disi.smatch.data.trees.INode;
 import it.unitn.disi.smatch.data.mappings.IContextMapping;
 import it.unitn.disi.smatch.data.mappings.IMappingElement;
+import it.unitn.disi.smatch.data.trees.IContext;
+import it.unitn.disi.smatch.data.trees.INode;
 import org.semanticweb.owl.align.Alignment;
 import org.semanticweb.owl.align.AlignmentException;
 import org.semanticweb.owl.align.AlignmentProcess;
@@ -73,7 +73,10 @@ public class SMatchMatcher extends ObjectAlignment implements AlignmentProcess {
         // create a node for each class
         for (Object o : ontology.getClasses()) {
             String nodeName = ontology.getEntityName(o);
-            nodeName = nodeName.replaceAll("_", " ");//fix for webdirs test
+            Set<String> nodeNames = ontology.getEntityNames(o);//this includes the labels
+            if (0 < nodeNames.size()) {
+                nodeName = nodeNames.iterator().next();//get the first name
+            }
             INode node = result.createNode(nodeName);
             node.setUserObject(o);
             classNode.put(o, node);

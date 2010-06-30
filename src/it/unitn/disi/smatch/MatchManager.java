@@ -4,11 +4,11 @@ import it.unitn.disi.smatch.classifiers.IContextClassifier;
 import it.unitn.disi.smatch.components.Configurable;
 import it.unitn.disi.smatch.components.ConfigurableException;
 import it.unitn.disi.smatch.data.ling.IAtomicConceptOfLabel;
+import it.unitn.disi.smatch.data.mappings.IContextMapping;
 import it.unitn.disi.smatch.data.mappings.IMappingFactory;
 import it.unitn.disi.smatch.data.trees.Context;
 import it.unitn.disi.smatch.data.trees.IContext;
 import it.unitn.disi.smatch.data.trees.INode;
-import it.unitn.disi.smatch.data.mappings.IContextMapping;
 import it.unitn.disi.smatch.filters.IMappingFilter;
 import it.unitn.disi.smatch.loaders.context.IContextLoader;
 import it.unitn.disi.smatch.loaders.mapping.IMappingLoader;
@@ -58,15 +58,16 @@ public class MatchManager extends Configurable implements IMatchManager {
     // usage string
     private static final String USAGE = "Usage: MatchManager <command> <arguments> [options]\n" +
             " Commands: \n" +
-            " wntoflat                                  create cached WordNet files for fast matching\n" +
-            " convert <input> <output>                  read input file and write it into output file\n" +
-            " offline <input> <output>                  read input file, preprocess it and write it into output file\n" +
-            " online <source> <target> <output>         read source and target files, run matching and write the output file\n" +
-            " filter <source> <target> <input> <output> read source and target files, input mapping, run filtering and write the output mapping\n" +
+            " wntoflat                                   create cached WordNet files for fast matching\n" +
+            " convert <input> <output>                   read input file and write it into output file\n" +
+            " convert <source> <target> <input> <output> read source, target and input mapping, and write the output mapping\n" +
+            " offline <input> <output>                   read input file, preprocess it and write it into output file\n" +
+            " online <source> <target> <output>          read source and target files, run matching and write the output file\n" +
+            " filter <source> <target> <input> <output>  read source and target files, input mapping, run filtering and write the output mapping\n" +
             "\n" +
             " Options: \n" +
-            " -config=file.properties                   read configuration from file.properties instead of default S-Match.properties\n" +
-            " -property=key=value                       override the configuration key=value from the config file";
+            " -config=file.properties                    read configuration from file.properties instead of default S-Match.properties\n" +
+            " -property=key=value                        override the configuration key=value from the config file";
 
 
     // component configuration keys and component instance variables
@@ -366,10 +367,22 @@ public class MatchManager extends Configurable implements IMatchManager {
                     mm.convertWordNetToFlat(config);
                 } else if ("convert".equals(args[0])) {
                     if (2 < args.length) {
-                        String inputFile = args[1];
-                        String outputFile = args[2];
-                        IContext ctxSource = mm.loadContext(inputFile);
-                        mm.renderContext(ctxSource, outputFile);
+                        if (3 == args.length) {
+                            String inputFile = args[1];
+                            String outputFile = args[2];
+                            IContext ctxSource = mm.loadContext(inputFile);
+                            mm.renderContext(ctxSource, outputFile);
+                        } else if (5 == args.length) {
+                            String sourceFile = args[1];
+                            String targetFile = args[2];
+                            String inputFile = args[3];
+                            String outputFile = args[4];
+
+                            IContext ctxSource = mm.loadContext(sourceFile);
+                            IContext ctxTarget = mm.loadContext(targetFile);
+                            IContextMapping<INode> map = mm.loadMapping(ctxSource, ctxTarget, inputFile);
+                            mm.renderMapping(map, outputFile);
+                        }
                     } else {
                         System.out.println("Not enough arguments for convert command.");
                     }
