@@ -26,6 +26,11 @@ import java.util.Properties;
 /**
  * Renders the mapping in the AlignAPI mapping format.
  *
+ * Needs parameters:
+ *
+ *  onto1URI, onto2URI - URIs of ontologies
+ *  onto1Location, onto2Location - locations of ontologies 
+ *
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
 public class AlignAPIMappingRenderer extends Configurable implements IMappingRenderer {

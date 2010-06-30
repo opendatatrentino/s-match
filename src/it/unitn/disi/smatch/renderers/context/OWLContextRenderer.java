@@ -24,7 +24,11 @@ import java.util.Properties;
 
 /**
  * Renders a context into an OWL file. Created for OAEI webdirs track export, therefore takes into account
- * specialities of AlignAPI, like putting # before each class and not at the base. 
+ * specialities of AlignAPI, like putting # before each class and not at the base.
+ *
+ * Needs parameters:
+ *
+ * datasetURI which will be used as a base for the ontology. 
  *
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
@@ -33,17 +37,17 @@ public class OWLContextRenderer extends Configurable implements IContextRenderer
     private static final Logger log = Logger.getLogger(OWLContextRenderer.class);
 
     private int nodesRendered;
-    private final static String DATASET_NAME_KEY = "datasetName";
-    private String datasetName;
+    private final static String DATASET_URI_KEY = "datasetURI";
+    private String datasetURI;
 
     @Override
     public boolean setProperties(Properties newProperties) throws ConfigurableException {
         boolean result = super.setProperties(newProperties);
         if (result) {
-            if (newProperties.containsKey(DATASET_NAME_KEY)) {
-                datasetName = newProperties.getProperty(DATASET_NAME_KEY);
+            if (newProperties.containsKey(DATASET_URI_KEY)) {
+                datasetURI = newProperties.getProperty(DATASET_URI_KEY);
             } else {
-                final String errMessage = "Cannot find configuration key " + DATASET_NAME_KEY;
+                final String errMessage = "Cannot find configuration key " + DATASET_URI_KEY;
                 log.error(errMessage);
                 throw new ConfigurableException(errMessage);
             }
@@ -75,7 +79,7 @@ public class OWLContextRenderer extends Configurable implements IContextRenderer
                 hd.endPrefixMapping("owl");
                 hd.startPrefixMapping("dc", "http://purl.org/dc/elements/1.1/");
                 hd.endPrefixMapping("dc");
-                final String base = "http://semanticmatching.org/datasets/" + datasetName;
+                final String base = datasetURI;
                 hd.startPrefixMapping("", base);
                 hd.endPrefixMapping("");
 
