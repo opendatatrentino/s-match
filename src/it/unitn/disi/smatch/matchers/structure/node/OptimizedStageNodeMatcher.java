@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Node matcher for {@link it.unitn.disi.smatch.matchers.structure.tree.OptimizedStageTreeMatcher} for minimal links
+ * Node matcher for {@link it.unitn.disi.smatch.matchers.structure.tree.mini.OptimizedStageTreeMatcher} for minimal links
  * matching. For comments on the code see {@link it.unitn.disi.smatch.matchers.structure.node.DefaultNodeMatcher}
  *
  * @author Aliaksandr Autayeu avtaev@gmail.com

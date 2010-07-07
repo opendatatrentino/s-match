@@ -10,7 +10,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Default node matcher used by a {@link it.unitn.disi.smatch.matchers.structure.tree.DefaultTreeMatcher}.
+ * Default node matcher used by a {@link it.unitn.disi.smatch.matchers.structure.tree.def.DefaultTreeMatcher}.
  *
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
  * @author Aliaksandr Autayeu avtaev@gmail.com

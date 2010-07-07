@@ -4,8 +4,8 @@ REM Edit environment variables to suit your configuration
 setlocal
 
 REM start edit here
-set S=file:///D:/Aliaksandr/Stage/OAEI/2009/directory/directoryDataset2009/1/source.owl
-set T=file:///D:/Aliaksandr/Stage/OAEI/2009/directory/directoryDataset2009/1/target.owl
+set S=file:///D:/Aliaksandr/Stage/Datasets/OAEI/2009/directory/directoryDataset2009/1/source.owl
+set T=file:///D:/Aliaksandr/Stage/Datasets/OAEI/2009/directory/directoryDataset2009/1/target.owl
 set ALIGN_HOME=D:\Aliaksandr\Stage\s-match\AlignAPI\align-4.0
 REM end edit here
 

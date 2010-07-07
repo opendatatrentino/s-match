@@ -1,4 +1,4 @@
-package it.unitn.disi.smatch.matchers.structure.tree;
+package it.unitn.disi.smatch.matchers.structure.tree.mini;
 
 import it.unitn.disi.smatch.SMatchConstants;
 import it.unitn.disi.smatch.components.ConfigurableException;
@@ -9,6 +9,9 @@ import it.unitn.disi.smatch.data.mappings.ReversingMappingElement;
 import it.unitn.disi.smatch.data.trees.IContext;
 import it.unitn.disi.smatch.data.trees.INode;
 import it.unitn.disi.smatch.matchers.structure.node.OptimizedStageNodeMatcher;
+import it.unitn.disi.smatch.matchers.structure.tree.BaseTreeMatcher;
+import it.unitn.disi.smatch.matchers.structure.tree.ITreeMatcher;
+import it.unitn.disi.smatch.matchers.structure.tree.TreeMatcherException;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
