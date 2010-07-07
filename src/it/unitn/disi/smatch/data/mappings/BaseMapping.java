@@ -1,0 +1,41 @@
+package it.unitn.disi.smatch.data.mappings;
+
+import it.unitn.disi.smatch.data.trees.IContext;
+
+import java.util.AbstractSet;
+
+/**
+ * Base mapping class.
+ *
+ * @author Aliaksandr Autayeu avtaev@gmail.com
+ */
+public abstract class BaseMapping<T> extends AbstractSet<IMappingElement<T>> implements IContextMapping<T> {
+
+    protected double similarity;
+    protected IContext sourceContext;
+    protected IContext targetContext;
+
+    public double getSimilarity() {
+        return similarity;
+    }
+
+    public void setSimilarity(double similarity) {
+        this.similarity = similarity;
+    }
+
+    public IContext getSourceContext() {
+        return sourceContext;
+    }
+
+    public IContext getTargetContext() {
+        return targetContext;
+    }
+
+    public void setSourceContext(IContext newContext) {
+        sourceContext = newContext;
+    }
+
+    public void setTargetContext(IContext newContext) {
+        targetContext = newContext;
+    }
+}

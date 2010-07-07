@@ -18,7 +18,7 @@ import java.util.*;
  *
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
-public class MatrixMapping<T extends IIndexedObject> extends AbstractSet<IMappingElement<T>> implements IContextMapping<T>, IMappingFactory {
+public class MatrixMapping<T extends IIndexedObject> extends BaseMapping<T> implements IContextMapping<T>, IMappingFactory {
 
     private static final Logger log = Logger.getLogger(MatrixMapping.class);
 
@@ -27,8 +27,6 @@ public class MatrixMapping<T extends IIndexedObject> extends AbstractSet<IMappin
 
     protected Properties properties;
     protected IMatchMatrix matrix;
-    protected IContext sourceContext;
-    protected IContext targetContext;
 
     // for set size();
     private int elementCount;
@@ -246,22 +244,6 @@ public class MatrixMapping<T extends IIndexedObject> extends AbstractSet<IMappin
 
         Arrays.fill(sources, null);
         Arrays.fill(targets, null);
-    }
-
-    public IContext getSourceContext() {
-        return sourceContext;
-    }
-
-    public IContext getTargetContext() {
-        return targetContext;
-    }
-
-    public void setSourceContext(IContext newContext) {
-        sourceContext = newContext;
-    }
-
-    public void setTargetContext(IContext newContext) {
-        targetContext = newContext;
     }
 
     public IContextMapping<INode> getContextMappingInstance(IContext source, IContext target) {

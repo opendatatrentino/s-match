@@ -27,4 +27,18 @@ public interface IMapping<T> extends Set<IMappingElement<T>> {
      * @return true if the mapping was modified
      */
     boolean setRelation(T source, T target, char relation);
+
+    /**
+     * Sets the similarity between two trees.
+     *
+     * @param similarity the similarity between two trees
+     */
+    void setSimilarity(double similarity);
+
+    /**
+     * Returns the similarity between two trees.
+     *
+     * @return the similarity between two trees
+     */
+    double getSimilarity();
 }

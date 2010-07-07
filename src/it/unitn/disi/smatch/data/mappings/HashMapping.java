@@ -14,10 +14,7 @@ import java.util.*;
  *
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
-public class HashMapping<T> extends AbstractSet<IMappingElement<T>> implements IContextMapping<T>, IMappingFactory {
-
-    private IContext sourceContext;
-    private IContext targetContext;
+public class HashMapping<T> extends BaseMapping<T> implements IContextMapping<T>, IMappingFactory {
 
     protected Properties properties;
 
@@ -103,22 +100,6 @@ public class HashMapping<T> extends AbstractSet<IMappingElement<T>> implements I
 
     public boolean setProperties(String fileName) throws ConfigurableException {
         return setProperties(Configurable.loadProperties(fileName));
-    }
-
-    public IContext getSourceContext() {
-        return sourceContext;
-    }
-
-    public IContext getTargetContext() {
-        return targetContext;
-    }
-
-    public void setSourceContext(IContext newContext) {
-        sourceContext = newContext;
-    }
-
-    public void setTargetContext(IContext newContext) {
-        targetContext = newContext;
     }
 
     public IContextMapping<INode> getContextMappingInstance(IContext source, IContext target) {
