@@ -44,6 +44,10 @@ public class TabContextLoader extends Configurable implements IContextLoader {
                 result = process(input);
                 log.info("Parsed nodes: " + nodesParsed);
                 createIds(result);
+            } catch (IOException e) {
+                final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
+                log.error(errMessage, e);
+                throw new ContextLoaderException(errMessage, e);
             } finally {
                 input.close();
             }
@@ -63,7 +67,7 @@ public class TabContextLoader extends Configurable implements IContextLoader {
         }
     }
 
-    private IContext process(BufferedReader input) throws IOException {
+    protected IContext process(BufferedReader input) throws IOException {
         IContext result = new Context();
         ArrayList<INode> rootPath = new ArrayList<INode>();
 
@@ -138,7 +142,7 @@ public class TabContextLoader extends Configurable implements IContextLoader {
      * @param array array to be modified
      * @param node  value to be set
      */
-    private static void setArrayNodeID(int index, ArrayList<INode> array, INode node) {
+    private void setArrayNodeID(int index, ArrayList<INode> array, INode node) {
         if (index < array.size()) {
             array.set(index, node);
         } else {
