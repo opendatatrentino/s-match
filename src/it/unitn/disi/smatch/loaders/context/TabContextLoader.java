@@ -1,15 +1,11 @@
 package it.unitn.disi.smatch.loaders.context;
 
-import it.unitn.disi.smatch.components.Configurable;
 import it.unitn.disi.smatch.data.trees.Context;
 import it.unitn.disi.smatch.data.trees.IContext;
 import it.unitn.disi.smatch.data.trees.INode;
-import org.apache.log4j.Logger;
 
 import java.io.BufferedReader;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 
 /**
@@ -30,43 +26,11 @@ import java.util.ArrayList;
  * @author Aliaksandr Autayeu avtaev@gmail.com
  * @author Juan Pane pane@disi.unitn.it
  */
-public class TabContextLoader extends Configurable implements IContextLoader {
-
-    private static final Logger log = Logger.getLogger(TabContextLoader.class);
+public class TabContextLoader extends BaseFileContextLoader implements IContextLoader {
 
     protected int nodesParsed = 0;
 
-    public IContext loadContext(String fileName) throws ContextLoaderException {
-        IContext result = null;
-        try {
-            BufferedReader input = new BufferedReader(new InputStreamReader(new FileInputStream(fileName), "UTF-8"));
-            try {
-                result = process(input);
-                log.info("Parsed nodes: " + nodesParsed);
-                createIds(result);
-            } catch (IOException e) {
-                final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
-                log.error(errMessage, e);
-                throw new ContextLoaderException(errMessage, e);
-            } finally {
-                input.close();
-            }
-        } catch (IOException e) {
-            final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
-            log.error(errMessage, e);
-            throw new ContextLoaderException(errMessage, e);
-        }
-        return result;
-    }
-
-    protected void createIds(IContext result) {
-        nodesParsed = 0;
-        for (INode node : result.getNodesList()) {
-            node.getNodeData().setId("n" + Integer.toString(nodesParsed));
-            nodesParsed++;
-        }
-    }
-
+    @Override
     protected IContext process(BufferedReader input) throws IOException {
         IContext result = new Context();
         ArrayList<INode> rootPath = new ArrayList<INode>();
