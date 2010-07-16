@@ -1,6 +1,5 @@
 package it.unitn.disi.smatch.loaders.context;
 
-import it.unitn.disi.smatch.components.Configurable;
 import it.unitn.disi.smatch.components.ConfigurableException;
 import it.unitn.disi.smatch.data.ling.IAtomicConceptOfLabel;
 import it.unitn.disi.smatch.data.trees.Context;
@@ -23,7 +22,7 @@ import java.util.Properties;
  *
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
-public class SimpleXMLContextLoader extends Configurable implements IContextLoader, ContentHandler {
+public class SimpleXMLContextLoader extends BaseFileContextLoader implements IContextLoader, ContentHandler {
 
     private static final Logger log = Logger.getLogger(SimpleXMLContextLoader.class);
 
@@ -39,8 +38,6 @@ public class SimpleXMLContextLoader extends Configurable implements IContextLoad
     private IAtomicConceptOfLabel acol;
     // path to the root node
     private Deque<INode> pathToRoot;
-
-    private int nodesParsed = 0;
 
     // flag to output the label being translated in logs
     private final static String UNIQUE_STRINGS_KEY = "uniqueStrings";
@@ -71,12 +68,16 @@ public class SimpleXMLContextLoader extends Configurable implements IContextLoad
         }
     }
 
-    public IContext loadContext(String fileName) throws ContextLoaderException {
+    @Override
+    protected void createIds(IContext result) {
+        //ids should be already in XML
+    }
+
+    @Override
+    protected IContext process(BufferedReader input) throws IOException, ContextLoaderException {
         try {
-            BufferedReader inputFile = new BufferedReader(new InputStreamReader(new FileInputStream(fileName), "UTF-8"));
-            InputSource is = new InputSource(inputFile);
+            InputSource is = new InputSource(input);
             parser.parse(is);
-            log.info("Parsed nodes: " + nodesParsed);
             unique.clear();
         } catch (SAXException e) {
             final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
@@ -97,7 +98,6 @@ public class SimpleXMLContextLoader extends Configurable implements IContextLoad
         }
         return ctx;
     }
-
 
     //org.xml.sax.ContentHandler methods re-implementation start
 

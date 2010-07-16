@@ -40,7 +40,5 @@ public abstract class BaseFileContextLoader extends BaseContextLoader implements
         return result;
     }
 
-    protected IContext process(BufferedReader input) throws IOException {
-        return null;
-    }
+    abstract protected IContext process(BufferedReader input) throws IOException, ContextLoaderException;
 }

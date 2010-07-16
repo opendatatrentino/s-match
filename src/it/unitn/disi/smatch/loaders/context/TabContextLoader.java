@@ -28,8 +28,6 @@ import java.util.ArrayList;
  */
 public class TabContextLoader extends BaseFileContextLoader implements IContextLoader {
 
-    protected int nodesParsed = 0;
-
     @Override
     protected IContext process(BufferedReader input) throws IOException {
         IContext result = new Context();

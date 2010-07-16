@@ -1,6 +1,5 @@
 package it.unitn.disi.smatch.loaders.context;
 
-import it.unitn.disi.smatch.components.Configurable;
 import it.unitn.disi.smatch.data.ling.IAtomicConceptOfLabel;
 import it.unitn.disi.smatch.data.trees.Context;
 import it.unitn.disi.smatch.data.trees.IContext;
@@ -19,7 +18,7 @@ import java.util.StringTokenizer;
  * @author Aliaksandr Autayeu avtaev@gmail.com
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
  */
-public class CTXMLContextLoader extends Configurable implements IContextLoader, ContentHandler {
+public class CTXMLContextLoader extends BaseFileContextLoader implements IContextLoader, ContentHandler {
 
     private static final Logger log = Logger.getLogger(CTXMLContextLoader.class);
 
@@ -36,8 +35,6 @@ public class CTXMLContextLoader extends Configurable implements IContextLoader, 
     private INode node;
     private IAtomicConceptOfLabel sense;
 
-    private int nodesLoaded = 0;
-
     // node unique name -> node
     private HashMap<String, INode> nodes;
 
@@ -53,17 +50,16 @@ public class CTXMLContextLoader extends Configurable implements IContextLoader, 
         }
     }
 
-    public IContext loadContext(String fileName) throws ContextLoaderException {
+    @Override
+    protected void createIds(IContext result) {
+        //ids should be already in XML
+    }
+
+    @Override
+    protected IContext process(BufferedReader input) throws IOException, ContextLoaderException {
         try {
-            BufferedReader inputFile = new BufferedReader(new InputStreamReader(new FileInputStream(fileName), "UTF-8"));
-            InputSource is = new InputSource(inputFile);
+            InputSource is = new InputSource(input);
             parser.parse(is);
-            log.info("Parsed nodes: " + nodesLoaded);
-            if (null == ctx.getRoot()) {
-                final String errMessage = "Context root is not found";
-                log.error(errMessage);
-                throw new ContextLoaderException(errMessage);
-            }
         } catch (SAXException e) {
             final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
             log.error(errMessage, e);
@@ -89,7 +85,7 @@ public class CTXMLContextLoader extends Configurable implements IContextLoader, 
     public void startDocument() {
         ctx = new Context();
         nodes = new HashMap<String, INode>();
-        nodesLoaded = 0;
+        nodesParsed = 0;
     }
 
     public void startElement(String namespace, String localName, String qName, Attributes atts) {
@@ -104,9 +100,9 @@ public class CTXMLContextLoader extends Configurable implements IContextLoader, 
                     setNodeUniqueName(node, nodeName);
                     nodes.put(nodeName, node);
 
-                    nodesLoaded++;
-                    if (nodesLoaded % 10000 == 0) {
-                        log.info("elements parsed: " + nodesLoaded);
+                    nodesParsed++;
+                    if (nodesParsed % 10000 == 0) {
+                        log.info("elements parsed: " + nodesParsed);
                     }
                 }
             }
