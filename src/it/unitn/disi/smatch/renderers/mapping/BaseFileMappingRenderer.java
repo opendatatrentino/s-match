@@ -38,5 +38,5 @@ public abstract class BaseFileMappingRenderer extends BaseMappingRenderer {
         }
     }
 
-    protected abstract void process(IContextMapping<INode> mapping, BufferedWriter out) throws IOException;
+    protected abstract void process(IContextMapping<INode> mapping, BufferedWriter out) throws IOException, MappingRendererException;
 }
