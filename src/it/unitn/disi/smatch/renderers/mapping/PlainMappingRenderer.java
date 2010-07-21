@@ -1,17 +1,12 @@
 package it.unitn.disi.smatch.renderers.mapping;
 
-import it.unitn.disi.smatch.SMatchConstants;
-import it.unitn.disi.smatch.components.Configurable;
-import it.unitn.disi.smatch.data.trees.INode;
 import it.unitn.disi.smatch.data.mappings.IContextMapping;
 import it.unitn.disi.smatch.data.mappings.IMappingElement;
-import org.apache.log4j.Level;
+import it.unitn.disi.smatch.data.trees.INode;
 import org.apache.log4j.Logger;
 
 import java.io.BufferedWriter;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 
 /**
  * Renders the mapping in a plain text file.
