@@ -93,7 +93,8 @@ public class MatrixMapping<T extends IIndexedObject> extends BaseMapping<T> impl
                     curRow++;
                     curCol = 0;
                 }
-            } while (curRow < matrix.getX() && curCol < matrix.getY() && IMappingElement.IDK == (relation = matrix.get(curRow, curCol)));
+            }
+            while (curRow < matrix.getX() && curCol < matrix.getY() && IMappingElement.IDK == (relation = matrix.get(curRow, curCol)));
 
             if (IMappingElement.IDK != relation) {
                 result = new MappingElement<T>(sources[curRow], targets[curCol], relation);
@@ -164,21 +165,23 @@ public class MatrixMapping<T extends IIndexedObject> extends BaseMapping<T> impl
     public boolean setRelation(final T source, final T target, final char relation) {
         final boolean result =
                 source == sources[source.getIndex()] &&
-                target == targets[target.getIndex()] &&
-                relation == matrix.get(source.getIndex(), target.getIndex());
+                        target == targets[target.getIndex()] &&
+                        relation == matrix.get(source.getIndex(), target.getIndex());
 
         if (!result) {
             modCount++;
-            matrix.set(source.getIndex(), target.getIndex(), relation);
             if (IMappingElement.IDK == relation) {
                 elementCount--;
                 sources[source.getIndex()] = null;
                 targets[target.getIndex()] = null;
             } else {
-                elementCount++;
+                if (IMappingElement.IDK == matrix.get(source.getIndex(), target.getIndex())) {
+                    elementCount++;
+                }
                 sources[source.getIndex()] = source;
                 targets[target.getIndex()] = target;
             }
+            matrix.set(source.getIndex(), target.getIndex(), relation);
         }
 
         return !result;
