@@ -78,5 +78,4 @@ public abstract class BaseMappingRenderer extends Configurable implements IMappi
                 break;
         }
     }
-
 }

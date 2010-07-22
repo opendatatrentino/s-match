@@ -91,10 +91,8 @@ public class SimpleXMLContextLoader extends BaseFileContextLoader implements ICo
             final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
             log.error(errMessage, e);
             throw new ContextLoaderException(errMessage, e);
-        } catch (IOException e) {
-            final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
-            log.error(errMessage, e);
-            throw new ContextLoaderException(errMessage, e);
+        } finally {
+            input.close();
         }
         return ctx;
     }

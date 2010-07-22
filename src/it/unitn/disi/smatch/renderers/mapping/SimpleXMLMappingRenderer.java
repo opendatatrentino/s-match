@@ -3,6 +3,7 @@ package it.unitn.disi.smatch.renderers.mapping;
 import it.unitn.disi.smatch.data.mappings.IContextMapping;
 import it.unitn.disi.smatch.data.mappings.IMappingElement;
 import it.unitn.disi.smatch.data.trees.INode;
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
@@ -45,16 +46,23 @@ public class SimpleXMLMappingRenderer extends BaseFileMappingRenderer {
             for (IMappingElement<INode> mappingElement : mapping) {
                 String sourceConceptId = mappingElement.getSource().getNodeData().getId();
                 String targetConceptId = mappingElement.getTarget().getNodeData().getId();
-                char relation = mappingElement.getRelation();
+                if (null != sourceConceptId && 0 < sourceConceptId.length() && null != targetConceptId && 0 < targetConceptId.length()) {
 
-                atts = new AttributesImpl();
-                atts.addAttribute("", "", "source-id", "CDATA", sourceConceptId);
-                atts.addAttribute("", "", "target-id", "CDATA", targetConceptId);
-                atts.addAttribute("", "", "relation", "CDATA", Character.toString(relation));
-                hd.startElement("", "", "link", atts);
-                hd.endElement("", "", "link");
+                    char relation = mappingElement.getRelation();
 
-                countRelation(relation);
+                    atts = new AttributesImpl();
+                    atts.addAttribute("", "", "source-id", "CDATA", sourceConceptId);
+                    atts.addAttribute("", "", "target-id", "CDATA", targetConceptId);
+                    atts.addAttribute("", "", "relation", "CDATA", Character.toString(relation));
+                    hd.startElement("", "", "link", atts);
+                    hd.endElement("", "", "link");
+
+                    countRelation(relation);
+                } else {
+                    if (log.isEnabledFor(Level.WARN)) {
+                        log.warn("Source or Target node ID absent for mapping element: " + mappingElement);
+                    }
+                }
                 reportProgress();
             }
 

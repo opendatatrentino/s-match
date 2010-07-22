@@ -8,7 +8,10 @@ import org.apache.log4j.Logger;
 import org.xml.sax.*;
 import org.xml.sax.helpers.XMLReaderFactory;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.StringTokenizer;
 
@@ -72,10 +75,8 @@ public class CTXMLContextLoader extends BaseFileContextLoader implements IContex
             final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
             log.error(errMessage, e);
             throw new ContextLoaderException(errMessage, e);
-        } catch (IOException e) {
-            final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
-            log.error(errMessage, e);
-            throw new ContextLoaderException(errMessage, e);
+        } finally {
+            input.close();
         }
         return ctx;
     }
