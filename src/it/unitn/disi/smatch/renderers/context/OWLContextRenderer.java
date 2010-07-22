@@ -1,6 +1,5 @@
 package it.unitn.disi.smatch.renderers.context;
 
-import it.unitn.disi.smatch.components.Configurable;
 import it.unitn.disi.smatch.components.ConfigurableException;
 import it.unitn.disi.smatch.data.trees.IContext;
 import it.unitn.disi.smatch.data.trees.INode;
@@ -16,27 +15,24 @@ import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 import java.io.BufferedWriter;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.util.Iterator;
 import java.util.Properties;
 
 /**
  * Renders a context into an OWL file. Created for OAEI webdirs track export, therefore takes into account
  * specialities of AlignAPI, like putting # before each class and not at the base.
- *
+ * <p/>
  * Needs parameters:
- *
- * datasetURI which will be used as a base for the ontology. 
+ * <p/>
+ * datasetURI which will be used as a base for the ontology.
  *
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
-public class OWLContextRenderer extends Configurable implements IContextRenderer {
+public class OWLContextRenderer extends BaseXMLContextRenderer {
 
     private static final Logger log = Logger.getLogger(OWLContextRenderer.class);
 
-    private int nodesRendered;
     private final static String DATASET_URI_KEY = "datasetURI";
     private String datasetURI;
 
@@ -55,63 +51,51 @@ public class OWLContextRenderer extends Configurable implements IContextRenderer
         return result;
     }
 
-
-    public void render(IContext context, String fileName) throws ContextRendererException {
+    @Override
+    protected void process(IContext context, BufferedWriter out) throws IOException, ContextRendererException {
         try {
-            BufferedWriter out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(fileName), "UTF-8"));
-            try {
+            StreamResult streamResult = new StreamResult(out);
+            SAXTransformerFactory tf = (SAXTransformerFactory) SAXTransformerFactory.newInstance();
+            TransformerHandler hd = tf.newTransformerHandler();
+            Transformer serializer = hd.getTransformer();
+            serializer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+            serializer.setOutputProperty(OutputKeys.INDENT, "yes");
+            serializer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
 
-                StreamResult streamResult = new StreamResult(out);
-                SAXTransformerFactory tf = (SAXTransformerFactory) SAXTransformerFactory.newInstance();
-                TransformerHandler hd = tf.newTransformerHandler();
-                Transformer serializer = hd.getTransformer();
-                serializer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
-                serializer.setOutputProperty(OutputKeys.INDENT, "yes");
-                serializer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+            hd.setResult(streamResult);
+            hd.startDocument();
+            hd.startPrefixMapping("rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#");
+            hd.endPrefixMapping("rdf");
+            hd.startPrefixMapping("rdfs", "http://www.w3.org/2000/01/rdf-schema#");
+            hd.endPrefixMapping("rdfs");
+            hd.startPrefixMapping("owl", "http://www.w3.org/2002/07/owl#");
+            hd.endPrefixMapping("owl");
+            hd.startPrefixMapping("dc", "http://purl.org/dc/elements/1.1/");
+            hd.endPrefixMapping("dc");
+            final String base = datasetURI;
+            hd.startPrefixMapping("", base);
+            hd.endPrefixMapping("");
 
-                hd.setResult(streamResult);
-                hd.startDocument();
-                hd.startPrefixMapping("rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#");
-                hd.endPrefixMapping("rdf");
-                hd.startPrefixMapping("rdfs", "http://www.w3.org/2000/01/rdf-schema#");
-                hd.endPrefixMapping("rdfs");
-                hd.startPrefixMapping("owl", "http://www.w3.org/2002/07/owl#");
-                hd.endPrefixMapping("owl");
-                hd.startPrefixMapping("dc", "http://purl.org/dc/elements/1.1/");
-                hd.endPrefixMapping("dc");
-                final String base = datasetURI;
-                hd.startPrefixMapping("", base);
-                hd.endPrefixMapping("");
+            AttributesImpl atts = new AttributesImpl();
+            atts.addAttribute("", "", "xml:base", "CDATA", base);
+            atts.addAttribute("", "", "xml:lang", "CDATA", "en");
+            hd.startElement("", "", "rdf:RDF", atts);
 
-                AttributesImpl atts = new AttributesImpl();
-                atts.addAttribute("", "", "xml:base", "CDATA", base);
-                atts.addAttribute("", "", "xml:lang", "CDATA", "en");
-                hd.startElement("", "", "rdf:RDF", atts);
+            String comment = "Class names are numeric, because it happens in classifications that names repeat";
+            hd.comment(comment.toCharArray(), 0, comment.length());
+            comment = "Therefore the classes are made unique and their names are put into the human-readable labels";
+            hd.comment(comment.toCharArray(), 0, comment.length());
 
-                String comment = "Class names are numeric, because it happens in classifications that names repeat";
-                hd.comment(comment.toCharArray(), 0, comment.length());
-                comment = "Therefore the classes are made unique and their names are put into the human-readable labels";
-                hd.comment(comment.toCharArray(), 0, comment.length());
+            atts = new AttributesImpl();
+            atts.addAttribute("", "", "rdf:about", "CDATA", "");
+            hd.startElement("", "", "owl:Ontology", atts);
+            renderString(hd, new AttributesImpl(), "dc:creator", "S-Match");
+            hd.endElement("", "", "owl:Ontology");
 
-                atts = new AttributesImpl();
-                atts.addAttribute("", "", "rdf:about", "CDATA", "");
-                hd.startElement("", "", "owl:Ontology", atts);
-                renderString(hd, new AttributesImpl(), "dc:creator", "S-Match");
-                hd.endElement("", "", "owl:Ontology");
+            renderNode(hd, context.getRoot());
 
-                nodesRendered = 0;
-                renderNode(hd, context.getRoot());
-                log.info("Rendered nodes: " + nodesRendered);
-
-                hd.endElement("", "", "rdf:RDF");
-                hd.endDocument();
-            } finally {
-                out.close();
-            }
-        } catch (IOException e) {
-            final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
-            log.error(errMessage, e);
-            throw new ContextRendererException(errMessage, e);
+            hd.endElement("", "", "rdf:RDF");
+            hd.endDocument();
         } catch (SAXException e) {
             final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
             log.error(errMessage, e);
@@ -145,14 +129,6 @@ public class OWLContextRenderer extends Configurable implements IContextRenderer
             }
         }
 
-        nodesRendered++;
-    }
-
-    private static void renderString(TransformerHandler hd, AttributesImpl atts, final String tagName, final String tagValue) throws SAXException {
-        if (null != tagValue && 0 < tagValue.length()) {
-            hd.startElement("", "", tagName, atts);
-            hd.characters(tagValue.toCharArray(), 0, tagValue.length());
-            hd.endElement("", "", tagName);
-        }
+        reportProgress();
     }
 }

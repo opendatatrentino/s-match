@@ -1,6 +1,5 @@
 package it.unitn.disi.smatch.renderers.context;
 
-import it.unitn.disi.smatch.components.Configurable;
 import it.unitn.disi.smatch.data.ling.IAtomicConceptOfLabel;
 import it.unitn.disi.smatch.data.ling.ISense;
 import it.unitn.disi.smatch.data.trees.IContext;
@@ -17,9 +16,7 @@ import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 import java.io.BufferedWriter;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.util.Iterator;
 
 /**
@@ -27,46 +24,33 @@ import java.util.Iterator;
  *
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
-public class SimpleXMLContextRenderer extends Configurable implements IContextRenderer {
+public class SimpleXMLContextRenderer extends BaseXMLContextRenderer {
 
     private static final Logger log = Logger.getLogger(SimpleXMLContextRenderer.class);
 
-    private int nodesRendered;
-
-    public void render(IContext context, String fileName) throws ContextRendererException {
+    protected void process(IContext context, BufferedWriter out) throws IOException, ContextRendererException {
         try {
-            BufferedWriter out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(fileName), "UTF-8"));
-            try {
-                StreamResult streamResult = new StreamResult(out);
-                SAXTransformerFactory tf = (SAXTransformerFactory) SAXTransformerFactory.newInstance();
-                TransformerHandler hd = tf.newTransformerHandler();
-                Transformer serializer = hd.getTransformer();
-                serializer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
-                serializer.setOutputProperty(OutputKeys.INDENT, "yes");
-                serializer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
-                hd.setResult(streamResult);
-                hd.startDocument();
-                hd.startElement("", "", "context", new AttributesImpl());
+            StreamResult streamResult = new StreamResult(out);
+            SAXTransformerFactory tf = (SAXTransformerFactory) SAXTransformerFactory.newInstance();
+            TransformerHandler hd = tf.newTransformerHandler();
+            Transformer serializer = hd.getTransformer();
+            serializer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+            serializer.setOutputProperty(OutputKeys.INDENT, "yes");
+            serializer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+            hd.setResult(streamResult);
+            hd.startDocument();
+            hd.startElement("", "", "context", new AttributesImpl());
 
-                if (null == context.getRoot()) {
-                    final String errMessage = "Cannot render context without root node";
-                    log.error(errMessage);
-                    throw new ContextRendererException(errMessage);
-                }
-
-                nodesRendered = 0;
-                renderNode(hd, context.getRoot());
-                log.info("Rendered nodes: " + nodesRendered);
-
-                hd.endElement("", "", "context");
-                hd.endDocument();
-            } finally {
-                out.close();
+            if (null == context.getRoot()) {
+                final String errMessage = "Cannot render context without root node";
+                log.error(errMessage);
+                throw new ContextRendererException(errMessage);
             }
-        } catch (IOException e) {
-            final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
-            log.error(errMessage, e);
-            throw new ContextRendererException(errMessage, e);
+
+            renderNode(hd, context.getRoot());
+
+            hd.endElement("", "", "context");
+            hd.endDocument();
         } catch (SAXException e) {
             final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
             log.error(errMessage, e);
@@ -88,9 +72,9 @@ public class SimpleXMLContextRenderer extends Configurable implements IContextRe
         }
         hd.startElement("", "", "node", atts);
 
-        renderString(hd, "name", curNodeData.getName());
-        renderString(hd, "label-formula", curNodeData.getcLabFormula());
-        renderString(hd, "node-formula", curNodeData.getcNodeFormula());
+        renderString(hd, new AttributesImpl(), "name", curNodeData.getName());
+        renderString(hd, new AttributesImpl(), "label-formula", curNodeData.getcLabFormula());
+        renderString(hd, new AttributesImpl(), "node-formula", curNodeData.getcNodeFormula());
 
         // senses
         if (0 < curNodeData.getACoLCount()) {
@@ -101,8 +85,8 @@ public class SimpleXMLContextRenderer extends Configurable implements IContextRe
                 atts.addAttribute("", "", "id", "CDATA", Integer.toString(acol.getId()));
                 hd.startElement("", "", "token", atts);
 
-                renderString(hd, "text", acol.getToken());
-                renderString(hd, "lemma", acol.getLemma());
+                renderString(hd, new AttributesImpl(), "text", acol.getToken());
+                renderString(hd, new AttributesImpl(), "lemma", acol.getLemma());
 
                 hd.startElement("", "", "senses", new AttributesImpl());
                 for (Iterator<ISense> i = acol.getSenses(); i.hasNext();) {
@@ -129,14 +113,6 @@ public class SimpleXMLContextRenderer extends Configurable implements IContextRe
         }
 
         hd.endElement("", "", "node");
-        nodesRendered++;
-    }
-
-    private static void renderString(TransformerHandler hd, final String tagName, final String tagValue) throws SAXException {
-        if (null != tagValue && 0 < tagValue.length()) {
-            hd.startElement("", "", tagName, new AttributesImpl());
-            hd.characters(tagValue.toCharArray(), 0, tagValue.length());
-            hd.endElement("", "", tagName);
-        }
+        reportProgress();
     }
 }
