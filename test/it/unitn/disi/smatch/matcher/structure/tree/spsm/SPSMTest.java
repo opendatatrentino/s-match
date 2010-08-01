@@ -17,14 +17,18 @@ import it.unitn.disi.smatch.data.trees.IContext;
 import it.unitn.disi.smatch.data.trees.INode;
 import it.unitn.disi.smatch.matchers.structure.tree.spsm.SPSMTreeMatcher;
 
+//TODO Juan, while it is fine to have "print" tests, please, make a real unit test out of it. Check in the older versions - I had here a couple of tests.
 public class SPSMTest {
 	
 	private IMatchManager mm;
     String confPath = ".." + File.separator + "conf" + File.separator + "";//
     String propertiesFile = "s-match-spsm.properties";
+    //TODO Juan, remove unused stuff
     String logProperties = "logging.properties";
     String sourceFile = "source.txt";
     String targetFile = "target.txt";
+
+    //TODO Juan, remove unused stuff
     String preprocesedSource = "source.xml";
     String preprocesedTarger = "target.xml";
     

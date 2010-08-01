@@ -1,7 +1,5 @@
 package it.unitn.disi.smatch.matchers.structure.tree.spsm.ted.data.impl;
 
-
-
 import it.unitn.disi.smatch.matchers.structure.tree.spsm.ted.data.ITreeAccessor;
 import it.unitn.disi.smatch.matchers.structure.tree.spsm.ted.data.ITreeNode;
 import it.unitn.disi.smatch.matchers.structure.tree.spsm.ted.data.ITreeSequenceAccessor;
@@ -15,8 +13,7 @@ import java.util.*;
  * This is the abstract base class for all tree accessors that allows a specific
  * tree accessor to implement basic tree operations.
  */
-public abstract class AbstractTreeAccessor implements ITreeAccessor,
-        ITreeSequenceAccessor {
+public abstract class AbstractTreeAccessor implements ITreeAccessor, ITreeSequenceAccessor {
 
     /**
      * The tree node this tree accessor provides access to.

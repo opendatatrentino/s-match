@@ -8,7 +8,11 @@ import java.util.List;
 import java.util.Vector;
 
 public class CTXMLTreeAccessor extends AbstractTreeAccessor {
+    //TODO Juan, do we now need this? And is CTXML a good name for it?
+    //TODO Juan, please, check unused commented code, unnecessary casts, javadocs and comments, constants on the left in comparisons, etc
+    //TODO Juan, P.S. applies for other classes as well.
 
+    //TODO Juan, why fixed constant?
     ITreeNode[] path = new ITreeNode[100];
     IContext context = null;
 
@@ -25,8 +29,9 @@ public class CTXMLTreeAccessor extends AbstractTreeAccessor {
         }
         List<INode> children = node.getChildrenList();
         if (children != null) {
-            for (int i = 0; i < children.size(); i++) {
-                INode child = (INode) children.get(i);
+            //TODO Juan, if possible, using for-each instead of indexed-for is more convenient for future refactorings
+            for (INode aChildren : children) {
+                INode child = (INode) aChildren;
                 addNode(child, depth + 1);
             }
         }
