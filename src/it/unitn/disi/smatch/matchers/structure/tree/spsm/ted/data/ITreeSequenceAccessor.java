@@ -2,6 +2,8 @@ package it.unitn.disi.smatch.matchers.structure.tree.spsm.ted.data;
 
 import java.util.List;
 
+//TODO Juan code duplication with existing tree structures
+
 /**
  * This interface specifies methods to retrieve the nodes of a tree in different
  * sequence orderings, i.e., in pre- or postorder.

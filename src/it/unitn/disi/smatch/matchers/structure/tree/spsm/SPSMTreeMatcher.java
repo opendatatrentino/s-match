@@ -15,22 +15,22 @@ import java.util.Properties;
 
 
 /**
- * Used the DefaultTreeMatcher for computing the default set of mapping elements and 
- * then calls the TreeMatcher.SPSMTreeMatcher.spsmFilter property where the filtering 
- * and computation of the similarity score is performed. 
- * The filters returns the set of mapping elements to preserve a set of structural properties, 
+ * Used the DefaultTreeMatcher for computing the default set of mapping elements and
+ * then calls the TreeMatcher.SPSMTreeMatcher.spsmFilter property where the filtering
+ * and computation of the similarity score is performed.
+ * The filters returns the set of mapping elements to preserve a set of structural properties,
  * namely:
  * <ul>
  * <li> one-to-one correspondences between semantically related nodes,
  * <li> leaf nodes are matched to leaf nodes and internal nodes are matched to internal nodes.
  * </ul>
- * <p>    
+ * <p/>
  * For further details refer to:
- * Approximate structure-preserving semantic matching 
+ * Approximate structure-preserving semantic matching
  * by
- * Giunchiglia, Fausto and McNeill, Fiona and Yatskevich, Mikalai and 
- * Pane, Juan and Besana, Paolo and Shvaiko, Pavel (2008) 
- * {@link http://eprints.biblio.unitn.it/archive/00001459/} 
+ * Giunchiglia, Fausto and McNeill, Fiona and Yatskevich, Mikalai and
+ * Pane, Juan and Besana, Paolo and Shvaiko, Pavel (2008)
+ * <a href="http://eprints.biblio.unitn.it/archive/00001459/">http://eprints.biblio.unitn.it/archive/00001459/</a>
  *
  * @author Juan Pane pane@disi.unitn.it
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
@@ -67,16 +67,14 @@ public class SPSMTreeMatcher extends DefaultTreeMatcher {
                                             IContextMapping<IAtomicConceptOfLabel> acolMapping)
             throws TreeMatcherException {
 
-
         try {
             IContextMapping<INode> defaultMappings = super.treeMatch(sourceContext, targetContext, acolMapping);
-
-            IContextMapping<INode> spsmMapppings = spsmFilter.filter(defaultMappings);
-
-            return spsmMapppings;
+            return spsmFilter.filter(defaultMappings);
         }
+        //TODO Juan, catch-all is not nice at all. Check out other tree matcher on how to process exceptions.
+        //TODO Juan I believe you can remove this wrap.
         catch (Exception e) {
-            log.info("Problem matching source[" + getFNSignatureFromIContext(sourceContext.getRoot()) + "] to target[" + getFNSignatureFromIContext(targetContext.getRoot()) + "]");
+            log.info("Problem matching source[" + getFNSignatureFromIContext(sourceContext.getRoot()) + "] to target [" + getFNSignatureFromIContext(targetContext.getRoot()) + "]");
             log.info(e.getMessage());
             log.info(SPSMTreeMatcher.class.getName(), e);
 
@@ -84,10 +82,12 @@ public class SPSMTreeMatcher extends DefaultTreeMatcher {
         }
     }
 
-    
+
     /**
      * Creates a function-like tree from the given root node
+     *
      * @param node the root node
+     * @return TODO Juan
      */
     private String getFNSignatureFromIContext(INode node) {
 
@@ -105,6 +105,4 @@ public class SPSMTreeMatcher extends DefaultTreeMatcher {
         return ret;
 
     }
-
-
 }

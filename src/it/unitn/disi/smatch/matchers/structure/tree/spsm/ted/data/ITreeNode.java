@@ -5,6 +5,8 @@ import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeNode;
 import java.util.Enumeration;
 
+//TODO Juan code duplication with existing tree structures
+
 /**
  * This interface defines the methods of a tree node.
  * <p/>

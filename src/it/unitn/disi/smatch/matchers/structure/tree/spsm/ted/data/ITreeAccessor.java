@@ -4,6 +4,7 @@ import it.unitn.disi.smatch.matchers.structure.tree.spsm.ted.utils.impl.InvalidE
 
 import java.util.Set;
 
+//TODO Juan code duplication with existing tree structures
 /**
  * Accessor for tree structures. This interface defines methods for basic tree
  * operations.
