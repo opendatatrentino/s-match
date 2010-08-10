@@ -100,12 +100,10 @@ public class SPSMMappingFilter extends BaseFilter implements IMappingFilter {
 		sourceSize = sourceList.size();
 		targetSize = targetList.size();
 
-		//TODO Juan, please, use inherited mappingFactory to create mappings. (DOES NOT WORK. NULLPOINTER EXCEPTION)
+		
 		cNodeMatrix =   new MappingElement[sourceSize][targetSize];
 		
-		spsmMapping = new HashMapping<INode>(mappings.getSourceContext(),
-				mappings.getTargetContext());
-
+		spsmMapping = mappingFactory.getContextMappingInstance(mappings.getSourceContext(), mappings.getTargetContext());
 
 		Iterator<IMappingElement<INode>> mappingIt = mappings.iterator();
 		while (mappingIt.hasNext()) {
