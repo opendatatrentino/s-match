@@ -1,3 +1,0 @@
-\auto\color	=	\car\colour
-\auto\brand	=	\car\brand
-\auto	=	\car
