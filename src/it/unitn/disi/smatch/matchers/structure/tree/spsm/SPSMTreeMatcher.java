@@ -13,21 +13,24 @@ import org.apache.log4j.Logger;
 import java.util.List;
 import java.util.Properties;
 
-//TODO Juan, update Javadoc
 
 /**
- * This class implements <code>ITreeMatcher</code> interface
- * and provides the basic functionality of the matching component.
- * It supports the matching of LCC constraints (e.g, car(big, Nissan) is similar
- * to car(big, Acura)) and label matching (e.g., car=auto).
- * <p/>
- * It supports
- * <p/>
- * 5 string-based label matchers implemented in smatch,
- * structure preserving matcher that exploit node matcher (S-Match),
- * any other label matchers implementing <code>Matcher</code> interface.
- * <p/>
- * See <code>Example</code> for usage example.
+ * Used the DefaultTreeMatcher for computing the default set of mapping elements and 
+ * then calls the TreeMatcher.SPSMTreeMatcher.spsmFilter property where the filtering 
+ * and computation of the similarity score is performed. 
+ * The filters returns the set of mapping elements to preserve a set of structural properties, 
+ * namely:
+ * <ul>
+ * <li> one-to-one correspondences between semantically related nodes,
+ * <li> leaf nodes are matched to leaf nodes and internal nodes are matched to internal nodes.
+ * </ul>
+ * <p>    
+ * For further details refer to:
+ * Approximate structure-preserving semantic matching 
+ * by
+ * Giunchiglia, Fausto and McNeill, Fiona and Yatskevich, Mikalai and 
+ * Pane, Juan and Besana, Paolo and Shvaiko, Pavel (2008) 
+ * {@link http://eprints.biblio.unitn.it/archive/00001459/} 
  *
  * @author Juan Pane pane@disi.unitn.it
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
@@ -81,8 +84,11 @@ public class SPSMTreeMatcher extends DefaultTreeMatcher {
         }
     }
 
-    //TODO Juan, add Javadoc
-
+    
+    /**
+     * Creates a function-like tree from the given root node
+     * @param node the root node
+     */
     private String getFNSignatureFromIContext(INode node) {
 
         String ret = node.getNodeData().getName();

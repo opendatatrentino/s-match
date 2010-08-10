@@ -5,10 +5,16 @@ import it.unitn.disi.smatch.data.trees.IContext;
 import it.unitn.disi.smatch.data.trees.INode;
 
 import java.util.List;
-import java.util.Vector;
 
 public class CTXMLTreeAccessor extends AbstractTreeAccessor {
+	//TODO try to understand Mikalai's code!
+	
+    //TODO Juan, do we now need this? And is CTXML a good name for it?
+    //TODO Juan, please, check unused commented code, unnecessary casts, 
+	//javadocs and comments, constants on the left in comparisons, etc
+    //TODO Juan, P.S. applies for other classes as well.
 
+    //TODO Juan, why fixed constant?
     ITreeNode[] path = new ITreeNode[100];
     IContext context = null;
 
@@ -18,15 +24,15 @@ public class CTXMLTreeAccessor extends AbstractTreeAccessor {
     }
 
     void addNode(INode node, int depth) {
-//        TreePath toAdd = null;
-        path[depth] = new TreeNode(node/*.getNodeName()*/, true);
+        path[depth] = new TreeNode(node, true);
         if (depth > 0) {
             path[depth - 1].add(path[depth]);
         }
         List<INode> children = node.getChildrenList();
         if (children != null) {
-            for (int i = 0; i < children.size(); i++) {
-                INode child = (INode) children.get(i);
+
+            for (INode aChildren : children) {
+                INode child =  aChildren;
                 addNode(child, depth + 1);
             }
         }
@@ -48,7 +54,7 @@ public class CTXMLTreeAccessor extends AbstractTreeAccessor {
      * @return length of longest directed path
      */
     public double getMaximumDirectedPathLength() {
-        return 0;  //To change body of implemented methods use File | Settings | File Templates.
+        return 0;  //TODO, check whether we actually need to compute this, if used somewhere else
     }
 
     /**
@@ -60,6 +66,6 @@ public class CTXMLTreeAccessor extends AbstractTreeAccessor {
      * @return length of the shortest path
      */
     public double getShortestPath(ITreeNode nodeA, ITreeNode nodeB) {
-        return 0;  //To change body of implemented methods use File | Settings | File Templates.
+        return 0;  //TODO, check whether we actually need to compute this, if used somewhere else
     }
 }
