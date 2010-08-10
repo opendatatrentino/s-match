@@ -128,8 +128,19 @@ public class MatrixMapping<T extends IIndexedObject> extends BaseMapping<T> impl
         sources = (T[]) new IIndexedObject[rows];
         targets = (T[]) new IIndexedObject[cols];
 
+        initRows(sourceContext, sources);
+        initCols(targetContext, targets);
+
         elementCount = 0;
         modCount = 0;
+    }
+
+    protected void initCols(IContext targetContext, IIndexedObject[] targets) {
+        // void
+    }
+
+    protected void initRows(IContext sourceContext, IIndexedObject[] sources) {
+        // void
     }
 
     public Properties getProperties() {
@@ -168,16 +179,14 @@ public class MatrixMapping<T extends IIndexedObject> extends BaseMapping<T> impl
                 relation == matrix.get(source.getIndex(), target.getIndex());
 
         if (!result) {
-            modCount++;
-            matrix.set(source.getIndex(), target.getIndex(), relation);
-            if (IMappingElement.IDK == relation) {
-                elementCount--;
-                sources[source.getIndex()] = null;
-                targets[target.getIndex()] = null;
-            } else {
-                elementCount++;
-                sources[source.getIndex()] = source;
-                targets[target.getIndex()] = target;
+            if (source == sources[source.getIndex()] && target == targets[target.getIndex()]) {
+                modCount++;
+                matrix.set(source.getIndex(), target.getIndex(), relation);
+                if (IMappingElement.IDK == relation) {
+                    elementCount--;
+                } else {
+                    elementCount++;
+                }
             }
         }
 
@@ -241,9 +250,6 @@ public class MatrixMapping<T extends IIndexedObject> extends BaseMapping<T> impl
         matrix.init(rows, cols);
 
         elementCount = 0;
-
-        Arrays.fill(sources, null);
-        Arrays.fill(targets, null);
     }
 
     public IContextMapping<INode> getContextMappingInstance(IContext source, IContext target) {
