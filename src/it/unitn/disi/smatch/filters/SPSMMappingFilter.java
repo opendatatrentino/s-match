@@ -1,21 +1,11 @@
 package it.unitn.disi.smatch.filters;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Vector;
-
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-
-
-
-import it.unitn.disi.smatch.data.trees.IContext;
-import it.unitn.disi.smatch.data.trees.INode;
 import it.unitn.disi.smatch.data.mappings.HashMapping;
 import it.unitn.disi.smatch.data.mappings.IContextMapping;
 import it.unitn.disi.smatch.data.mappings.IMappingElement;
 import it.unitn.disi.smatch.data.mappings.MappingElement;
+import it.unitn.disi.smatch.data.trees.IContext;
+import it.unitn.disi.smatch.data.trees.INode;
 import it.unitn.disi.smatch.matchers.structure.tree.spsm.SPSMTreeMatcher;
 import it.unitn.disi.smatch.matchers.structure.tree.spsm.ted.TreeEditDistance;
 import it.unitn.disi.smatch.matchers.structure.tree.spsm.ted.data.ITreeAccessor;
@@ -23,124 +13,132 @@ import it.unitn.disi.smatch.matchers.structure.tree.spsm.ted.data.impl.CTXMLTree
 import it.unitn.disi.smatch.matchers.structure.tree.spsm.ted.utils.impl.InvalidElementException;
 import it.unitn.disi.smatch.matchers.structure.tree.spsm.ted.utils.impl.MatchedTreeNodeComparator;
 import it.unitn.disi.smatch.matchers.structure.tree.spsm.ted.utils.impl.WorstCaseDistanceConversion;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Vector;
+
+//TODO Juan, please, improve Javadoc.
 
 /**
- * Class used for reordering the siblings in a tree based on the
- * relations returned by the matching component. It is also used for 
- * filtering the relations in order to
- * return 1 to 1 correspondences for the data translation. this is done in the same class for the 
- * purpose of efficiency
- *  
+ * Class used for reordering (how?) the siblings in a tree based on the
+ * relations returned by the matching component. It is also used for
+ * filtering the relations in order to return 1 to 1 correspondences for the data translation.
+ * This is done in the same class for the purpose of efficiency.
+ *
  * @author Juan Pane pane@disi.unitn.it
  */
 public class SPSMMappingFilter extends BaseFilter implements IMappingFilter {
 
-	private IContext sourceContext;
-	private IContext targetContext;
-	
-    //used for reordering of siblings
-	private Vector<Integer> sourceIndex; 
-	private Vector<Integer> targetIndex;
-		
+    private IContext sourceContext;
+    private IContext targetContext;
 
+    //TODO Juan, remove Vectors. If needed, use ArrayLists
+    //used for reordering of siblings
+    private Vector<Integer> sourceIndex;
+    private Vector<Integer> targetIndex;
+
+    //TODO Juan, remove extra comments
 //	private Vector<IMappingElement> mappings;
-	/**
-	 * the original mappings
-	 */
-	private int numberofOriginalMappings;
+    /**
+     * the original mappings
+     */
+    private int numberofOriginalMappings;
 //	private IContextMapping<INode> mappings;
-	
-	//Class used to verify the relations between nodes, and build the QA mechanism
+
+    //Class used to verify the relations between nodes, and build the QA mechanism
 //	private SPSMMappingFilter spsmFilter;
-	
-	
-	
-	/////////////////////////////////////////////////
-	//CNode matrix (matrix of relations between nodes of the ontologies) rebuild from the mappings vector
-	private IMappingElement<INode>[][] cNodeMatrix;
-	
-	//vector with all the source nodes, used for fast searching of the index in the matrix
-	private List<INode> sourceVector;
-	
-	//vector with all the target nodes, used for fast searching of the index in the matrix
-	private List<INode> targetVector;
-	
-	//number of rows
-	private int sourceSize; 
-	
-	//number of columns
-	private int targetSize;
-	
-	//Data translation vector
+
+    //TODO Juan, is it possible to use IContextMapping? Do you really need to duplicate the data?
+    /////////////////////////////////////////////////
+    //CNode matrix (matrix of relations between nodes of the ontologies) rebuild from the mappings vector
+    private IMappingElement<INode>[][] cNodeMatrix;
+
+    //TODO Juan, fix comment. It is not a vector anymore. By the way - good idea to use lists if you don't need ArrayLists explicitly
+    //vector with all the source nodes, used for fast searching of the index in the matrix
+    private List<INode> sourceVector;
+
+    //vector with all the target nodes, used for fast searching of the index in the matrix
+    private List<INode> targetVector;
+
+    //TODO Juan, possible duplication from IContextMapping?
+    //number of rows
+    private int sourceSize;
+
+    //number of columns
+    private int targetSize;
+
+    //Data translation vector
 //	private IMappingElement<INode> filteredMapppings[];
-	private IContextMapping<INode> spsmMappings;
-	
+    private IContextMapping<INode> spsmMappings;
+
 //	private Hashtable<String,Integer> orderOfSiblingsInSource;
 //	private Hashtable<String,Integer> orderOfSiblingsInTarget;
-	
-//	IContextMapping<INode> mappings2;
-	
-	private static final Logger log = Logger.getLogger(SPSMMappingFilter.class);
 
-	/** Contains the original mappings from which it will be computed the 
-	 * similarity score and then the filtering will take place **/
-	private IContextMapping<INode> originalMappings;
-	
-	/**
-	 * Constructor of the class for 
-	 * @param source Source Context
-	 * @param target Target Context
-	 * @param mapp	Mapping or semantic relations among the nodes in source and target  
-	 */
-	@SuppressWarnings("unchecked")
-	private void init(IContextMapping<INode> mappings){
-		sourceContext = mappings.getSourceContext();
-		targetContext = mappings.getTargetContext();
-		sourceIndex = new Vector<Integer>();
-		targetIndex = new Vector<Integer>();
+//	IContextMapping<INode> mappings2;
+
+    private static final Logger log = Logger.getLogger(SPSMMappingFilter.class);
+
+    /**
+     * Contains the original mappings from which it will be computed the
+     * similarity score and then the filtering will take place *
+     */
+    private IContextMapping<INode> originalMappings;
+
+    //TODO Juan, is it possible to get rid of this suppress?
+
+    @SuppressWarnings("unchecked")
+    private void init(IContextMapping<INode> mappings) {
+        sourceContext = mappings.getSourceContext();
+        targetContext = mappings.getTargetContext();
+        sourceIndex = new Vector<Integer>();
+        targetIndex = new Vector<Integer>();
 //		mappings = (Vector<IMappingElement>) mapp.getMapping().clone();
 //		this.mappings = mapp;
 //		spsmFilter = new SPSMMappingFilter( sourceContext,targetContext,mappings );
-		
-		sourceVector = mappings.getSourceContext().getNodesList();
-		targetVector = mappings.getTargetContext().getNodesList();
-		
-		sourceSize = sourceVector.size();
-		targetSize = targetVector.size();
 
-		cNodeMatrix = new MappingElement[sourceSize][targetSize];//new NodesMatrixMapping(new MatchMatrix(), source, target);
+        sourceVector = mappings.getSourceContext().getNodesList();
+        targetVector = mappings.getTargetContext().getNodesList();
+
+        sourceSize = sourceVector.size();
+        targetSize = targetVector.size();
+
+        //TODO Juan, please, use inherited mappingFactory to create mappings.
+        cNodeMatrix = new MappingElement[sourceSize][targetSize];//new NodesMatrixMapping(new MatchMatrix(), source, target);
 //		filteredMapppings = new MappingElement[sourceSize];
-		spsmMappings = new HashMapping<INode>(mappings.getSourceContext(),
-												mappings.getTargetContext());
-		
+        spsmMappings = new HashMapping<INode>(mappings.getSourceContext(),
+                mappings.getTargetContext());
 
-		Iterator<IMappingElement<INode>> mappingIt = mappings.iterator();
-		while(mappingIt.hasNext()){
-			IMappingElement<INode> mapping = mappingIt.next();
-			INode s = mapping.getSource();
-			INode t = mapping.getTarget();
-			int sourceIndex = sourceVector.indexOf(s);
-			int targetIndex = targetVector.indexOf(t);
-			cNodeMatrix[sourceIndex][targetIndex] = mapping;	
-		}
-		
-		numberofOriginalMappings = mappings.size();
-		originalMappings = mappings;
-		
-	}
-	
-	/**
-	 * Sorts the siblings in the source and target tree defined in the constructor using 
-	 * the given mapping 
-	 */
-	@Override
-	public IContextMapping<INode> filter(IContextMapping<INode> mapping)
-			throws MappingFilterException {
-		//initialize the local variables
-		init(mapping);
-		computeSimilarity();
-		
-		
+
+        //TODO Juan, just to let you know - iterator are slower than other access methods. That's why I created to versions
+        // of some classes, with the only difference of using different iterators.
+        Iterator<IMappingElement<INode>> mappingIt = mappings.iterator();
+        while (mappingIt.hasNext()) {
+            IMappingElement<INode> mapping = mappingIt.next();
+            INode s = mapping.getSource();
+            INode t = mapping.getTarget();
+            int sourceIndex = sourceVector.indexOf(s);
+            int targetIndex = targetVector.indexOf(t);
+            cNodeMatrix[sourceIndex][targetIndex] = mapping;
+        }
+
+        numberofOriginalMappings = mappings.size();
+        originalMappings = mappings;
+    }
+
+    /**
+     * Sorts the siblings in the source and target tree defined in the constructor using
+     * the given mapping
+     */
+    public IContextMapping<INode> filter(IContextMapping<INode> mapping) throws MappingFilterException {
+        //initialize the local variables
+        init(mapping);
+        computeSimilarity();
+
+        IContextMapping<INode> res = null;
 
 		//add the first mapping element for the root to the mappings result
 		if (numberofOriginalMappings > 0){
@@ -166,6 +164,7 @@ public class SPSMMappingFilter extends BaseFilter implements IMappingFilter {
 	}
 	
 	
+    //TODO Juan, add paper data: title and authors, just in case eprints will change URL or have troubles.
 	/**
 	 * Computes the similarity score according to the definition provided in 
 	 * http://eprints.biblio.unitn.it/archive/00001459/
@@ -190,6 +189,7 @@ public class SPSMMappingFilter extends BaseFilter implements IMappingFilter {
 		double ed = tde.getTreeEditDistance();
 		double sim=1-(ed/Math.max(sourceSize,targetSize));
 
+        //TODO Juan, the terminology used here is: mapping, which is a set of links. It may be arguable, but let's be consistent.
 		spsmMappings.setSimilarity(sim);
 	}
 
@@ -226,6 +226,8 @@ public class SPSMMappingFilter extends BaseFilter implements IMappingFilter {
 	 */
 	private List<INode> convertToModifiableList(List<INode> unmodifiable){
 		List<INode> modifiable = new ArrayList<INode>();
+        //TODO Juan, why not this way?
+        //List<INode> modifiable = new ArrayList<INode>(unmodifiable);
 		
 		for(int i =0; i<unmodifiable.size(); i++){
 			modifiable.add(unmodifiable.get(i)); 
@@ -245,6 +247,8 @@ public class SPSMMappingFilter extends BaseFilter implements IMappingFilter {
 	 * @param semantic_relation	Defined relation in edu.unitn.dit.smatch.MatchManager
 	 */
 	private void filterMappingsOfSibligsbyRelation(List<INode> source, List<INode> target, char semantic_relation){
+        //TODO Juan, fix typo in the function name: sibliNgs
+        //TODO Juan, underscore is discouraged. Use CamelCase. semantic_relation -> semanticRelation or just relation
 		
 		int sourceDepth = (getNodeDepth(source.get(0)) - 1);
 		int targetDepth = (getNodeDepth(target.get(0)) - 1);
@@ -301,6 +305,7 @@ public class SPSMMappingFilter extends BaseFilter implements IMappingFilter {
 	}
 
 	
+    //TODO Juan, what is vect here?
 	/**
 	 * Swaps the INodes in vect in the positions source and target
 	 * @param listOfNodes		List of INodes of which the elements should be swapped
@@ -308,9 +313,7 @@ public class SPSMMappingFilter extends BaseFilter implements IMappingFilter {
 	 * @param target	index of the target element to be swapped
 	 */
 	private void swapINodes(List<INode> listOfNodes, int source,  int target){
-		INode aux = null;
-
-		aux = listOfNodes.get(source);
+        INode aux = listOfNodes.get(source);
 		listOfNodes.set(source,listOfNodes.get(target));
 		listOfNodes.set(target, aux);
 
@@ -345,6 +348,7 @@ public class SPSMMappingFilter extends BaseFilter implements IMappingFilter {
 			}
 		}
 
+        //TODO Juan, remove "vectors" from the comments
 		//there was no correspondence between siblings in source and target vectors
 		//try to clean the mapping elements
 		
@@ -374,6 +378,7 @@ public class SPSMMappingFilter extends BaseFilter implements IMappingFilter {
 	 * @param index	index of the element to be incremented
 	 */
 	private void inc(Vector<Integer> vec, int index){
+        //TODO Juan, replace vectors with ArrayLists, and update references in the comments and Javadocs
 		vec.set(index,vec.get(index)+1);
 	}
 	
@@ -387,10 +392,12 @@ public class SPSMMappingFilter extends BaseFilter implements IMappingFilter {
 	 * @return	true if the relation holds between source and target, false otherwise
 	 */
 	private boolean isRelated(INode source, INode target,char semantic_relation){
-		
+        //TODO Juan, fix _ in names
 		boolean related = false;
 		IMappingElement<INode> mapping = findMappingElement(source, target, semantic_relation);
 		if ( mapping != null ){
+            //TODO Juan, it is better to write constants on the left, this way it is more difficult to fall into
+            // = instead of == trap.
 				related = true;
 		}
 		return related;
@@ -445,6 +452,7 @@ public class SPSMMappingFilter extends BaseFilter implements IMappingFilter {
 	 * Set the given column and row as the strongest mapping element for the given 
 	 * source and target indexes of the cNodeMatrix, setting all the other realtions
 	 * for the same row (source) as IDK if the relations are weaker
+     * //TODO Juan, add comments, even just like this: @param row row
 	 * @param row
 	 * @param col
 	 */
@@ -485,6 +493,7 @@ public class SPSMMappingFilter extends BaseFilter implements IMappingFilter {
 	/**
 	 * Takes the existing IMappingElement and copies the source and target into a
 	 * new instance of IMappingElement with the IDK relation
+     * //TODO Juan, same as above about params Javadoc
 	 * @param mapping
 	 * @return
 	 */
@@ -580,6 +589,7 @@ public class SPSMMappingFilter extends BaseFilter implements IMappingFilter {
 	 */
 	private void resolveStrongestMappingConflicts(int sourceNodeIndex, 
 			List<IMappingElement<INode>> strongest){
+        //TODO Juan, add params Javadoc
 		//copy the relations to a string to log it
 		int strongestIndex = -1;
 		String sourceString = sourceVector.get(sourceNodeIndex).getNodeData().getName().trim();
@@ -587,6 +597,7 @@ public class SPSMMappingFilter extends BaseFilter implements IMappingFilter {
 		for(int i = 0; i < strongest.size() ; i++){
 			strongRelations += strongest.get(i).getTarget().toString()+"|";
 		}
+        //TODO Juan, while using log with a constructed or parametrized message, always check for log.isEnabled(Level.XXX)
 		log.info("more tha one strongest relation for "+
 				sourceString +": |"+strongRelations);
 
@@ -601,6 +612,7 @@ public class SPSMMappingFilter extends BaseFilter implements IMappingFilter {
        	}
        	
        	//if there was no equal string, then set it to the first one
+        //TODO Juan, always use { with ifs, fors, etc, even in case of oneliners
        	if(strongestIndex == -1)
        		strongestIndex = 0;
        	
@@ -649,7 +661,9 @@ public class SPSMMappingFilter extends BaseFilter implements IMappingFilter {
 	 * @return true if they are the same structure, false otherwise
 	 */
 	private boolean isSameStructure(INode source, INode target){
+        //TODO Juan, fix Javadocs for params
 		boolean result = false;
+        //TODO Juan, constants on the left side
 		if(source != null && target != null){
 			if(source.getChildrenList() != null && target.getChildrenList() != null){
 				int sourceChildren = source.getChildrenList().size();
@@ -709,12 +723,12 @@ public class SPSMMappingFilter extends BaseFilter implements IMappingFilter {
 	 * @return
 	 */
 	private boolean morePrecedent(IMappingElement<INode> source, IMappingElement<INode> target){
-		
+        //TODO Juan, fix Javadoc for @return
+        //TODO Juan why not this way?
+		//return comparePrecedence(source.getRelation(), target.getRelation()) == 1;
 		return  comparePrecedence(source.getRelation(), target.getRelation()) == 1?true: false;
+    }
 
-	}
-	
-	
 //	/**
 //	 * Finds all mappings related to the source node represented by the string
 //	 * @param sourceStr String representation of the node
@@ -735,6 +749,7 @@ public class SPSMMappingFilter extends BaseFilter implements IMappingFilter {
 //		return relatedMappings;
 //		
 //	}
+
 	
 	/**
 	 * Compares the semantic relation of the source and target in the order of precedence
@@ -748,6 +763,7 @@ public class SPSMMappingFilter extends BaseFilter implements IMappingFilter {
 	 * 		 	1 if source_relation  is more precedent than target_relation
 	 */
 	private int comparePrecedence(char source_relation,  char target_relation){ 
+        //TODO Juan, "source" and "target" are simpler and shorter names and are without _
 		int result = -1;
 		
 		int sourcePrecedence = getPrecedenceNumber(source_relation);
@@ -797,6 +813,7 @@ public class SPSMMappingFilter extends BaseFilter implements IMappingFilter {
 		
 		return precedence;
 	}
+
 
 
 }

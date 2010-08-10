@@ -2,10 +2,8 @@ package it.unitn.disi.smatch.matcher.structure.tree.spsm;
 
 import java.io.File;
 import java.util.Iterator;
-import java.util.Properties;
 
 import org.apache.log4j.PropertyConfigurator;
-
 
 import it.unitn.disi.smatch.IMatchManager;
 import it.unitn.disi.smatch.MatchManager;
@@ -13,19 +11,25 @@ import it.unitn.disi.smatch.SMatchException;
 import it.unitn.disi.smatch.components.ConfigurableException;
 import it.unitn.disi.smatch.data.mappings.IContextMapping;
 import it.unitn.disi.smatch.data.mappings.IMappingElement;
-import it.unitn.disi.smatch.data.mappings.MappingElement;
 import it.unitn.disi.smatch.data.trees.IContext;
 import it.unitn.disi.smatch.data.trees.INode;
-import it.unitn.disi.smatch.matchers.structure.tree.spsm.SPSMTreeMatcher;
 
+//TODO Juan, while it is fine to have "print" tests, please, make a real unit test out of it. Check in the older versions - I had here a couple of tests.
 public class SPSMTest {
 	
 	private IMatchManager mm;
     String confPath = ".." + File.separator + "conf" + File.separator + "";//
+
     String propertiesFile = "s-match-spsm-function.properties";
+
+//    String propertiesFile = "s-match-spsm.properties";
+    //TODO Juan, remove unused stuff
+
     String logProperties = "logging.properties";
     String sourceFile = "source.txt";
     String targetFile = "target.txt";
+
+    //TODO Juan, remove unused stuff
     String preprocesedSource = "source.xml";
     String preprocesedTarger = "target.xml";
     
@@ -149,8 +153,8 @@ public class SPSMTest {
       
       
 		
-//      matchFunctions("Courses(College of Arts and Sciences(Earth and Atmospheric Sciences,History(Latin America History,America History,Ancient European History),Computer Science))",
-//      "Course(College of Arts and Sciences(Earth Sciences(Geophysics,Geological Sciences),Computer Science,History(History of Americas,Ancient and Medieval History)))");
+      matchFunctions("Courses(College of Arts and Sciences(Earth and Atmospheric Sciences,History(Latin America History,America History,Ancient European History),Computer Science))",
+      "Course(College of Arts and Sciences(Earth Sciences(Geophysics,Geological Sciences),Computer Science,History(History of Americas,Ancient and Medieval History)))");
 
 //              matchFunctions( "retrieve_flood_level(ReporterID,Node,Timestep,WaterLevel)",
 //                "retrieve_inundation_degree(ReporterID,Node,Timestep,WaterLevel)");
@@ -259,7 +263,7 @@ public class SPSMTest {
 //      matchFunctions("price(Item(marker),Quality,Delivery_day,Price)" ,"price(Item(pen),Quality,Delivery_day,Price)");
 //      matchFunctions("price(Item,Quality(1),Delivery_day,Price)" ,"price(Item,Quality(2),Delivery_day,Price)");
 //      matchFunctions("price(Item,Quality(1),Delivery_day(1),Price)" ,"price(Item,Quality(1),Delivery_day(2),Price)");
-      matchFunctions("price(Item(pencil),Quality(1),Delivery_day(1),Price)" ,"price(Item(pen),Quality(2),Delivery_day(2),Price)");
+//      matchFunctions("price(Item(pencil),Quality(1),Delivery_day(1),Price)" ,"price(Item(pen),Quality(2),Delivery_day(2),Price)");
 //      matchFunctions("price(Item,Quality,Delivery_day,Price)" ,"price(Item(pen),Quality(2),Delivery_day(2),Price)");        
 //    matchFunctions("require(model, quantity, year)","need(amount, model)");
    
