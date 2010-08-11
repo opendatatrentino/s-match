@@ -6,6 +6,7 @@ import it.unitn.disi.smatch.data.mappings.IContextMapping;
 import it.unitn.disi.smatch.data.trees.IContext;
 import it.unitn.disi.smatch.data.trees.INode;
 import it.unitn.disi.smatch.filters.IMappingFilter;
+import it.unitn.disi.smatch.filters.MappingFilterException;
 import it.unitn.disi.smatch.matchers.structure.tree.TreeMatcherException;
 import it.unitn.disi.smatch.matchers.structure.tree.def.DefaultTreeMatcher;
 import org.apache.log4j.Logger;
@@ -67,18 +68,18 @@ public class SPSMTreeMatcher extends DefaultTreeMatcher {
                                             IContextMapping<IAtomicConceptOfLabel> acolMapping)
             throws TreeMatcherException {
 
-        try {
             IContextMapping<INode> defaultMappings = super.treeMatch(sourceContext, targetContext, acolMapping);
+          try {
+
             return spsmFilter.filter(defaultMappings);
         }
-        //TODO Juan, catch-all is not nice at all. Check out other tree matcher on how to process exceptions.
-        //TODO Juan I believe you can remove this wrap.
-        catch (Exception e) {
+        catch (MappingFilterException e) {
             log.info("Problem matching source[" + getFNSignatureFromIContext(sourceContext.getRoot()) + "] to target [" + getFNSignatureFromIContext(targetContext.getRoot()) + "]");
             log.info(e.getMessage());
             log.info(SPSMTreeMatcher.class.getName(), e);
 
-            return null;
+            throw (new TreeMatcherException(e.getMessage(), e.getCause()));
+            
         }
     }
 
@@ -87,7 +88,7 @@ public class SPSMTreeMatcher extends DefaultTreeMatcher {
      * Creates a function-like tree from the given root node
      *
      * @param node the root node
-     * @return TODO Juan
+     * @return the string representation for the given tree in function-like representation
      */
     private String getFNSignatureFromIContext(INode node) {
 

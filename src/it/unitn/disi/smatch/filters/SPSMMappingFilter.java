@@ -19,8 +19,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-//TODO Juan, in Javadocs, always put the . after the first sentence.
-
 
 /**
  * Filters the set of mapping elements to preserve a set of structural properties,
@@ -89,11 +87,15 @@ public class SPSMMappingFilter extends BaseFilter implements IMappingFilter {
 
     /**
      * Contains the original mappings from which it will be computed the
-     * similarity score and then the filtering will take place *
+     * similarity score and then the filtering will take place.
      */
     private IContextMapping<INode> originalMappings;
 
 
+    /**
+     * initializes the local variables needed for the filtering.
+     * @param mappings the mappings returned by the DefaultTreeMatcher.
+     */
     private void init(IContextMapping<INode> mappings) {
         sourceContext = mappings.getSourceContext();
         targetContext = mappings.getTargetContext();
@@ -129,7 +131,7 @@ public class SPSMMappingFilter extends BaseFilter implements IMappingFilter {
 
     /**
      * Sorts the siblings in the source and target tree defined in the constructor using
-     * the given mapping
+     * the given mapping.
      */
     public IContextMapping<INode> filter(IContextMapping<INode> mapping) throws MappingFilterException {
         //initialize the local variables
@@ -159,11 +161,11 @@ public class SPSMMappingFilter extends BaseFilter implements IMappingFilter {
 
     /**
      * Computes the similarity score according to the definition provided in
-     * Approximate structure-preserving semantic matching
-     * by
+     * Approximate structure-preserving semantic matching.
+     * By
      * Giunchiglia, Fausto and McNeill, Fiona and Yatskevich, Mikalai and
      * Pane, Juan and Besana, Paolo and Shvaiko, Pavel (2008)
-     * <a href="http://eprints.biblio.unitn.it/archive/00001459/">http://eprints.biblio.unitn.it/archive/00001459/</a>
+     * <a href="http://eprints.biblio.unitn.it/archive/00001459/">http://eprints.biblio.unitn.it/archive/00001459/</a>.
      */
     private void computeSimilarity() {
         TreeEditDistance tde = null;
@@ -177,8 +179,7 @@ public class SPSMMappingFilter extends BaseFilter implements IMappingFilter {
         } catch (InvalidElementException e) {
             //TODO Juan, probably should fix it or throw this further
             log.info("Problems in the Tree edit distance computation: " + e.getMessage());
-            //TODO Juan, please, always put braces for ifs. Even for single line stmts.
-            //TODO Juan I already wrote about this. Check your IDE code format setting!
+
             if (log.getEffectiveLevel() == Level.TRACE) {
                 log.trace(SPSMTreeMatcher.class.getName(), e);
             }
@@ -195,13 +196,13 @@ public class SPSMMappingFilter extends BaseFilter implements IMappingFilter {
     /**
      * Sorts the children of the given nodes.
      *
-     * @param sourceParent     Source node
-     * @param targetParent     Target node
-     * @param semanticRelation the relation to use for comparison
+     * @param sourceParent     Source node.
+     * @param targetParent     Target node.
+     * @param semanticRelation the relation to use for comparison.
      */
     private void filterMappingsOfChildren(INode sourceParent, INode targetParent, char semanticRelation) {
-        List<INode> source = convertToModifiableList(sourceParent.getChildrenList());
-        List<INode> target = convertToModifiableList(targetParent.getChildrenList());
+        List<INode> source = new ArrayList<INode>(sourceParent.getChildrenList());
+        List<INode> target = new ArrayList<INode>(targetParent.getChildrenList());
 
         sourceIndex.add(getNodeDepth(sourceParent), 0);
         targetIndex.add(getNodeDepth(targetParent), 0);
@@ -216,29 +217,15 @@ public class SPSMMappingFilter extends BaseFilter implements IMappingFilter {
     }
 
 
-    //TODO Juan, just delete it. It is one-line function used in 2 places. Now it just obscures the things.
-    /**
-     * Converts the unmodifiable list of children to a modifiable list of children
-     * needed when reordering the children
-     *
-     * @param unmodifiable
-     * @return
-     */
-    private List<INode> convertToModifiableList(List<INode> unmodifiable) {
-        List<INode> modifiable = new ArrayList<INode>(unmodifiable);
-        return modifiable;
-    }
-
-
     /**
      * Filters the mappings of two siblings node list for which the parents are also supposed to
      * be related. Checks whether in the two given node list there is a pair of nodes related
      * by the given relation and if so, if deletes all the other relations for the given 2
      * nodes setting the current one as strongest.
      *
-     * @param source           Source list of siblings
-     * @param target           Target list of siblings
-     * @param semanticRelation Defined relation in edu.unitn.dit.smatch.MatchManager //TODO Juan, please, check the code for old references.
+     * @param source           Source list of siblings.
+     * @param target           Target list of siblings.
+     * @param semanticRelation a char representing the semantic realtion as defined in IMappingElement.
      */
     private void filterMappingsOfSiblingsByRelation(List<INode> source, List<INode> target, char semanticRelation) {
         int sourceDepth = (getNodeDepth(source.get(0)) - 1);
@@ -290,11 +277,11 @@ public class SPSMMappingFilter extends BaseFilter implements IMappingFilter {
 
 
     /**
-     * Swaps the INodes in listOfNodes in the positions source and target
+     * Swaps the INodes in listOfNodes in the positions source and target.
      *
-     * @param listOfNodes List of INodes of which the elements should be swapped
-     * @param source      index of the source element to be swapped
-     * @param target      index of the target element to be swapped
+     * @param listOfNodes List of INodes of which the elements should be swapped.
+     * @param source      index of the source element to be swapped.
+     * @param target      index of the target element to be swapped.
      */
     private void swapINodes(List<INode> listOfNodes, int source, int target) {
         INode aux = listOfNodes.get(source);
@@ -306,12 +293,12 @@ public class SPSMMappingFilter extends BaseFilter implements IMappingFilter {
 
     /**
      * Looks for the related index for the source list at the position sourceIndex
-     * in the target list beginning at the targetIndex position for the defined relation
+     * in the target list beginning at the targetIndex position for the defined relation.
      *
-     * @param source           source list of siblings
-     * @param target           target list of siblings
-     * @param semanticRelation Defined relation in edu.unitn.dit.smatch.MatchManager
-     * @return the index of the related element in target, or -1 if there is no relate element
+     * @param source           source list of siblings.
+     * @param target           target list of siblings.
+     * @param semanticRelation Defined relation in edu.unitn.dit.smatch.MatchManager.
+     * @return the index of the related element in target, or -1 if there is no relate element.
      */
     private int getRelatedIndex(List<INode> source, List<INode> target, char semanticRelation) {
 
@@ -345,8 +332,8 @@ public class SPSMMappingFilter extends BaseFilter implements IMappingFilter {
     /**
      * Returns the depth of a node in a given tree, the root have a depth of 0.
      *
-     * @param node node from which we want to compute the depth
-     * @return depth of the given node in the tree
+     * @param node node from which we want to compute the depth.
+     * @return depth of the given node in the tree.
      */
     private int getNodeDepth(INode node) {
         return node.getAncestorsList().size();
@@ -355,8 +342,8 @@ public class SPSMMappingFilter extends BaseFilter implements IMappingFilter {
     /**
      * Increments by 1 the Integer of the given list of integers at the index position.
      *
-     * @param array array list of integers
-     * @param index index of the element to be incremented
+     * @param array array list of integers.
+     * @param index index of the element to be incremented.
      */
     private void inc(ArrayList<Integer> array, int index) {
         array.set(index, array.get(index) + 1);
@@ -367,10 +354,10 @@ public class SPSMMappingFilter extends BaseFilter implements IMappingFilter {
      * defined relation and the cNodeMatrix, is the relation is held, then it is set
      * as the strongest relation for the source and target.
      *
-     * @param source   Source element
-     * @param target   Target element
-     * @param relation Defined relation IMappingElement
-     * @return true if the relation holds between source and target, false otherwise
+     * @param source   Source element.
+     * @param target   Target element.
+     * @param relation Defined relation IMappingElement.
+     * @return true if the relation holds between source and target, false otherwise.
      */
     private boolean isRelated(INode source, INode target, char relation) {
         boolean related = false;
@@ -386,10 +373,10 @@ public class SPSMMappingFilter extends BaseFilter implements IMappingFilter {
     /**
      * Finds the mapping element in the CNodeMatrix for the given source, target and semantic relation.
      *
-     * @param source           source node
-     * @param target           target node
-     * @param relation relation holding between the source and target
-     * @return Mapping between source and target for the given relation, null is there is none
+     * @param source           source node.
+     * @param target           target node.
+     * @param relation relation holding between the source and target.
+     * @return Mapping between source and target for the given relation, null is there is none.
      */
     private IMappingElement<INode> findMappingElement(INode source, INode target, char relation) {
         IMappingElement<INode> me = null;
@@ -413,10 +400,10 @@ public class SPSMMappingFilter extends BaseFilter implements IMappingFilter {
 
     /**
      * Sets the strongest mapping element for the data translation
-     * for the given source and target
+     * for the given source and target.
      *
-     * @param source source node
-     * @param target target node
+     * @param source source node.
+     * @param target target node.
      */
     private void setStrongestMapping(INode source, INode target) {
 
@@ -431,10 +418,10 @@ public class SPSMMappingFilter extends BaseFilter implements IMappingFilter {
     /**
      * Sets the given column and row as the strongest mapping element for the given
      * source and target indexes of the cNodeMatrix, setting all the other relations
-     * for the same row (source) as IDK if the relations are weaker
+     * for the same row (source) as IDK if the relations are weaker.
      *
-     * @param row row of the strongest mapping relative to the cNodeMatrix
-     * @param col column of the stronger mapping relative to the cNodeMatrix
+     * @param row row of the strongest mapping relative to the cNodeMatrix.
+     * @param col column of the stronger mapping relative to the cNodeMatrix.
      */
     private void setStrongestMapping(int row, int col) {
 
@@ -451,7 +438,7 @@ public class SPSMMappingFilter extends BaseFilter implements IMappingFilter {
                 if (j != col && cNodeMatrix[row][j] != null
                         && cNodeMatrix[row][j].getRelation() != IMappingElement.IDK
                         && morePrecedent(cNodeMatrix[row][col], cNodeMatrix[row][j])) {
-                    cNodeMatrix[row][j] = convertToIDK(cNodeMatrix[row][j]);
+                    cNodeMatrix[row][j] = null;
                 }
             }
 
@@ -459,7 +446,7 @@ public class SPSMMappingFilter extends BaseFilter implements IMappingFilter {
             for (int i = 0; i < sourceSize; i++) {
                 if (i != row && cNodeMatrix[i][col] != null
                         && cNodeMatrix[i][col].getRelation() != IMappingElement.IDK) {
-                    cNodeMatrix[i][col] = convertToIDK(cNodeMatrix[i][col]);
+                    cNodeMatrix[i][col] = null;
                 }
             }
         } else {
@@ -470,25 +457,12 @@ public class SPSMMappingFilter extends BaseFilter implements IMappingFilter {
     }
 
 
-    //TODO Juan, this is very funny! :) why does one need that???
-    /**
-     * Takes the existing IMappingElement and returns null.
-     *
-     * @param mapping the mapping to be converted
-     * @return //TODO Juan
-     */
-    private IMappingElement<INode> convertToIDK(IMappingElement<INode> mapping) {
-
-        return null;
-    }
-
-
     /**
      * Looks for the strongest relation for the given source and sets to
      * IDK all the other mappings existing for the same source if they are less
-     * precedent
+     * precedent.
      *
-     * @param source INode to look for the strongest relation
+     * @param source INode to look for the strongest relation.
      */
     private void computeStrongestMappingForSource(INode source) {
 
@@ -518,7 +492,7 @@ public class SPSMMappingFilter extends BaseFilter implements IMappingFilter {
                 } else {
                     //they are not the same structure, function to function, variable to variable
                     //delete the relation
-                    cNodeMatrix[sourceIndex][j] = convertToIDK(cNodeMatrix[sourceIndex][j]);
+                    cNodeMatrix[sourceIndex][j] = null;
                 }
             }
 
@@ -529,7 +503,7 @@ public class SPSMMappingFilter extends BaseFilter implements IMappingFilter {
                     if (j != strongetsRelationInTarget && cNodeMatrix[sourceIndex][j] != null) {
                         int precedence = comparePrecedence(strongest.get(0).getRelation(), cNodeMatrix[sourceIndex][j].getRelation());
                         if (precedence == 1) {
-                            cNodeMatrix[sourceIndex][j] = convertToIDK(cNodeMatrix[sourceIndex][j]);
+                            cNodeMatrix[sourceIndex][j] = null;
                         } else if (precedence == 0) {
                             if (isSameStructure(source, targetList.get(j))) {
                                 strongest.add(cNodeMatrix[sourceIndex][j]);
@@ -546,7 +520,7 @@ public class SPSMMappingFilter extends BaseFilter implements IMappingFilter {
                     //deletes all the relations in the column
                     for (int i = 0; i < sourceSize; i++) {
                         if (i != sourceIndex) {
-                            cNodeMatrix[i][strongetsRelationInTarget] = convertToIDK(cNodeMatrix[i][strongetsRelationInTarget]);
+                            cNodeMatrix[i][strongetsRelationInTarget] = null;
                         }
                     }
 
@@ -565,10 +539,10 @@ public class SPSMMappingFilter extends BaseFilter implements IMappingFilter {
 
     /**
      * Used to resolve conflicts in case there are more than one element with
-     * the strongest relation for a given source node
+     * the strongest relation for a given source node.
      *
-     * @param sourceNodeIndex the index of the node for which more than one strongest relation is found
-     * @param strongest       the list of the strongest relations
+     * @param sourceNodeIndex the index of the node for which more than one strongest relation is found.
+     * @param strongest       the list of the strongest relations.
      */
     private void resolveStrongestMappingConflicts(int sourceNodeIndex,
                                                   List<IMappingElement<INode>> strongest) {
@@ -613,9 +587,9 @@ public class SPSMMappingFilter extends BaseFilter implements IMappingFilter {
     /**
      * When a given mapping element has been chosen as the strongest,
      * then delete all the other mappings from the cNodeMatrix by
-     * setting the relation to IDK //TODO Juan . is missing. Just one example. It is missing almost everywhere.
+     * setting the relation to <code>null</code>.
      *
-     * @param mapping //TODO Juan
+     * @param mapping the strongest mapping element.
      */
     private void deleteRemainingRelationsFromMatrix(IMappingElement<INode> mapping) {
         int sourceIndex = sourceList.indexOf(mapping.getSource());
@@ -624,14 +598,14 @@ public class SPSMMappingFilter extends BaseFilter implements IMappingFilter {
         //deletes all the relations in the column
         for (int i = 0; i < sourceSize; i++) {
             if (i != sourceIndex) {
-                cNodeMatrix[i][targetIndex] = convertToIDK(cNodeMatrix[i][targetIndex]);
+                cNodeMatrix[i][targetIndex] = null;
             }
         }
 
         //deletes all the relations in the row
         for (int j = 0; j < targetIndex; j++) {
             if (j != targetIndex) {
-                cNodeMatrix[sourceIndex][j] = convertToIDK(cNodeMatrix[sourceIndex][j]);
+                cNodeMatrix[sourceIndex][j] = null;
             }
         }
 
@@ -640,11 +614,11 @@ public class SPSMMappingFilter extends BaseFilter implements IMappingFilter {
 
     /**
      * Checks if source and target are structural preserving
-     * this is, function to function and argument to argument match
+     * this is, function to function and argument to argument match.
      *
-     * @param source source node
-     * @param target target node
-     * @return true if they are the same structure, false otherwise
+     * @param source source node.
+     * @param target target node.
+     * @return true if they are the same structure, false otherwise.
      */
     private boolean isSameStructure(INode source, INode target) {
         boolean result = false;
@@ -667,11 +641,12 @@ public class SPSMMappingFilter extends BaseFilter implements IMappingFilter {
     }
 
     /**
-     * Checks if there is no other stronger relation in the same column
+     * Checks if there is no other stronger relation in the same column.
      *
-     * @param source //TODO Juan
-     * @param target //TODO Juan
-     * @return //TODO Juan
+     * @param source the source node.
+     * @param target the target node.
+     * @return if exists the mapping element representing the stronger relation
+     * 			in the same column, <code>null</code> otherwise.
      */
     private IMappingElement<INode> findStrongerInColumn(INode source, INode target) {
 
@@ -700,11 +675,11 @@ public class SPSMMappingFilter extends BaseFilter implements IMappingFilter {
 
     /**
      * Checks if the semantic relation of the source is more important, in the order of precedence
-     * than the one in the target, the order of precedence is, = > < ?
+     * than the one in the target, the order of precedence is, = > < ?.
      *
-     * @param source source Mapping element
-     * @param target target Mapping element
-     * @return true if source is more precedent than target, false otherwise
+     * @param source source Mapping element.
+     * @param target target Mapping element.
+     * @return true if source is more precedent than target, false otherwise.
      */
     private boolean morePrecedent(IMappingElement<INode> source, IMappingElement<INode> target) {
         return comparePrecedence(source.getRelation(), target.getRelation()) == 1;
@@ -715,13 +690,13 @@ public class SPSMMappingFilter extends BaseFilter implements IMappingFilter {
      * Compares the semantic relation of the source and target in the order of precedence
      * = > < ! ?. Returning -1 if sourceRelation is less precedent than targetRelation,
      * 0 if sourceRelation is equally precedent than targetRelation,
-     * 1 if sourceRelation  is more precedent than targetRelation
+     * 1 if sourceRelation  is more precedent than targetRelation.
      *
-     * @param sourceRelation source relation from IMappingElement
-     * @param targetRelation target relation from IMappingElement
+     * @param sourceRelation source relation from IMappingElement.
+     * @param targetRelation target relation from IMappingElement.
      * @return -1 if sourceRelation is less precedent than targetRelation,
      *         0 if sourceRelation is equally precedent than targetRelation,
-     *         1 if sourceRelation  is more precedent than targetRelation
+     *         1 if sourceRelation  is more precedent than targetRelation.
      */
     private int comparePrecedence(char sourceRelation, char targetRelation) {
         int result = -1;
@@ -747,10 +722,10 @@ public class SPSMMappingFilter extends BaseFilter implements IMappingFilter {
      * LESS_GENERAL = 3
      * DISJOINT_FROM = 4
      * IDK = 5
-     *  //TODO Juan fix param name
-     * @param source source semantic relation as defined in IMappingElement
+     *  
+     * @param semanticRelation the semantic relation as defined in IMappingElement.
      * @return the order of precedence for the given relation, Integer.MAX_VALUE if the relation
-     *         is not recognized
+     *         is not recognized.
      */
     private int getPrecedenceNumber(char semanticRelation) {
 
