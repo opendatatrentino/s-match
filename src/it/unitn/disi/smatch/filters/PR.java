@@ -17,7 +17,8 @@ import java.util.Properties;
  * <p/>
  * mappingLoader - an instance of IMappingLoader
  * <p/>
- * mappings - locations of 2 mappings, separated with semicolon, positive comes first, negative comes second
+ * mappings - locations of max 2 mappings, separated with semicolon, positive comes first, negative comes second. It is
+ * possible to specify only positive mapping. 
  * <p/>
  * <p/>
  * For theories behind this way of calculating precision and recall check out TaxME2 paper:
