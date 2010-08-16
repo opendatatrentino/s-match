@@ -7,6 +7,10 @@ doc/api
 .classpath
 .project
 test-data/manu
+test-data/manu2/
+test-data/spsm/result-default.txt
+test/it/unitn/disi/smatch/loader/
+test/it/unitn/disi/smatch/matcher/structure/tree/spsm/SPSMTestJuan.java
 *.iml
 *.ipr
 *.iws
