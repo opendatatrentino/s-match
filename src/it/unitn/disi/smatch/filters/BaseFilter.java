@@ -13,9 +13,9 @@ import java.util.Properties;
  *
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
-public abstract class BaseFilter extends Configurable {
+public abstract class BaseFilter extends Configurable implements IMappingFilter {
 
-    private static final Logger log = Logger.getLogger(RandomSampleMappingFilter.class);
+    private static final Logger log = Logger.getLogger(BaseFilter.class);
 
     private static final String MAPPING_FACTORY_KEY = "mappingFactory";
     protected IMappingFactory mappingFactory = null;
