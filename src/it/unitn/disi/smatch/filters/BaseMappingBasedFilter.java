@@ -10,7 +10,13 @@ import org.apache.log4j.Logger;
 import java.util.Properties;
 
 /**
- * Base class for filters which use another mapping for filtering.
+ * Base class for filters which use another mapping for filtering. Needs the
+ * following configuration parameters:
+ * <p/>
+ * mappingLoader - an instance of IMappingLoader
+ * <p/>
+ * mapping - location of the mapping
+ * <p/>
  *
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */

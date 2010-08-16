@@ -4,7 +4,13 @@ import it.unitn.disi.smatch.data.mappings.IContextMapping;
 import it.unitn.disi.smatch.data.trees.INode;
 
 /**
- * Removes from the mapping passed as a parameter the mapping specified in the configuration.
+ * Removes from the mapping passed as a parameter the mapping specified in the configuration. Needs the
+ * following configuration parameters:
+ * <p/>
+ * mappingLoader - an instance of IMappingLoader
+ * <p/>
+ * mapping - location of the mapping
+ * <p/>
  *
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
