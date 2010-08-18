@@ -182,7 +182,8 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
 
         log.info("Unrecognized words: " + unrecognizedWords.size());
         if (debugUnrecognizedWords) {
-            for (String unrecognizedWord : unrecognizedWords) {
+            TreeSet<String> sortedWords = new TreeSet<String>(unrecognizedWords);
+            for (String unrecognizedWord : sortedWords) {
                 log.debug("Unrecognized word: " + unrecognizedWord);
             }
         }
