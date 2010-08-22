@@ -322,11 +322,9 @@ public class SPSMTest extends TestCase {
      * @param fn1 the first tree
      * @param fn2 the second tree
      * @return the resulting mapping context
-     * @throws SMatchException 
+     * @throws SMatchException SMatchException
      */
     private IContextMapping<INode> matchFunctions(String fn1, String fn2) throws SMatchException {
-        IContextMapping<INode> mapping = null;
-        
         IContext sourceContext = mm.loadContext(fn1);
         IContext targetContext = mm.loadContext(fn2);
 
@@ -335,7 +333,7 @@ public class SPSMTest extends TestCase {
         mm.offline(targetContext);
 
         // match
-        mapping = mm.online(sourceContext, targetContext);
+        IContextMapping<INode> mapping = mm.online(sourceContext, targetContext);
 
         print(mapping);
 
