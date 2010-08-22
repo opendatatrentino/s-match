@@ -5,14 +5,9 @@ import it.unitn.disi.smatch.data.mappings.IMappingElement;
 import it.unitn.disi.smatch.data.mappings.MappingElement;
 import it.unitn.disi.smatch.data.trees.IContext;
 import it.unitn.disi.smatch.data.trees.INode;
-import it.unitn.disi.smatch.matchers.structure.tree.spsm.SPSMTreeMatcher;
 import it.unitn.disi.smatch.matchers.structure.tree.spsm.ted.TreeEditDistance;
-import it.unitn.disi.smatch.matchers.structure.tree.spsm.ted.data.ITreeAccessor;
-import it.unitn.disi.smatch.matchers.structure.tree.spsm.ted.data.impl.CTXMLTreeAccessor;
-import it.unitn.disi.smatch.matchers.structure.tree.spsm.ted.utils.impl.InvalidElementException;
 import it.unitn.disi.smatch.matchers.structure.tree.spsm.ted.utils.impl.MatchedTreeNodeComparator;
 import it.unitn.disi.smatch.matchers.structure.tree.spsm.ted.utils.impl.WorstCaseDistanceConversion;
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
@@ -94,6 +89,7 @@ public class SPSMMappingFilter extends BaseFilter implements IMappingFilter {
 
     /**
      * initializes the local variables needed for the filtering.
+     *
      * @param mappings the mappings returned by the DefaultTreeMatcher.
      */
     private void init(IContextMapping<INode> mappings) {
@@ -168,22 +164,8 @@ public class SPSMMappingFilter extends BaseFilter implements IMappingFilter {
      * <a href="http://eprints.biblio.unitn.it/archive/00001459/">http://eprints.biblio.unitn.it/archive/00001459/</a>.
      */
     private void computeSimilarity() {
-        TreeEditDistance tde = null;
-        try {
-            ITreeAccessor source = new CTXMLTreeAccessor(sourceContext);
-            ITreeAccessor target = new CTXMLTreeAccessor(targetContext);
-            MatchedTreeNodeComparator mntc = new MatchedTreeNodeComparator(originalMappings);
-
-            tde = new TreeEditDistance(source, target, mntc, new WorstCaseDistanceConversion());
-
-        } catch (InvalidElementException e) {
-            //TODO Juan, probably should fix it or throw this further
-            log.info("Problems in the Tree edit distance computation: " + e.getMessage());
-
-            if (log.getEffectiveLevel() == Level.TRACE) {
-                log.trace(SPSMTreeMatcher.class.getName(), e);
-            }
-        }
+        MatchedTreeNodeComparator mntc = new MatchedTreeNodeComparator(originalMappings);
+        TreeEditDistance tde = new TreeEditDistance(sourceContext, targetContext, mntc, new WorstCaseDistanceConversion());
 
         tde.calculate();
         double ed = tde.getTreeEditDistance();
@@ -329,6 +311,7 @@ public class SPSMMappingFilter extends BaseFilter implements IMappingFilter {
     }
 
     //TODO Juan, check out INode getAncestorCount(), getLevel() and use the correct one.
+
     /**
      * Returns the depth of a node in a given tree, the root have a depth of 0.
      *
@@ -370,11 +353,12 @@ public class SPSMMappingFilter extends BaseFilter implements IMappingFilter {
 
 
     //TODO Juan it seems like this repeats the mapping functionality.
+
     /**
      * Finds the mapping element in the CNodeMatrix for the given source, target and semantic relation.
      *
-     * @param source           source node.
-     * @param target           target node.
+     * @param source   source node.
+     * @param target   target node.
      * @param relation relation holding between the source and target.
      * @return Mapping between source and target for the given relation, null is there is none.
      */
@@ -646,7 +630,7 @@ public class SPSMMappingFilter extends BaseFilter implements IMappingFilter {
      * @param source the source node.
      * @param target the target node.
      * @return if exists the mapping element representing the stronger relation
-     * 			in the same column, <code>null</code> otherwise.
+     *         in the same column, <code>null</code> otherwise.
      */
     private IMappingElement<INode> findStrongerInColumn(INode source, INode target) {
 
@@ -722,7 +706,7 @@ public class SPSMMappingFilter extends BaseFilter implements IMappingFilter {
      * LESS_GENERAL = 3
      * DISJOINT_FROM = 4
      * IDK = 5
-     *  
+     *
      * @param semanticRelation the semantic relation as defined in IMappingElement.
      * @return the order of precedence for the given relation, Integer.MAX_VALUE if the relation
      *         is not recognized.

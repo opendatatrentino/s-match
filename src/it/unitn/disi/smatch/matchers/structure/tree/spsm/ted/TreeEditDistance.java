@@ -1,10 +1,9 @@
 package it.unitn.disi.smatch.matchers.structure.tree.spsm.ted;
 
-import it.unitn.disi.smatch.matchers.structure.tree.spsm.ted.data.ITreeAccessor;
-import it.unitn.disi.smatch.matchers.structure.tree.spsm.ted.data.ITreeNode;
+import it.unitn.disi.smatch.data.trees.IContext;
+import it.unitn.disi.smatch.data.trees.INode;
 import it.unitn.disi.smatch.matchers.structure.tree.spsm.ted.data.impl.GraphVertexTuple;
 import it.unitn.disi.smatch.matchers.structure.tree.spsm.ted.utils.IDistanceConversion;
-import it.unitn.disi.smatch.matchers.structure.tree.spsm.ted.utils.impl.InvalidElementException;
 import it.unitn.disi.smatch.matchers.structure.tree.spsm.ted.utils.impl.WorstCaseDistanceConversion;
 import org._3pq.jgrapht.Edge;
 import org._3pq.jgrapht.alg.DijkstraShortestPath;
@@ -50,37 +49,37 @@ public class TreeEditDistance {
     /**
      * This will contain the used tree comparator
      */
-    protected Comparator<ITreeNode> comparator;
+    protected Comparator<INode> comparator;
 
     /**
      * Contains the first tree
      */
-    private ITreeNode tree1;
+    private INode tree1;
 
     /**
      * The first trees preordered list of nodes
      */
-    private List<ITreeNode> list1 = null;
+    private List<INode> list1 = null;
 
     /**
      * This stores the depth for each element of tree1
      */
-    private HashMap<ITreeNode, Integer> depth1 = new HashMap<ITreeNode, Integer>();
+    private HashMap<INode, Integer> depth1 = new HashMap<INode, Integer>();
 
     /**
      * Contains the second tree
      */
-    private ITreeNode tree2;
+    private INode tree2;
 
     /**
      * The second trees preordered list of nodes
      */
-    private List<ITreeNode> list2 = null;
+    private List<INode> list2 = null;
 
     /**
      * This stores the depth for each element of tree2
      */
-    private HashMap<ITreeNode, Integer> depth2 = new HashMap<ITreeNode, Integer>();
+    private HashMap<INode, Integer> depth2 = new HashMap<INode, Integer>();
 
     /**
      * Default path length limit is infinity.
@@ -129,39 +128,28 @@ public class TreeEditDistance {
      */
     private DijkstraShortestPath shortestPath;
 
-    /**
-     *
-     */
     private IDistanceConversion conversion;
-
-//    /*
-//     * 
-//     */
-//    private GraphRenderer graphRenderer;
 
     /**
      * Constructor.
      * <p/>
-     * Pass two <code>org.openk.core.module.matcher.tree_matcher.data.ITreeAccessor</code> and expect the edit distance in
+     * Pass two trees and expect the edit distance in
      * {@link #getTreeEditDistance()} after calling {@link #calculate()}
      * <p/>
      * Use the given comparator for compares.
      * </p>
      *
-     * @param treeAccessor1
-     * @param treeAccessor2
-     * @param comparator
-     * @param conversion
-     * @throws it.unitn.disi.smatch.matchers.structure.tree.spsm.ted.utils.impl.InvalidElementException
-     *                              when a tree contains an invalid structure or childs
+     * @param tree1 tree1
+     * @param tree2 tree2
+     * @param comparator comparator
+     * @param conversion conversion
      * @throws NullPointerException if tree1 or tree2 are null
      */
-    public TreeEditDistance(ITreeAccessor treeAccessor1,
-                            ITreeAccessor treeAccessor2,
-                            Comparator<ITreeNode> comparator,
-                            IDistanceConversion conversion) throws NullPointerException,
-            InvalidElementException {
-        this(treeAccessor1, treeAccessor2, comparator, conversion,
+    public TreeEditDistance(IContext tree1,
+                            IContext tree2,
+                            Comparator<INode> comparator,
+                            IDistanceConversion conversion) throws NullPointerException {
+        this(tree1, tree2, comparator, conversion,
                 DEFAULT_PATH_LENGTH_LIMIT, DEFAULT_WEIGHT_INSERT,
                 DEFAULT_WEIGHT_DELETE, DEFAULT_WEIGHT_SUBSTITUE);
     }
@@ -170,7 +158,7 @@ public class TreeEditDistance {
     /**
      * Constructor.
      * <p/>
-     * Pass two <code>org.openk.core.module.matcher.tree_matcher.data.ITreeAccessor</code> and expect the edit distance in
+     * Pass two trees and expect the edit distance in
      * {@link #getTreeEditDistance()} after calling {@link #calculate()}
      * <p/>
      * You can limit the search for a path by length when passing the
@@ -185,33 +173,31 @@ public class TreeEditDistance {
      * default values will be used.
      * </p>
      *
-     * @param treeAccessor1
-     * @param treeAccessor2
-     * @param comparator
-     * @param conversion
-     * @param pathLengthLimit
-     * @param weigthInsert
-     * @param weigthDelete
-     * @param weigthSubstitute
-     * @throws it.unitn.disi.smatch.matchers.structure.tree.spsm.ted.utils.impl.InvalidElementException
-     *                              when a tree contains an invalid structure or childs
+     * @param tree1 tree1
+     * @param tree2 tree2
+     * @param comparator comparator
+     * @param conversion conversion
+     * @param pathLengthLimit path length limit
+     * @param weightInsert weight of insert operation
+     * @param weightDelete weight of delete operation
+     * @param weightSubstitute weight of subs operation
      * @throws NullPointerException if tree1 or tree2 are null
      */
-    public TreeEditDistance(ITreeAccessor treeAccessor1,
-                            ITreeAccessor treeAccessor2,
-                            Comparator<ITreeNode> comparator,
+    public TreeEditDistance(IContext tree1,
+                            IContext tree2,
+                            Comparator<INode> comparator,
                             IDistanceConversion conversion, double pathLengthLimit,
-                            double weigthInsert, double weigthDelete, double weigthSubstitute)
-            throws NullPointerException, InvalidElementException {
-        this(treeAccessor1, treeAccessor2, comparator, conversion,
-                pathLengthLimit, weigthInsert, weigthDelete, weigthSubstitute,
+                            double weightInsert, double weightDelete, double weightSubstitute)
+            throws NullPointerException {
+        this(tree1, tree2, comparator, conversion,
+                pathLengthLimit, weightInsert, weightDelete, weightSubstitute,
                 0);
     }
 
     /**
      * Constructor.
      * <p/>
-     * Pass two <code>org.openk.core.module.matcher.tree_matcher.data.ITreeAccessor</code> and expect the edit distance in
+     * Pass two trees and expect the edit distance in
      * {@link #getTreeEditDistance()} after calling {@link #calculate()}
      * <p/>
      * You can limit the search for a path by length when passing the
@@ -226,48 +212,42 @@ public class TreeEditDistance {
      * default values will be used.
      * </p>
      *
-     * @param treeAccessor1
-     * @param treeAccessor2
-     * @param comparator
-     * @param conversion
-     * @param pathLengthLimit
-     * @param weigthInsert
-     * @param weigthDelete
-     * @param weigthSubstitute
-     * @param weigthSubstituteEqual
-     * @throws InvalidElementException when a tree contains an invalid structure or childs
-     * @throws NullPointerException    if tree1 or tree2 are null
+     * @param tree1 tree1
+     * @param tree2 tree2
+     * @param comparator comparator
+     * @param conversion conversion
+     * @param pathLengthLimit path length limit
+     * @param weightInsert weight of insert operation
+     * @param weightDelete weight of delete operation
+     * @param weightSubstitute weight of subs operation
+     * @param weightSubstituteEqual weight of subs operation
+     * @throws NullPointerException if tree1 or tree2 are null
      */
-    public TreeEditDistance(ITreeAccessor treeAccessor1,
-                            ITreeAccessor treeAccessor2,
-                            Comparator<ITreeNode> comparator,
+    public TreeEditDistance(IContext tree1,
+                            IContext tree2,
+                            Comparator<INode> comparator,
                             IDistanceConversion conversion, double pathLengthLimit,
-                            double weigthInsert, double weigthDelete, double weigthSubstitute,
-                            double weigthSubstituteEqual) throws NullPointerException,
-            InvalidElementException {
+                            double weightInsert, double weightDelete, double weightSubstitute,
+                            double weightSubstituteEqual) throws NullPointerException {
 
         this.conversion = conversion;
 
-        if (treeAccessor1 == null || treeAccessor2 == null
-                || treeAccessor1.getRoot() == null
-                || treeAccessor2.getRoot() == null)
-            throw new NullPointerException("Invalid accessors passed!");
+        if (tree1 == null || tree2 == null || tree1.getRoot() == null || tree2.getRoot() == null) {
+            throw new NullPointerException("Invalid trees passed!");
+        }
 
-        this.tree1 = treeAccessor1.getRoot();
-        this.tree2 = treeAccessor2.getRoot();
+        this.tree1 = tree1.getRoot();
+        this.tree2 = tree2.getRoot();
 
-        list1 = enumerationToList(tree1.preorderEnumeration());
-        list2 = enumerationToList(tree2.preorderEnumeration());
+        list1 = preorder(this.tree1);
+        list2 = preorder(this.tree2);
 
         this.comparator = comparator;
         this.pathLengthLimit = pathLengthLimit;
-        this.weightInsert = weigthInsert;
-        this.weightDelete = weigthDelete;
-        this.weightSubstitute = weigthSubstitute;
-        this.weightSubstituteEqual = weigthSubstituteEqual;
-
-        //TODO: code the hability to load dinamically the implementing class from a config file
-        //graphRenderer = new VisualJGraphRenderer();//ConsoleGraphRenderer();//
+        this.weightInsert = weightInsert;
+        this.weightDelete = weightDelete;
+        this.weightSubstitute = weightSubstitute;
+        this.weightSubstituteEqual = weightSubstituteEqual;
     }
 
     public boolean calculate() {
@@ -283,8 +263,7 @@ public class TreeEditDistance {
                             .setWorstCaseDistance(getWorstCaseSumOfNodes());
                 }
 
-                similarity = new Double(conversion
-                        .convert(getTreeEditDistance()));
+                similarity = conversion.convert(getTreeEditDistance());
 
                 return true;
             }
@@ -305,8 +284,8 @@ public class TreeEditDistance {
         int list2size = list2.size();
 
         // this stores the order number for each Node
-        HashMap<ITreeNode, Integer> orderNum1 = new HashMap<ITreeNode, Integer>();
-        HashMap<ITreeNode, Integer> orderNum2 = new HashMap<ITreeNode, Integer>();
+        HashMap<INode, Integer> orderNum1 = new HashMap<INode, Integer>();
+        HashMap<INode, Integer> orderNum2 = new HashMap<INode, Integer>();
 
         // calculate preorder numeration and depth information for each node
         preorderTreeDepth(tree1, orderNum1, depth1);
@@ -315,14 +294,10 @@ public class TreeEditDistance {
         // put all depth information into array; ordering is by preorder
         int[] d1 = new int[list1size + 1];
         int[] d2 = new int[list2size + 1];
-        Iterator<ITreeNode> iter = list1.listIterator();
-        while (iter.hasNext()) {
-            ITreeNode a = iter.next();
+        for (INode a : list1) {
             d1[orderNum1.get(a)] = depth1.get(a);
         }
-        iter = list2.listIterator();
-        while (iter.hasNext()) {
-            ITreeNode a = iter.next();
+        for (INode a : list2) {
             d2[orderNum2.get(a)] = depth2.get(a);
         }
 
@@ -363,7 +338,6 @@ public class TreeEditDistance {
         for (int i = 0; i < list1size; i++) {
             double sourceNodeWeight = getNodeWeight(list1.get(i));
             for (int j = 0; j < list2size; j++) {
-//double targetNodeWeight=getNodeWeight(list2.get(j));
 
                 if (d1[i + 1] >= d2[j + 1]) {
                     Edge e = editDistanceGraph.addEdge(vertexArray[i][j],
@@ -378,11 +352,6 @@ public class TreeEditDistance {
                             vertexArray[i + 1][j + 1]);
                     if (e == null)
                         return false;
-//					if (comparator.compare(list1.get(i), list2.get(j)) == 0) {
-//						e.setWeight(weightSubstituteEqual);
-//					} else {
-//						e.setWeight(weightSubstitute);
-//					}
                     if ((comparator.compare(list1.get(i), list2.get(j)) == 1) ||
                             (comparator.compare(list1.get(i), list2.get(j)) == 2)) {
                         e.setWeight(weightSubstitute);
@@ -408,61 +377,43 @@ public class TreeEditDistance {
             }
         }
 
-//        if (graphRenderer != null){
-//        	graphRenderer.render(editDistanceGraph, list1, list2);
-//        }
         return true;
     }
 
-    double getNodeWeight(ITreeNode node) {
-//        Object o = node.getUserObject();
-//        INode n=(INode) o;
-//        Vector<IAtomicConceptOfLabel> v=n.getNodeData().getACoLs();
-//        double max=0;
-//        for (int i = 0; i < v.size(); i++) {
-//            IAtomicConceptOfLabel acol = v.elementAt(i);
-//            double weight=acol.getWeight();
-//            max=Math.max(max,weight);
-//        }
+    double getNodeWeight(INode node) {
         return 1;
-//        return max;
     }
 
     /**
      * Implementing method "preorder_tree_depth" by Gabriel Valiente: See
      * http://www.lsi.upc.es/~valiente/algorithm/combin.cpp
      *
-     * @param tree
-     * @param order
-     * @param depth
+     * @param root root
+     * @param order order
+     * @param depth depth
      */
-    private void preorderTreeDepth(ITreeNode tree,
-                                   HashMap<ITreeNode, Integer> order, HashMap<ITreeNode, Integer> depth) {
+    private void preorderTreeDepth(INode root, HashMap<INode, Integer> order, HashMap<INode, Integer> depth) {
         order.clear();
         depth.clear();
 
-        Stack<ITreeNode> stack = new Stack<ITreeNode>();
-        stack.push((ITreeNode) tree.getRoot());
         int num = 1;
-        ITreeNode v, w;
-        do {
-            v = stack.pop();
+
+        Deque<INode> stack = new ArrayDeque<INode>();
+        stack.push(root);
+        while (!stack.isEmpty()) {
+            INode v = stack.pop();
+
             order.put(v, num++);
-            if (v.isRoot())
+            if (!v.hasParent()) {
                 depth.put(v, 0);
-            else
+            } else {
                 depth.put(v, depth.get(v.getParent()) + 1);
-            try {
-                w = (ITreeNode) v.getLastChild();
-            } catch (NoSuchElementException e) {
-                continue;
-            }
-            while (w != null) {
-                stack.push(w);
-                w = w.getPreviousSibling();
             }
 
-        } while (!stack.isEmpty());
+            for (int i = v.getChildCount() - 1; i >= 0; i--) {
+                stack.push(v.getChildAt(i));
+            }
+        }
     }
 
     /**
@@ -520,10 +471,9 @@ public class TreeEditDistance {
         worstCaseGraph.addAllEdges(edges);
 
         edges = worstCaseGraph.edgeSet();
-        Iterator edgeIterator = edges.iterator();
 
-        while (edgeIterator.hasNext()) {
-            Edge edge = (Edge) edgeIterator.next();
+        for (Object o : edges) {
+            Edge edge = (Edge) o;
             GraphVertexTuple vertex1 = (GraphVertexTuple) edge.getSource();
             GraphVertexTuple vertex2 = (GraphVertexTuple) edge.getTarget();
             // check if this edge is a diagonal
@@ -566,15 +516,13 @@ public class TreeEditDistance {
             horizontalEdge = null;
             diagonalEdge = null;
             List adjacentEdges = editDistanceGraph.outgoingEdgesOf(vertex);
-            Iterator edgeIterator = adjacentEdges.iterator();
 
             // in this loop gather all available edges outgoing from a vertex
             // and
             // assign them to the corresponding variable '...Edge'.
-            while (edgeIterator.hasNext()) {
-                Edge edge = (Edge) edgeIterator.next();
-                GraphVertexTuple oppositeVertex = (GraphVertexTuple) edge
-                        .oppositeVertex(vertex);
+            for (Object o : adjacentEdges) {
+                Edge edge = (Edge) o;
+                GraphVertexTuple oppositeVertex = (GraphVertexTuple) edge.oppositeVertex(vertex);
                 int left = vertex.getLeft();
                 int right = vertex.getRight();
                 int oppositeLeft = oppositeVertex.getLeft();
@@ -706,26 +654,25 @@ public class TreeEditDistance {
     }
 
     /**
-     * Converts a given Enumeration of DefaultMutableTreeNode elements into a
-     * List of these elements.
+     * Preorders the subtree rooted at the given node.
      *
-     * @param enumeration
+     * @param root root node
      * @return the converted list, empty if no elements in input
-     * @throws it.unitn.disi.smatch.matchers.structure.tree.spsm.ted.utils.impl.InvalidElementException
-     *          when a tree contains an invalid structure or childs
      */
-    public static List<ITreeNode> enumerationToList(Enumeration enumeration)
-            throws InvalidElementException {
-        LinkedList<ITreeNode> ret = new LinkedList<ITreeNode>();
-        while (enumeration.hasMoreElements()) {
-            Object o = enumeration.nextElement();
-            if (o instanceof ITreeNode) {
-                ret.add((ITreeNode) o);
-            } else
-                throw new InvalidElementException("Unexpected child type in Tree while converting enumeration.");
+    private static List<INode> preorder(INode root) {
+        ArrayList<INode> result = new ArrayList<INode>();
+        Deque<INode> stack = new ArrayDeque<INode>();
+        stack.push(root);
+        while (!stack.isEmpty()) {
+            INode c = stack.pop();
+
+            result.add(c);
+
+            for (int i = c.getChildCount() - 1; i >= 0; i--) {
+                stack.push(c.getChildAt(i));
+            }
         }
-        return ret;
+
+        return result;
     }
-
-
 }
