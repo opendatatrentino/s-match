@@ -41,7 +41,7 @@ public class SPSMTest extends TestCase {
 
     /**
      * Example test as shown in <a href="http://s-match.org/spsm.html">http://s-match.org/spsm.html</a>
-     * @throws SMatchException 
+     * @throws SMatchException SMatchException 
      */
     public void testMappingsExample() throws SMatchException {
     	
