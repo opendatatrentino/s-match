@@ -1,14 +1,14 @@
 package it.unitn.disi.smatch.matchers.structure.tree.spsm.ted.data.impl;
 
 /**
- * This class implementes a tuple, i.e., a pair of objects. One object occurs on
+ * Implements a tuple (a pair of objects). One object occurs on
  * the left and the other object on the right.
  */
-public class GenericTuple {
+public class GenericTuple<E> {
 
-    private Object left;
+    private E left;
 
-    private Object right;
+    private E right;
 
     /**
      * Constructor.
@@ -18,28 +18,31 @@ public class GenericTuple {
      * @param left  the left object
      * @param right the right object
      */
-    public GenericTuple(Object left, Object right) {
+    public GenericTuple(E left, E right) {
         this.left = left;
         this.right = right;
     }
 
-    /**
-     * Compares the instance to a given object
-     *
-     * @param t the tuple to be compared to this tuple
-     * @return true if the left and right objects match, false otherwise
-     */
-    public boolean equals(GenericTuple t) {
-        if (t == null)
-            return false;
-        return left.equals(t.getLeft()) && right.equals(t.getRight());
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof GenericTuple)) return false;
+
+        GenericTuple that = (GenericTuple) o;
+
+        if (left != null ? !left.equals(that.left) : that.left != null) return false;
+        if (right != null ? !right.equals(that.right) : that.right != null) return false;
+
+        return true;
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see java.lang.Object#toString()
-     */
+    @Override
+    public int hashCode() {
+        int result = left != null ? left.hashCode() : 0;
+        result = 31 * result + (right != null ? right.hashCode() : 0);
+        return result;
+    }
+
     public String toString() {
         return getLeft().toString() + ":" + getRight().toString();
     }
@@ -49,7 +52,7 @@ public class GenericTuple {
      *
      * @return left object.
      */
-    public Object getLeft() {
+    public E getLeft() {
         return left;
     }
 
@@ -58,7 +61,7 @@ public class GenericTuple {
      *
      * @return right object
      */
-    public Object getRight() {
+    public E getRight() {
         return right;
     }
 }

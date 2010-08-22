@@ -1,20 +1,14 @@
-
 package it.unitn.disi.smatch.matchers.structure.tree.spsm.ted;
-
-import org._3pq.jgrapht.Edge;
-import org._3pq.jgrapht.alg.DijkstraShortestPath;
-import org._3pq.jgrapht.graph.SimpleDirectedWeightedGraph;
 
 import it.unitn.disi.smatch.matchers.structure.tree.spsm.ted.data.ITreeAccessor;
 import it.unitn.disi.smatch.matchers.structure.tree.spsm.ted.data.ITreeNode;
 import it.unitn.disi.smatch.matchers.structure.tree.spsm.ted.data.impl.GraphVertexTuple;
-import it.unitn.disi.smatch.matchers.structure.tree.spsm.ted.data.impl.TreeNodeTuple;
-//import it.unitn.disi.smatch.matchers.structure.tree.spsm.ted.utils.GraphRenderer;
 import it.unitn.disi.smatch.matchers.structure.tree.spsm.ted.utils.IDistanceConversion;
-//import it.unitn.disi.smatch.matchers.structure.tree.spsm.ted.utils.impl.ConsoleGraphRenderer;
 import it.unitn.disi.smatch.matchers.structure.tree.spsm.ted.utils.impl.InvalidElementException;
-//import it.unitn.disi.smatch.matchers.structure.tree.spsm.ted.utils.impl.VisualJGraphRenderer;
 import it.unitn.disi.smatch.matchers.structure.tree.spsm.ted.utils.impl.WorstCaseDistanceConversion;
+import org._3pq.jgrapht.Edge;
+import org._3pq.jgrapht.alg.DijkstraShortestPath;
+import org._3pq.jgrapht.graph.SimpleDirectedWeightedGraph;
 
 import java.util.*;
 
@@ -144,7 +138,7 @@ public class TreeEditDistance {
 //     * 
 //     */
 //    private GraphRenderer graphRenderer;
-    
+
     /**
      * Constructor.
      * <p/>
@@ -300,7 +294,7 @@ public class TreeEditDistance {
 
     /**
      * This method is a modified version of a "tree_edit_graph(tree&, tree&, GRAPH<string,string>&)"
-     * from http://www.lsi.upc.es/~valiente/algorithm/combin.cpp. Modifications allowed to take into account 
+     * from http://www.lsi.upc.es/~valiente/algorithm/combin.cpp. Modifications allowed to take into account
      * various (other than equivalence) semantic relations holding among tree nodes
      *
      * @return true upon success, false otherwise
@@ -339,11 +333,7 @@ public class TreeEditDistance {
         GraphVertexTuple[][] vertexArray = new GraphVertexTuple[list1size + 1][list2size + 1];
         for (int i = 0; i <= list1size; i++) {
             for (int j = 0; j <= list2size; j++) {
-                GraphVertexTuple t = new GraphVertexTuple(new Integer(i),
-                        new Integer(j));
-                if (i > 0 && j > 0)
-                    t.setTreeNodeTuple(new TreeNodeTuple(list1.get(i - 1),
-                            list2.get(j - 1)));
+                GraphVertexTuple t = new GraphVertexTuple(i, j);
                 vertexArray[i][j] = t;
                 if (!editDistanceGraph.addVertex(t))
                     return false;
