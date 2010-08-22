@@ -8,10 +8,10 @@ import it.unitn.disi.smatch.data.trees.INode;
 import it.unitn.disi.smatch.matchers.structure.tree.spsm.ted.TreeEditDistance;
 import it.unitn.disi.smatch.matchers.structure.tree.spsm.ted.utils.impl.MatchedTreeNodeComparator;
 import it.unitn.disi.smatch.matchers.structure.tree.spsm.ted.utils.impl.WorstCaseDistanceConversion;
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 
@@ -42,100 +42,36 @@ public class SPSMMappingFilter extends BaseFilter implements IMappingFilter {
 
     private static final Logger log = Logger.getLogger(SPSMMappingFilter.class);
 
-    private IContext sourceContext;
-    private IContext targetContext;
-
     //used for reordering of siblings
     private ArrayList<Integer> sourceIndex;
     private ArrayList<Integer> targetIndex;
 
+    //working mapping 
+    private IContextMapping<INode> temp;
 
-    /**
-     * the original mappings
-     */
-    private int numberofOriginalMappings;
-
-    //TODO Juan why do you need to rebuild it? May be a copy of the mapping is enough?
-    //TODO Juan Why matrix and not mapping, which abstracts a lot of stuff?
-    //CNode matrix (matrix of relations between nodes of the ontologies) rebuild from the mappings lists
-    private IMappingElement<INode>[][] cNodeMatrix;
-
-    //TODO Juan, below you redo a lot of things which are done in the mapping.
-    //TODO Juan for example, indexes - there is an index in the INodeData - check out IIndexedObject
-    //TODO Juan, this piece should be improved. I believe there is no need for this duplication.
-
-    //List with all the source nodes, used for fast searching of the index in the matrix
-    private List<INode> sourceList;
-
-    //list with all the target nodes, used for fast searching of the index in the matrix
-    private List<INode> targetList;
-
-    //number of rows
-    private int sourceSize;
-
-    //number of columns
-    private int targetSize;
-
-
-    //the IContext to be returned by the filter
+    //the mapping to be returned by the filter
     private IContextMapping<INode> spsmMapping;
-
-    /**
-     * Contains the original mappings from which it will be computed the
-     * similarity score and then the filtering will take place.
-     */
-    private IContextMapping<INode> originalMappings;
-
-
-    /**
-     * initializes the local variables needed for the filtering.
-     *
-     * @param mappings the mappings returned by the DefaultTreeMatcher.
-     */
-    private void init(IContextMapping<INode> mappings) {
-        sourceContext = mappings.getSourceContext();
-        targetContext = mappings.getTargetContext();
-        sourceIndex = new ArrayList<Integer>();
-        targetIndex = new ArrayList<Integer>();
-
-
-        sourceList = mappings.getSourceContext().getNodesList();
-        targetList = mappings.getTargetContext().getNodesList();
-
-        sourceSize = sourceList.size();
-        targetSize = targetList.size();
-
-
-        //TODO Juan, this is unchecked and very strange.
-        cNodeMatrix = new MappingElement[sourceSize][targetSize];
-
-        spsmMapping = mappingFactory.getContextMappingInstance(mappings.getSourceContext(), mappings.getTargetContext());
-
-        Iterator<IMappingElement<INode>> mappingIt = mappings.iterator();
-        while (mappingIt.hasNext()) {
-            IMappingElement<INode> mapping = mappingIt.next();
-            INode s = mapping.getSource();
-            INode t = mapping.getTarget();
-            int sourceIndex = sourceList.indexOf(s);//TODO Juan, check out getIndex()
-            int targetIndex = targetList.indexOf(t);
-            cNodeMatrix[sourceIndex][targetIndex] = mapping;
-        }
-
-        numberofOriginalMappings = mappings.size();
-        originalMappings = mappings;
-    }
 
     /**
      * Sorts the siblings in the source and target tree defined in the constructor using
      * the given mapping.
      */
     public IContextMapping<INode> filter(IContextMapping<INode> mapping) throws MappingFilterException {
-        //initialize the local variables
-        init(mapping);
-        computeSimilarity();
-
         //add the first mapping element for the root to the mappings result
-        if (numberofOriginalMappings > 0) {
+        if (0 < mapping.size()) {
+
+            IContext sourceContext = mapping.getSourceContext();
+            IContext targetContext = mapping.getTargetContext();
+
+            sourceIndex = new ArrayList<Integer>();
+            targetIndex = new ArrayList<Integer>();
+
+            temp = mappingFactory.getContextMappingInstance(sourceContext, targetContext);
+            temp.addAll(mapping);
+
+            spsmMapping = mappingFactory.getContextMappingInstance(sourceContext, targetContext);
+
+            spsmMapping.setSimilarity(computeSimilarity(mapping));
 
             if (isRelated(sourceContext.getRoot(), targetContext.getRoot(), IMappingElement.EQUIVALENCE) ||
                     isRelated(sourceContext.getRoot(), targetContext.getRoot(), IMappingElement.LESS_GENERAL) ||
@@ -145,13 +81,12 @@ public class SPSMMappingFilter extends BaseFilter implements IMappingFilter {
                 filterMappingsOfChildren(sourceContext.getRoot(), targetContext.getRoot(), IMappingElement.EQUIVALENCE);
                 filterMappingsOfChildren(sourceContext.getRoot(), targetContext.getRoot(), IMappingElement.MORE_GENERAL);
                 filterMappingsOfChildren(sourceContext.getRoot(), targetContext.getRoot(), IMappingElement.LESS_GENERAL);
-
             }
-        } else {
-            log.info("No mappings were produced by the Default Tree Matcher");
-            spsmMapping = originalMappings;
+
+            return spsmMapping;
         }
-        return spsmMapping;
+
+        return mapping;
     }
 
 
@@ -162,16 +97,18 @@ public class SPSMMappingFilter extends BaseFilter implements IMappingFilter {
      * Giunchiglia, Fausto and McNeill, Fiona and Yatskevich, Mikalai and
      * Pane, Juan and Besana, Paolo and Shvaiko, Pavel (2008)
      * <a href="http://eprints.biblio.unitn.it/archive/00001459/">http://eprints.biblio.unitn.it/archive/00001459/</a>.
+     *
+     * @param mapping mapping
+     * @return similarity score
      */
-    private void computeSimilarity() {
-        MatchedTreeNodeComparator mntc = new MatchedTreeNodeComparator(originalMappings);
-        TreeEditDistance tde = new TreeEditDistance(sourceContext, targetContext, mntc, new WorstCaseDistanceConversion());
+    private double computeSimilarity(IContextMapping<INode> mapping) {
+        MatchedTreeNodeComparator mntc = new MatchedTreeNodeComparator(mapping);
+        TreeEditDistance tde = new TreeEditDistance(mapping.getSourceContext(), mapping.getTargetContext(), mntc, new WorstCaseDistanceConversion());
 
         tde.calculate();
         double ed = tde.getTreeEditDistance();
-        double sim = 1 - (ed / Math.max(sourceSize, targetSize));
 
-        spsmMapping.setSimilarity(sim);
+        return 1 - (ed / Math.max(mapping.getSourceContext().getNodesList().size(), mapping.getTargetContext().getNodesList().size()));
     }
 
 
@@ -186,16 +123,16 @@ public class SPSMMappingFilter extends BaseFilter implements IMappingFilter {
         List<INode> source = new ArrayList<INode>(sourceParent.getChildrenList());
         List<INode> target = new ArrayList<INode>(targetParent.getChildrenList());
 
-        sourceIndex.add(getNodeDepth(sourceParent), 0);
-        targetIndex.add(getNodeDepth(targetParent), 0);
+        sourceIndex.add(sourceParent.getLevel(), 0);
+        targetIndex.add(targetParent.getLevel(), 0);
 
         if (source.size() >= 1 && target.size() >= 1) {
             //sorts the siblings first with the strongest relation, and then with the others
             filterMappingsOfSiblingsByRelation(source, target, semanticRelation);
         }
 
-        sourceIndex.remove(getNodeDepth(sourceParent));
-        targetIndex.remove(getNodeDepth(targetParent));
+        sourceIndex.remove(sourceParent.getLevel());
+        targetIndex.remove(targetParent.getLevel());
     }
 
 
@@ -210,8 +147,8 @@ public class SPSMMappingFilter extends BaseFilter implements IMappingFilter {
      * @param semanticRelation a char representing the semantic realtion as defined in IMappingElement.
      */
     private void filterMappingsOfSiblingsByRelation(List<INode> source, List<INode> target, char semanticRelation) {
-        int sourceDepth = (getNodeDepth(source.get(0)) - 1);
-        int targetDepth = (getNodeDepth(target.get(0)) - 1);
+        int sourceDepth = (source.get(0).getLevel() - 1);
+        int targetDepth = (target.get(0).getLevel() - 1);
 
         int sourceSize = source.size();
         int targetSize = target.size();
@@ -251,10 +188,7 @@ public class SPSMMappingFilter extends BaseFilter implements IMappingFilter {
                     sourceSize--;
                 }
             }
-
         }
-
-
     }
 
 
@@ -269,7 +203,6 @@ public class SPSMMappingFilter extends BaseFilter implements IMappingFilter {
         INode aux = listOfNodes.get(source);
         listOfNodes.set(source, listOfNodes.get(target));
         listOfNodes.set(target, aux);
-
     }
 
 
@@ -277,26 +210,23 @@ public class SPSMMappingFilter extends BaseFilter implements IMappingFilter {
      * Looks for the related index for the source list at the position sourceIndex
      * in the target list beginning at the targetIndex position for the defined relation.
      *
-     * @param source           source list of siblings.
-     * @param target           target list of siblings.
-     * @param semanticRelation Defined relation in edu.unitn.dit.smatch.MatchManager.
+     * @param source   source list of siblings.
+     * @param target   target list of siblings.
+     * @param relation relation
      * @return the index of the related element in target, or -1 if there is no relate element.
      */
-    private int getRelatedIndex(List<INode> source, List<INode> target, char semanticRelation) {
-
-        int srcIndex = sourceIndex.get(getNodeDepth(source.get(0)) - 1);
-        int tgtIndex = targetIndex.get(getNodeDepth(target.get(0)) - 1);
+    private int getRelatedIndex(List<INode> source, List<INode> target, char relation) {
+        int srcIndex = sourceIndex.get(source.get(0).getLevel() - 1);
+        int tgtIndex = targetIndex.get(target.get(0).getLevel() - 1);
 
         int returnIndex = -1;
 
-
         INode sourceNode = source.get(srcIndex);
-
 
         //find the first one who is related in the same level
         for (int i = tgtIndex + 1; i < target.size(); i++) {
             INode targetNode = target.get(i);
-            if (isRelated(sourceNode, targetNode, semanticRelation)) {
+            if (isRelated(sourceNode, targetNode, relation)) {
                 setStrongestMapping(sourceNode, targetNode);
                 return i;
             }
@@ -306,20 +236,7 @@ public class SPSMMappingFilter extends BaseFilter implements IMappingFilter {
         //try to clean the mapping elements
         computeStrongestMappingForSource(source.get(srcIndex));
 
-
         return returnIndex;
-    }
-
-    //TODO Juan, check out INode getAncestorCount(), getLevel() and use the correct one.
-
-    /**
-     * Returns the depth of a node in a given tree, the root have a depth of 0.
-     *
-     * @param node node from which we want to compute the depth.
-     * @return depth of the given node in the tree.
-     */
-    private int getNodeDepth(INode node) {
-        return node.getAncestorsList().size();
     }
 
     /**
@@ -333,215 +250,138 @@ public class SPSMMappingFilter extends BaseFilter implements IMappingFilter {
     }
 
     /**
-     * Checks if the given source and target elements are related considering the
-     * defined relation and the cNodeMatrix, is the relation is held, then it is set
-     * as the strongest relation for the source and target.
+     * Checks if the given source and target elements are related considering the defined relation and the temp.
      *
-     * @param source   Source element.
-     * @param target   Target element.
-     * @param relation Defined relation IMappingElement.
+     * @param source   source
+     * @param target   target
+     * @param relation relation
      * @return true if the relation holds between source and target, false otherwise.
      */
-    private boolean isRelated(INode source, INode target, char relation) {
-        boolean related = false;
-        IMappingElement<INode> mapping = findMappingElement(source, target, relation);
-        if (mapping != null) {
-            related = true;
-        }
-        return related;
-    }
-
-
-    //TODO Juan it seems like this repeats the mapping functionality.
-
-    /**
-     * Finds the mapping element in the CNodeMatrix for the given source, target and semantic relation.
-     *
-     * @param source   source node.
-     * @param target   target node.
-     * @param relation relation holding between the source and target.
-     * @return Mapping between source and target for the given relation, null is there is none.
-     */
-    private IMappingElement<INode> findMappingElement(INode source, INode target, char relation) {
-        IMappingElement<INode> me = null;
-
-        int sourceIndex = -1;
-        int targetIndex = -1;
-        sourceIndex = sourceList.indexOf(source);
-        targetIndex = targetList.indexOf(target);
-
-        if (sourceIndex >= 0 && targetIndex >= 0) {
-
-            if (cNodeMatrix[sourceIndex][targetIndex] != null
-                    && cNodeMatrix[sourceIndex][targetIndex].getRelation() == relation) {
-
-                me = cNodeMatrix[sourceIndex][targetIndex];
-            }
-        }
-
-        return me;
+    private boolean isRelated(final INode source, final INode target, final char relation) {
+        return relation == temp.getRelation(source, target);
     }
 
     /**
-     * Sets the strongest mapping element for the data translation
-     * for the given source and target.
+     * Sets the relation between source and target as the strongest in the temp, setting all the other relations
+     * for the same source as IDK if the relations are weaker.
      *
-     * @param source source node.
-     * @param target target node.
+     * @param source source node
+     * @param target target node
      */
     private void setStrongestMapping(INode source, INode target) {
-
-        int sourceIndex = sourceList.indexOf(source);
-        int targetIndex = targetList.indexOf(target);
-
-        if (sourceIndex >= 0 && targetIndex >= 0) {
-            setStrongestMapping(sourceIndex, targetIndex);
-        }
-    }
-
-    /**
-     * Sets the given column and row as the strongest mapping element for the given
-     * source and target indexes of the cNodeMatrix, setting all the other relations
-     * for the same row (source) as IDK if the relations are weaker.
-     *
-     * @param row row of the strongest mapping relative to the cNodeMatrix.
-     * @param col column of the stronger mapping relative to the cNodeMatrix.
-     */
-    private void setStrongestMapping(int row, int col) {
-
         //if it's structure preserving
-        if (isSameStructure(sourceList.get(row), targetList.get(col))) {
+        if (isSameStructure(source, target)) {
+            spsmMapping.setRelation(source, target, temp.getRelation(source, target));
 
-            spsmMapping.add(cNodeMatrix[row][col]);
-
-
-            //deletes all the less precedent relations in the row
-            //i.e., for the same source node
-            for (int j = 0; j < targetSize; j++) {
+            //deletes all the less precedent relations for the same source node
+            for (INode node : temp.getTargetContext().getNodesList()) {
                 //if its not the target of the mapping elements and the relation is weaker
-                if (j != col && cNodeMatrix[row][j] != null
-                        && cNodeMatrix[row][j].getRelation() != IMappingElement.IDK
-                        && morePrecedent(cNodeMatrix[row][col], cNodeMatrix[row][j])) {
-                    cNodeMatrix[row][j] = null;
+                if (source != node && temp.getRelation(source, node) != IMappingElement.IDK
+                        && isPrecedent(temp.getRelation(source, target), temp.getRelation(source, node))) {
+                    temp.setRelation(source, node, IMappingElement.IDK);
                 }
             }
 
-            //deletes all the relations in the column
-            for (int i = 0; i < sourceSize; i++) {
-                if (i != row && cNodeMatrix[i][col] != null
-                        && cNodeMatrix[i][col].getRelation() != IMappingElement.IDK) {
-                    cNodeMatrix[i][col] = null;
+            //deletes all the less precedent relations for the same target node
+            for (INode node : temp.getSourceContext().getNodesList()) {
+                if (target != node) {
+                    temp.setRelation(node, target, IMappingElement.IDK);
                 }
             }
         } else {
             //the elements are not in the same structure, look for the correct relation
-            computeStrongestMappingForSource(sourceList.get(row));
+            computeStrongestMappingForSource(source);
         }
-
     }
-
 
     /**
      * Looks for the strongest relation for the given source and sets to
-     * IDK all the other mappings existing for the same source if they are less
-     * precedent.
+     * IDK all the other mappings existing for the same source if they are less precedent.
      *
      * @param source INode to look for the strongest relation.
      */
     private void computeStrongestMappingForSource(INode source) {
+        INode strongetsRelationInTarget = null;
+        List<IMappingElement<INode>> strongest = new ArrayList<IMappingElement<INode>>();
 
-        int sourceIndex = sourceList.indexOf(source);
-        int strongetsRelationInTarget = -1;
-        if (sourceIndex >= 0) {
-
-            List<IMappingElement<INode>> strongest = new ArrayList<IMappingElement<INode>>();
-
-            //look for the strongest relation, and deletes all the non structure
-            //preserving relations
-            for (int j = 0; j < targetSize; j++) {
-                if (isSameStructure(source, targetList.get(j))) {
-                    if (strongest.isEmpty() && cNodeMatrix[sourceIndex][j] != null
-                            && findStrongerInColumn(source, targetList.get(j)) == null) {
+        //look for the strongest relation, and deletes all the non structure preserving relations
+        for (INode j : temp.getTargetContext().getNodesList()) {
+            if (isSameStructure(source, j)) {
+                if (strongest.isEmpty() && temp.getRelation(source, j) != IMappingElement.IDK
+                        && !existsStrongerInColumn(source, j)) {
+                    strongetsRelationInTarget = j;
+                    strongest.add(new MappingElement<INode>(source, j, temp.getRelation(source, j)));
+                } else if (temp.getRelation(source, j) != IMappingElement.IDK && !strongest.isEmpty()) {
+                    int precedence = comparePrecedence(strongest.get(0).getRelation(), temp.getRelation(source, j));
+                    if (precedence == -1 && !existsStrongerInColumn(source, j)) {
+                        //if target is more precedent, and there is no other stronger relation for that particular target
                         strongetsRelationInTarget = j;
-                        strongest.add(cNodeMatrix[sourceIndex][j]);
-                    } else if (cNodeMatrix[sourceIndex][j] != null && !strongest.isEmpty()) {
-                        int precedence = comparePrecedence(strongest.get(0).getRelation()
-                                , cNodeMatrix[sourceIndex][j].getRelation());
-                        if (precedence == -1 && findStrongerInColumn(source, targetList.get(j)) == null) {
-                            //if target is more precedent, and there is no other stronger relation for that particular target
-                            strongetsRelationInTarget = j;
-                            strongest.set(0, cNodeMatrix[sourceIndex][j]);
-                        }
+                        strongest.set(0, new MappingElement<INode>(source, j, temp.getRelation(source, j)));
                     }
-                } else {
-                    //they are not the same structure, function to function, variable to variable
-                    //delete the relation
-                    cNodeMatrix[sourceIndex][j] = null;
                 }
+            } else {
+                //they are not the same structure, function to function, variable to variable
+                //delete the relation
+                temp.setRelation(source, j, IMappingElement.IDK);
             }
+        }
 
-            //if there is a strongest element, and it is different from IDK
-            if (!strongest.isEmpty() && strongest.get(0).getRelation() != IMappingElement.IDK) {
-                //erase all the weaker relations in the row
-                for (int j = 0; j < targetSize; j++) {
-                    if (j != strongetsRelationInTarget && cNodeMatrix[sourceIndex][j] != null) {
-                        int precedence = comparePrecedence(strongest.get(0).getRelation(), cNodeMatrix[sourceIndex][j].getRelation());
-                        if (precedence == 1) {
-                            cNodeMatrix[sourceIndex][j] = null;
-                        } else if (precedence == 0) {
-                            if (isSameStructure(source, targetList.get(j))) {
-                                strongest.add(cNodeMatrix[sourceIndex][j]);
-                            }
+        //if there is a strongest element, and it is different from IDK
+        if (!strongest.isEmpty() && strongest.get(0).getRelation() != IMappingElement.IDK) {
+            //erase all the weaker relations in the row
+            for (INode j : temp.getTargetContext().getNodesList()) {
+                if (j != strongetsRelationInTarget && temp.getRelation(source, j) != IMappingElement.IDK) {
+                    int precedence = comparePrecedence(strongest.get(0).getRelation(), temp.getRelation(source, j));
+                    if (precedence == 1) {
+                        temp.setRelation(source, j, IMappingElement.IDK);
+                    } else if (precedence == 0) {
+                        if (isSameStructure(source, j)) {
+                            strongest.add(new MappingElement<INode>(source, j, temp.getRelation(source, j)));
                         }
-                    }
-                }
-
-                //if there is more than one strongest relation
-                if (strongest.size() > 1) {
-                    resolveStrongestMappingConflicts(sourceIndex, strongest);
-                } else {
-
-                    //deletes all the relations in the column
-                    for (int i = 0; i < sourceSize; i++) {
-                        if (i != sourceIndex) {
-                            cNodeMatrix[i][strongetsRelationInTarget] = null;
-                        }
-                    }
-
-                    if (strongest.get(0).getRelation() != IMappingElement.IDK) {
-                        spsmMapping.add(strongest.get(0));
-
-                        // Remove the relations from the same column and row
-                        deleteRemainingRelationsFromMatrix(strongest.get(0));
                     }
                 }
             }
 
+            //if there is more than one strongest relation
+            if (strongest.size() > 1) {
+                resolveStrongestMappingConflicts(source, strongest);
+            } else {
+                //deletes all the relations in the column
+                for (INode i : temp.getSourceContext().getNodesList()) {
+                    if (i != source) {
+                        temp.setRelation(i, strongetsRelationInTarget, IMappingElement.IDK);
+                    }
+                }
 
+                if (strongest.get(0).getRelation() != IMappingElement.IDK) {
+                    spsmMapping.add(strongest.get(0));
+
+                    // remove the relations from the same column and row
+                    deleteRemainingRelationsFromMatrix(strongest.get(0));
+                }
+            }
         }
     }
 
     /**
-     * Used to resolve conflicts in case there are more than one element with
+     * Resolves conflicts in case there are more than one element with
      * the strongest relation for a given source node.
      *
-     * @param sourceNodeIndex the index of the node for which more than one strongest relation is found.
-     * @param strongest       the list of the strongest relations.
+     * @param source    the node for which more than one strongest relation is found
+     * @param strongest the list of the strongest relations.
      */
-    private void resolveStrongestMappingConflicts(int sourceNodeIndex,
-                                                  List<IMappingElement<INode>> strongest) {
-
-
+    private void resolveStrongestMappingConflicts(INode source, List<IMappingElement<INode>> strongest) {
         //copy the relations to a string to log it
         int strongestIndex = -1;
-        String sourceString = sourceList.get(sourceNodeIndex).getNodeData().getName().trim();
-        if (log.isDebugEnabled()) {
-            String strongRelations = "";
+        String sourceString = source.getNodeData().getName().trim();
+
+        if (log.isEnabledFor(Level.DEBUG)) {
+            StringBuilder strongRelations = new StringBuilder();
             for (IMappingElement<INode> aStrongest : strongest) {
-                strongRelations += aStrongest.getTarget().toString() + "|";
+                strongRelations.append(aStrongest.getTarget().toString()).append("|");
             }
 
-            log.debug("more than one strongest relation for " + sourceString + ": |" + strongRelations);
+            log.debug("More than one strongest relation for " + sourceString + ": |" + strongRelations.toString());
         }
 
         //looks the first related node that is equal to the source node
@@ -558,7 +398,6 @@ public class SPSMMappingFilter extends BaseFilter implements IMappingFilter {
             strongestIndex = 0;
         }
 
-        //		spsmMapppings[sourceNodeIndex] = strongest.get(strongestIndex);
         if (strongest.get(strongestIndex).getRelation() != IMappingElement.IDK) {
             spsmMapping.add(strongest.get(strongestIndex));
 
@@ -570,29 +409,25 @@ public class SPSMMappingFilter extends BaseFilter implements IMappingFilter {
 
     /**
      * When a given mapping element has been chosen as the strongest,
-     * then delete all the other mappings from the cNodeMatrix by
+     * then delete all the other mappings from the temp by
      * setting the relation to <code>null</code>.
      *
-     * @param mapping the strongest mapping element.
+     * @param e the strongest mapping element.
      */
-    private void deleteRemainingRelationsFromMatrix(IMappingElement<INode> mapping) {
-        int sourceIndex = sourceList.indexOf(mapping.getSource());
-        int targetIndex = targetList.indexOf(mapping.getTarget());
-
+    private void deleteRemainingRelationsFromMatrix(IMappingElement<INode> e) {
         //deletes all the relations in the column
-        for (int i = 0; i < sourceSize; i++) {
-            if (i != sourceIndex) {
-                cNodeMatrix[i][targetIndex] = null;
+        for (INode i : temp.getSourceContext().getNodesList()) {
+            if (i != e.getSource()) {
+                temp.setRelation(i, e.getTarget(), IMappingElement.IDK);
             }
         }
 
         //deletes all the relations in the row
-        for (int j = 0; j < targetIndex; j++) {
-            if (j != targetIndex) {
-                cNodeMatrix[sourceIndex][j] = null;
+        for (INode j : temp.getTargetContext().getNodesList()) {
+            if (j != e.getTarget()) {
+                temp.setRelation(e.getSource(), j, IMappingElement.IDK);
             }
         }
-
     }
 
 
@@ -627,33 +462,25 @@ public class SPSMMappingFilter extends BaseFilter implements IMappingFilter {
     /**
      * Checks if there is no other stronger relation in the same column.
      *
-     * @param source the source node.
-     * @param target the target node.
-     * @return if exists the mapping element representing the stronger relation
-     *         in the same column, <code>null</code> otherwise.
+     * @param source source node
+     * @param target target node
+     * @return true if exists stronger relation in the same column, false otherwise.
      */
-    private IMappingElement<INode> findStrongerInColumn(INode source, INode target) {
+    private boolean existsStrongerInColumn(INode source, INode target) {
+        boolean result = false;
 
-        IMappingElement<INode> newStronger = null;
-        if (source != null && target != null) {
+        char current = temp.getRelation(source, target);
 
-            int sourceIndex = sourceList.indexOf(source);
-            int targetIndex = targetList.indexOf(target);
-
-            IMappingElement<INode> currentStronger = cNodeMatrix[sourceIndex][targetIndex];
-
-            //Compares with the other relations in the column
-            for (int i = 0; i < sourceSize; i++) {
-                if (i != sourceIndex && cNodeMatrix[i][targetIndex] != null
-                        && morePrecedent(cNodeMatrix[i][targetIndex], currentStronger)) {
-                    newStronger = cNodeMatrix[i][targetIndex];
-                    break;
-                }
+        //compare with the other relations in the column
+        for (INode i : temp.getSourceContext().getNodesList()) {
+            if (i != source && temp.getRelation(i, target) != IMappingElement.IDK
+                    && isPrecedent(temp.getRelation(i, target), current)) {
+                result = true;
+                break;
             }
-
         }
 
-        return newStronger;
+        return result;
     }
 
 
@@ -661,12 +488,12 @@ public class SPSMMappingFilter extends BaseFilter implements IMappingFilter {
      * Checks if the semantic relation of the source is more important, in the order of precedence
      * than the one in the target, the order of precedence is, = > < ?.
      *
-     * @param source source Mapping element.
-     * @param target target Mapping element.
+     * @param source source relation.
+     * @param target target relation.
      * @return true if source is more precedent than target, false otherwise.
      */
-    private boolean morePrecedent(IMappingElement<INode> source, IMappingElement<INode> target) {
-        return comparePrecedence(source.getRelation(), target.getRelation()) == 1;
+    private boolean isPrecedent(char source, char target) {
+        return comparePrecedence(source, target) == 1;
     }
 
 
