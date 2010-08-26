@@ -7,6 +7,7 @@
         <mkdir dir="build"/>
         <mkdir dir="dist"/>
         <property name="jar-name" location="build/s-match.jar"/>
+        <property name="gui-jar-name" location="build/s-match-gui.jar"/>
         <property name="zip-name" location="dist/s-match-${DSTAMP}.zip"/>
         <property name="src-zip-name" location="dist/s-match-${DSTAMP}-src.zip"/>
     </target>
@@ -19,11 +20,15 @@
                 </fileset>
             </classpath>
         </javac>
+        <copy todir="classes">
+            <fileset dir="res"/>
+        </copy>
     </target>
 
     <target name="jar" depends="compile" description="generate the jar">
         <mkdir dir="build"/>
-        <jar jarfile="${jar-name}" basedir="classes"/>
+        <jar jarfile="${jar-name}" basedir="classes" excludes="s-match.ico tango-icon-theme-0.8.90/** it/unitn/disi/smatch/gui/**"/>
+        <jar jarfile="${gui-jar-name}" basedir="classes" includes="s-match.ico tango-icon-theme-0.8.90/** it/unitn/disi/smatch/gui/**"/>
     </target>
 
     <target name="dist" depends="jar,javadoc" description="generate the distribution zip file">
@@ -39,21 +44,22 @@
     <target name="javadoc" depends="" description="generate the javadoc">
         <delete dir="doc/api"/>
         <javadoc packagenames="it.unitn.disi.smatch.*"
-           sourcepath="src"
-           defaultexcludes="yes"
-           destdir="doc/api"
-           author="true"
-           version="true"
-           use="true"
-           encoding="utf8"
-           docencoding="utf8"
-           windowtitle="S-Match API">
-           <bottom><![CDATA[<i>&copy; 2010 <a href="http://disi.unitn.it/~knowdive/">Knowdive</a> @ <a href="http://disi.unitn.it/">DISI</a></i>]]></bottom>
-           <classpath>
-               <fileset dir="lib">
-                   <include name="**/*.jar"/>
-               </fileset>
-           </classpath>
+                 sourcepath="src"
+                 defaultexcludes="yes"
+                 destdir="doc/api"
+                 author="true"
+                 version="true"
+                 use="true"
+                 encoding="utf8"
+                 docencoding="utf8"
+                 windowtitle="S-Match API">
+            <bottom>
+                <![CDATA[<i>&copy; 2010 <a href="http://disi.unitn.it/~knowdive/">Knowdive</a> @ <a href="http://disi.unitn.it/">DISI</a></i>]]></bottom>
+            <classpath>
+                <fileset dir="lib">
+                    <include name="**/*.jar"/>
+                </fileset>
+            </classpath>
         </javadoc>
     </target>
 

@@ -48,7 +48,7 @@ public class MatchingBasicGUI extends JPanel
     private static final String OPEN_MAPPING_COMMAND = "open mapping";
     private static final String RUN_MATCHER_COMMAND = "run matcher";
 
-    private static final String MAIN_ICON_FILE = ".." + File.separator + "res" + File.separator + "s-match.ico";
+    private static final String MAIN_ICON_FILE = "/s-match.ico";
 
     private JTree sourceTree;
     private JTree targetTree;
@@ -356,7 +356,7 @@ public class MatchingBasicGUI extends JPanel
         try {
             nl.ikarus.nxt.priv.imageio.icoreader.lib.ICOReaderSpi.registerIcoReader();
             System.setProperty("nl.ikarus.nxt.priv.imageio.icoreader.autoselect.icon", "true");
-            ImageInputStream in = ImageIO.createImageInputStream(new FileInputStream(MAIN_ICON_FILE));
+            ImageInputStream in = ImageIO.createImageInputStream(MatchingBasicGUI.class.getResourceAsStream(MAIN_ICON_FILE));
             ArrayList<Image> icons = new ArrayList<Image>();
             Iterator<ImageReader> readers = ImageIO.getImageReaders(in);
             if (readers.hasNext()) {
