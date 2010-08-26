@@ -47,7 +47,7 @@ public class SPSMMappingFilter extends BaseFilter implements IMappingFilter {
     private ArrayList<Integer> targetIndex;
 
     //working mapping 
-    private IContextMapping<INode> temp;
+    private IContextMapping<INode> defautlMappings;
 
     //the mapping to be returned by the filter
     private IContextMapping<INode> spsmMapping;
@@ -66,8 +66,7 @@ public class SPSMMappingFilter extends BaseFilter implements IMappingFilter {
             sourceIndex = new ArrayList<Integer>();
             targetIndex = new ArrayList<Integer>();
 
-            temp = mappingFactory.getContextMappingInstance(sourceContext, targetContext);
-            temp.addAll(mapping);
+            defautlMappings = mapping;
 
             spsmMapping = mappingFactory.getContextMappingInstance(sourceContext, targetContext);
 
@@ -258,7 +257,7 @@ public class SPSMMappingFilter extends BaseFilter implements IMappingFilter {
      * @return true if the relation holds between source and target, false otherwise.
      */
     private boolean isRelated(final INode source, final INode target, final char relation) {
-        return relation == temp.getRelation(source, target);
+        return relation == defautlMappings.getRelation(source, target);
     }
 
     /**
@@ -271,21 +270,21 @@ public class SPSMMappingFilter extends BaseFilter implements IMappingFilter {
     private void setStrongestMapping(INode source, INode target) {
         //if it's structure preserving
         if (isSameStructure(source, target)) {
-            spsmMapping.setRelation(source, target, temp.getRelation(source, target));
+            spsmMapping.setRelation(source, target, defautlMappings.getRelation(source, target));
 
             //deletes all the less precedent relations for the same source node
-            for (INode node : temp.getTargetContext().getNodesList()) {
+            for (INode node : defautlMappings.getTargetContext().getNodesList()) {
                 //if its not the target of the mapping elements and the relation is weaker
-                if (source != node && temp.getRelation(source, node) != IMappingElement.IDK
-                        && isPrecedent(temp.getRelation(source, target), temp.getRelation(source, node))) {
-                    temp.setRelation(source, node, IMappingElement.IDK);
+                if (source != node && defautlMappings.getRelation(source, node) != IMappingElement.IDK
+                        && isPrecedent(defautlMappings.getRelation(source, target), defautlMappings.getRelation(source, node))) {
+                    defautlMappings.setRelation(source, node, IMappingElement.IDK);
                 }
             }
 
             //deletes all the less precedent relations for the same target node
-            for (INode node : temp.getSourceContext().getNodesList()) {
+            for (INode node : defautlMappings.getSourceContext().getNodesList()) {
                 if (target != node) {
-                    temp.setRelation(node, target, IMappingElement.IDK);
+                    defautlMappings.setRelation(node, target, IMappingElement.IDK);
                 }
             }
         } else {
@@ -305,38 +304,38 @@ public class SPSMMappingFilter extends BaseFilter implements IMappingFilter {
         List<IMappingElement<INode>> strongest = new ArrayList<IMappingElement<INode>>();
 
         //look for the strongest relation, and deletes all the non structure preserving relations
-        for (INode j : temp.getTargetContext().getNodesList()) {
+        for (INode j : defautlMappings.getTargetContext().getNodesList()) {
             if (isSameStructure(source, j)) {
-                if (strongest.isEmpty() && temp.getRelation(source, j) != IMappingElement.IDK
+                if (strongest.isEmpty() && defautlMappings.getRelation(source, j) != IMappingElement.IDK
                         && !existsStrongerInColumn(source, j)) {
                     strongetsRelationInTarget = j;
-                    strongest.add(new MappingElement<INode>(source, j, temp.getRelation(source, j)));
-                } else if (temp.getRelation(source, j) != IMappingElement.IDK && !strongest.isEmpty()) {
-                    int precedence = comparePrecedence(strongest.get(0).getRelation(), temp.getRelation(source, j));
+                    strongest.add(new MappingElement<INode>(source, j, defautlMappings.getRelation(source, j)));
+                } else if (defautlMappings.getRelation(source, j) != IMappingElement.IDK && !strongest.isEmpty()) {
+                    int precedence = comparePrecedence(strongest.get(0).getRelation(), defautlMappings.getRelation(source, j));
                     if (precedence == -1 && !existsStrongerInColumn(source, j)) {
                         //if target is more precedent, and there is no other stronger relation for that particular target
                         strongetsRelationInTarget = j;
-                        strongest.set(0, new MappingElement<INode>(source, j, temp.getRelation(source, j)));
+                        strongest.set(0, new MappingElement<INode>(source, j, defautlMappings.getRelation(source, j)));
                     }
                 }
             } else {
                 //they are not the same structure, function to function, variable to variable
                 //delete the relation
-                temp.setRelation(source, j, IMappingElement.IDK);
+                defautlMappings.setRelation(source, j, IMappingElement.IDK);
             }
         }
 
         //if there is a strongest element, and it is different from IDK
         if (!strongest.isEmpty() && strongest.get(0).getRelation() != IMappingElement.IDK) {
             //erase all the weaker relations in the row
-            for (INode j : temp.getTargetContext().getNodesList()) {
-                if (j != strongetsRelationInTarget && temp.getRelation(source, j) != IMappingElement.IDK) {
-                    int precedence = comparePrecedence(strongest.get(0).getRelation(), temp.getRelation(source, j));
+            for (INode j : defautlMappings.getTargetContext().getNodesList()) {
+                if (j != strongetsRelationInTarget && defautlMappings.getRelation(source, j) != IMappingElement.IDK) {
+                    int precedence = comparePrecedence(strongest.get(0).getRelation(), defautlMappings.getRelation(source, j));
                     if (precedence == 1) {
-                        temp.setRelation(source, j, IMappingElement.IDK);
+                        defautlMappings.setRelation(source, j, IMappingElement.IDK);
                     } else if (precedence == 0) {
                         if (isSameStructure(source, j)) {
-                            strongest.add(new MappingElement<INode>(source, j, temp.getRelation(source, j)));
+                            strongest.add(new MappingElement<INode>(source, j, defautlMappings.getRelation(source, j)));
                         }
                     }
                 }
@@ -347,9 +346,9 @@ public class SPSMMappingFilter extends BaseFilter implements IMappingFilter {
                 resolveStrongestMappingConflicts(source, strongest);
             } else {
                 //deletes all the relations in the column
-                for (INode i : temp.getSourceContext().getNodesList()) {
+                for (INode i : defautlMappings.getSourceContext().getNodesList()) {
                     if (i != source) {
-                        temp.setRelation(i, strongetsRelationInTarget, IMappingElement.IDK);
+                        defautlMappings.setRelation(i, strongetsRelationInTarget, IMappingElement.IDK);
                     }
                 }
 
@@ -416,16 +415,16 @@ public class SPSMMappingFilter extends BaseFilter implements IMappingFilter {
      */
     private void deleteRemainingRelationsFromMatrix(IMappingElement<INode> e) {
         //deletes all the relations in the column
-        for (INode i : temp.getSourceContext().getNodesList()) {
+        for (INode i : defautlMappings.getSourceContext().getNodesList()) {
             if (i != e.getSource()) {
-                temp.setRelation(i, e.getTarget(), IMappingElement.IDK);
+                defautlMappings.setRelation(i, e.getTarget(), IMappingElement.IDK);
             }
         }
 
         //deletes all the relations in the row
-        for (INode j : temp.getTargetContext().getNodesList()) {
+        for (INode j : defautlMappings.getTargetContext().getNodesList()) {
             if (j != e.getTarget()) {
-                temp.setRelation(e.getSource(), j, IMappingElement.IDK);
+                defautlMappings.setRelation(e.getSource(), j, IMappingElement.IDK);
             }
         }
     }
@@ -469,12 +468,12 @@ public class SPSMMappingFilter extends BaseFilter implements IMappingFilter {
     private boolean existsStrongerInColumn(INode source, INode target) {
         boolean result = false;
 
-        char current = temp.getRelation(source, target);
+        char current = defautlMappings.getRelation(source, target);
 
         //compare with the other relations in the column
-        for (INode i : temp.getSourceContext().getNodesList()) {
-            if (i != source && temp.getRelation(i, target) != IMappingElement.IDK
-                    && isPrecedent(temp.getRelation(i, target), current)) {
+        for (INode i : defautlMappings.getSourceContext().getNodesList()) {
+            if (i != source && defautlMappings.getRelation(i, target) != IMappingElement.IDK
+                    && isPrecedent(defautlMappings.getRelation(i, target), current)) {
                 result = true;
                 break;
             }
