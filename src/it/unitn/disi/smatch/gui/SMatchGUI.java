@@ -22,6 +22,8 @@ import javax.imageio.stream.ImageInputStream;
 import javax.swing.*;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -34,7 +36,6 @@ import java.util.*;
  * GUI for S-Match.
  *
  * @author Aliaksandr Autayeu avtaev@gmail.com
- * @author Juan Pane (pane@disi.unitn.it)
  */
 public class SMatchGUI extends Observable implements ComponentListener, AdjustmentListener, TreeExpansionListener, PropertyChangeListener {
 
@@ -623,6 +624,89 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
         }
     };
 
+    private final FocusListener treeFocusListener = new FocusListener() {
+        public void focusGained(FocusEvent e) {
+            if (!e.isTemporary()) {
+                final Component c = e.getComponent();
+                if (c instanceof JTree) {
+                    final JTree t = (JTree) c;
+                    if (t == tSource || t == tTarget) {
+                        t.addTreeSelectionListener(treeSelectionListener);
+                        // fire the event for the first time
+                        TreeSelectionEvent tse = new TreeSelectionEvent(t, t.getSelectionPath(), true, null, t.getSelectionPath());
+                        treeSelectionListener.valueChanged(tse);
+                    }
+                }
+            }
+        }
+
+        public void focusLost(FocusEvent e) {
+            if (!e.isTemporary()) {
+                final Component c = e.getComponent();
+                if (c instanceof JTree) {
+                    final JTree t = (JTree) c;
+                    if (t == tSource || t == tTarget) {
+                        t.removeTreeSelectionListener(treeSelectionListener);
+                    }
+                }
+            }
+        }
+    };
+
+    private final TreeSelectionListener treeSelectionListener = new TreeSelectionListener() {
+        public void valueChanged(TreeSelectionEvent e) {
+            TreePath p = e.getNewLeadSelectionPath();
+            if (null != p) {
+                Object o = p.getLastPathComponent();
+                if (o instanceof DefaultMutableTreeNode) {
+                    DefaultMutableTreeNode dmtn = (DefaultMutableTreeNode) o;
+                    @SuppressWarnings("unchecked")
+                    IMappingElement<INode> me = (IMappingElement<INode>) dmtn.getUserObject();
+                    if (e.getSource() == tSource) {
+
+                        // construct path root
+                        TreePath pp = createPathToRoot(me.getTarget());
+
+                        tTarget.makeVisible(pp);
+                        tTarget.setSelectionPath(pp);
+                        tTarget.scrollPathToVisible(pp);
+
+                        // scroll to match vertical position
+                        if (1 == tSource.getSelectionCount() && 1 == tTarget.getSelectionCount()) {
+                            int sourceSelRowIdx = tSource.getSelectionRows()[0];
+                            int targetSelRowIdx = tTarget.getSelectionRows()[0];
+                            Rectangle sr = tSource.getRowBounds(sourceSelRowIdx);
+                            Rectangle tr = tTarget.getRowBounds(targetSelRowIdx);
+                            Point sp = spSource.getViewport().getViewPosition();
+                            Point tp = spTarget.getViewport().getViewPosition();
+                            int delta = (tr.y - tp.y) - (sr.y - sp.y);
+                            spTarget.getViewport().setViewPosition(new Point(tp.x, tp.y + delta));
+                        }
+                    } else if (e.getSource() == tTarget) {
+                        // construct path root
+                        TreePath pp = createPathToRoot(me.getSource());
+
+                        tSource.makeVisible(pp);
+                        tSource.setSelectionPath(pp);
+                        tSource.scrollPathToVisible(pp);
+
+                        // scroll to match vertical position
+                        if (1 == tSource.getSelectionCount() && 1 == tTarget.getSelectionCount()) {
+                            int sourceSelRowIdx = tSource.getSelectionRows()[0];
+                            int targetSelRowIdx = tTarget.getSelectionRows()[0];
+                            Rectangle sr = tSource.getRowBounds(sourceSelRowIdx);
+                            Rectangle tr = tTarget.getRowBounds(targetSelRowIdx);
+                            Point sp = spSource.getViewport().getViewPosition();
+                            Point tp = spTarget.getViewport().getViewPosition();
+                            int delta = (sr.y - sp.y) - (tr.y - tp.y);
+                            spSource.getViewport().setViewPosition(new Point(sp.x, sp.y + delta));
+                        }
+                    }
+                }
+            }
+        }
+    };
+
     private class ContextTreeCellRenderer extends DefaultTreeCellRenderer {
         private ContextTreeCellRenderer() {
             super();
@@ -748,13 +832,19 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
             acTargetOpen, acTargetPreprocess, acTargetClose, acTargetSave, acTargetSaveAs,
             acMappingCreate, acMappingOpen, acMappingClose, acMappingSave, acMappingSaveAs};
 
-    //hashes for paths with the index of the tree element
-    HashMap<INode, Integer> sourceRowForPath = new HashMap<INode, Integer>();
-    HashMap<INode, Integer> targetRowForPath = new HashMap<INode, Integer>();
-
-    //offsets to draw the lines when things mode around
-    private Point leftOffset = new Point(); //for source tree
-    private Point rightOffset = new Point(); //for target tree
+    private TreePath createPathToRoot(INode node) {
+        Deque<INode> pathToRoot = new ArrayDeque<INode>();
+        INode curNode = node;
+        while (null != curNode) {
+            pathToRoot.push(curNode);
+            curNode = curNode.getParent();
+        }
+        TreePath pp = new TreePath(pathToRoot.pop());
+        while (!pathToRoot.isEmpty()) {
+            pp = pp.pathByAddingChild(pathToRoot.pop());
+        }
+        return pp;
+    }
 
     private void buildMenu() {
         mainMenu = new JMenuBar();
@@ -972,15 +1062,20 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
             }
             jTree.setModel(new DefaultTreeModel(new DefaultMutableTreeNode(label)));
             jTree.setCellRenderer(contextTreeCellRenderer);
+            jTree.removeTreeSelectionListener(treeSelectionListener);
+            jTree.removeFocusListener(treeFocusListener);
         } else {
             TreeModel treeModel;
             clearUserObjects(context.getRoot());
             if (null == mapping) {
                 treeModel = new DefaultTreeModel(context.getRoot());
                 jTree.setCellRenderer(contextTreeCellRenderer);
+                jTree.removeTreeSelectionListener(treeSelectionListener);
+                jTree.removeFocusListener(treeFocusListener);
             } else {
                 treeModel = new MappingTreeModel(context.getRoot(), jTree == tSource, mapping);
                 jTree.setCellRenderer(mappingTreeCellRenderer);
+                jTree.addFocusListener(treeFocusListener);
             }
 
             jTree.setModel(treeModel);
@@ -989,6 +1084,13 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
             if (context.getNodesList().size() < 60) {
                 for (int i = 0; i < jTree.getRowCount(); i++) {
                     jTree.expandRow(i);
+                }
+            } else {
+                //expand first level
+                for (INode node : context.getRoot().getChildrenList()) {
+                    TreePath p = new TreePath(context.getRoot());
+                    p = p.pathByAddingChild(node);
+                    jTree.expandPath(p);
                 }
             }
         }
