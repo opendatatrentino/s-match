@@ -25,7 +25,6 @@ import javax.swing.event.TreeExpansionListener;
 import javax.swing.tree.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.awt.geom.Line2D;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.*;
@@ -606,124 +605,7 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
         }
     }
 
-    private class MappingsPanel extends JPanel {
-        /**
-         * Paints the windows accordingly to the Swing JPanels, then paints the mappings
-         * (non-Javadoc)
-         *
-         * @see javax.swing.JComponent#paintChildren(java.awt.Graphics)
-         */
-        public void paintChildren(Graphics g) {
-            super.paintChildren(g);
-
-//            if (g instanceof Graphics2D) {
-//                Graphics2D g2 = (Graphics2D) g;
-//                paintMappings(g2);
-//            }
-        }
-
-        /**
-         * Paints the lines considering the mappings loaded.
-         *
-         * @param g2 Graphics2D
-         */
-        private void paintMappings(Graphics2D g2) {
-            if (null != mapping) {
-                BasicStroke stroke = new BasicStroke(2, BasicStroke.CAP_ROUND, BasicStroke.JOIN_MITER);
-
-                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                g2.setColor(Color.RED);
-                g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, (float) 0.4));
-                g2.setStroke(stroke);
-                Rectangle splitBound = spnContexts.getBounds();
-                g2.setClip(spSource.getLocation().x, spSource.getLocation().y + 3, splitBound.width, spSource.getBounds().height - 3);
-                computeOffset();
-                for (IMappingElement<INode> link : mapping) {
-                    int source = sourceRowForPath.get(link.getSource());
-                    int target = targetRowForPath.get(link.getTarget());
-
-                    if (source >= 0 && target >= 0) {
-                        Line2D line2 = drawBoundingLine(tSource.getRowBounds(source), tTarget.getRowBounds(target));
-                        changeColorOfRelation(g2, link);
-                        g2.draw(line2);
-                    }
-                }
-            }
-        }
-
-        /**
-         * Draws a line given the boundaries of 2 elements of the 2 trees in the GUI.
-         *
-         * @param leftBound  a node from the let tree
-         * @param rightBound a node from the right tree
-         * @return a line
-         */
-        private Line2D drawBoundingLine(Rectangle leftBound, Rectangle rightBound) {
-
-            return new Line2D.Double(
-                    leftBound.getMaxX() + leftOffset.x,
-                    leftBound.getCenterY() + leftOffset.y,
-                    rightBound.getMinX() + rightOffset.x,
-                    rightBound.getCenterY() + rightOffset.y);
-        }
-
-        /**
-         * Computes he offset of the trees in order to draw the lines correctly.
-         */
-        private void computeOffset() {
-
-            int correction = 2;
-            int dividerSize = 9;
-
-            int leftX = tSource.getLocationOnScreen().x - spnContexts.getLocationOnScreen().x - correction;
-            int leftY = tSource.getLocationOnScreen().y - spnContexts.getLocationOnScreen().y - correction;
-
-            int rightX = tTarget.getLocationOnScreen().x - spnContexts.getLocationOnScreen().x - correction;
-            int rightY = tTarget.getLocationOnScreen().y - spnContexts.getLocationOnScreen().y - correction;
-
-            int dividerLocation = dividerSize + spnContexts.getDividerLocation();
-            if (rightX < dividerLocation) {
-                rightX = dividerLocation;
-            }
-
-            leftOffset.setLocation(leftX, leftY);
-            rightOffset.setLocation(rightX, rightY);
-
-        }
-
-
-        /**
-         * Changes the color of the line according to the type of relation.
-         *
-         * @param g2      Graphics2D
-         * @param mapping mapping
-         */
-        private void changeColorOfRelation(Graphics2D g2, IMappingElement mapping) {
-            char rel = mapping.getRelation();
-            switch (rel) {
-                case IMappingElement.LESS_GENERAL: {
-                    g2.setColor(Color.ORANGE);
-                    break;
-                }
-                case IMappingElement.MORE_GENERAL: {
-                    g2.setColor(Color.BLUE);
-                    break;
-                }
-                case IMappingElement.EQUIVALENCE: {
-                    g2.setColor(Color.GREEN);
-                    break;
-                }
-                case IMappingElement.DISJOINT: {
-                    g2.setColor(Color.RED);
-                    break;
-                }
-                default:
-                    break;
-            }
-        }
-    }
-
-    //listener for token pos combobox
+    //listener for config files combobox
     private final ItemListener configCombolistener = new ItemListener() {
         public void itemStateChanged(ItemEvent e) {
             if ((e.getSource() == cbConfig) && (e.getStateChange() == ItemEvent.SELECTED)) {
@@ -820,7 +702,7 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
 
         }
 
-        }
+    }
 
     private final TreeCellRenderer mappingTreeCellRenderer = new MappingTreeCellRenderer();
 
@@ -982,7 +864,7 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
         spnContexts.addPropertyChangeListener(JSplitPane.DIVIDER_LOCATION_PROPERTY, this);
 
 
-        pnContexts = new MappingsPanel();
+        pnContexts = new JPanel();
         pnContexts.setLayout(new FormLayout("fill:d:grow", "fill:d:grow"));
 
         spnContextsLog.setLeftComponent(pnContexts);
@@ -1093,7 +975,7 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
         } else {
             TreeModel treeModel;
             clearUserObjects(context.getRoot());
-            if (null == mapping) {                
+            if (null == mapping) {
                 treeModel = new DefaultTreeModel(context.getRoot());
                 jTree.setCellRenderer(contextTreeCellRenderer);
             } else {
@@ -1115,7 +997,7 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
     private void clearUserObjects(INode root) {
         root.getNodeData().setUserObject(null);
         for (INode node : root.getDescendantsList()) {
-            node.getNodeData().setUserObject(null);    
+            node.getNodeData().setUserObject(null);
         }
     }
 
