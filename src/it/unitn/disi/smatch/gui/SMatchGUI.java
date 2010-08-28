@@ -22,10 +22,7 @@ import javax.imageio.stream.ImageInputStream;
 import javax.swing.*;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreePath;
-import javax.swing.tree.TreeSelectionModel;
+import javax.swing.tree.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.Line2D;
@@ -68,12 +65,12 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
     private IContextMapping<INode> mapping = null;
     private String mappingLocation = null;
 
-    private static final String ICONS_PATH = "/tango-icon-theme-0.8.90/";
+    private static final String TANGO_ICONS_PATH = "/tango-icon-theme-0.8.90/";
 
     public static JIconFile loadIconFile(String name) {
         JIconFile icon = null;
         try {
-            icon = new JIconFile(SMatchGUI.class.getResource(ICONS_PATH + name + ".jic"));
+            icon = new JIconFile(SMatchGUI.class.getResource(name + ".jic"));
         } catch (IOException e) {
             if (log.isEnabledFor(Level.ERROR)) {
                 log.error("Error loading icon " + name, e);
@@ -88,21 +85,47 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
     private static ImageIcon documentSaveLarge;
     private static ImageIcon documentSaveAsSmall;
     private static ImageIcon documentSaveAsLarge;
+    private static ImageIcon folderSmall;
+    private static ImageIcon folderOpenSmall;
+    private static ImageIcon iconDJ;
+    private static ImageIcon iconEQ;
+    private static ImageIcon iconMG;
+    private static ImageIcon iconLG;
+
     private static final int SMALL_ICON_SIZE = 16;
     private static final int LARGE_ICON_SIZE = 32;
 
+
     static {
-        JIconFile icon = loadIconFile("actions/document-open");
+        JIconFile icon = loadIconFile(TANGO_ICONS_PATH + "actions/document-open");
         documentOpenSmall = icon.getIcon(SMALL_ICON_SIZE);
         documentOpenLarge = icon.getIcon(LARGE_ICON_SIZE);
 
-        icon = loadIconFile("actions/document-save");
+        icon = loadIconFile(TANGO_ICONS_PATH + "actions/document-save");
         documentSaveSmall = icon.getIcon(SMALL_ICON_SIZE);
         documentSaveLarge = icon.getIcon(LARGE_ICON_SIZE);
 
-        icon = loadIconFile("actions/document-save-as");
+        icon = loadIconFile(TANGO_ICONS_PATH + "actions/document-save-as");
         documentSaveAsSmall = icon.getIcon(SMALL_ICON_SIZE);
         documentSaveAsLarge = icon.getIcon(LARGE_ICON_SIZE);
+
+        icon = loadIconFile(TANGO_ICONS_PATH + "/places/folder");
+        folderSmall = icon.getIcon(SMALL_ICON_SIZE);
+
+        icon = loadIconFile(TANGO_ICONS_PATH + "/status/folder-open");
+        folderOpenSmall = icon.getIcon(SMALL_ICON_SIZE);
+
+        icon = loadIconFile("/relations/disjoint");
+        iconDJ = icon.getIcon(SMALL_ICON_SIZE);
+
+        icon = loadIconFile("/relations/equivalent");
+        iconEQ = icon.getIcon(SMALL_ICON_SIZE);
+
+        icon = loadIconFile("/relations/less-general");
+        iconLG = icon.getIcon(SMALL_ICON_SIZE);
+
+        icon = loadIconFile("/relations/more-general");
+        iconMG = icon.getIcon(SMALL_ICON_SIZE);
     }
 
     private class ActionSourceOpen extends AbstractAction implements Observer {
@@ -123,7 +146,8 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
                 File file = fc.getSelectedFile();
                 log.info("Opening source: " + file.getAbsolutePath() + "");
 
-                source = createTree(file.getAbsolutePath(), tSource, sourceRowForPath);
+                source = loadTree(file.getAbsolutePath());
+                createTree(source, tSource, mapping);
                 setChanged();
                 notifyObservers();
             }
@@ -272,7 +296,8 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
                 File file = fc.getSelectedFile();
                 log.info("Opening target: " + file.getAbsolutePath() + "");
 
-                target = createTree(file.getAbsolutePath(), tTarget, targetRowForPath);
+                target = loadTree(file.getAbsolutePath());
+                createTree(target, tTarget, mapping);
                 setChanged();
                 notifyObservers();
             }
@@ -413,13 +438,17 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
         }
 
         public void actionPerformed(ActionEvent actionEvent) {
+            acMappingClose.actionPerformed(actionEvent);
             try {
                 mapping = mm.online(source, target);
+                createTree(source, tSource, mapping);
+                createTree(target, tTarget, mapping);
                 setChanged();
                 notifyObservers();
             } catch (SMatchException e) {
                 if (log.isEnabledFor(Level.ERROR)) {
                     log.error("Error while creating a mapping between source and target contexts", e);
+                    log.debug(e);
                 }
             }
         }
@@ -449,6 +478,8 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
 
                 try {
                     mapping = mm.loadMapping(source, target, file.getAbsolutePath());
+                    createTree(source, tSource, mapping);
+                    createTree(target, tTarget, mapping);
                     pnContexts.repaint();
                     setChanged();
                     notifyObservers();
@@ -477,6 +508,8 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
         public void actionPerformed(ActionEvent actionEvent) {
             mapping = null;
             mappingLocation = null;
+            createTree(source, tSource, mapping);
+            createTree(target, tTarget, mapping);
             pnContexts.repaint();
             setChanged();
             notifyObservers();
@@ -583,10 +616,10 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
         public void paintChildren(Graphics g) {
             super.paintChildren(g);
 
-            if (g instanceof Graphics2D) {
-                Graphics2D g2 = (Graphics2D) g;
-                paintMappings(g2);
-            }
+//            if (g instanceof Graphics2D) {
+//                Graphics2D g2 = (Graphics2D) g;
+//                paintMappings(g2);
+//            }
         }
 
         /**
@@ -707,6 +740,89 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
             }
         }
     };
+
+    private class ContextTreeCellRenderer extends DefaultTreeCellRenderer {
+        private ContextTreeCellRenderer() {
+            super();
+            setLeafIcon(folderSmall);
+            setClosedIcon(folderSmall);
+            setOpenIcon(folderOpenSmall);
+        }
+    }
+
+    private final TreeCellRenderer contextTreeCellRenderer = new ContextTreeCellRenderer();
+
+    private class MappingTreeCellRenderer extends DefaultTreeCellRenderer {
+        public MappingTreeCellRenderer() {
+            super();
+            setLeafIcon(folderSmall);
+            setClosedIcon(folderSmall);
+            setOpenIcon(folderOpenSmall);
+        }
+
+        public Component getTreeCellRendererComponent(final JTree tree, final Object value,
+                                                      final boolean sel,
+                                                      final boolean expanded,
+                                                      final boolean leaf, final int row,
+                                                      final boolean hasFocus) {
+            super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
+            if (value instanceof INode) {
+                INode node = (INode) value;
+                if (0 == node.getChildCount()) {
+                    setIcon(folderSmall);
+                }
+            } else {
+                if (value instanceof DefaultMutableTreeNode) {
+                    DefaultMutableTreeNode dmtn = (DefaultMutableTreeNode) value;
+                    @SuppressWarnings("unchecked")
+                    IMappingElement<INode> me = (IMappingElement<INode>) dmtn.getUserObject();
+                    if (tree == tSource) {
+                        setText(me.getTarget().getNodeData().getName());
+                        switch (me.getRelation()) {
+                            case IMappingElement.LESS_GENERAL: {
+                                setIcon(iconLG);
+                                break;
+                            }
+                            case IMappingElement.MORE_GENERAL: {
+                                setIcon(iconMG);
+                                break;
+                            }
+                        }
+                    } else {
+                        setText(me.getSource().getNodeData().getName());
+                        switch (me.getRelation()) {
+                            case IMappingElement.LESS_GENERAL: {
+                                setIcon(iconMG);
+                                break;
+                            }
+                            case IMappingElement.MORE_GENERAL: {
+                                setIcon(iconLG);
+                                break;
+                            }
+                        }
+                    }
+                    switch (me.getRelation()) {
+                        case IMappingElement.EQUIVALENCE: {
+                            setIcon(iconEQ);
+                            break;
+                        }
+                        case IMappingElement.DISJOINT: {
+                            setIcon(iconDJ);
+                            break;
+                        }
+                    }
+
+
+                }
+            }
+
+            return this;
+
+        }
+
+        }
+
+    private final TreeCellRenderer mappingTreeCellRenderer = new MappingTreeCellRenderer();
 
 
     // GUI static elements
@@ -872,7 +988,7 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
         spnContextsLog.setLeftComponent(pnContexts);
         pnContexts.add(spnContexts, cc.xy(1, 1));
 
-        //build source panel
+        //build source
         pnSource = new JPanel();
         pnSource.setLayout(new FormLayout("fill:d:grow", "center:d:noGrow,top:4dlu:noGrow,center:d:grow"));
         spnContexts.setLeftComponent(pnSource);
@@ -944,28 +1060,10 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
         }
     }
 
-    /**
-     * Creates the tree given a file in a tab indented format
-     *
-     * @param fileName File name in a tab indented format
-     * @return the JTree representing the content of the tab indented file
-     */
-    private IContext createTree(String fileName, JTree jTree, HashMap<INode, Integer> rowForPathHash) {
+    private IContext loadTree(String fileName) {
         IContext context = null;
         try {
             context = mm.loadContext(fileName);
-            //Create a tree that allows one selection at a time.
-            DefaultTreeModel treeModel = new DefaultTreeModel(context.getRoot());
-            jTree.setModel(treeModel);
-
-            //expand all the nodes initially
-            if (context.getNodesList().size() < 60) {
-                for (int i = 0; i < jTree.getRowCount(); i++) {
-                    jTree.expandRow(i);
-                    TreePath rowPath = jTree.getPathForRow(i);
-                    rowForPathHash.put((INode) rowPath.getLastPathComponent(), i);
-                }
-            }
         } catch (SMatchException e) {
             if (log.isEnabledFor(Level.ERROR)) {
                 log.error("Error while loading context from " + fileName, e);
@@ -975,6 +1073,51 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
         return context;
     }
 
+    /**
+     * Creates the tree from a context and a mapping.
+     *
+     * @param context context
+     * @param jTree   a JTree
+     * @param mapping a mapping
+     */
+    private void createTree(final IContext context, final JTree jTree, final IContextMapping<INode> mapping) {
+        if (null == context) {
+            String label;
+            if (jTree == tSource) {
+                label = "Load source";
+            } else {
+                label = "Load target";
+            }
+            jTree.setModel(new DefaultTreeModel(new DefaultMutableTreeNode(label)));
+            jTree.setCellRenderer(contextTreeCellRenderer);
+        } else {
+            TreeModel treeModel;
+            clearUserObjects(context.getRoot());
+            if (null == mapping) {                
+                treeModel = new DefaultTreeModel(context.getRoot());
+                jTree.setCellRenderer(contextTreeCellRenderer);
+            } else {
+                treeModel = new MappingTreeModel(context.getRoot(), jTree == tSource, mapping);
+                jTree.setCellRenderer(mappingTreeCellRenderer);
+            }
+
+            jTree.setModel(treeModel);
+
+            //expand all the nodes initially
+            if (context.getNodesList().size() < 60) {
+                for (int i = 0; i < jTree.getRowCount(); i++) {
+                    jTree.expandRow(i);
+                }
+            }
+        }
+    }
+
+    private void clearUserObjects(INode root) {
+        root.getNodeData().setUserObject(null);
+        for (INode node : root.getDescendantsList()) {
+            node.getNodeData().setUserObject(null);    
+        }
+    }
 
     private void createMatchManager() {
         String configFile = new File(CONF_FILE).getParent() + File.separator + cmConfigs.getSelectedItem();

@@ -168,7 +168,7 @@ public interface INode extends MutableTreeNode, IIndexedObject {
     /**
      * Returns unmodifiable list of receivers descendants.
      *
-     * @return unmodifiable list of receivers children
+     * @return unmodifiable list of receivers descendants
      */
     List<INode> getDescendantsList();
 

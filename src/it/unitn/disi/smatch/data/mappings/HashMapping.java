@@ -232,4 +232,26 @@ public class HashMapping<T> extends BaseMapping<T> implements IContextMapping<T>
             }
         }
     }
+
+    public List<IMappingElement<T>> getSources(final T source) {
+        ArrayList<IMappingElement<T>> result = new ArrayList<IMappingElement<T>>();
+        for (IMappingElement<T> me : this) {
+            if (source == me.getSource()) {
+                result.add(me);
+            }
+        }
+        //TODO impose the order to keep results consistent, because hashset iterator does not guarantee the order
+        return result;
+    }
+
+    public List<IMappingElement<T>> getTargets(T target) {
+        ArrayList<IMappingElement<T>> result = new ArrayList<IMappingElement<T>>();
+        for (IMappingElement<T> me : this) {
+            if (target == me.getTarget()) {
+                result.add(me);
+            }
+        }
+        //TODO impose the order to keep results consistent, because hashset iterator does not guarantee the order
+        return result;
+    }
 }

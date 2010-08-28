@@ -1,5 +1,6 @@
 package it.unitn.disi.smatch.data.mappings;
 
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -41,4 +42,20 @@ public interface IMapping<T> extends Set<IMappingElement<T>> {
      * @return the similarity between two trees
      */
     double getSimilarity();
+
+    /**
+     * Returns mapping elements with source element equal to <code>source</code>.
+     *
+     * @param source source element
+     * @return mapping elements with source element equal to <code>source</code>
+     */
+    List<IMappingElement<T>> getSources(T source);
+
+    /**
+     * Returns mapping elements with target element equal to <code>source</code>.
+     *
+     * @param target target element
+     * @return mapping elements with target element equal to <code>target</code>
+     */
+    List<IMappingElement<T>> getTargets(T target);
 }

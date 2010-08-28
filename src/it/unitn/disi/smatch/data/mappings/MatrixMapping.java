@@ -194,6 +194,38 @@ public class MatrixMapping<T extends IIndexedObject> extends BaseMapping<T> impl
         return !result;
     }
 
+    public List<IMappingElement<T>> getSources(final T source) {
+        final int sIdx = source.getIndex();
+        if (0 <= sIdx && sIdx < sources.length && (source == sources[sIdx])) {
+            ArrayList<IMappingElement<T>> result = new ArrayList<IMappingElement<T>>();
+            for (int j = 0; j < targets.length; j++) {
+                char rel = matrix.get(sIdx, j);
+                if (IMappingElement.IDK != rel) {
+                    result.add(new MappingElement<T>(sources[sIdx], targets[j], rel));
+                }
+            }
+            return result;
+        } else {
+            return Collections.emptyList();
+        }
+    }
+
+    public List<IMappingElement<T>> getTargets(T target) {
+        final int tIdx = target.getIndex();
+        if (0 <= tIdx && tIdx < targets.length && (target == targets[tIdx])) {
+            ArrayList<IMappingElement<T>> result = new ArrayList<IMappingElement<T>>();
+            for (int i = 0; i < sources.length; i++) {
+                char rel = matrix.get(i, tIdx);
+                if (IMappingElement.IDK != rel) {
+                    result.add(new MappingElement<T>(sources[i], targets[tIdx], rel));
+                }
+            }
+            return result;
+        } else {
+            return Collections.emptyList();
+        }
+    }
+
     public int size() {
         return elementCount;
     }
