@@ -2,6 +2,7 @@ package it.unitn.disi.smatch.renderers.context;
 
 import it.unitn.disi.smatch.data.trees.IContext;
 import it.unitn.disi.smatch.data.trees.INode;
+import it.unitn.disi.smatch.loaders.ILoader;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -42,5 +43,9 @@ public class TabContextRenderer extends BaseFileContextRenderer {
             }
         }
         reportStats(context);
+    }
+
+    public String getDescription() {
+        return ILoader.TXT_FILES;
     }
 }

@@ -2,9 +2,13 @@ package it.unitn.disi.smatch;
 
 import it.unitn.disi.smatch.components.IConfigurable;
 import it.unitn.disi.smatch.data.ling.IAtomicConceptOfLabel;
+import it.unitn.disi.smatch.data.mappings.IContextMapping;
 import it.unitn.disi.smatch.data.trees.IContext;
 import it.unitn.disi.smatch.data.trees.INode;
-import it.unitn.disi.smatch.data.mappings.IContextMapping;
+import it.unitn.disi.smatch.loaders.context.IContextLoader;
+import it.unitn.disi.smatch.loaders.mapping.IMappingLoader;
+import it.unitn.disi.smatch.renderers.context.IContextRenderer;
+import it.unitn.disi.smatch.renderers.mapping.IMappingRenderer;
 
 /**
  * Interface for matching related functionalities.<br>
@@ -35,6 +39,13 @@ public interface IMatchManager extends IConfigurable {
     IContext loadContext(String fileName) throws SMatchException;
 
     /**
+     * Returns currently configured context loader.
+     *
+     * @return currently configured context loader
+     */
+    IContextLoader getContextLoader();
+
+    /**
      * Renders the context using a current renderer.
      *
      * @param ctxSource context to be rendered
@@ -42,6 +53,13 @@ public interface IMatchManager extends IConfigurable {
      * @throws SMatchException SMatchException
      */
     void renderContext(IContext ctxSource, String fileName) throws SMatchException;
+
+    /**
+     * Returns currently configured context renderer.
+     *
+     * @return currently configured context renderer
+     */
+    IContextRenderer getContextRenderer();
 
     /**
      * Loads the mapping between source and target contexts using the current mapping loader.
@@ -55,6 +73,13 @@ public interface IMatchManager extends IConfigurable {
     IContextMapping<INode> loadMapping(IContext ctxSource, IContext ctxTarget, String inputFile) throws SMatchException;
 
     /**
+     * Returns currently configured mapping loader.
+     *
+     * @return currently configured mapping loader
+     */
+    IMappingLoader getMappingLoader();
+
+    /**
      * Renders the mapping using a current mapping renderer.
      *
      * @param mapping    a mapping
@@ -62,6 +87,13 @@ public interface IMatchManager extends IConfigurable {
      * @throws SMatchException SMatchException
      */
     void renderMapping(IContextMapping<INode> mapping, String outputFile) throws SMatchException;
+
+    /**
+     * Returns currently configured mapping renderer.
+     *
+     * @return currently configured mapping renderer
+     */
+    IMappingRenderer getMappingRenderer();
 
     /**
      * Filters a mapping. For example, filtering could be a minimization.

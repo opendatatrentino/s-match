@@ -2,6 +2,7 @@ package it.unitn.disi.smatch.renderers.mapping;
 
 import it.unitn.disi.smatch.data.mappings.IContextMapping;
 import it.unitn.disi.smatch.data.trees.INode;
+import it.unitn.disi.smatch.loaders.ILoader;
 import org.apache.log4j.Logger;
 
 import java.io.BufferedWriter;
@@ -39,4 +40,8 @@ public abstract class BaseFileMappingRenderer extends BaseMappingRenderer {
     }
 
     protected abstract void process(IContextMapping<INode> mapping, BufferedWriter out) throws IOException, MappingRendererException;
+
+    public ILoader.LoaderType getType() {
+        return ILoader.LoaderType.FILE;
+    }
 }

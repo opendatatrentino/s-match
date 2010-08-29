@@ -3,6 +3,7 @@ package it.unitn.disi.smatch.loaders.context;
 import it.unitn.disi.smatch.data.trees.Context;
 import it.unitn.disi.smatch.data.trees.IContext;
 import it.unitn.disi.smatch.data.trees.INode;
+import it.unitn.disi.smatch.loaders.ILoader;
 import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
@@ -24,6 +25,8 @@ public class StringFunctionLoader extends BaseContextLoader implements IContextL
     private final static char OPEN_PARENTHESIS = '(';
     private final static char CLOSE_PARENTHESIS = ')';
 
+    private final static String DESCRIPTION = "String with a function";
+
     /**
      * Converts the string with a function into a tree.
      *
@@ -36,6 +39,14 @@ public class StringFunctionLoader extends BaseContextLoader implements IContextL
         createIds(result);
         log.info("Parsed nodes: " + nodesParsed);
         return result;
+    }
+
+    public String getDescription() {
+        return DESCRIPTION;
+    }
+
+    public ILoader.LoaderType getType() {
+        return ILoader.LoaderType.STRING;
     }
 
     /**

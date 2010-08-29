@@ -3,6 +3,7 @@ package it.unitn.disi.smatch.renderers.mapping;
 import it.unitn.disi.smatch.data.mappings.IContextMapping;
 import it.unitn.disi.smatch.data.mappings.IMappingElement;
 import it.unitn.disi.smatch.data.trees.INode;
+import it.unitn.disi.smatch.loaders.ILoader;
 import org.apache.log4j.Logger;
 
 import java.io.BufferedWriter;
@@ -46,5 +47,9 @@ public class PlainMappingRenderer extends BaseFileMappingRenderer implements IMa
             parent = parent.getParent();
         }
         return sb.toString();
+    }
+
+    public String getDescription() {
+        return ILoader.TXT_FILES;
     }
 }

@@ -5,6 +5,7 @@ import it.unitn.disi.smatch.data.ling.ISense;
 import it.unitn.disi.smatch.data.trees.IContext;
 import it.unitn.disi.smatch.data.trees.INode;
 import it.unitn.disi.smatch.data.trees.INodeData;
+import it.unitn.disi.smatch.loaders.ILoader;
 import org.apache.log4j.Logger;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
@@ -114,5 +115,9 @@ public class SimpleXMLContextRenderer extends BaseXMLContextRenderer {
 
         hd.endElement("", "", "node");
         reportProgress();
+    }
+
+    public String getDescription() {
+        return ILoader.XML_FILES;
     }
 }

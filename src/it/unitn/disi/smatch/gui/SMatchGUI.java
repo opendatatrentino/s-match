@@ -140,7 +140,10 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
         }
 
         public void actionPerformed(ActionEvent actionEvent) {
+            ff.setDescription(mm.getContextLoader().getDescription());
+            fc.addChoosableFileFilter(ff);
             final int returnVal = fc.showOpenDialog(mainPanel);
+            fc.removeChoosableFileFilter(ff);
 
             if (returnVal == JFileChooser.APPROVE_OPTION) {
                 File file = fc.getSelectedFile();
@@ -154,7 +157,7 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
         }
 
         public void update(Observable o, Object arg) {
-            setEnabled(null != mm);
+            setEnabled(null != mm && null != mm.getContextLoader());
         }
     }
 
@@ -218,7 +221,10 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
 
         public void actionPerformed(ActionEvent actionEvent) {
             if (null == sourceLocation) {
-                final int returnVal = fc.showOpenDialog(mainPanel);
+                ff.setDescription(mm.getContextRenderer().getDescription());
+                fc.addChoosableFileFilter(ff);
+                final int returnVal = fc.showSaveDialog(mainPanel);
+                fc.removeChoosableFileFilter(ff);
 
                 if (returnVal == JFileChooser.APPROVE_OPTION) {
                     File file = fc.getSelectedFile();
@@ -239,7 +245,7 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
         }
 
         public void update(Observable o, Object arg) {
-            setEnabled(null != mm && null != source);
+            setEnabled(null != mm && null != source && null != mm.getContextRenderer());
         }
     }
 
@@ -254,7 +260,10 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
         }
 
         public void actionPerformed(ActionEvent actionEvent) {
-            final int returnVal = fc.showOpenDialog(mainPanel);
+            ff.setDescription(mm.getContextRenderer().getDescription());
+            fc.addChoosableFileFilter(ff);
+            final int returnVal = fc.showSaveDialog(mainPanel);
+            fc.removeChoosableFileFilter(ff);
 
             if (returnVal == JFileChooser.APPROVE_OPTION) {
                 File file = fc.getSelectedFile();
@@ -274,7 +283,7 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
         }
 
         public void update(Observable o, Object arg) {
-            setEnabled(null != mm && null != source);
+            setEnabled(null != mm && null != source && null != mm.getContextRenderer());
         }
     }
 
@@ -290,7 +299,10 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
         }
 
         public void actionPerformed(ActionEvent actionEvent) {
+            ff.setDescription(mm.getContextLoader().getDescription());
+            fc.addChoosableFileFilter(ff);
             final int returnVal = fc.showOpenDialog(mainPanel);
+            fc.removeChoosableFileFilter(ff);
 
             if (returnVal == JFileChooser.APPROVE_OPTION) {
                 File file = fc.getSelectedFile();
@@ -304,7 +316,7 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
         }
 
         public void update(Observable o, Object arg) {
-            setEnabled(null != mm);
+            setEnabled(null != mm && null != mm.getContextLoader());
         }
     }
 
@@ -368,7 +380,10 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
 
         public void actionPerformed(ActionEvent actionEvent) {
             if (null == targetLocation) {
-                final int returnVal = fc.showOpenDialog(mainPanel);
+                ff.setDescription(mm.getContextRenderer().getDescription());
+                fc.addChoosableFileFilter(ff);
+                final int returnVal = fc.showSaveDialog(mainPanel);
+                fc.removeChoosableFileFilter(ff);
 
                 if (returnVal == JFileChooser.APPROVE_OPTION) {
                     File file = fc.getSelectedFile();
@@ -389,7 +404,7 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
         }
 
         public void update(Observable o, Object arg) {
-            setEnabled(null != mm && null != target);
+            setEnabled(null != mm && null != target && null != mm.getContextRenderer());
         }
     }
 
@@ -404,7 +419,10 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
         }
 
         public void actionPerformed(ActionEvent actionEvent) {
-            final int returnVal = fc.showOpenDialog(mainPanel);
+            ff.setDescription(mm.getContextRenderer().getDescription());
+            fc.addChoosableFileFilter(ff);
+            final int returnVal = fc.showSaveDialog(mainPanel);
+            fc.removeChoosableFileFilter(ff);
 
             if (returnVal == JFileChooser.APPROVE_OPTION) {
                 File file = fc.getSelectedFile();
@@ -424,7 +442,7 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
         }
 
         public void update(Observable o, Object arg) {
-            setEnabled(null != mm && null != target);
+            setEnabled(null != mm && null != target && null != mm.getContextRenderer());
         }
     }
 
@@ -470,7 +488,10 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
         }
 
         public void actionPerformed(ActionEvent actionEvent) {
+            ff.setDescription(mm.getMappingLoader().getDescription());
+            fc.addChoosableFileFilter(ff);
             final int returnVal = fc.showOpenDialog(mainPanel);
+            fc.removeChoosableFileFilter(ff);
 
             if (returnVal == JFileChooser.APPROVE_OPTION) {
                 File file = fc.getSelectedFile();
@@ -492,7 +513,7 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
         }
 
         public void update(Observable o, Object arg) {
-            setEnabled(null != mm && null != source && null != target);
+            setEnabled(null != mm && null != source && null != target && null != mm.getMappingLoader());
         }
     }
 
@@ -533,7 +554,10 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
 
         public void actionPerformed(ActionEvent actionEvent) {
             if (null == mappingLocation) {
-                final int returnVal = fc.showOpenDialog(mainPanel);
+                ff.setDescription(mm.getMappingRenderer().getDescription());
+                fc.addChoosableFileFilter(ff);
+                final int returnVal = fc.showSaveDialog(mainPanel);
+                fc.removeChoosableFileFilter(ff);
 
                 if (returnVal == JFileChooser.APPROVE_OPTION) {
                     File file = fc.getSelectedFile();
@@ -554,7 +578,7 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
         }
 
         public void update(Observable o, Object arg) {
-            setEnabled(null != mm && null != mapping);
+            setEnabled(null != mm && null != mapping && null != mm.getMappingRenderer());
         }
     }
 
@@ -569,7 +593,10 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
         }
 
         public void actionPerformed(ActionEvent actionEvent) {
-            final int returnVal = fc.showOpenDialog(mainPanel);
+            ff.setDescription(mm.getMappingRenderer().getDescription());
+            fc.addChoosableFileFilter(ff);
+            final int returnVal = fc.showSaveDialog(mainPanel);
+            fc.removeChoosableFileFilter(ff);
 
             if (returnVal == JFileChooser.APPROVE_OPTION) {
                 File file = fc.getSelectedFile();
@@ -589,7 +616,7 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
         }
 
         public void update(Observable o, Object arg) {
-            setEnabled(null != mm && null != mapping);
+            setEnabled(null != mm && null != mapping && null != mm.getMappingRenderer());
         }
     }
 
@@ -614,6 +641,8 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
                     String configFile = (new File(CONF_FILE)).getParent() + File.separator + e.getItem();
                     try {
                         mm.setProperties(configFile);
+                        setChanged();
+                        notifyObservers();
                     } catch (ConfigurableException exc) {
                         if (log.isEnabledFor(Level.ERROR)) {
                             log.error("Error while loading configuration from " + configFile, exc);
@@ -682,6 +711,7 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
                             int delta = (tr.y - tp.y) - (sr.y - sp.y);
                             spTarget.getViewport().setViewPosition(new Point(tp.x, tp.y + delta));
                         }
+
                     } else if (e.getSource() == tTarget) {
                         // construct path root
                         TreePath pp = createPathToRoot(me.getSource());
@@ -790,6 +820,40 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
 
     private final TreeCellRenderer mappingTreeCellRenderer = new MappingTreeCellRenderer();
 
+    private class CustomFileFilter extends javax.swing.filechooser.FileFilter {
+
+        private String description;
+
+        public String getDescription() {
+            return description;
+        }
+
+        public boolean accept(File file) {
+            String ext = getExtension(file);
+            return null != description && null != ext && -1 < description.indexOf(ext);
+        }
+
+        public String getDescriptions() {
+            return description;
+        }
+
+        public void setDescription(String description) {
+            this.description = description;
+        }
+
+        public String getExtension(File f) {
+            String ext = null;
+            String s = f.getName();
+            int i = s.lastIndexOf('.');
+
+            if (i > 0 && i < s.length() - 1) {
+                ext = s.substring(i + 1).toLowerCase();
+            }
+            return ext;
+        }
+    }
+
+    private final CustomFileFilter ff = new CustomFileFilter();
 
     // GUI static elements
     private JPanel mainPanel;

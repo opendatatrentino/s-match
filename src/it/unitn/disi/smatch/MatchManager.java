@@ -154,6 +154,10 @@ public class MatchManager extends Configurable implements IMatchManager {
         return result;
     }
 
+    public IContextLoader getContextLoader() {
+        return contextLoader;
+    }
+
     public void renderContext(IContext ctxSource, String fileName) throws SMatchException {
         if (null == contextRenderer) {
             throw new SMatchException("Context renderer is not configured.");
@@ -161,6 +165,10 @@ public class MatchManager extends Configurable implements IMatchManager {
         log.info("Rendering context to: " + fileName);
         contextRenderer.render(ctxSource, fileName);
         log.info("Rendering context finished");
+    }
+
+    public IContextRenderer getContextRenderer() {
+        return contextRenderer;
     }
 
     public IContextMapping<INode> loadMapping(IContext ctxSource, IContext ctxTarget, String inputFile) throws SMatchException {
@@ -173,6 +181,10 @@ public class MatchManager extends Configurable implements IMatchManager {
         return result;
     }
 
+    public IMappingLoader getMappingLoader() {
+        return mappingLoader;
+    }
+
     public void renderMapping(IContextMapping<INode> mapping, String outputFile) throws SMatchException {
         if (null == mappingRenderer) {
             throw new SMatchException("Mapping renderer is not configured.");
@@ -180,6 +192,10 @@ public class MatchManager extends Configurable implements IMatchManager {
         log.info("Rendering mapping to: " + outputFile);
         mappingRenderer.render(mapping, outputFile);
         log.info("Mapping rendering finished");
+    }
+
+    public IMappingRenderer getMappingRenderer() {
+        return mappingRenderer;
     }
 
     public IContextMapping<INode> filterMapping(IContextMapping<INode> mapping) throws SMatchException {

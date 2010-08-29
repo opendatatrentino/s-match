@@ -3,6 +3,7 @@ package it.unitn.disi.smatch.renderers.mapping;
 import it.unitn.disi.smatch.data.mappings.IContextMapping;
 import it.unitn.disi.smatch.data.mappings.IMappingElement;
 import it.unitn.disi.smatch.data.trees.INode;
+import it.unitn.disi.smatch.loaders.ILoader;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.xml.sax.SAXException;
@@ -79,5 +80,9 @@ public class SimpleXMLMappingRenderer extends BaseFileMappingRenderer {
         } finally {
             out.close();
         }
+    }
+
+    public String getDescription() {
+        return ILoader.XML_FILES;
     }
 }

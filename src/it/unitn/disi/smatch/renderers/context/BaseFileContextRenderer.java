@@ -1,6 +1,7 @@
 package it.unitn.disi.smatch.renderers.context;
 
 import it.unitn.disi.smatch.data.trees.IContext;
+import it.unitn.disi.smatch.loaders.ILoader;
 import org.apache.log4j.Logger;
 
 import java.io.BufferedWriter;
@@ -38,4 +39,8 @@ public abstract class BaseFileContextRenderer extends BaseContextRenderer {
     }
 
     protected abstract void process(IContext context, BufferedWriter out) throws IOException, ContextRendererException;
+
+    public ILoader.LoaderType getType() {
+        return ILoader.LoaderType.FILE;
+    }
 }

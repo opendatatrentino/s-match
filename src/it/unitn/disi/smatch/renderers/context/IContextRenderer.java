@@ -2,6 +2,7 @@ package it.unitn.disi.smatch.renderers.context;
 
 import it.unitn.disi.smatch.components.IConfigurable;
 import it.unitn.disi.smatch.data.trees.IContext;
+import it.unitn.disi.smatch.loaders.ILoader;
 
 /**
  * An interface for context renderers.
@@ -19,4 +20,18 @@ public interface IContextRenderer extends IConfigurable {
      * @throws ContextRendererException ContextRendererException
      */
     void render(IContext context, String fileName) throws ContextRendererException;
+
+    /**
+     * Returns the description of the format.
+     *
+     * @return the description of the format
+     */
+    String getDescription();
+
+    /**
+     * Returns the type of the renderer.
+     *
+     * @return the type of the renderer
+     */
+    ILoader.LoaderType getType();
 }

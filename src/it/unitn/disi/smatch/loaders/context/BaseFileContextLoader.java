@@ -1,6 +1,7 @@
 package it.unitn.disi.smatch.loaders.context;
 
 import it.unitn.disi.smatch.data.trees.IContext;
+import it.unitn.disi.smatch.loaders.ILoader;
 import org.apache.log4j.Logger;
 
 import java.io.BufferedReader;
@@ -41,4 +42,8 @@ public abstract class BaseFileContextLoader extends BaseContextLoader implements
     }
 
     abstract protected IContext process(BufferedReader input) throws IOException, ContextLoaderException;
+
+    public ILoader.LoaderType getType() {
+        return ILoader.LoaderType.FILE;
+    }
 }

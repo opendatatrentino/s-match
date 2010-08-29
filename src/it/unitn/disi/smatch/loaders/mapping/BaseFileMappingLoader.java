@@ -3,6 +3,7 @@ package it.unitn.disi.smatch.loaders.mapping;
 import it.unitn.disi.smatch.data.mappings.IContextMapping;
 import it.unitn.disi.smatch.data.trees.IContext;
 import it.unitn.disi.smatch.data.trees.INode;
+import it.unitn.disi.smatch.loaders.ILoader;
 import org.apache.log4j.Logger;
 
 import java.io.BufferedReader;
@@ -42,4 +43,8 @@ public abstract class BaseFileMappingLoader extends BaseMappingLoader {
     }
 
     protected abstract void process(IContextMapping<INode> mapping, IContext source, IContext target, BufferedReader reader) throws IOException, MappingLoaderException;
+
+    public ILoader.LoaderType getType() {
+        return ILoader.LoaderType.FILE;
+    }
 }

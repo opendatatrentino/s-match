@@ -5,6 +5,7 @@ import it.unitn.disi.smatch.data.ling.IAtomicConceptOfLabel;
 import it.unitn.disi.smatch.data.trees.Context;
 import it.unitn.disi.smatch.data.trees.IContext;
 import it.unitn.disi.smatch.data.trees.INode;
+import it.unitn.disi.smatch.loaders.ILoader;
 import org.apache.log4j.Logger;
 import org.xml.sax.*;
 import org.xml.sax.helpers.XMLReaderFactory;
@@ -202,4 +203,7 @@ public class SimpleXMLContextLoader extends BaseFileContextLoader implements ICo
 
     //org.xml.sax.ContentHandler methods re-implementation end
 
+    public String getDescription() {
+        return ILoader.XML_FILES;
+    }
 }

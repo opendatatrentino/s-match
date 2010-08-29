@@ -4,6 +4,7 @@ import it.unitn.disi.smatch.components.ConfigurableException;
 import it.unitn.disi.smatch.data.trees.IContext;
 import it.unitn.disi.smatch.data.trees.INode;
 import it.unitn.disi.smatch.data.trees.INodeData;
+import it.unitn.disi.smatch.loaders.ILoader;
 import org.apache.log4j.Logger;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
@@ -130,5 +131,9 @@ public class OWLContextRenderer extends BaseXMLContextRenderer {
         }
 
         reportProgress();
+    }
+
+    public String getDescription() {
+        return ILoader.OWL_FILES;
     }
 }
