@@ -7,6 +7,7 @@ import it.unitn.disi.smatch.data.trees.IContext;
 import it.unitn.disi.smatch.data.trees.INode;
 import it.unitn.disi.smatch.loaders.context.IContextLoader;
 import it.unitn.disi.smatch.loaders.mapping.IMappingLoader;
+import it.unitn.disi.smatch.preprocessors.IContextPreprocessor;
 import it.unitn.disi.smatch.renderers.context.IContextRenderer;
 import it.unitn.disi.smatch.renderers.mapping.IMappingRenderer;
 
@@ -111,6 +112,13 @@ public interface IMatchManager extends IConfigurable {
      * @throws SMatchException SMatchException
      */
     void preprocess(IContext context) throws SMatchException;
+
+    /**
+     * Returns currently configured context preprocessor.
+     *
+     * @return currently configured context preprocessor
+     */
+    IContextPreprocessor getContextPreprocessor();
 
     /**
      * Performs the second step of the semantic matching algorithm.

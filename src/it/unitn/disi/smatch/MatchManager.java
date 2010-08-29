@@ -296,6 +296,10 @@ public class MatchManager extends Configurable implements IMatchManager {
         log.info("Computing concepts at label finished");
     }
 
+    public IContextPreprocessor getContextPreprocessor() {
+        return contextPreprocessor;
+    }
+
     public void classify(IContext context) throws SMatchException {
         if (null == contextClassifier) {
             throw new SMatchException("Context classifier is not configured.");

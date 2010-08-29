@@ -181,7 +181,7 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
         }
 
         public void update(Observable o, Object arg) {
-            setEnabled(null != mm && null != source);
+            setEnabled(null != mm && null != source && null != mm.getContextPreprocessor());
         }
     }
 
@@ -340,7 +340,7 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
         }
 
         public void update(Observable o, Object arg) {
-            setEnabled(null != mm && null != target);
+            setEnabled(null != mm && null != target && null != mm.getContextPreprocessor());
         }
     }
 
