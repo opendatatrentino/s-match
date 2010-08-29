@@ -71,6 +71,10 @@ public class SimpleXMLContextRenderer extends BaseXMLContextRenderer {
         if (curNode.hasParent()) {
             atts.addAttribute("", "", "parent-id", "CDATA", curNode.getParent().getNodeData().getId());
         }
+        final String preprocessedFlag = Boolean.toString(true);
+        if (curNodeData.getIsPreprocessed()) {
+            atts.addAttribute("", "", "preprocessed", "CDATA", preprocessedFlag);
+        }
         hd.startElement("", "", "node", atts);
 
         renderString(hd, new AttributesImpl(), "name", curNodeData.getName());

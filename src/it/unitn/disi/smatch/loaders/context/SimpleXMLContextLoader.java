@@ -122,6 +122,7 @@ public class SimpleXMLContextLoader extends BaseFileContextLoader implements ICo
                 }
             }
             node.getNodeData().setId(atts.getValue("id"));
+            node.getNodeData().setIsPreprocessed(-1 < atts.getIndex("", "preprocessed"));
             pathToRoot.addLast(node);
         } else if ("token".equals(localName)) {
             acol = pathToRoot.getLast().getNodeData().createACoL();

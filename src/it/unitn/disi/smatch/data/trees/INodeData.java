@@ -88,13 +88,15 @@ public interface INodeData {
 
     /**
      * Returns the acol at index index.
+     *
      * @param index index
-     * @return acol at index index 
+     * @return acol at index index
      */
     IAtomicConceptOfLabel getACoLAt(int index);
 
     /**
      * Returns the number of acols.
+     *
      * @return number of acols
      */
     int getACoLCount();
@@ -161,4 +163,25 @@ public interface INodeData {
     Object getUserObject();
 
     void setUserObject(Object newObject);
+
+    /**
+     * Returns whether the node has been preprocessed.
+     *
+     * @return whether the node has been preprocessed
+     */
+    boolean getIsPreprocessed();
+
+    /**
+     * Sets whether the node has been preprocessed.
+     *
+     * @param isPreprocessed whether the node has been preprocessed
+     */
+    void setIsPreprocessed(boolean isPreprocessed);
+
+    /**
+     * Returns whether the subtree rooted at this node has been preprocessed.
+     *
+     * @return whether the subtree rooted at this node has been preprocessed
+     */
+    boolean isSubtreePreprocessed();
 }

@@ -173,6 +173,8 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
         public void actionPerformed(ActionEvent actionEvent) {
             try {
                 mm.offline(source);
+                setChanged();
+                notifyObservers();
             } catch (SMatchException e) {
                 if (log.isEnabledFor(Level.ERROR)) {
                     log.error("Error while preprocessing source context", e);
@@ -332,6 +334,8 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
         public void actionPerformed(ActionEvent actionEvent) {
             try {
                 mm.offline(target);
+                setChanged();
+                notifyObservers();
             } catch (SMatchException e) {
                 if (log.isEnabledFor(Level.ERROR)) {
                     log.error("Error while preprocessing target context", e);
@@ -472,7 +476,9 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
         }
 
         public void update(Observable o, Object arg) {
-            setEnabled(null != mm && null != source && null != target);
+            setEnabled(null != mm && null != source && null != target
+                    && source.getRoot().getNodeData().isSubtreePreprocessed()
+                    && target.getRoot().getNodeData().isSubtreePreprocessed());
         }
     }
 

@@ -212,6 +212,15 @@ public class MatchManager extends Configurable implements IMatchManager {
         if (null == matcherLibrary) {
             throw new SMatchException("Matcher library is not configured.");
         }
+
+        if (!sourceContext.getRoot().getNodeData().isSubtreePreprocessed()) {
+            throw new SMatchException("Source context is not preprocessed.");
+        }
+
+        if (!targetContext.getRoot().getNodeData().isSubtreePreprocessed()) {
+            throw new SMatchException("Target context is not preprocessed.");
+        }
+
         log.info("Element level matching...");
         final IContextMapping<IAtomicConceptOfLabel> acolMapping = matcherLibrary.elementLevelMatching(sourceContext, targetContext);
         log.info("Element level matching finished");

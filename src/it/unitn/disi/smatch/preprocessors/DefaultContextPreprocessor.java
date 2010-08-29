@@ -340,6 +340,7 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
             }
             // build complex formula of a node
             buildComplexConcept(node, tokensOfNodeLabel, meaningfulTokens);
+            node.getNodeData().setIsPreprocessed(true);
         } catch (LinguisticOracleException e) {
             final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
             log.error(errMessage, e);

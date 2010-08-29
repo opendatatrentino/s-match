@@ -23,7 +23,8 @@ public class Node extends IndexedObject implements INode, INodeData {
     private ArrayList<INode> ancestors;
     private int ancestorCount;
     private ArrayList<INode> descendants;
-    private int descendantCount; 
+    private int descendantCount;
+    private boolean isPreprocessed;
 
     // id is needed to store cNodeFormulas correctly.
     // cNodeFormula is made of cLabFormulas, each of which refers to tokens and tokens should have unique id
@@ -42,6 +43,7 @@ public class Node extends IndexedObject implements INode, INodeData {
     private static long countNode = 0;
 
     // iterator which iterates over all parent nodes
+
     private static final class Ancestors implements Iterator<INode> {
         private INode current;
 
@@ -67,6 +69,7 @@ public class Node extends IndexedObject implements INode, INodeData {
     }
 
     // start with a start node and then iterates over nodes from iterator i
+
     static final class StartIterator implements Iterator<INode> {
         private INode start;
         private Iterator<INode> i;
@@ -134,6 +137,7 @@ public class Node extends IndexedObject implements INode, INodeData {
         ancestorCount = -1;
         descendants = null;
         descendantCount = -1;
+        isPreprocessed = false;
 
 
         source = false;
@@ -488,6 +492,29 @@ public class Node extends IndexedObject implements INode, INodeData {
 
     public void setUserObject(Object object) {
         userObject = object;
+    }
+
+    public boolean getIsPreprocessed() {
+        return isPreprocessed;
+    }
+
+    public void setIsPreprocessed(boolean isPreprocessed) {
+        this.isPreprocessed = isPreprocessed;
+    }
+
+    public boolean isSubtreePreprocessed() {
+        boolean result = isPreprocessed;
+        if (result) {
+            if (null != children) {
+                for (INode child : children) {
+                    result = result && child.getNodeData().isSubtreePreprocessed();
+                    if (!result) {
+                        break;
+                    }
+                }
+            }
+        }
+        return result;
     }
 
     public Object getUserObject() {
