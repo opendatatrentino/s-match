@@ -93,7 +93,13 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
     private static ImageIcon iconEQ;
     private static ImageIcon iconMG;
     private static ImageIcon iconLG;
+    private static ImageIcon smallIconDJ;
+    private static ImageIcon smallIconEQ;
+    private static ImageIcon smallIconMG;
+    private static ImageIcon smallIconLG;
 
+
+    private static final int VERY_SMALL_ICON_SIZE = 12;
     private static final int SMALL_ICON_SIZE = 16;
     private static final int LARGE_ICON_SIZE = 32;
 
@@ -119,15 +125,19 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
 
         icon = loadIconFile("/relations/disjoint");
         iconDJ = icon.getIcon(SMALL_ICON_SIZE);
+        smallIconDJ = icon.getIcon(VERY_SMALL_ICON_SIZE);
 
         icon = loadIconFile("/relations/equivalent");
         iconEQ = icon.getIcon(SMALL_ICON_SIZE);
+        smallIconEQ = icon.getIcon(VERY_SMALL_ICON_SIZE);
 
         icon = loadIconFile("/relations/less-general");
         iconLG = icon.getIcon(SMALL_ICON_SIZE);
+        smallIconLG = icon.getIcon(VERY_SMALL_ICON_SIZE);
 
         icon = loadIconFile("/relations/more-general");
         iconMG = icon.getIcon(SMALL_ICON_SIZE);
+        smallIconMG = icon.getIcon(VERY_SMALL_ICON_SIZE);
     }
 
     private class ActionSourceOpen extends AbstractAction implements Observer {
@@ -819,10 +829,6 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
             return null != description && null != ext && -1 < description.indexOf(ext);
         }
 
-        public String getDescriptions() {
-            return description;
-        }
-
         public void setDescription(String description) {
             this.description = description;
         }
@@ -843,24 +849,63 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
 
     private class NodeTreeCellEditor extends DefaultTreeCellEditor {
 
-        private final String NAME_EQ = "= equivalent";
-        private final String NAME_LG = "< less general";
-        private final String NAME_MG = "> more general";
-        private final String NAME_DJ = "! disjoint";
+        private final String NAME_EQ = "equivalent";
+        private final String NAME_LG = "less general";
+        private final String NAME_MG = "more general";
+        private final String NAME_DJ = "disjoint";
+
+        private String[] relStrings = {NAME_EQ, NAME_LG, NAME_MG, NAME_DJ};
 
         private final HashMap<Character, String> relationToDescription = new HashMap<Character, String>(4);
         private final HashMap<String, Character> descriptionToRelation = new HashMap<String, Character>(4);
+        private final HashMap<String, ImageIcon> descriptionToIcon = new HashMap<String, ImageIcon>(4);
 
         private TreeCellEditor oldRealEditor;
         private TreeCellEditor comboEditor;
         private DefaultComboBox combo;
 
         private class DefaultComboBox extends JComboBox implements FocusListener {//lifted from DefaultTreeCellEditor
+
+            class ComboBoxRenderer extends JLabel implements ListCellRenderer {
+
+                public ComboBoxRenderer() {
+                    setOpaque(true);
+                    setVerticalAlignment(CENTER);
+                }
+
+                public Component getListCellRendererComponent(
+                        JList list,
+                        Object value,
+                        int index,
+                        boolean isSelected,
+                        boolean cellHasFocus) {
+
+                    String relDesc = (String) value;
+
+                    if (isSelected) {
+                        setBackground(list.getSelectionBackground());
+                        setForeground(list.getSelectionForeground());
+                    } else {
+                        setBackground(list.getBackground());
+                        setForeground(list.getForeground());
+                    }
+
+                    //Set the icon and text.  If icon was null, say so.
+                    ImageIcon icon = descriptionToIcon.get(relDesc);
+                    setIcon(icon);
+                    setText(relDesc);
+                    setFont(list.getFont());
+
+                    return this;
+                }
+            }
+
             protected Border border;
 
             public DefaultComboBox(Border border) {
                 setBorder(border);
                 addFocusListener(this);
+                setRenderer(new ComboBoxRenderer());
             }
 
             public void setBorder(Border border) {
@@ -984,6 +1029,11 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
             descriptionToRelation.put(NAME_MG, IMappingElement.MORE_GENERAL);
             descriptionToRelation.put(NAME_DJ, IMappingElement.DISJOINT);
 
+            descriptionToIcon.put(NAME_EQ, smallIconEQ);
+            descriptionToIcon.put(NAME_LG, smallIconLG);
+            descriptionToIcon.put(NAME_MG, smallIconMG);
+            descriptionToIcon.put(NAME_DJ, smallIconDJ);
+
             comboEditor = createTreeCellComboEditor();
             oldRealEditor = realEditor;
         }
@@ -992,8 +1042,8 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
             Border aBorder = UIManager.getBorder("Tree.editorBorder");
             combo = new DefaultComboBox(aBorder);
 
-            ComboBoxModel cbm = new DefaultComboBoxModel(new String[] {NAME_EQ, NAME_LG, NAME_MG, NAME_DJ});
-            combo.setModel(cbm);            
+            ComboBoxModel cbm = new DefaultComboBoxModel(relStrings);
+            combo.setModel(cbm);
             LinkCellEditor editor = new LinkCellEditor(combo) {
                 public boolean shouldSelectCell(EventObject event) {
                     return super.shouldSelectCell(event);
@@ -1065,8 +1115,6 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
     private JTree tTarget;
     private JSplitPane spnContexts;
     private JPanel pnContexts;
-    private JToolBar tbSource;
-    private JToolBar tbTarget;
     private JScrollPane spSource;
     private JScrollPane spTarget;
     private JSplitPane spnContextsLog;
@@ -1263,7 +1311,7 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
         pnSource = new JPanel();
         pnSource.setLayout(new FormLayout("fill:d:grow", "center:d:noGrow,top:4dlu:noGrow,center:d:grow"));
         spnContexts.setLeftComponent(pnSource);
-        tbSource = new JToolBar();
+        JToolBar tbSource = new JToolBar();
         tbSource.setFloatable(false);
         pnSource.add(tbSource, cc.xy(1, 1, CellConstraints.FILL, CellConstraints.DEFAULT));
         btSourceOpen = new JButton(acSourceOpen);
@@ -1284,7 +1332,7 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
         pnTarget = new JPanel();
         pnTarget.setLayout(new FormLayout("fill:d:grow", "center:d:noGrow,top:4dlu:noGrow,center:d:grow"));
         spnContexts.setRightComponent(pnTarget);
-        tbTarget = new JToolBar();
+        JToolBar tbTarget = new JToolBar();
         tbTarget.setFloatable(false);
         pnTarget.add(tbTarget, cc.xy(1, 1, CellConstraints.FILL, CellConstraints.DEFAULT));
         btTargetOpen = new JButton(acTargetOpen);
