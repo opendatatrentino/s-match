@@ -65,6 +65,9 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
     private IContextMapping<INode> mapping = null;
     private String mappingLocation = null;
 
+    private String configFileName;
+    private Properties commandProperties;
+
     private static final String TANGO_ICONS_PATH = "/tango-icon-theme-0.8.90/";
 
     public static JIconFile loadIconFile(String name) {
@@ -147,12 +150,7 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
 
             if (returnVal == JFileChooser.APPROVE_OPTION) {
                 File file = fc.getSelectedFile();
-                log.info("Opening source: " + file.getAbsolutePath() + "");
-
-                source = loadTree(file.getAbsolutePath());
-                createTree(source, tSource, mapping);
-                setChanged();
-                notifyObservers();
+                openSource(file);
             }
         }
 
@@ -308,12 +306,7 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
 
             if (returnVal == JFileChooser.APPROVE_OPTION) {
                 File file = fc.getSelectedFile();
-                log.info("Opening target: " + file.getAbsolutePath() + "");
-
-                target = loadTree(file.getAbsolutePath());
-                createTree(target, tTarget, mapping);
-                setChanged();
-                notifyObservers();
+                openTarget(file);
             }
         }
 
@@ -501,20 +494,7 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
 
             if (returnVal == JFileChooser.APPROVE_OPTION) {
                 File file = fc.getSelectedFile();
-                log.info("Opening mapping: " + file.getAbsolutePath() + "");
-
-                try {
-                    mapping = mm.loadMapping(source, target, file.getAbsolutePath());
-                    createTree(source, tSource, mapping);
-                    createTree(target, tTarget, mapping);
-                    pnContexts.repaint();
-                    setChanged();
-                    notifyObservers();
-                } catch (SMatchException e) {
-                    if (log.isEnabledFor(Level.ERROR)) {
-                        log.error("Error while loading a mapping", e);
-                    }
-                }
+                openMapping(file);
             }
         }
 
@@ -646,13 +626,21 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
                 if (null != mm) {
                     String configFile = (new File(CONF_FILE)).getParent() + File.separator + e.getItem();
                     try {
-                        mm.setProperties(configFile);
+                        Properties config = new Properties();
+                        config.load(new FileInputStream(configFileName));
+                        // override from command line
+                        config.putAll(commandProperties);
+                        mm.setProperties(config);
                         setChanged();
                         notifyObservers();
                     } catch (ConfigurableException exc) {
                         if (log.isEnabledFor(Level.ERROR)) {
                             log.error("Error while loading configuration from " + configFile, exc);
                         }
+                    } catch (FileNotFoundException e1) {
+                        //TODO exc handling
+                    } catch (IOException e1) {
+                        //TODO exc handling
                     }
                 }
             }
@@ -743,17 +731,6 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
         }
     };
 
-    private class ContextTreeCellRenderer extends DefaultTreeCellRenderer {
-        private ContextTreeCellRenderer() {
-            super();
-            setLeafIcon(folderSmall);
-            setClosedIcon(folderSmall);
-            setOpenIcon(folderOpenSmall);
-        }
-    }
-
-    private final TreeCellRenderer contextTreeCellRenderer = new ContextTreeCellRenderer();
-
     private class MappingTreeCellRenderer extends DefaultTreeCellRenderer {
         public MappingTreeCellRenderer() {
             super();
@@ -771,6 +748,10 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
             if (value instanceof INode) {
                 INode node = (INode) value;
                 if (0 == node.getChildCount()) {
+                    setIcon(folderSmall);
+                } else if (expanded) {
+                    setIcon(folderOpenSmall);
+                } else {
                     setIcon(folderSmall);
                 }
             } else {
@@ -876,6 +857,7 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
     private JToolBar tbTarget;
     private JScrollPane spSource;
     private JScrollPane spTarget;
+    private JSplitPane spnContextsLog;
 
 
     // actions
@@ -901,6 +883,41 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
             acSourceOpen, acSourcePreprocess, acSourceClose, acSourceSave, acSourceSaveAs,
             acTargetOpen, acTargetPreprocess, acTargetClose, acTargetSave, acTargetSaveAs,
             acMappingCreate, acMappingOpen, acMappingClose, acMappingSave, acMappingSaveAs};
+
+    private void openSource(File file) {
+        log.info("Opening source: " + file.getAbsolutePath() + "");
+
+        source = loadTree(file.getAbsolutePath());
+        createTree(source, tSource, mapping);
+        setChanged();
+        notifyObservers();
+    }
+
+    private void openTarget(File file) {
+        log.info("Opening target: " + file.getAbsolutePath() + "");
+
+        target = loadTree(file.getAbsolutePath());
+        createTree(target, tTarget, mapping);
+        setChanged();
+        notifyObservers();
+    }
+
+    private void openMapping(File file) {
+        log.info("Opening mapping: " + file.getAbsolutePath() + "");
+
+        try {
+            mapping = mm.loadMapping(source, target, file.getAbsolutePath());
+            createTree(source, tSource, mapping);
+            createTree(target, tTarget, mapping);
+            pnContexts.repaint();
+            setChanged();
+            notifyObservers();
+        } catch (SMatchException e) {
+            if (log.isEnabledFor(Level.ERROR)) {
+                log.error("Error while loading a mapping", e);
+            }
+        }
+    }
 
     private TreePath createPathToRoot(INode node) {
         Deque<INode> pathToRoot = new ArrayDeque<INode>();
@@ -957,7 +974,6 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
         JToolBar tbMain;
         JButton btMappingOpen;
         JButton btMappingSave;
-        JSplitPane spnContextsLog;
         JScrollPane spLog;
         JPanel pnSource;
         JPanel pnTarget;
@@ -1003,7 +1019,8 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
         for (String config : configFiles) {
             cmConfigs.addElement(config);
         }
-        int defConfigIndex = cmConfigs.getIndexOf("s-match.properties");
+        String configName = (new File(configFileName)).getName();
+        int defConfigIndex = cmConfigs.getIndexOf(configName);
         if (-1 != defConfigIndex) {
             cmConfigs.setSelectedItem(cmConfigs.getElementAt(defConfigIndex));
         }
@@ -1131,20 +1148,18 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
                 label = "Load target";
             }
             jTree.setModel(new DefaultTreeModel(new DefaultMutableTreeNode(label)));
-            jTree.setCellRenderer(contextTreeCellRenderer);
             jTree.removeTreeSelectionListener(treeSelectionListener);
             jTree.removeFocusListener(treeFocusListener);
+            jTree.setEditable(false);
         } else {
             TreeModel treeModel;
             clearUserObjects(context.getRoot());
             if (null == mapping) {
                 treeModel = new DefaultTreeModel(context.getRoot());
-                jTree.setCellRenderer(contextTreeCellRenderer);
                 jTree.removeTreeSelectionListener(treeSelectionListener);
                 jTree.removeFocusListener(treeFocusListener);
             } else {
                 treeModel = new MappingTreeModel(context.getRoot(), jTree == tSource, mapping);
-                jTree.setCellRenderer(mappingTreeCellRenderer);
                 jTree.addFocusListener(treeFocusListener);
             }
 
@@ -1163,7 +1178,10 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
                     jTree.expandPath(p);
                 }
             }
+
+            jTree.setEditable(true);
         }
+        jTree.setCellRenderer(mappingTreeCellRenderer);
     }
 
     private void clearUserObjects(INode root) {
@@ -1177,9 +1195,25 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
         String configFile = new File(CONF_FILE).getParent() + File.separator + cmConfigs.getSelectedItem();
         log.info("Creating MatchManager with config: " + configFile);
         try {
-            mm = new MatchManager(configFile);
+            Properties config = new Properties();
+            config.load(new FileInputStream(configFileName));
+
+            if (log.isEnabledFor(Level.DEBUG)) {
+                for (String k : commandProperties.stringPropertyNames()) {
+                    log.debug("property override: " + k + "=" + commandProperties.getProperty(k));
+                }
+            }
+
+            // override from command line
+            config.putAll(commandProperties);
+
+            mm = new MatchManager(config);
         } catch (SMatchException e) {
             log.info("Failed to create MatchManager: " + e);
+        } catch (FileNotFoundException e) {
+            //TODO exc handling
+        } catch (IOException e) {
+            //TODO exc handling
         }
         setChanged();
         notifyObservers();
@@ -1264,7 +1298,41 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
         }
     }
 
-    public void startup() throws IOException {
+    public void startup(String[] args) throws IOException {
+        // initialize property file
+        configFileName = MatchManager.DEFAULT_CONFIG_FILE_NAME;
+        ArrayList<String> cleanArgs = new ArrayList<String>();
+        for (String arg : args) {
+            if (arg.startsWith(MatchManager.configFileCmdLineKey)) {
+                configFileName = arg.substring(MatchManager.configFileCmdLineKey.length());
+            } else {
+                cleanArgs.add(arg);
+            }
+        }
+
+        args = cleanArgs.toArray(new String[cleanArgs.size()]);
+        cleanArgs.clear();
+
+        // collect properties specified on the command line
+        commandProperties = new Properties();
+        for (String arg : args) {
+            if (arg.startsWith(MatchManager.propCmdLineKey)) {
+                String[] props = arg.substring(MatchManager.propCmdLineKey.length()).split("=");
+                if (0 < props.length) {
+                    String key = props[0];
+                    String value = "";
+                    if (1 < props.length) {
+                        value = props[1];
+                    }
+                    commandProperties.put(key, value);
+                }
+            } else {
+                cleanArgs.add(arg);
+            }
+        }
+
+        args = cleanArgs.toArray(new String[cleanArgs.size()]);
+
         showLFIs();
         readProperties();
         applyLookAndFeel();
@@ -1280,6 +1348,9 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
         frame.setJMenuBar(mainMenu);
         frame.addWindowListener(windowListener);
         frame.pack();
+
+        spnContextsLog.setDividerLocation(.8);
+        spnContexts.setDividerLocation(.5);
 
         //try to set an icon
         try {
@@ -1305,6 +1376,17 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
             //silently fail
         }
 
+        //load the contexts and the mapping from the command line
+        if (0 < args.length) {
+            openSource(new File(args[0]));
+            if (1 < args.length) {
+                openTarget(new File(args[1]));
+                if (2 < args.length) {
+                    openMapping(new File(args[2]));
+                }
+            }
+        }
+
         frame.setVisible(true);
     }
 
@@ -1317,6 +1399,6 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
 
     public static void main(String[] args) throws IOException {
         SMatchGUI gui = new SMatchGUI();
-        gui.startup();
+        gui.startup(args);
     }
 }

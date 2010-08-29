@@ -48,11 +48,11 @@ public class MatchManager extends Configurable implements IMatchManager {
     /**
      * Default configuration file name.
      */
-    private static final String DEFAULT_CONFIG_FILE_NAME = ".." + File.separator + "conf" + File.separator + "s-match.properties";
+    public static final String DEFAULT_CONFIG_FILE_NAME = ".." + File.separator + "conf" + File.separator + "s-match.properties";
     // config file command line key
-    private static final String configFileCmdLineKey = "-config=";
+    public static final String configFileCmdLineKey = "-config=";
     // property command line key
-    private static final String propCmdLineKey = "-property=";
+    public static final String propCmdLineKey = "-property=";
 
 
     // usage string
@@ -127,6 +127,25 @@ public class MatchManager extends Configurable implements IMatchManager {
         // update properties
         try {
             setProperties(propFileName);
+        } catch (ConfigurableException e) {
+            final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
+            log.error(errMessage, e);
+            throw new SMatchException(errMessage, e);
+        }
+    }
+
+    /**
+     * Constructor class with initialization.
+     *
+     * @param properties the properties 
+     * @throws SMatchException SMatchException
+     */
+    public MatchManager(Properties properties) throws SMatchException {
+        this();
+
+        // update properties
+        try {
+            setProperties(properties);
         } catch (ConfigurableException e) {
             final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
             log.error(errMessage, e);
