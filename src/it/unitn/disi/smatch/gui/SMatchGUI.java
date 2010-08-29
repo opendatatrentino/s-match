@@ -20,10 +20,9 @@ import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
 import javax.swing.*;
-import javax.swing.event.TreeExpansionEvent;
-import javax.swing.event.TreeExpansionListener;
-import javax.swing.event.TreeSelectionEvent;
-import javax.swing.event.TreeSelectionListener;
+import javax.swing.border.Border;
+import javax.swing.event.*;
+import javax.swing.plaf.FontUIResource;
 import javax.swing.tree.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -761,7 +760,7 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
                     IMappingElement<INode> me = (IMappingElement<INode>) dmtn.getUserObject();
                     if (tree == tSource) {
                         setText(me.getTarget().getNodeData().getName());
-                        switch (me.getRelation()) {
+                        switch (mapping.getRelation(me.getSource(), me.getTarget())) {
                             case IMappingElement.LESS_GENERAL: {
                                 setIcon(iconLG);
                                 break;
@@ -773,7 +772,7 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
                         }
                     } else {
                         setText(me.getSource().getNodeData().getName());
-                        switch (me.getRelation()) {
+                        switch (mapping.getRelation(me.getSource(), me.getTarget())) {
                             case IMappingElement.LESS_GENERAL: {
                                 setIcon(iconMG);
                                 break;
@@ -784,7 +783,7 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
                             }
                         }
                     }
-                    switch (me.getRelation()) {
+                    switch (mapping.getRelation(me.getSource(), me.getTarget())) {
                         case IMappingElement.EQUIVALENCE: {
                             setIcon(iconEQ);
                             break;
@@ -805,7 +804,7 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
 
     }
 
-    private final TreeCellRenderer mappingTreeCellRenderer = new MappingTreeCellRenderer();
+    private final MappingTreeCellRenderer mappingTreeCellRenderer = new MappingTreeCellRenderer();
 
     private class CustomFileFilter extends javax.swing.filechooser.FileFilter {
 
@@ -841,6 +840,219 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
     }
 
     private final CustomFileFilter ff = new CustomFileFilter();
+
+    private class NodeTreeCellEditor extends DefaultTreeCellEditor {
+
+        private final String NAME_EQ = "= equivalent";
+        private final String NAME_LG = "< less general";
+        private final String NAME_MG = "> more general";
+        private final String NAME_DJ = "! disjoint";
+
+        private final HashMap<Character, String> relationToDescription = new HashMap<Character, String>(4);
+        private final HashMap<String, Character> descriptionToRelation = new HashMap<String, Character>(4);
+
+        private TreeCellEditor oldRealEditor;
+        private TreeCellEditor comboEditor;
+        private DefaultComboBox combo;
+
+        private class DefaultComboBox extends JComboBox implements FocusListener {//lifted from DefaultTreeCellEditor
+            protected Border border;
+
+            public DefaultComboBox(Border border) {
+                setBorder(border);
+                addFocusListener(this);
+            }
+
+            public void setBorder(Border border) {
+                super.setBorder(border);
+                this.border = border;
+            }
+
+            public Border getBorder() {
+                return border;
+            }
+
+            public Font getFont() {
+                Font font = super.getFont();
+
+                if (font instanceof FontUIResource) {
+                    Container parent = getParent();
+
+                    if (parent != null && parent.getFont() != null)
+                        font = parent.getFont();
+                }
+                return font;
+            }
+
+            public Dimension getPreferredSize() {
+                Dimension size = super.getPreferredSize();
+
+                // If not font has been set, prefer the renderers height.
+                if (NodeTreeCellEditor.this.renderer != null && NodeTreeCellEditor.this.getFont() == null) {
+                    Dimension rSize = NodeTreeCellEditor.this.renderer.getPreferredSize();
+                    size.height = rSize.height;
+                }
+                return size;
+            }
+
+            public void focusGained(FocusEvent e) {
+                if (!e.isTemporary()) {
+                    this.showPopup();
+                }
+            }
+
+            public void focusLost(FocusEvent e) {
+                //nop
+            }
+        }
+
+        private class LinkCellEditor extends DefaultCellEditor {
+            public LinkCellEditor(final JComboBox comboBox) {
+                super(comboBox);
+                comboBox.removeActionListener(delegate);
+                delegate = new EditorDelegate() {
+                    @Override
+                    public void setValue(Object value) {
+                        if (value instanceof DefaultMutableTreeNode) {
+                            DefaultMutableTreeNode dmtn = (DefaultMutableTreeNode) value;
+                            @SuppressWarnings("unchecked")
+                            IMappingElement<INode> me = (IMappingElement<INode>) dmtn.getUserObject();
+                            comboBox.setSelectedItem(relationToDescription.get(mapping.getRelation(me.getSource(), me.getTarget())));
+                        }
+                    }
+
+                    @Override
+                    public Object getCellEditorValue() {
+                        char relation = IMappingElement.EQUIVALENCE;
+                        Object oo = comboBox.getSelectedItem();
+                        if (oo instanceof String) {
+                            String relDescr = (String) oo;
+                            relation = descriptionToRelation.get(relDescr);
+                        }
+
+                        return relation;
+                    }
+
+                    @Override
+                    public boolean shouldSelectCell(EventObject anEvent) {
+                        if (anEvent instanceof MouseEvent) {
+                            MouseEvent e = (MouseEvent) anEvent;
+                            return e.getID() != MouseEvent.MOUSE_DRAGGED;
+                        }
+                        return true;
+                    }
+
+                    @Override
+                    public boolean stopCellEditing() {
+                        if (comboBox.isEditable()) {
+                            // Commit edited value.
+                            comboBox.actionPerformed(new ActionEvent(LinkCellEditor.this, 0, ""));
+                        }
+                        boolean result = super.stopCellEditing();
+                        if (tree == tSource) {
+                            tTarget.repaint();
+                        } else if (tree == tTarget) {
+                            tSource.repaint();
+                        }
+                        return result;
+
+                    }
+                };
+                comboBox.addActionListener(delegate);
+            }
+
+            @Override
+            public Component getTreeCellEditorComponent(JTree tree, Object value,
+                                                        boolean isSelected,
+                                                        boolean expanded,
+                                                        boolean leaf, int row) {
+                delegate.setValue(value);
+                return editorComponent;
+            }
+
+        }
+
+        public NodeTreeCellEditor(JTree tree, DefaultTreeCellRenderer renderer) {
+            super(tree, renderer);
+            relationToDescription.put(IMappingElement.EQUIVALENCE, NAME_EQ);
+            relationToDescription.put(IMappingElement.LESS_GENERAL, NAME_LG);
+            relationToDescription.put(IMappingElement.MORE_GENERAL, NAME_MG);
+            relationToDescription.put(IMappingElement.DISJOINT, NAME_DJ);
+
+            descriptionToRelation.put(NAME_EQ, IMappingElement.EQUIVALENCE);
+            descriptionToRelation.put(NAME_LG, IMappingElement.LESS_GENERAL);
+            descriptionToRelation.put(NAME_MG, IMappingElement.MORE_GENERAL);
+            descriptionToRelation.put(NAME_DJ, IMappingElement.DISJOINT);
+
+            comboEditor = createTreeCellComboEditor();
+            oldRealEditor = realEditor;
+        }
+
+        private TreeCellEditor createTreeCellComboEditor() {
+            Border aBorder = UIManager.getBorder("Tree.editorBorder");
+            combo = new DefaultComboBox(aBorder);
+
+            ComboBoxModel cbm = new DefaultComboBoxModel(new String[] {NAME_EQ, NAME_LG, NAME_MG, NAME_DJ});
+            combo.setModel(cbm);            
+            LinkCellEditor editor = new LinkCellEditor(combo) {
+                public boolean shouldSelectCell(EventObject event) {
+                    return super.shouldSelectCell(event);
+                }
+            };
+
+            editor.setClickCountToStart(1);
+            return editor;
+        }
+
+        @Override
+        public boolean isCellEditable(EventObject event) {
+            if (null != event) {
+                if (event.getSource() instanceof JTree) {
+                    if (null != lastPath) {
+                        Object o = lastPath.getLastPathComponent();
+                        if (o instanceof INode) {
+                            realEditor = oldRealEditor;
+                        } else if (o instanceof DefaultMutableTreeNode) {
+                            realEditor = comboEditor;
+                        }
+                    }
+                }
+            }
+
+            boolean result = super.isCellEditable(event);
+
+            if (result) {
+                Object node = tree.getLastSelectedPathComponent();
+                result = (null != node) && ((node instanceof INode) || (node instanceof DefaultMutableTreeNode));
+            }
+            return result;
+        }
+
+        @Override
+        public Component getTreeCellEditorComponent(JTree tree, Object value,
+                                                    boolean isSelected,
+                                                    boolean expanded,
+                                                    boolean leaf, int row) {
+            if (value instanceof INode) {
+                realEditor = oldRealEditor;
+            } else if (value instanceof DefaultMutableTreeNode) {
+                realEditor = comboEditor;
+            }
+
+            return super.getTreeCellEditorComponent(tree, value, isSelected, expanded, leaf, row);
+        }
+
+        public void addCellEditorListener(CellEditorListener l) {
+            comboEditor.addCellEditorListener(l);
+            super.addCellEditorListener(l);
+        }
+
+        public void removeCellEditorListener(CellEditorListener l) {
+            comboEditor.removeCellEditorListener(l);
+            super.removeCellEditorListener(l);
+        }
+
+    }
 
     // GUI static elements
     private JPanel mainPanel;
@@ -1155,7 +1367,7 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
             TreeModel treeModel;
             clearUserObjects(context.getRoot());
             if (null == mapping) {
-                treeModel = new DefaultTreeModel(context.getRoot());
+                treeModel = new NodeTreeModel(context.getRoot());
                 jTree.removeTreeSelectionListener(treeSelectionListener);
                 jTree.removeFocusListener(treeFocusListener);
             } else {
@@ -1179,6 +1391,7 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
                 }
             }
 
+            jTree.setCellEditor(new NodeTreeCellEditor(jTree, mappingTreeCellRenderer));
             jTree.setEditable(true);
         }
         jTree.setCellRenderer(mappingTreeCellRenderer);

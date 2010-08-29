@@ -2,20 +2,20 @@ package it.unitn.disi.smatch.gui;
 
 import it.unitn.disi.smatch.data.mappings.IContextMapping;
 import it.unitn.disi.smatch.data.mappings.IMappingElement;
+import it.unitn.disi.smatch.data.mappings.MappingElement;
 import it.unitn.disi.smatch.data.trees.INode;
 
 import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * A tree model that include links from the mapping.
+ * A tree model that includes the mapping.
  *
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
-public class MappingTreeModel extends DefaultTreeModel {
+public class MappingTreeModel extends NodeTreeModel {
 
     protected INode root;
 
@@ -26,7 +26,7 @@ public class MappingTreeModel extends DefaultTreeModel {
 
     public MappingTreeModel(INode root, boolean isSource, IContextMapping<INode> mapping) {
         super(root);
-        this.root = root; 
+        this.root = root;
         this.isSource = isSource;
         this.mapping = mapping;
     }
@@ -106,7 +106,18 @@ public class MappingTreeModel extends DefaultTreeModel {
     }
 
     public void valueForPathChanged(TreePath path, Object newValue) {
-        //TODO edit support
+        Object o = path.getLastPathComponent();
+        if (o instanceof INode) {
+            super.valueForPathChanged(path, newValue);
+        } else if (o instanceof DefaultMutableTreeNode) {
+            DefaultMutableTreeNode dmtn = (DefaultMutableTreeNode) o;
+            if (newValue instanceof Character) {
+                Character rel = (Character) newValue;
+                @SuppressWarnings("unchecked")
+                IMappingElement<INode> me = (IMappingElement<INode>) dmtn.getUserObject();
+                mapping.setRelation(me.getSource(), me.getTarget(), rel);
+            }
+        }
     }
 
     public int getIndexOfChild(Object parent, Object child) {
