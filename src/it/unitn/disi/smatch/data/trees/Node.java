@@ -253,7 +253,7 @@ public class Node extends IndexedObject implements INode, INodeData {
             throw new IllegalArgumentException("argument is null");
         }
 
-        if (!isNodeChild(child)) {
+        if (isNodeChild(child)) {
             removeChild(getChildIndex(child));
         }
     }
@@ -379,7 +379,7 @@ public class Node extends IndexedObject implements INode, INodeData {
             if (getChildCount() == 0) {
                 return false;
             } else {
-                return (node.getParent() == this);
+                return (node.getParent() == this && -1 < children.indexOf(node));
             }
         }
     }

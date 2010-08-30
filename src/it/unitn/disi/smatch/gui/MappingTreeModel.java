@@ -2,10 +2,10 @@ package it.unitn.disi.smatch.gui;
 
 import it.unitn.disi.smatch.data.mappings.IContextMapping;
 import it.unitn.disi.smatch.data.mappings.IMappingElement;
-import it.unitn.disi.smatch.data.mappings.MappingElement;
 import it.unitn.disi.smatch.data.trees.INode;
 
 import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import java.util.ArrayList;
 import java.util.List;
@@ -76,6 +76,7 @@ public class MappingTreeModel extends NodeTreeModel {
         return result;
     }
 
+    @Override
     public int getChildCount(Object parent) {
         int result = 0;
         if (parent instanceof INode) {
@@ -90,6 +91,7 @@ public class MappingTreeModel extends NodeTreeModel {
         return result;
     }
 
+    @Override
     public boolean isLeaf(Object node) {
         boolean result = true;
         if (node instanceof INode) {
@@ -105,6 +107,7 @@ public class MappingTreeModel extends NodeTreeModel {
         return result;
     }
 
+    @Override
     public void valueForPathChanged(TreePath path, Object newValue) {
         Object o = path.getLastPathComponent();
         if (o instanceof INode) {
@@ -120,6 +123,7 @@ public class MappingTreeModel extends NodeTreeModel {
         }
     }
 
+    @Override
     public int getIndexOfChild(Object parent, Object child) {
         int result = -1;
         if (null != parent && null != child) {
@@ -144,4 +148,38 @@ public class MappingTreeModel extends NodeTreeModel {
         }
         return result;
     }
+
+    @Override
+    public void nodesWereInserted(TreeNode node, int[] childIndices) {
+        if (listenerList != null && node != null && childIndices != null && childIndices.length > 0) {
+            int cCount = childIndices.length;
+            Object[] newChildren = new Object[cCount];
+
+            for (int counter = 0; counter < cCount; counter++) {
+                newChildren[counter] = getChild(node, childIndices[counter]);
+            }
+            fireTreeNodesInserted(this, getPathToRoot(node), childIndices, newChildren);
+        }
+    }
+
+    @Override
+    public void nodesChanged(TreeNode node, int[] childIndices) {
+        if (node != null) {
+            if (childIndices != null) {
+                int cCount = childIndices.length;
+
+                if (cCount > 0) {
+                    Object[] cChildren = new Object[cCount];
+
+                    for (int counter = 0; counter < cCount; counter++) {
+                        cChildren[counter] = getChild(node, childIndices[counter]);
+                    }
+                    fireTreeNodesChanged(this, getPathToRoot(node), childIndices, cChildren);
+                }
+            } else if (node == getRoot()) {
+                fireTreeNodesChanged(this, getPathToRoot(node), null, null);
+            }
+        }
+    }
+
 }
