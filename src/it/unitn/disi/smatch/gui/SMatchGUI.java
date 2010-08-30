@@ -226,6 +226,9 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
 
             if (returnVal == JFileChooser.APPROVE_OPTION) {
                 File file = fc.getSelectedFile();
+                if (acMappingClose.isEnabled()) {
+                    acMappingClose.actionPerformed(actionEvent);
+                }
                 open(file);
             }
         }
@@ -431,7 +434,7 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
 
         @Override
         protected void open(File file) {
-            openSource(file);
+            openTarget(file);
         }
     }
 
@@ -1489,18 +1492,19 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
     private Action acEditAddLink;
     private Action acEditDelete;
 
-    private Action[] actions;
-
     private void addNode(JTree tree) {
         Object o = tree.getSelectionPath().getLastPathComponent();
         if (o instanceof INode) {
             INode node = (INode) o;
             INode parent = node.getParent();
-            INode child = parent.createChild();
-            child.getNodeData().setName("New Node");
             TreeModel m = tree.getModel();
             if (m instanceof DefaultTreeModel) {
                 DefaultTreeModel dtm = (DefaultTreeModel) m;
+                int nodeIdx = parent.getChildIndex(node);
+                INode child = parent.createChild();
+                child.getNodeData().setName("New Node");
+                parent.removeChild(child);
+                parent.addChild(nodeIdx, child);
                 dtm.nodesWereInserted(parent, new int[]{parent.getChildIndex(child)});
                 TreePath p = createPathToRoot(child);
                 tree.scrollPathToVisible(p);
@@ -1862,6 +1866,10 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
         JToolBar tbSource = new JToolBar();
         tbSource.setFloatable(false);
         pnSource.add(tbSource, cc.xy(1, 1, CellConstraints.FILL, CellConstraints.DEFAULT));
+        JButton btSourceCreate = new JButton(acSourceCreate);
+        btSourceCreate.setHideActionText(true);
+        tbSource.add(btSourceCreate);
+        tbSource.addSeparator();
         JButton btSourceOpen = new JButton(acSourceOpen);
         btSourceOpen.setHideActionText(true);
         JButton btSourceSave = new JButton(acSourceSave);
@@ -1898,6 +1906,10 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
         JToolBar tbTarget = new JToolBar();
         tbTarget.setFloatable(false);
         pnTarget.add(tbTarget, cc.xy(1, 1, CellConstraints.FILL, CellConstraints.DEFAULT));
+        JButton btTargetCreate = new JButton(acTargetCreate);
+        btTargetCreate.setHideActionText(true);
+        tbTarget.add(btTargetCreate);
+        tbTarget.addSeparator();
         JButton btTargetOpen = new JButton(acTargetOpen);
         btTargetOpen.setHideActionText(true);
         JButton btTargetSave = new JButton(acTargetSave);
@@ -1950,7 +1962,7 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
 
         buildMenu();
 
-        actions = new Action[] {
+        Action[] actions = new Action[]{
                 acSourceCreate, acSourceAddNode, acSourceAddChildNode, acSourceDelete, acSourceOpen, acSourcePreprocess, acSourceClose, acSourceSave, acSourceSaveAs,
                 acTargetCreate, acTargetAddNode, acTargetAddChildNode, acTargetDelete, acTargetOpen, acTargetPreprocess, acTargetClose, acTargetSave, acTargetSaveAs,
                 acMappingCreate, acMappingOpen, acMappingClose, acMappingSave, acMappingSaveAs,
