@@ -13,7 +13,4 @@ public interface IContextMapping<T> extends IMapping<T> {
 
     IContext getTargetContext();
 
-    void setSourceContext(IContext newContext);
-
-    void setTargetContext(IContext newContext);
 }

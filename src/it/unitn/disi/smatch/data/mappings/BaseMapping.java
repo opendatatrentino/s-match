@@ -30,12 +30,4 @@ public abstract class BaseMapping<T> extends AbstractSet<IMappingElement<T>> imp
     public IContext getTargetContext() {
         return targetContext;
     }
-
-    public void setSourceContext(IContext newContext) {
-        sourceContext = newContext;
-    }
-
-    public void setTargetContext(IContext newContext) {
-        targetContext = newContext;
-    }
 }
