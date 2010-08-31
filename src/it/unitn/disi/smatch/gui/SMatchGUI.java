@@ -1153,6 +1153,7 @@ public class SMatchGUI extends Observable {
 
                 // construct path to root
                 TreePath pp = createPathToRoot(target);
+                List<Object> ppList = Arrays.asList(pp.getPath());
 
                 tTarget.makeVisible(pp);
                 tTarget.setSelectionPath(pp);
@@ -1160,20 +1161,77 @@ public class SMatchGUI extends Observable {
 
                 // scroll to match vertical position
                 if (1 == tSource.getSelectionCount() && 1 == tTarget.getSelectionCount()) {
-                    int sourceSelRowIdx = tSource.getSelectionRows()[0];
-                    int targetSelRowIdx = tTarget.getSelectionRows()[0];
-                    Rectangle sr = tSource.getRowBounds(sourceSelRowIdx);
-                    Rectangle tr = tTarget.getRowBounds(targetSelRowIdx);
-                    Point sp = spSource.getViewport().getViewPosition();
-                    Point tp = spTarget.getViewport().getViewPosition();
-                    int delta = (tr.y - tp.y) - (sr.y - sp.y);
-                    spTarget.getViewport().setViewPosition(new Point(tp.x, tp.y + delta));
+                    scrollToMatchVerticalPosition(tSource, tTarget, spSource, spTarget);
+
+                    // check whether root is visible
+                    if (!isRootVisible(tTarget)) {
+                        // first try collapsing all the nodes above the target one
+                        INode curNode = target.getParent();
+                        while (null != curNode) {
+                            for (INode child : curNode.getChildrenList()) {
+                                if (!ppList.contains(child) && !mtm.isCoalesced(child)) {
+                                    tTarget.collapsePath(createPathToRoot(child));
+                                }
+                            }
+                            curNode = curNode.getParent();
+                        }
+
+                        scrollToMatchVerticalPosition(tSource, tTarget, spSource, spTarget);
+                        if (!isRootVisible(tTarget)) {
+                            // second try coalescing nodes, starting from those in the top
+                            for (int i= 0; i < ppList.size() - 1; i++) {
+                                if (ppList.get(i) instanceof INode && ppList.get(i + 1) instanceof INode) {
+                                    INode node = (INode) ppList.get(i);
+                                    INode child = (INode) ppList.get(i + 1);
+                                    int idx = node.getChildIndex(child);
+                                    mtm.coalesce(node, 0, idx - 1);
+                                    
+                                    scrollToMatchVerticalPosition(tSource, tTarget, spSource, spTarget);
+                                    if (isRootVisible(tTarget)) {
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
 
                 spTarget.repaint();
             }
         }
     };
+
+    private boolean isRootVisible(JTree tTarget) {
+        boolean result = false;
+        if (tTarget.getModel() instanceof MappingTreeModel) {
+            MappingTreeModel mtm = (MappingTreeModel) tTarget.getModel();
+            if (mtm.getRoot() instanceof INode) {
+                INode root = (INode) mtm.getRoot();
+                TreePath rootPath = new TreePath(root);
+                result = tTarget.getVisibleRect().contains(tTarget.getPathBounds(rootPath));
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Scroll <code>spTarget</code> to match vertical position of <code>tTarget</code>'s selected node to the
+     * vertical position of <code>tSource</code>'s selected node.  
+     * @param tSource source tree
+     * @param tTarget target tree
+     * @param spSource JScroll pane which contains source tree
+     * @param spTarget JScroll pane which contains target tree
+     */
+    private void scrollToMatchVerticalPosition(JTree tSource, JTree tTarget, JScrollPane spSource, JScrollPane spTarget) {
+        int sourceSelRowIdx = tSource.getSelectionRows()[0];
+        int targetSelRowIdx = tTarget.getSelectionRows()[0];
+        Rectangle sr = tSource.getRowBounds(sourceSelRowIdx);
+        Rectangle tr = tTarget.getRowBounds(targetSelRowIdx);
+        Point sp = spSource.getViewport().getViewPosition();
+        Point tp = spTarget.getViewport().getViewPosition();
+        int delta = (tr.y - tp.y) - (sr.y - sp.y);
+        spTarget.getViewport().setViewPosition(new Point(tp.x, tp.y + delta));
+    }
 
     private class MappingTreeCellRenderer extends DefaultTreeCellRenderer {
         public MappingTreeCellRenderer() {
@@ -1189,6 +1247,7 @@ public class SMatchGUI extends Observable {
                                                       final boolean leaf, final int row,
                                                       final boolean hasFocus) {
             super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
+            setToolTipText("");
             if (value instanceof INode) {
                 INode node = (INode) value;
                 if (0 == node.getChildCount()) {
@@ -1263,7 +1322,6 @@ public class SMatchGUI extends Observable {
             }
 
             return this;
-
         }
 
     }
@@ -2041,6 +2099,7 @@ public class SMatchGUI extends Observable {
         spSource = new JScrollPane();
         pnSource.add(spSource, cc.xy(1, 3, CellConstraints.FILL, CellConstraints.FILL));
         tSource = new JTree(new DefaultMutableTreeNode(EMPTY_ROOT_NODE_LABEL));
+        ToolTipManager.sharedInstance().registerComponent(tSource);
         tSource.addMouseListener(treeMouseListener);
         tSource.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
         spSource.setViewportView(tSource);
@@ -2084,6 +2143,7 @@ public class SMatchGUI extends Observable {
         spTarget = new JScrollPane();
         pnTarget.add(spTarget, cc.xy(1, 3, CellConstraints.FILL, CellConstraints.FILL));
         tTarget = new JTree(new DefaultMutableTreeNode(EMPTY_ROOT_NODE_LABEL));
+        ToolTipManager.sharedInstance().registerComponent(tTarget);
         tTarget.addMouseListener(treeMouseListener);
         tTarget.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
         spTarget.setViewportView(tTarget);
@@ -2196,11 +2256,8 @@ public class SMatchGUI extends Observable {
                 }
             } else {
                 //expand first level
-                for (INode node : context.getRoot().getChildrenList()) {
-                    TreePath p = new TreePath(context.getRoot());
-                    p = p.pathByAddingChild(node);
-                    jTree.expandPath(p);
-                }
+                TreePath p = new TreePath(context.getRoot());
+                jTree.expandPath(p);
             }
 
             jTree.setCellEditor(new NodeTreeCellEditor(jTree, mappingTreeCellRenderer));
