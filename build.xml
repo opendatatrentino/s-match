@@ -34,10 +34,10 @@
     <target name="dist" depends="jar,javadoc" description="generate the distribution zip file">
         <zip destfile="${zip-name}" basedir="${basedir}" level="9"
              preserve0permissions="true"
-             includes="bin/** build/** conf/** data/wordnet/2.1/** demos/** doc/** lib/** res/** src/** test/** test-data/cw/*.txt test-data/cw-simplified/*.txt build.xml license.txt readme.txt pad_file.xml"/>
+             includes="bin/** build/** conf/** data/wordnet/2.1/** demos/** doc/** lib/** res/** src/** test/** test-data/cw/*.txt test-data/cw-simplified/*.txt test-data/spsm/*.txt build.xml license.txt readme.txt pad_file.xml"/>
         <zip destfile="${src-zip-name}" basedir="${basedir}" level="9"
              preserve0permissions="true"
-             includes="bin/** build/** conf/**         demos/** doc/** lib/** res/** src/** test/** test-data/cw/*.txt test-data/cw-simplified/*.txt build.xml license.txt readme.txt pad_file.xml"
+             includes="bin/** build/** conf/**         demos/** doc/** lib/** res/** src/** test/** test-data/cw/*.txt test-data/cw-simplified/*.txt test-data/spsm/*.txt build.xml license.txt readme.txt pad_file.xml"
              excludes="doc/api/**"/>
     </target>
 
