@@ -24,13 +24,13 @@ import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
 import javax.swing.*;
 import javax.swing.border.Border;
-import javax.swing.event.*;
+import javax.swing.event.CellEditorListener;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
 import javax.swing.plaf.FontUIResource;
 import javax.swing.tree.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.*;
 import java.util.*;
 import java.util.List;
@@ -40,7 +40,7 @@ import java.util.List;
  *
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
-public class SMatchGUI extends Observable implements ComponentListener, AdjustmentListener, TreeExpansionListener, PropertyChangeListener {
+public class SMatchGUI extends Observable {
 
     private static Logger log;
 
@@ -112,13 +112,15 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
     private static Icon iconDeleteSmall;
     private static Icon iconContextCreateLarge;
     private static Icon iconContextCreateSmall;
+    private static Icon iconUncoalesceSmall;
+    private static Icon iconUncoalesceLarge;
 
     private static final int VERY_SMALL_ICON_SIZE = 12;
     private static final int SMALL_ICON_SIZE = 16;
     private static final int LARGE_ICON_SIZE = 32;
 
     private static final String EMPTY_ROOT_NODE_LABEL = "Create or open context";
-
+    private static final String ELLIPSIS = "...";
 
     static {
         JIconFile icon = loadIconFile(TANGO_ICONS_PATH + "actions/document-open");
@@ -188,6 +190,10 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
         // convert to ImageIcon, otherwise disabled icon does not render due to restriction in LookAndFeel.java
         iconAddChildNodeLarge = IconUtils.makeIconFromComponent(new JLabel(iconAddChildNodeLarge), LARGE_ICON_SIZE, LARGE_ICON_SIZE, true);
         iconAddChildNodeSmall = IconUtils.makeIconFromComponent(new JLabel(iconAddChildNodeSmall), SMALL_ICON_SIZE, SMALL_ICON_SIZE, true);
+
+        icon = loadIconFile(TANGO_ICONS_PATH + "actions/view-fullscreen");
+        iconUncoalesceSmall = icon.getIcon(SMALL_ICON_SIZE);
+        iconUncoalesceLarge = icon.getIcon(LARGE_ICON_SIZE);
     }
 
     private class ActionSourceCreate extends AbstractAction implements Observer {
@@ -672,7 +678,6 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
                 TreePath sourcePath = createPathToRoot(sourceNode);
                 TreePath targetPath = createPathToRoot(targetNode);
 
-
                 if (sourceNode.getNodeData().getUserObject() instanceof List
                         && targetNode.getNodeData().getUserObject() instanceof List) {
 
@@ -775,11 +780,95 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
 
         @Override
         public void setEnabled(JTree tree) {
-            setEnabled(null != tree
+            boolean result = null != tree
                     && 1 == tree.getSelectionCount()
                     && null != tree.getSelectionPath().getParentPath()
-                    && null != tree.getSelectionPath().getParentPath().getLastPathComponent()
-            );
+                    && null != tree.getSelectionPath().getParentPath().getLastPathComponent();
+
+            // disable deletion for subs (...) nodes
+            if (result) {
+                if (tree.getSelectionPath().getLastPathComponent() instanceof DefaultMutableTreeNode) {
+                    DefaultMutableTreeNode dmtn = (DefaultMutableTreeNode) tree.getSelectionPath().getLastPathComponent();
+                    result = dmtn.getUserObject() instanceof IMappingElement;
+                }
+            }
+
+            setEnabled(result);
+        }
+    }
+
+    private class ActionViewUncoalesce extends ActionTreeEdit implements Observer {
+        public ActionViewUncoalesce() {
+            super("Uncoalesce");
+            putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_U));
+            putValue(Action.SHORT_DESCRIPTION, "Uncoalesces a node");
+            putValue(Action.LONG_DESCRIPTION, "Uncoalesces a node");
+            putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SLASH, 0));
+            putValue(Action.SMALL_ICON, iconUncoalesceSmall);
+            putValue(Action.LARGE_ICON_KEY, iconUncoalesceLarge);
+        }
+
+        public ActionViewUncoalesce(JTree tree) {
+            this();
+            this.tree = tree;
+            putValue(Action.ACCELERATOR_KEY, null);
+        }
+
+        @Override
+        protected void doAction(JTree tree) {
+            uncoalesceNode(tree);
+        }
+
+        @Override
+        public void setEnabled(JTree tree) {
+            boolean result = null != tree
+                    && 1 == tree.getSelectionCount()
+                    && null != tree.getSelectionPath().getParentPath()
+                    && null != tree.getSelectionPath().getParentPath().getLastPathComponent();
+
+            if (result) {
+                result = tree.getSelectionPath().getLastPathComponent() instanceof DefaultMutableTreeNode;
+                if (result) {
+                    DefaultMutableTreeNode dmtn = (DefaultMutableTreeNode) tree.getSelectionPath().getLastPathComponent();
+                    result = dmtn.getUserObject() instanceof MappingTreeModel.Coalesce;
+                }
+            }
+
+            setEnabled(result);
+        }
+    }
+
+    private class ActionViewUncoalesceAll extends ActionTreeEdit implements Observer {
+        public ActionViewUncoalesceAll() {
+            super("Uncoalesce All");
+            putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_A));
+            putValue(Action.SHORT_DESCRIPTION, "Uncoalesces all nodes");
+            putValue(Action.LONG_DESCRIPTION, "Uncoalesces all nodes");
+            putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SLASH, InputEvent.ALT_DOWN_MASK));
+        }
+
+        public ActionViewUncoalesceAll(JTree tree) {
+            this();
+            this.tree = tree;
+            putValue(Action.ACCELERATOR_KEY, null);
+        }
+
+        @Override
+        protected void doAction(JTree tree) {
+            uncoalesceTree(tree);
+        }
+
+        @Override
+        public void setEnabled(JTree tree) {
+            boolean result = null != tree
+                    && tree.getModel() instanceof MappingTreeModel;
+
+            if (result) {
+                MappingTreeModel mtm = (MappingTreeModel) tree.getModel();
+                result = mtm.hasCoalescedNode();
+            }
+
+            setEnabled(result);
         }
     }
 
@@ -1021,57 +1110,20 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
 
     private final TreeSelectionListener treeSelectionListener = new TreeSelectionListener() {
         public void valueChanged(TreeSelectionEvent e) {
-            TreePath p = e.getNewLeadSelectionPath();
-            if (null != p) {
-                Object o = p.getLastPathComponent();
-                if (o instanceof DefaultMutableTreeNode) {
-                    DefaultMutableTreeNode dmtn = (DefaultMutableTreeNode) o;
-                    if (dmtn.getUserObject() instanceof IMappingElement) {
-                        @SuppressWarnings("unchecked")
-                        IMappingElement<INode> me = (IMappingElement<INode>) dmtn.getUserObject();
-                        if (e.getSource() == tSource) {
-
-                            // construct path to root
-                            TreePath pp = createPathToRoot(me.getTarget());
-
-                            tTarget.makeVisible(pp);
-                            tTarget.setSelectionPath(pp);
-                            tTarget.scrollPathToVisible(pp);
-
-                            // scroll to match vertical position
-                            if (1 == tSource.getSelectionCount() && 1 == tTarget.getSelectionCount()) {
-                                int sourceSelRowIdx = tSource.getSelectionRows()[0];
-                                int targetSelRowIdx = tTarget.getSelectionRows()[0];
-                                Rectangle sr = tSource.getRowBounds(sourceSelRowIdx);
-                                Rectangle tr = tTarget.getRowBounds(targetSelRowIdx);
-                                Point sp = spSource.getViewport().getViewPosition();
-                                Point tp = spTarget.getViewport().getViewPosition();
-                                int delta = (tr.y - tp.y) - (sr.y - sp.y);
-                                spTarget.getViewport().setViewPosition(new Point(tp.x, tp.y + delta));
+            if (e.getSource() instanceof JTree) {
+                TreePath p = e.getNewLeadSelectionPath();
+                if (null != p) {
+                    Object o = p.getLastPathComponent();
+                    if (o instanceof DefaultMutableTreeNode) {
+                        DefaultMutableTreeNode dmtn = (DefaultMutableTreeNode) o;
+                        if (dmtn.getUserObject() instanceof IMappingElement) {
+                            @SuppressWarnings("unchecked")
+                            IMappingElement<INode> me = (IMappingElement<INode>) dmtn.getUserObject();
+                            if (e.getSource() == tSource) {
+                                adjustTargetTree(tSource, tTarget, spSource, spTarget, me.getSource(), me.getTarget());
+                            } else if (e.getSource() == tTarget) {
+                                adjustTargetTree(tTarget, tSource, spTarget, spSource, me.getTarget(), me.getSource());
                             }
-
-                            spTarget.repaint();
-                        } else if (e.getSource() == tTarget) {
-                            // construct path root
-                            TreePath pp = createPathToRoot(me.getSource());
-
-                            tSource.makeVisible(pp);
-                            tSource.setSelectionPath(pp);
-                            tSource.scrollPathToVisible(pp);
-
-                            // scroll to match vertical position
-                            if (1 == tSource.getSelectionCount() && 1 == tTarget.getSelectionCount()) {
-                                int sourceSelRowIdx = tSource.getSelectionRows()[0];
-                                int targetSelRowIdx = tTarget.getSelectionRows()[0];
-                                Rectangle sr = tSource.getRowBounds(sourceSelRowIdx);
-                                Rectangle tr = tTarget.getRowBounds(targetSelRowIdx);
-                                Point sp = spSource.getViewport().getViewPosition();
-                                Point tp = spTarget.getViewport().getViewPosition();
-                                int delta = (sr.y - sp.y) - (tr.y - tp.y);
-                                spSource.getViewport().setViewPosition(new Point(sp.x, sp.y + delta));
-                            }
-
-                            spSource.repaint();
                         }
                     }
                 }
@@ -1079,6 +1131,34 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
 
             setChanged();
             notifyObservers();
+        }
+
+        private void adjustTargetTree(JTree tSource, JTree tTarget, JScrollPane spSource, JScrollPane spTarget, INode source, INode target) {
+            if (tTarget.getModel() instanceof MappingTreeModel) {
+                MappingTreeModel mtm = (MappingTreeModel) tTarget.getModel();
+                mtm.uncoalesceParents(target);
+
+                // construct path to root
+                TreePath pp = createPathToRoot(target);
+
+                tTarget.makeVisible(pp);
+                tTarget.setSelectionPath(pp);
+                tTarget.scrollPathToVisible(pp);
+
+                // scroll to match vertical position
+                if (1 == tSource.getSelectionCount() && 1 == tTarget.getSelectionCount()) {
+                    int sourceSelRowIdx = tSource.getSelectionRows()[0];
+                    int targetSelRowIdx = tTarget.getSelectionRows()[0];
+                    Rectangle sr = tSource.getRowBounds(sourceSelRowIdx);
+                    Rectangle tr = tTarget.getRowBounds(targetSelRowIdx);
+                    Point sp = spSource.getViewport().getViewPosition();
+                    Point tp = spTarget.getViewport().getViewPosition();
+                    int delta = (tr.y - tp.y) - (sr.y - sp.y);
+                    spTarget.getViewport().setViewPosition(new Point(tp.x, tp.y + delta));
+                }
+
+                spTarget.repaint();
+            }
         }
     };
 
@@ -1111,9 +1191,11 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
                     if (dmtn.getUserObject() instanceof IMappingElement) {
                         @SuppressWarnings("unchecked")
                         IMappingElement<INode> me = (IMappingElement<INode>) dmtn.getUserObject();
+                        final char relation = mapping.getRelation(me.getSource(), me.getTarget());
                         if (tree == tSource) {
                             setText(me.getTarget().getNodeData().getName());
-                            switch (mapping.getRelation(me.getSource(), me.getTarget())) {
+                            //TODO links with the same named target in different contexts - add tooltips
+                            switch (relation) {
                                 case IMappingElement.LESS_GENERAL: {
                                     setIcon(iconLG);
                                     break;
@@ -1125,7 +1207,8 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
                             }
                         } else {
                             setText(me.getSource().getNodeData().getName());
-                            switch (mapping.getRelation(me.getSource(), me.getTarget())) {
+                            //TODO links with the same named target in different contexts - add tooltips
+                            switch (relation) {
                                 case IMappingElement.LESS_GENERAL: {
                                     setIcon(iconMG);
                                     break;
@@ -1136,7 +1219,7 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
                                 }
                             }
                         }
-                        switch (mapping.getRelation(me.getSource(), me.getTarget())) {
+                        switch (relation) {
                             case IMappingElement.EQUIVALENCE: {
                                 setIcon(iconEQ);
                                 break;
@@ -1146,6 +1229,22 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
                                 break;
                             }
                         }
+                    } else if (dmtn.getUserObject() instanceof MappingTreeModel.Coalesce) {
+                        MappingTreeModel.Coalesce c = (MappingTreeModel.Coalesce) dmtn.getUserObject();
+                        setText(ELLIPSIS);
+                        setIcon(iconUncoalesceSmall);
+                        StringBuilder tip = new StringBuilder();
+                        for (int i = c.range.x; i <= c.range.y; i++) {
+                            tip.append(c.parent.getChildAt(i).getNodeData().getName());
+                            if (i < c.range.y) {
+                                tip.append(", ");
+                            }
+                        }
+                        if (50 < tip.length()) {
+                            tip.delete(25, tip.length() - 25);
+                            tip.insert(25, "...");
+                        }
+                        setToolTipText(tip.toString());
                     }
                 }
             }
@@ -1300,9 +1399,11 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
                     public void setValue(Object value) {
                         if (value instanceof DefaultMutableTreeNode) {
                             DefaultMutableTreeNode dmtn = (DefaultMutableTreeNode) value;
-                            @SuppressWarnings("unchecked")
-                            IMappingElement<INode> me = (IMappingElement<INode>) dmtn.getUserObject();
-                            comboBox.setSelectedItem(relationToDescription.get(mapping.getRelation(me.getSource(), me.getTarget())));
+                            if (dmtn.getUserObject() instanceof IMappingElement) {
+                                @SuppressWarnings("unchecked")
+                                IMappingElement<INode> me = (IMappingElement<INode>) dmtn.getUserObject();
+                                comboBox.setSelectedItem(relationToDescription.get(mapping.getRelation(me.getSource(), me.getTarget())));
+                            }
                         }
                     }
 
@@ -1465,6 +1566,8 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
     private Action acSourceAddNode;
     private Action acSourceAddChildNode;
     private Action acSourceDelete;
+    private Action acSourceUncoalesce;
+    private Action acSourceUncoalesceAll;
     private Action acSourceOpen;
     private Action acSourcePreprocess;
     private Action acSourceClose;
@@ -1475,6 +1578,8 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
     private Action acTargetAddNode;
     private Action acTargetAddChildNode;
     private Action acTargetDelete;
+    private Action acTargetUncoalesce;
+    private Action acTargetUncoalesceAll;
     private Action acTargetOpen;
     private Action acTargetPreprocess;
     private Action acTargetClose;
@@ -1492,6 +1597,9 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
     private Action acEditAddLink;
     private Action acEditDelete;
 
+    private Action acViewUncoalesce;
+    private Action acViewUncoalesceAll;
+
     private void addNode(JTree tree) {
         Object o = tree.getSelectionPath().getLastPathComponent();
         if (o instanceof INode) {
@@ -1505,7 +1613,7 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
                 child.getNodeData().setName("New Node");
                 parent.removeChild(child);
                 parent.addChild(nodeIdx, child);
-                dtm.nodesWereInserted(parent, new int[]{parent.getChildIndex(child)});
+                dtm.nodesWereInserted(parent, new int[]{dtm.getIndexOfChild(parent, child)});
                 TreePath p = createPathToRoot(child);
                 tree.scrollPathToVisible(p);
                 tree.setSelectionPath(p);
@@ -1523,7 +1631,7 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
             TreeModel m = tree.getModel();
             if (m instanceof DefaultTreeModel) {
                 DefaultTreeModel dtm = (DefaultTreeModel) m;
-                dtm.nodesWereInserted(node, new int[]{node.getChildIndex(child)});
+                dtm.nodesWereInserted(node, new int[]{dtm.getIndexOfChild(node, child)});
                 TreePath p = createPathToRoot(child);
                 tree.scrollPathToVisible(p);
                 tree.setSelectionPath(p);
@@ -1555,22 +1663,22 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
         } else if (o instanceof DefaultMutableTreeNode) {
             // link
             DefaultMutableTreeNode dmtn = (DefaultMutableTreeNode) o;
-            if (null != parentPath && parentPath.getLastPathComponent() instanceof INode) {
-                // remove from own tree
-                INode parent = (INode) parentPath.getLastPathComponent();
-                if (parent.getNodeData().getUserObject() instanceof List) {
-                    @SuppressWarnings("unchecked")
-                    List<DefaultMutableTreeNode> linkNodes = (List<DefaultMutableTreeNode>) parent.getNodeData().getUserObject();
-                    TreeModel m = tree.getModel();
-                    if (m instanceof DefaultTreeModel) {
-                        DefaultTreeModel dtm = (DefaultTreeModel) m;
-                        int idx = dtm.getIndexOfChild(parent, dmtn);
-                        linkNodes.remove(dmtn);
-                        dtm.nodesWereRemoved(parent, new int[]{idx}, new Object[]{dmtn});
+            if (dmtn.getUserObject() instanceof IMappingElement) {
+                if (null != parentPath && parentPath.getLastPathComponent() instanceof INode) {
+                    // remove from own tree
+                    INode parent = (INode) parentPath.getLastPathComponent();
+                    if (parent.getNodeData().getUserObject() instanceof List) {
+                        @SuppressWarnings("unchecked")
+                        List<DefaultMutableTreeNode> linkNodes = (List<DefaultMutableTreeNode>) parent.getNodeData().getUserObject();
+                        TreeModel m = tree.getModel();
+                        if (m instanceof DefaultTreeModel) {
+                            DefaultTreeModel dtm = (DefaultTreeModel) m;
+                            int idx = dtm.getIndexOfChild(parent, dmtn);
+                            linkNodes.remove(dmtn);
+                            dtm.nodesWereRemoved(parent, new int[]{idx}, new Object[]{dmtn});
+                        }
                     }
-                }
 
-                if (dmtn.getUserObject() instanceof IMappingElement) {
                     @SuppressWarnings("unchecked")
                     IMappingElement<INode> me = (IMappingElement<INode>) dmtn.getUserObject();
                     // remove from mapping
@@ -1625,11 +1733,13 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
                 }
             }//for
             if (null != targetLinkNodeToDelete) {
-                if (oppositeTree.getModel() instanceof DefaultTreeModel) {
-                    DefaultTreeModel dtm = (DefaultTreeModel) oppositeTree.getModel();
-                    int idx = dtm.getIndexOfChild(targetNode, targetLinkNodeToDelete);
+                if (oppositeTree.getModel() instanceof MappingTreeModel) {
+                    MappingTreeModel mtm = (MappingTreeModel) oppositeTree.getModel();
+                    int idx = mtm.getIndexOfChild(targetNode, targetLinkNodeToDelete);
                     targetLinkNodes.remove(targetLinkNodeToDelete);
-                    dtm.nodesWereRemoved(targetNode, new int[]{idx}, new Object[]{targetLinkNodeToDelete});
+                    if (!mtm.isCoalescedInAnyParent(targetNode)) {
+                        mtm.nodesWereRemoved(targetNode, new int[]{idx}, new Object[]{targetLinkNodeToDelete});
+                    }
                 }
             } else {
                 log.error("Cannot find symmetric link while deleting");
@@ -1654,6 +1764,35 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
             return tSource;
         } else {
             return null;
+        }
+    }
+
+    private void uncoalesceNode(JTree tree) {
+        Object o = tree.getSelectionPath().getLastPathComponent();
+        TreePath parentPath = tree.getSelectionPath().getParentPath();
+        if (o instanceof DefaultMutableTreeNode) {
+            DefaultMutableTreeNode dmtn = (DefaultMutableTreeNode) o;
+            if (dmtn.getUserObject() instanceof MappingTreeModel.Coalesce) {
+                if (null != parentPath && parentPath.getLastPathComponent() instanceof INode) {
+                    INode parent = (INode) parentPath.getLastPathComponent();
+                    TreeModel m = tree.getModel();
+                    if (m instanceof MappingTreeModel) {
+                        MappingTreeModel mtm = (MappingTreeModel) m;
+                        mtm.uncoalesce(parent);
+                    }
+                }
+            }
+        }
+
+        // select parent
+        tree.setSelectionPath(parentPath);
+        tree.scrollPathToVisible(parentPath);
+    }
+
+    private void uncoalesceTree(JTree tree) {
+        if (tree.getModel() instanceof MappingTreeModel) {
+            MappingTreeModel mtm = (MappingTreeModel) tree.getModel();
+            mtm.uncoalesceAll();
         }
     }
 
@@ -1717,6 +1856,9 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
         jmSource.add(acSourceAddChildNode);
         jmSource.add(acSourceDelete);
         jmSource.addSeparator();
+        jmSource.add(acSourceUncoalesce);
+        jmSource.add(acSourceUncoalesceAll);
+        jmSource.addSeparator();
         jmSource.add(acSourceOpen);
         jmSource.add(acSourcePreprocess);
         jmSource.add(acSourceClose);
@@ -1731,6 +1873,9 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
         jmTarget.add(acTargetAddNode);
         jmTarget.add(acTargetAddChildNode);
         jmTarget.add(acTargetDelete);
+        jmTarget.addSeparator();
+        jmTarget.add(acTargetUncoalesce);
+        jmTarget.add(acTargetUncoalesceAll);
         jmTarget.addSeparator();
         jmTarget.add(acTargetOpen);
         jmTarget.add(acTargetPreprocess);
@@ -1759,6 +1904,9 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
         JMenu jmView = new JMenu("View");
         jmMapping.setMnemonic('V');
         final Action acViewClearLog = new ActionViewClearLog();
+        jmView.add(acViewUncoalesce);
+        jmView.add(acViewUncoalesceAll);
+        jmView.addSeparator();
         jmView.add(acViewClearLog);
         mainMenu.add(jmView);
     }
@@ -1788,6 +1936,9 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
         acEditAddChildNode = new ActionEditAddChildNode();
         acEditAddLink = new ActionEditAddLink();
         acEditDelete = new ActionEditDelete();
+
+        acViewUncoalesce = new ActionViewUncoalesce();
+        acViewUncoalesceAll = new ActionViewUncoalesceAll();
 
         String layoutColumns = "fill:default:grow";
         String layoutRows = "top:d:noGrow,top:4dlu:noGrow,fill:max(d;100px):grow";
@@ -1846,11 +1997,9 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
         spnContextsLog.setContinuousLayout(true);
         spnContextsLog.setOrientation(JSplitPane.VERTICAL_SPLIT);
         spnContextsLog.setOneTouchExpandable(true);
-        spnContextsLog.addPropertyChangeListener(JSplitPane.DIVIDER_LOCATION_PROPERTY, this);
 
         builder.add(spnContextsLog, cc.xy(1, 3, CellConstraints.DEFAULT, CellConstraints.FILL));
         spnContexts = new JSplitPane();
-        spnContexts.addPropertyChangeListener(JSplitPane.DIVIDER_LOCATION_PROPERTY, this);
 
 
         pnContexts = new JPanel();
@@ -1880,9 +2029,6 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
         pnSource.add(spSource, cc.xy(1, 3, CellConstraints.FILL, CellConstraints.FILL));
         tSource = new JTree(new DefaultMutableTreeNode(EMPTY_ROOT_NODE_LABEL));
         tSource.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
-        tSource.addTreeExpansionListener(this);
-        spSource.getHorizontalScrollBar().addAdjustmentListener(this);
-        spSource.getVerticalScrollBar().addAdjustmentListener(this);
         spSource.setViewportView(tSource);
         tbSource.addSeparator();
         acSourceAddNode = new ActionEditAddNode(tSource);
@@ -1897,7 +2043,12 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
         tbSource.add(btSourceEditAddNode);
         tbSource.add(btSourceEditAddChildNode);
         tbSource.add(btSourceEditDelete);
-
+        acSourceUncoalesce = new ActionViewUncoalesce(tSource);
+        acSourceUncoalesceAll = new ActionViewUncoalesceAll(tSource);
+        JButton btSourceUncoalesce = new JButton(acSourceUncoalesce);
+        btSourceUncoalesce.setHideActionText(true);
+        tbSource.addSeparator();
+        tbSource.add(btSourceUncoalesce);
 
         //build target
         JPanel pnTarget = new JPanel();
@@ -1920,9 +2071,6 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
         pnTarget.add(spTarget, cc.xy(1, 3, CellConstraints.FILL, CellConstraints.FILL));
         tTarget = new JTree(new DefaultMutableTreeNode(EMPTY_ROOT_NODE_LABEL));
         tTarget.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
-        tTarget.addTreeExpansionListener(this);
-        spTarget.getHorizontalScrollBar().addAdjustmentListener(this);
-        spTarget.getVerticalScrollBar().addAdjustmentListener(this);
         spTarget.setViewportView(tTarget);
         tbTarget.addSeparator();
         acTargetAddNode = new ActionEditAddNode(tTarget);
@@ -1937,8 +2085,12 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
         tbTarget.add(btTargetEditAddNode);
         tbTarget.add(btTargetEditAddChildNode);
         tbTarget.add(btTargetEditDelete);
-
-        spnContexts.addComponentListener(this);
+        acTargetUncoalesce = new ActionViewUncoalesce(tTarget);
+        acTargetUncoalesceAll = new ActionViewUncoalesceAll(tTarget);
+        JButton btTargetUncoalesce = new JButton(acTargetUncoalesce);
+        btTargetUncoalesce.setHideActionText(true);
+        tbTarget.addSeparator();
+        tbTarget.add(btTargetUncoalesce);
 
         //build log panel
         JPanel pnLog = new JPanel();
@@ -1963,10 +2115,13 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
         buildMenu();
 
         Action[] actions = new Action[]{
-                acSourceCreate, acSourceAddNode, acSourceAddChildNode, acSourceDelete, acSourceOpen, acSourcePreprocess, acSourceClose, acSourceSave, acSourceSaveAs,
-                acTargetCreate, acTargetAddNode, acTargetAddChildNode, acTargetDelete, acTargetOpen, acTargetPreprocess, acTargetClose, acTargetSave, acTargetSaveAs,
+                acSourceCreate, acSourceAddNode, acSourceAddChildNode, acSourceDelete, acSourceUncoalesce, acSourceUncoalesceAll,
+                acSourceOpen, acSourcePreprocess, acSourceClose, acSourceSave, acSourceSaveAs,
+                acTargetCreate, acTargetAddNode, acTargetAddChildNode, acTargetDelete, acTargetUncoalesce, acTargetUncoalesceAll,
+                acTargetOpen, acTargetPreprocess, acTargetClose, acTargetSave, acTargetSaveAs,
                 acMappingCreate, acMappingOpen, acMappingClose, acMappingSave, acMappingSaveAs,
-                acEditAddNode, acEditAddChildNode, acEditAddLink, acEditDelete
+                acEditAddNode, acEditAddChildNode, acEditAddLink, acEditDelete,
+                acViewUncoalesce, acViewUncoalesceAll
         };
 
         for (Action a : actions) {
@@ -2075,38 +2230,6 @@ public class SMatchGUI extends Observable implements ComponentListener, Adjustme
         }
         setChanged();
         notifyObservers();
-    }
-
-    public void treeCollapsed(TreeExpansionEvent event) {
-        pnContexts.repaint();
-    }
-
-    public void treeExpanded(TreeExpansionEvent event) {
-        pnContexts.repaint();
-    }
-
-    public void componentMoved(ComponentEvent arg0) {
-        pnContexts.repaint();
-    }
-
-    public void componentResized(ComponentEvent arg0) {
-        pnContexts.repaint();
-    }
-
-    public void componentShown(ComponentEvent arg0) {
-        pnContexts.repaint();
-    }
-
-    public void componentHidden(ComponentEvent arg0) {
-
-    }
-
-    public void adjustmentValueChanged(AdjustmentEvent arg0) {
-        pnContexts.repaint();
-    }
-
-    public void propertyChange(PropertyChangeEvent arg0) {
-        pnContexts.repaint();
     }
 
     private void applyLookAndFeel() {
