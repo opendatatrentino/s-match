@@ -1078,6 +1078,19 @@ public class SMatchGUI extends Observable {
         }
     };
 
+    private final MouseListener treeMouseListener = new MouseAdapter() {
+        public void mousePressed(MouseEvent e) {
+            if (null != lastFocusedTree) {
+                if (e.getClickCount() == 2) {
+                    if (acViewUncoalesce.isEnabled()) {
+                        uncoalesceNode(lastFocusedTree);
+                    }
+                }
+            }
+        }
+    };
+
+
     private final FocusListener treeFocusListener = new FocusListener() {
         public void focusGained(FocusEvent e) {
             if (!e.isTemporary()) {
@@ -2028,6 +2041,7 @@ public class SMatchGUI extends Observable {
         spSource = new JScrollPane();
         pnSource.add(spSource, cc.xy(1, 3, CellConstraints.FILL, CellConstraints.FILL));
         tSource = new JTree(new DefaultMutableTreeNode(EMPTY_ROOT_NODE_LABEL));
+        tSource.addMouseListener(treeMouseListener);
         tSource.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
         spSource.setViewportView(tSource);
         tbSource.addSeparator();
@@ -2070,6 +2084,7 @@ public class SMatchGUI extends Observable {
         spTarget = new JScrollPane();
         pnTarget.add(spTarget, cc.xy(1, 3, CellConstraints.FILL, CellConstraints.FILL));
         tTarget = new JTree(new DefaultMutableTreeNode(EMPTY_ROOT_NODE_LABEL));
+        tTarget.addMouseListener(treeMouseListener);
         tTarget.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
         spTarget.setViewportView(tTarget);
         tbTarget.addSeparator();
