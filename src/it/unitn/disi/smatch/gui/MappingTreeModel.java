@@ -115,8 +115,12 @@ public class MappingTreeModel extends NodeTreeModel {
      * Expands all coalesced nodes.
      */
     public void uncoalesceAll() {
-        coalesce.clear();
-        nodeStructureChanged(root);
+        List<INode> parents = new ArrayList<INode>(coalesce.keySet());
+        while (0 < parents.size()) {
+            uncoalesce(parents.get(0));
+            parents.remove(0);
+        }
+        coalesce.clear();        
     }
 
 
