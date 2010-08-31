@@ -48,6 +48,7 @@ public class SMatchGUI extends Observable {
         log = Logger.getLogger(SMatchGUI.class);
         String log4jConf = System.getProperty("log4j.configuration");
         if (log4jConf != null) {
+            System.out.println("Configuring Log4J");
             PropertyConfigurator.configure(log4jConf);
         } else {
             System.err.println("No log4j.configuration property specified.");
@@ -77,6 +78,7 @@ public class SMatchGUI extends Observable {
     public static JIconFile loadIconFile(String name) {
         JIconFile icon = null;
         try {
+            log.debug("Loading icon " + name);
             icon = new JIconFile(SMatchGUI.class.getResource(name + ".jic"));
         } catch (IOException e) {
             if (log.isEnabledFor(Level.ERROR)) {
@@ -135,10 +137,10 @@ public class SMatchGUI extends Observable {
         documentSaveAsSmall = icon.getIcon(SMALL_ICON_SIZE);
         documentSaveAsLarge = icon.getIcon(LARGE_ICON_SIZE);
 
-        icon = loadIconFile(TANGO_ICONS_PATH + "/places/folder");
+        icon = loadIconFile(TANGO_ICONS_PATH + "places/folder");
         folderSmall = icon.getIcon(SMALL_ICON_SIZE);
 
-        icon = loadIconFile(TANGO_ICONS_PATH + "/status/folder-open");
+        icon = loadIconFile(TANGO_ICONS_PATH + "status/folder-open");
         folderOpenSmall = icon.getIcon(SMALL_ICON_SIZE);
 
         icon = loadIconFile("/relations/disjoint");
