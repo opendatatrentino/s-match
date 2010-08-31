@@ -27,8 +27,8 @@
 
     <target name="jar" depends="compile" description="generate the jar">
         <mkdir dir="build"/>
-        <jar jarfile="${jar-name}" basedir="classes" excludes="s-match.ico tango-icon-theme-0.8.90/** it/unitn/disi/smatch/gui/**"/>
-        <jar jarfile="${gui-jar-name}" basedir="classes" includes="s-match.ico tango-icon-theme-0.8.90/** it/unitn/disi/smatch/gui/**"/>
+        <jar jarfile="${jar-name}" basedir="classes" excludes="s-match.ico tango-icon-theme-0.8.90/** relations/** it/unitn/disi/smatch/gui/**"/>
+        <jar jarfile="${gui-jar-name}" basedir="classes" includes="s-match.ico tango-icon-theme-0.8.90/** relations/** it/unitn/disi/smatch/gui/**"/>
     </target>
 
     <target name="dist" depends="jar,javadoc" description="generate the distribution zip file">
