@@ -1052,6 +1052,28 @@ public class SMatchGUI extends Observable {
         }
     }
 
+    private class PopupListener extends MouseAdapter {
+        public void mousePressed(MouseEvent e) {
+            maybeShowPopup(e);
+        }
+
+        public void mouseReleased(MouseEvent e) {
+            maybeShowPopup(e);
+        }
+
+        private void maybeShowPopup(MouseEvent e) {
+            if (e.isPopupTrigger()) {
+                if (e.getComponent() == tSource) {
+                    popSource.show(e.getComponent(), e.getX(), e.getY());
+                } else if (e.getComponent() == tTarget) {
+                    popTarget.show(e.getComponent(), e.getX(), e.getY());
+                }
+            }
+        }
+    }
+
+    private final PopupListener treePopupListener = new PopupListener();
+
     //listener for config files combobox
     private final ItemListener configCombolistener = new ItemListener() {
         public void itemStateChanged(ItemEvent e) {
@@ -1632,6 +1654,8 @@ public class SMatchGUI extends Observable {
     private JScrollPane spSource;
     private JScrollPane spTarget;
     private JSplitPane spnContextsLog;
+    private JPopupMenu popSource;
+    private JPopupMenu popTarget;
 
 
     // actions
@@ -2103,6 +2127,7 @@ public class SMatchGUI extends Observable {
         tSource = new JTree(new DefaultMutableTreeNode(EMPTY_ROOT_NODE_LABEL));
         ToolTipManager.sharedInstance().registerComponent(tSource);
         tSource.addMouseListener(treeMouseListener);
+        tSource.addMouseListener(treePopupListener);
         tSource.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
         spSource.setViewportView(tSource);
         tbSource.addSeparator();
@@ -2124,6 +2149,11 @@ public class SMatchGUI extends Observable {
         btSourceUncoalesce.setHideActionText(true);
         tbSource.addSeparator();
         tbSource.add(btSourceUncoalesce);
+
+        popSource = new JPopupMenu();
+        popSource.add(acSourceAddNode);
+        popSource.add(acSourceAddChildNode);
+        popSource.add(acSourceDelete);
 
         //build target
         JPanel pnTarget = new JPanel();
@@ -2147,6 +2177,7 @@ public class SMatchGUI extends Observable {
         tTarget = new JTree(new DefaultMutableTreeNode(EMPTY_ROOT_NODE_LABEL));
         ToolTipManager.sharedInstance().registerComponent(tTarget);
         tTarget.addMouseListener(treeMouseListener);
+        tTarget.addMouseListener(treePopupListener);
         tTarget.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
         spTarget.setViewportView(tTarget);
         tbTarget.addSeparator();
@@ -2168,6 +2199,11 @@ public class SMatchGUI extends Observable {
         btTargetUncoalesce.setHideActionText(true);
         tbTarget.addSeparator();
         tbTarget.add(btTargetUncoalesce);
+
+        popTarget = new JPopupMenu();
+        popTarget.add(acTargetAddNode);
+        popTarget.add(acTargetAddChildNode);
+        popTarget.add(acTargetDelete);
 
         //build log panel
         JPanel pnLog = new JPanel();
