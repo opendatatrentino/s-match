@@ -460,7 +460,7 @@ public class MatchingBasicGUI extends JPanel
     /**
      * Creates a JPanel with the legend for the mappings to be drawn
      *
-     * @return
+     * @return legend panel
      */
     public JPanel createLegend() {
         Dimension lsize = new Dimension(130, 18);
@@ -499,7 +499,7 @@ public class MatchingBasicGUI extends JPanel
     /**
      * Creates a JPanel with the file selectors to load the files
      *
-     * @return
+     * @return scroll pane with file selectors
      */
     public JScrollPane createFileSelectors() {
 
