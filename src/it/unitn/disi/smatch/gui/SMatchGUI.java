@@ -806,8 +806,6 @@ public class SMatchGUI extends Observable {
             putValue(Action.SHORT_DESCRIPTION, "Uncoalesces a node");
             putValue(Action.LONG_DESCRIPTION, "Uncoalesces a node");
             putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SLASH, 0));
-            putValue(Action.SMALL_ICON, iconUncoalesceSmall);
-            putValue(Action.LARGE_ICON_KEY, iconUncoalesceLarge);
         }
 
         public ActionViewUncoalesce(JTree tree) {
@@ -847,6 +845,8 @@ public class SMatchGUI extends Observable {
             putValue(Action.SHORT_DESCRIPTION, "Uncoalesces all nodes");
             putValue(Action.LONG_DESCRIPTION, "Uncoalesces all nodes");
             putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SLASH, InputEvent.ALT_DOWN_MASK));
+            putValue(Action.SMALL_ICON, iconUncoalesceSmall);
+            putValue(Action.LARGE_ICON_KEY, iconUncoalesceLarge);
         }
 
         public ActionViewUncoalesceAll(JTree tree) {
@@ -2145,10 +2145,10 @@ public class SMatchGUI extends Observable {
         tbSource.add(btSourceEditDelete);
         acSourceUncoalesce = new ActionViewUncoalesce(tSource);
         acSourceUncoalesceAll = new ActionViewUncoalesceAll(tSource);
-        JButton btSourceUncoalesce = new JButton(acSourceUncoalesce);
-        btSourceUncoalesce.setHideActionText(true);
+        JButton btSourceUncoalesceAll = new JButton(acSourceUncoalesceAll);
+        btSourceUncoalesceAll.setHideActionText(true);
         tbSource.addSeparator();
-        tbSource.add(btSourceUncoalesce);
+        tbSource.add(btSourceUncoalesceAll);
 
         popSource = new JPopupMenu();
         popSource.add(acSourceAddNode);
@@ -2195,10 +2195,10 @@ public class SMatchGUI extends Observable {
         tbTarget.add(btTargetEditDelete);
         acTargetUncoalesce = new ActionViewUncoalesce(tTarget);
         acTargetUncoalesceAll = new ActionViewUncoalesceAll(tTarget);
-        JButton btTargetUncoalesce = new JButton(acTargetUncoalesce);
-        btTargetUncoalesce.setHideActionText(true);
+        JButton btTargetUncoalesceAll = new JButton(acTargetUncoalesceAll);
+        btTargetUncoalesceAll.setHideActionText(true);
         tbTarget.addSeparator();
-        tbTarget.add(btTargetUncoalesce);
+        tbTarget.add(btTargetUncoalesceAll);
 
         popTarget = new JPopupMenu();
         popTarget.add(acTargetAddNode);
