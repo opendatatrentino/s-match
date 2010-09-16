@@ -208,9 +208,14 @@ public class SMatchGUI extends Observable {
         }
 
         public void actionPerformed(ActionEvent actionEvent) {
+            if (acMappingClose.isEnabled()) {
+                acMappingClose.actionPerformed(actionEvent);
+            }
             source = mm.createContext();
             source.createRoot("Top");
             createTree(source, tSource, null);
+            teSourceContextLocation.setText("");
+            teSourceContextLocation.setToolTipText("");
             setChanged();
             notifyObservers();
         }
@@ -227,6 +232,9 @@ public class SMatchGUI extends Observable {
         }
 
         public void actionPerformed(ActionEvent actionEvent) {
+            if (acMappingClose.isEnabled()) {
+                acMappingClose.actionPerformed(actionEvent);
+            }
             ff.setDescription(mm.getContextLoader().getDescription());
             fc.addChoosableFileFilter(ff);
             final int returnVal = fc.showOpenDialog(mainPanel);
@@ -263,6 +271,7 @@ public class SMatchGUI extends Observable {
                 if (log.isEnabledFor(Level.ERROR)) {
                     log.error("Error while preprocessing context", e);
                 }
+                JOptionPane.showMessageDialog(frame, "Error occurred while preprocessing the context.\n\n" + e.getMessage() + "\n\nPlease, ensure S-Match is intact and configured properly.", "Context preprocessing error", JOptionPane.ERROR_MESSAGE);
             }
         }
     }
@@ -319,6 +328,8 @@ public class SMatchGUI extends Observable {
             source = null;
             sourceLocation = null;
             createTree(source, tSource, null);
+            teSourceContextLocation.setText("");
+            teSourceContextLocation.setToolTipText("");
             setChanged();
             notifyObservers();
         }
@@ -360,6 +371,7 @@ public class SMatchGUI extends Observable {
                     if (log.isEnabledFor(Level.ERROR)) {
                         log.error("Error while saving source context", e);
                     }
+                    JOptionPane.showMessageDialog(frame, "Error occurred while saving the context.\n\n" + e.getMessage() + "\n\nPlease, ensure the S-Match is intact, configured properly and try again.", "Context save error", JOptionPane.ERROR_MESSAGE);
                 }
             }
         }
@@ -394,10 +406,13 @@ public class SMatchGUI extends Observable {
                 log.info("Saving source: " + sourceLocation);
                 try {
                     mm.renderContext(source, sourceLocation);
+                    teSourceContextLocation.setText(sourceLocation);
+                    teSourceContextLocation.setToolTipText(sourceLocation);
                 } catch (SMatchException e) {
                     if (log.isEnabledFor(Level.ERROR)) {
                         log.error("Error while saving source context", e);
                     }
+                    JOptionPane.showMessageDialog(frame, "Error occurred while saving the context.\n\n" + e.getMessage() + "\n\nPlease, ensure the S-Match is intact, configured properly and try again.", "Context save error", JOptionPane.ERROR_MESSAGE);
                 }
             }
         }
@@ -417,9 +432,14 @@ public class SMatchGUI extends Observable {
         }
 
         public void actionPerformed(ActionEvent actionEvent) {
+            if (acMappingClose.isEnabled()) {
+                acMappingClose.actionPerformed(actionEvent);
+            }
             target = mm.createContext();
             target.createRoot("Top");
             createTree(target, tTarget, null);
+            teTargetContextLocation.setText("");
+            teTargetContextLocation.setToolTipText("");
             setChanged();
             notifyObservers();
         }
@@ -480,6 +500,8 @@ public class SMatchGUI extends Observable {
             target = null;
             targetLocation = null;
             createTree(target, tTarget, null);
+            teTargetContextLocation.setText("");
+            teTargetContextLocation.setToolTipText("");
             setChanged();
             notifyObservers();
         }
@@ -521,6 +543,7 @@ public class SMatchGUI extends Observable {
                     if (log.isEnabledFor(Level.ERROR)) {
                         log.error("Error while saving target context", e);
                     }
+                    JOptionPane.showMessageDialog(frame, "Error occurred while saving the context.\n\n" + e.getMessage() + "\n\nPlease, ensure the S-Match is intact, configured properly and try again.", "Context save error", JOptionPane.ERROR_MESSAGE);
                 }
             }
         }
@@ -555,10 +578,13 @@ public class SMatchGUI extends Observable {
                 log.info("Saving target: " + targetLocation);
                 try {
                     mm.renderContext(target, targetLocation);
+                    teTargetContextLocation.setText(targetLocation);
+                    teTargetContextLocation.setToolTipText(targetLocation);
                 } catch (SMatchException e) {
                     if (log.isEnabledFor(Level.ERROR)) {
                         log.error("Error while saving target context", e);
                     }
+                    JOptionPane.showMessageDialog(frame, "Error occurred while saving the context.\n\n" + e.getMessage() + "\n\nPlease, ensure the S-Match is intact, configured properly and try again.", "Context save error", JOptionPane.ERROR_MESSAGE);
                 }
             }
         }
@@ -888,9 +914,21 @@ public class SMatchGUI extends Observable {
                 acMappingClose.actionPerformed(actionEvent);
             }
             try {
+                if (!source.getRoot().getNodeData().isSubtreePreprocessed()) {
+                    log.info("Source is not preprocessed.");
+                    log.info("Preprocessing source.");
+                    mm.offline(source);
+                }
+                if (!target.getRoot().getNodeData().isSubtreePreprocessed()) {
+                    log.info("Target is not preprocessed.");
+                    log.info("Preprocessing target.");
+                    mm.offline(target);
+                }
                 mapping = mm.online(source, target);
                 createTree(source, tSource, mapping);
                 createTree(target, tTarget, mapping);
+                teMappingLocation.setText("");
+                teMappingLocation.setToolTipText("");
                 setChanged();
                 notifyObservers();
             } catch (SMatchException e) {
@@ -898,13 +936,12 @@ public class SMatchGUI extends Observable {
                     log.error("Error while creating a mapping between source and target contexts", e);
                     log.debug(e);
                 }
+                JOptionPane.showMessageDialog(frame, "Error occurred while creating the mapping.\n\n" + e.getMessage() + "\n\nPlease, ensure the S-Match is intact, configured properly and try again.", "Mapping creation error", JOptionPane.ERROR_MESSAGE);
             }
         }
 
         public void update(Observable o, Object arg) {
-            setEnabled(null != mm && null != source && null != target
-                    && source.getRoot().getNodeData().isSubtreePreprocessed()
-                    && target.getRoot().getNodeData().isSubtreePreprocessed());
+            setEnabled(null != mm && null != source && null != target);
         }
     }
 
@@ -951,6 +988,8 @@ public class SMatchGUI extends Observable {
             createTree(source, tSource, mapping);
             createTree(target, tTarget, mapping);
             pnContexts.repaint();
+            teMappingLocation.setText("");
+            teMappingLocation.setToolTipText("");
             setChanged();
             notifyObservers();
         }
@@ -992,6 +1031,7 @@ public class SMatchGUI extends Observable {
                     if (log.isEnabledFor(Level.ERROR)) {
                         log.error("Error while saving mapping", e);
                     }
+                    JOptionPane.showMessageDialog(frame, "Error occurred while saving the mapping.\n\n" + e.getMessage() + "\n\nPlease, ensure the S-Match is intact, configured properly and try again.", "Mapping save error", JOptionPane.ERROR_MESSAGE);
                 }
             }
         }
@@ -1026,10 +1066,13 @@ public class SMatchGUI extends Observable {
                 log.info("Saving mapping: " + mappingLocation);
                 try {
                     mm.renderMapping(mapping, mappingLocation);
+                    teMappingLocation.setText(mappingLocation);
+                    teMappingLocation.setToolTipText(mappingLocation);
                 } catch (SMatchException e) {
                     if (log.isEnabledFor(Level.ERROR)) {
                         log.error("Error while saving mapping", e);
                     }
+                    JOptionPane.showMessageDialog(frame, "Error occurred while saving the mapping.\n\n" + e.getMessage() + "\n\nPlease, ensure the S-Match is intact, configured properly and try again.", "Mapping save error", JOptionPane.ERROR_MESSAGE);
                 }
             }
         }
@@ -1092,10 +1135,17 @@ public class SMatchGUI extends Observable {
                         if (log.isEnabledFor(Level.ERROR)) {
                             log.error("Error while loading configuration from " + configFile, exc);
                         }
-                    } catch (FileNotFoundException e1) {
-                        //TODO exc handling
-                    } catch (IOException e1) {
-                        //TODO exc handling
+                        JOptionPane.showMessageDialog(frame, "Error occurred while loading the configuration from " + configFile + ".\n\n" + exc.getMessage() + "\n\nPlease, ensure the configuration file is correct and try again.", "Configuration loading error", JOptionPane.ERROR_MESSAGE);
+                    } catch (FileNotFoundException exc) {
+                        if (log.isEnabledFor(Level.ERROR)) {
+                            log.error("Error while loading configuration from " + configFile, exc);
+                        }
+                        JOptionPane.showMessageDialog(frame, "Error occurred while loading the configuration from " + configFile + ".\n\n" + exc.getMessage(), "Configuration loading error", JOptionPane.ERROR_MESSAGE);
+                    } catch (IOException exc) {
+                        if (log.isEnabledFor(Level.ERROR)) {
+                            log.error("Error while loading configuration from " + configFile, exc);
+                        }
+                        JOptionPane.showMessageDialog(frame, "Error occurred while loading the configuration from " + configFile + ".\n\n" + exc.getMessage(), "Configuration loading error", JOptionPane.ERROR_MESSAGE);
                     }
                 }
             }
@@ -1641,6 +1691,7 @@ public class SMatchGUI extends Observable {
     }
 
     // GUI static elements
+    private JFrame frame;
     private JPanel mainPanel;
     private JMenuBar mainMenu;
     private JTextArea taLog;
@@ -1656,6 +1707,9 @@ public class SMatchGUI extends Observable {
     private JSplitPane spnContextsLog;
     private JPopupMenu popSource;
     private JPopupMenu popTarget;
+    private JTextField teMappingLocation;
+    private JTextField teSourceContextLocation;
+    private JTextField teTargetContextLocation;
 
 
     // actions
@@ -1896,8 +1950,18 @@ public class SMatchGUI extends Observable {
     private void openSource(File file) {
         log.info("Opening source: " + file.getAbsolutePath() + "");
 
-        source = loadTree(file.getAbsolutePath());
-        createTree(source, tSource, mapping);
+        try {
+            source = loadTree(file.getAbsolutePath());
+            createTree(source, tSource, mapping);
+            teSourceContextLocation.setText(file.getAbsolutePath());
+            teSourceContextLocation.setToolTipText(file.getAbsolutePath());
+        } catch (SMatchException e) {
+            if (log.isEnabledFor(Level.ERROR)) {
+                log.error("Error while loading context from " + file.getAbsolutePath(), e);
+            }
+            JOptionPane.showMessageDialog(frame, "Error occurred while loading the context from " + file.getAbsolutePath() + "\n\n" + e.getMessage() + "\n\nPlease, ensure the file format is correct.", "Context loading error", JOptionPane.ERROR_MESSAGE);
+        }
+
         setChanged();
         notifyObservers();
     }
@@ -1905,8 +1969,18 @@ public class SMatchGUI extends Observable {
     private void openTarget(File file) {
         log.info("Opening target: " + file.getAbsolutePath() + "");
 
-        target = loadTree(file.getAbsolutePath());
-        createTree(target, tTarget, mapping);
+        try {
+            target = loadTree(file.getAbsolutePath());
+            createTree(target, tTarget, mapping);
+            teTargetContextLocation.setText(file.getAbsolutePath());
+            teTargetContextLocation.setToolTipText(file.getAbsolutePath());
+        } catch (SMatchException e) {
+            if (log.isEnabledFor(Level.ERROR)) {
+                log.error("Error while loading context from " + file.getAbsolutePath(), e);
+            }
+            JOptionPane.showMessageDialog(frame, "Error occurred while loading the context from " + file.getAbsolutePath() + "\n\n" + e.getMessage() + "\n\nPlease, ensure the file format is correct.", "Context loading error", JOptionPane.ERROR_MESSAGE);
+        }
+
         setChanged();
         notifyObservers();
     }
@@ -1919,12 +1993,15 @@ public class SMatchGUI extends Observable {
             createTree(source, tSource, mapping);
             createTree(target, tTarget, mapping);
             pnContexts.repaint();
+            teMappingLocation.setText(file.getAbsolutePath());
+            teMappingLocation.setToolTipText(file.getAbsolutePath());
             setChanged();
             notifyObservers();
         } catch (SMatchException e) {
             if (log.isEnabledFor(Level.ERROR)) {
-                log.error("Error while loading a mapping", e);
+                log.error("Error while loading the mapping", e);
             }
+            JOptionPane.showMessageDialog(frame, "Error occurred while loading the mapping from " + file.getAbsolutePath() + ".\n\n" + e.getMessage() + "\n\nPlease, ensure the mapping file is correct and try again.", "Mapping loading error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -2038,7 +2115,7 @@ public class SMatchGUI extends Observable {
         acViewUncoalesceAll = new ActionViewUncoalesceAll();
 
         String layoutColumns = "fill:default:grow";
-        String layoutRows = "top:d:noGrow,top:4dlu:noGrow,fill:max(d;100px):grow";
+        String layoutRows = "top:d:noGrow,top:4dlu:noGrow,top:d:noGrow,top:4dlu:noGrow,fill:max(d;100px):grow";
 
         FormLayout layout = new FormLayout(layoutColumns, layoutRows);
         //PanelBuilder builder = new PanelBuilder(layout, new FormDebugPanel());
@@ -2088,6 +2165,11 @@ public class SMatchGUI extends Observable {
         cbConfig.addItemListener(configCombolistener);
         tbMain.add(cbConfig);
 
+        teMappingLocation = new JTextField();
+        teMappingLocation.setEnabled(false);
+        teMappingLocation.setHorizontalAlignment(JTextField.RIGHT);
+        builder.add(teMappingLocation, cc.xy(1, 3, CellConstraints.FILL, CellConstraints.FILL));
+
 
         //build trees panel
         spnContextsLog = new JSplitPane();
@@ -2095,7 +2177,7 @@ public class SMatchGUI extends Observable {
         spnContextsLog.setOrientation(JSplitPane.VERTICAL_SPLIT);
         spnContextsLog.setOneTouchExpandable(true);
 
-        builder.add(spnContextsLog, cc.xy(1, 3, CellConstraints.DEFAULT, CellConstraints.FILL));
+        builder.add(spnContextsLog, cc.xy(1, 5, CellConstraints.DEFAULT, CellConstraints.FILL));
         spnContexts = new JSplitPane();
 
 
@@ -2107,7 +2189,7 @@ public class SMatchGUI extends Observable {
 
         //build source
         JPanel pnSource = new JPanel();
-        pnSource.setLayout(new FormLayout("fill:d:grow", "center:d:noGrow,top:4dlu:noGrow,center:d:grow"));
+        pnSource.setLayout(new FormLayout("fill:d:grow", "center:d:noGrow,top:4dlu:noGrow,center:d:noGrow,top:4dlu:noGrow,center:d:grow"));
         spnContexts.setLeftComponent(pnSource);
         JToolBar tbSource = new JToolBar();
         tbSource.setFloatable(false);
@@ -2122,8 +2204,13 @@ public class SMatchGUI extends Observable {
         btSourceSave.setHideActionText(true);
         tbSource.add(btSourceOpen);
         tbSource.add(btSourceSave);
+        teSourceContextLocation = new JTextField();
+        teSourceContextLocation.setEnabled(false);
+        teSourceContextLocation.setHorizontalAlignment(JTextField.RIGHT);
+        pnSource.add(teSourceContextLocation, cc.xy(1, 3, CellConstraints.FILL, CellConstraints.FILL));
+        ToolTipManager.sharedInstance().registerComponent(teSourceContextLocation);
         spSource = new JScrollPane();
-        pnSource.add(spSource, cc.xy(1, 3, CellConstraints.FILL, CellConstraints.FILL));
+        pnSource.add(spSource, cc.xy(1, 5, CellConstraints.FILL, CellConstraints.FILL));
         tSource = new JTree(new DefaultMutableTreeNode(EMPTY_ROOT_NODE_LABEL));
         ToolTipManager.sharedInstance().registerComponent(tSource);
         tSource.addMouseListener(treeMouseListener);
@@ -2157,7 +2244,7 @@ public class SMatchGUI extends Observable {
 
         //build target
         JPanel pnTarget = new JPanel();
-        pnTarget.setLayout(new FormLayout("fill:d:grow", "center:d:noGrow,top:4dlu:noGrow,center:d:grow"));
+        pnTarget.setLayout(new FormLayout("fill:d:grow", "center:d:noGrow,top:4dlu:noGrow,center:d:noGrow,top:4dlu:noGrow,center:d:grow"));
         spnContexts.setRightComponent(pnTarget);
         JToolBar tbTarget = new JToolBar();
         tbTarget.setFloatable(false);
@@ -2172,8 +2259,13 @@ public class SMatchGUI extends Observable {
         btTargetSave.setHideActionText(true);
         tbTarget.add(btTargetOpen);
         tbTarget.add(btTargetSave);
+        teTargetContextLocation = new JTextField();
+        teTargetContextLocation.setEnabled(false);
+        teTargetContextLocation.setHorizontalAlignment(JTextField.RIGHT);
+        pnTarget.add(teTargetContextLocation, cc.xy(1, 3, CellConstraints.FILL, CellConstraints.FILL));
+        ToolTipManager.sharedInstance().registerComponent(teTargetContextLocation);
         spTarget = new JScrollPane();
-        pnTarget.add(spTarget, cc.xy(1, 3, CellConstraints.FILL, CellConstraints.FILL));
+        pnTarget.add(spTarget, cc.xy(1, 5, CellConstraints.FILL, CellConstraints.FILL));
         tTarget = new JTree(new DefaultMutableTreeNode(EMPTY_ROOT_NODE_LABEL));
         ToolTipManager.sharedInstance().registerComponent(tTarget);
         tTarget.addMouseListener(treeMouseListener);
@@ -2244,15 +2336,9 @@ public class SMatchGUI extends Observable {
         }
     }
 
-    private IContext loadTree(String fileName) {
+    private IContext loadTree(String fileName) throws SMatchException {
         IContext context = null;
-        try {
-            context = mm.loadContext(fileName);
-        } catch (SMatchException e) {
-            if (log.isEnabledFor(Level.ERROR)) {
-                log.error("Error while loading context from " + fileName, e);
-            }
-        }
+        context = mm.loadContext(fileName);
 
         return context;
     }
@@ -2332,11 +2418,14 @@ public class SMatchGUI extends Observable {
 
             mm = new MatchManager(config);
         } catch (SMatchException e) {
-            log.info("Failed to create MatchManager: " + e);
+            log.error("Failed to create MatchManager: " + e);
+            JOptionPane.showMessageDialog(frame, "Error occurred while creating the MatchManager.\n\n" + e.getMessage() + "\n\nPlease, ensure the configuration is correct and try again.", "MatchManager creation error", JOptionPane.ERROR_MESSAGE);
         } catch (FileNotFoundException e) {
-            //TODO exc handling
+            log.error("Failed to create MatchManager: " + e);
+            JOptionPane.showMessageDialog(frame, "Error occurred while creating the MatchManager.\n\n" + e.getMessage() + "\n\nPlease, ensure the configuration is correct and try again.", "MatchManager creation error", JOptionPane.ERROR_MESSAGE);
         } catch (IOException e) {
-            //TODO exc handling
+            log.error("Failed to create MatchManager: " + e);
+            JOptionPane.showMessageDialog(frame, "Error occurred while creating the MatchManager.\n\n" + e.getMessage() + "\n\nPlease, ensure the configuration is correct and try again.", "MatchManager creation error", JOptionPane.ERROR_MESSAGE);
         }
         setChanged();
         notifyObservers();
@@ -2430,7 +2519,7 @@ public class SMatchGUI extends Observable {
         buildStaticGUI();
         createMatchManager();
 
-        JFrame frame = new JFrame("SMatch GUI");
+        frame = new JFrame("SMatch GUI");
         frame.setMinimumSize(new Dimension(600, 400));
         frame.setLocation(100, 100);
         frame.setContentPane(mainPanel);
@@ -2458,13 +2547,13 @@ public class SMatchGUI extends Observable {
                     try {
                         icons.add(r.read(i));
                     } catch (Exception e) {
-                        //silently fail
+                        log.error("Error occurred while reading icons: " + e.getMessage());
                     }
                 }
                 frame.setIconImages(icons);
             }
         } catch (Exception e) {
-            //silently fail
+            log.error("Error occurred while loading icon from " + MAIN_ICON_FILE + ".\n\n" + e.getMessage());
         }
 
         //load the contexts and the mapping from the command line
