@@ -40,7 +40,7 @@ import java.util.List;
  *
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
-public class SMatchGUI extends Observable {
+public class SMatchGUI extends Observable implements Observer {
 
     private static Logger log;
 
@@ -63,15 +63,83 @@ public class SMatchGUI extends Observable {
 
     private IMatchManager mm = null;
     private IContext source = null;
+    private boolean sourceModified = false;
     private String sourceLocation = null;
     private IContext target = null;
+    private boolean targetModified = false;
     private String targetLocation = null;
     private IContextMapping<INode> mapping = null;
+    private boolean mappingModified = false;
     private String mappingLocation = null;
     private JTree lastFocusedTree;
 
     private String configFileName;
     private Properties commandProperties;
+
+    // GUI static elements
+    private JFrame frame;
+    private JPanel mainPanel;
+    private JMenuBar mainMenu;
+    private JTextArea taLog;
+    private DefaultComboBoxModel cmConfigs;
+    private JComboBox cbConfig;
+    private JFileChooser fc;
+    private JTree tSource;
+    private JTree tTarget;
+    private JSplitPane spnContexts;
+    private JPanel pnContexts;
+    private JScrollPane spSource;
+    private JScrollPane spTarget;
+    private JSplitPane spnContextsLog;
+    private JPopupMenu popSource;
+    private JPopupMenu popTarget;
+    private JTextField teMappingLocation;
+    private JTextField teSourceContextLocation;
+    private JTextField teTargetContextLocation;
+    private JMenuItem jmiMappingClose;
+    private JMenuItem jmiSourceClose;
+    private JMenuItem jmiTargetClose;
+
+
+    // actions
+    private Action acSourceCreate;
+    private Action acSourceAddNode;
+    private Action acSourceAddChildNode;
+    private Action acSourceDelete;
+    private Action acSourceUncoalesce;
+    private Action acSourceUncoalesceAll;
+    private Action acSourceOpen;
+    private Action acSourcePreprocess;
+    private Action acSourceClose;
+    private Action acSourceSave;
+    private Action acSourceSaveAs;
+
+    private Action acTargetCreate;
+    private Action acTargetAddNode;
+    private Action acTargetAddChildNode;
+    private Action acTargetDelete;
+    private Action acTargetUncoalesce;
+    private Action acTargetUncoalesceAll;
+    private Action acTargetOpen;
+    private Action acTargetPreprocess;
+    private Action acTargetClose;
+    private Action acTargetSave;
+    private Action acTargetSaveAs;
+
+    private Action acMappingCreate;
+    private Action acMappingOpen;
+    private Action acMappingClose;
+    private Action acMappingSave;
+    private Action acMappingSaveAs;
+
+    private Action acEditAddNode;
+    private Action acEditAddChildNode;
+    private Action acEditAddLink;
+    private Action acEditDelete;
+
+    private Action acViewUncoalesce;
+    private Action acViewUncoalesceAll;
+
 
     private static final String TANGO_ICONS_PATH = "/tango-icon-theme-0.8.90/";
 
@@ -198,6 +266,415 @@ public class SMatchGUI extends Observable {
         iconUncoalesceLarge = icon.getIcon(LARGE_ICON_SIZE);
     }
 
+    /**
+     * A tree model that includes the mapping. Supports coalescing nodes.
+     * There can be one range of coalesced nodes among node's children. For example, let these be some node's children
+     * 111
+     * 222
+     * 333
+     * 444
+     * <p/>
+     * if children 1->3 became coalesced
+     * <p/>
+     * ...  -> 111,222,333
+     * 444
+     * <p/>
+     * Coalesce operation hides the nodes by not reporting them to the tree.
+     *
+     * @author Aliaksandr Autayeu avtaev@gmail.com
+     */
+    private class MappingTreeModel extends DefaultTreeModel {
+
+        protected INode root;
+
+        //whether this tree is a source tree of a mapping
+        private boolean isSource;
+
+        private IContextMapping<INode> mapping;
+
+        public class Coalesce {
+            public Point range;
+            public DefaultMutableTreeNode sub;
+            public INode parent;
+
+            private Coalesce(Point range, DefaultMutableTreeNode sub, INode parent) {
+                this.range = range;
+                this.sub = sub;
+                this.parent = parent;
+            }
+        }
+        // for each node keep an inclusive range of its coalesced children plus a substitute node with ellipsis
+        private HashMap<INode, Coalesce> coalesce = new HashMap<INode, Coalesce>();
+
+        public MappingTreeModel(INode root, boolean isSource, IContextMapping<INode> mapping) {
+            super(root);
+            this.root = root;
+            this.isSource = isSource;
+            this.mapping = mapping;
+        }
+
+        public void setMapping(IContextMapping<INode> mapping) {
+            this.mapping = mapping;
+        }
+
+        /**
+         * Coalesces the <code>parent</code>'s children from <code>start</code> to <code>end</code> (inclusive).
+         *
+         * @param parent the node with children to coalesce
+         * @param start  starting index
+         * @param end    ending index
+         */
+        public void coalesce(INode parent, int start, int end) {
+            Coalesce c = coalesce.get(parent);
+            if (null != c) {
+                uncoalesce(parent);
+            }
+            if (0 <= start && end < parent.getChildCount() && start < end) {
+                DefaultMutableTreeNode dmtn = new DefaultMutableTreeNode();
+                c = new Coalesce(new Point(start, end), dmtn, parent);
+                dmtn.setUserObject(c);
+                coalesce.put(parent, c);
+
+                int[] childIndices = new int[end - start + 1];
+                Object[] removedChildren = new Object[end - start + 1];
+                for (int i = 0; i < childIndices.length; i++) {
+                    childIndices[i] = start + i;
+                    removedChildren[i] = parent.getChildAt(start + i);
+                }
+                //signal the "removal" of a range
+                nodesWereRemoved(parent, childIndices, removedChildren);
+                //signal the insertion of a sub
+                nodesWereInserted(parent, new int[]{start});
+            }
+        }
+
+        /**
+         * Expands coalesced children.
+         *
+         * @param parent node to expand coalesced children.
+         */
+        public void uncoalesce(INode parent) {
+            Coalesce c = coalesce.get(parent);
+            if (null != c) {
+                coalesce.remove(parent);
+
+                int[] childIndices = new int[c.range.y - c.range.x + 1];
+                for (int i = 0; i < childIndices.length; i++) {
+                    childIndices[i] = c.range.x + i;
+                }
+                //signal the deletion of a sub
+                nodesWereRemoved(parent, new int[]{c.range.x}, new Object[]{c.sub});
+                //signal the "insertion" of a range
+                nodesWereInserted(parent, childIndices);
+            }
+        }
+
+        /**
+         * Expands all coalesced nodes.
+         */
+        public void uncoalesceAll() {
+            List<INode> parents = new ArrayList<INode>(coalesce.keySet());
+            while (0 < parents.size()) {
+                uncoalesce(parents.get(0));
+                parents.remove(0);
+            }
+            coalesce.clear();
+        }
+
+
+        /**
+         * Expands coalesced children in parent nodes until the node becomes visible.
+         *
+         * @param node to make visible
+         */
+        public void uncoalesceParents(final INode node) {
+            INode curNode = node;
+            while (null != curNode && isCoalescedInAnyParent(curNode)) {
+                if (isCoalesced(curNode)) {
+                    uncoalesce(curNode.getParent());
+                }
+                curNode = curNode.getParent();
+            }
+        }
+
+
+        /**
+         * Returns whether the <code>node</code> is coalesced.
+         *
+         * @param node node to check
+         * @return whether the node is coalesced
+         */
+        public boolean isCoalesced(INode node) {
+            boolean result = false;
+            INode parent = node.getParent();
+            if (null != parent) {
+                Coalesce c = coalesce.get(parent);
+                if (null != c) {
+                    int idx = parent.getChildIndex(node);
+                    result = c.range.x <= idx && idx <= c.range.y;
+                }
+            }
+            return result;
+        }
+
+        /**
+         * Returns whether any of the <code>node</code>'s parents is coalesced.
+         *
+         * @param node node to check
+         * @return whether any of the node's parents is coalesced
+         */
+        public boolean isCoalescedInAnyParent(INode node) {
+            boolean result = false;
+            INode curNode = node;
+            while (null != curNode && !result) {
+                result = isCoalesced(curNode);
+                curNode = curNode.getParent();
+            }
+            return result;
+        }
+
+        /**
+         * Returns whether there is a coalesced node in this model.
+         *
+         * @return whether there is a coalesced node in this model
+         */
+        public boolean hasCoalescedNode() {
+            return !coalesce.isEmpty();
+        }
+
+        @Override
+        public Object getRoot() {
+            if (null == root.getNodeData().getUserObject()) {
+                updateUserObject(root);
+            }
+
+            return root;
+        }
+
+        private List<DefaultMutableTreeNode> updateUserObject(final INode node) {
+            List<DefaultMutableTreeNode> result = Collections.emptyList();
+            List<IMappingElement<INode>> links;
+            if (null != mapping) {
+                if (isSource) {
+                    links = mapping.getSources(node);
+                } else {
+                    links = mapping.getTargets(node);
+                }
+                result = new ArrayList<DefaultMutableTreeNode>();
+                for (IMappingElement<INode> me : links) {
+                    result.add(new DefaultMutableTreeNode(me));
+                }
+            }
+            node.getNodeData().setUserObject(result);
+            return result;
+        }
+
+        @Override
+        public Object getChild(Object parent, int index) {
+            Object result = null;
+            if (parent instanceof INode) {
+                INode parentNode = (INode) parent;
+                Coalesce c = coalesce.get(parentNode);
+                if (null == c) {
+                    if (0 <= index && index < parentNode.getChildCount()) {
+                        result = parentNode.getChildAt(index);
+                    } else {
+                        @SuppressWarnings("unchecked")
+                        List<DefaultMutableTreeNode> linkNodes = (List<DefaultMutableTreeNode>) parentNode.getNodeData().getUserObject();
+                        if (null == linkNodes) {
+                            linkNodes = updateUserObject(parentNode);
+                        }
+                        if (parentNode.getChildCount() <= index && index < (parentNode.getChildCount() + linkNodes.size())) {
+                            result = linkNodes.get(index - parentNode.getChildCount());
+                        }
+                    }
+                } else {
+                    final int coalescedLength = c.range.y - c.range.x;
+                    final int coalescedIdx = parentNode.getChildCount() - coalescedLength;
+                    if (0 <= index && index < coalescedIdx) {
+                        if (index == c.range.x) {
+                            result = c.sub;
+                        } else {
+                            if (index < c.range.x) {
+                                result = parentNode.getChildAt(index);
+                            } else {
+                                //index > c.range.x
+                                result = parentNode.getChildAt(index + coalescedLength);
+                            }
+                        }
+                    } else {
+                        @SuppressWarnings("unchecked")
+                        List<DefaultMutableTreeNode> linkNodes = (List<DefaultMutableTreeNode>) parentNode.getNodeData().getUserObject();
+                        if (null == linkNodes) {
+                            linkNodes = updateUserObject(parentNode);
+                        }
+                        if (coalescedIdx <= index && index < (coalescedIdx + linkNodes.size())) {
+                            result = linkNodes.get(index - coalescedIdx);
+                        }
+                    }
+                }
+            }
+            return result;
+        }
+
+        @Override
+        public int getChildCount(Object parent) {
+            int result = 0;
+            if (parent instanceof INode) {
+                INode parentNode = (INode) parent;
+                @SuppressWarnings("unchecked")
+                List<DefaultMutableTreeNode> linkNodes = (List<DefaultMutableTreeNode>) parentNode.getNodeData().getUserObject();
+                if (null == linkNodes) {
+                    linkNodes = updateUserObject(parentNode);
+                }
+                Coalesce c = coalesce.get(parentNode);
+                if (null == c) {
+                    result = parentNode.getChildCount() + linkNodes.size();
+                } else {
+                    final int coalescedLength = c.range.y - c.range.x;
+                    result = parentNode.getChildCount() + linkNodes.size() - coalescedLength;
+                }
+            }
+            return result;
+        }
+
+        @Override
+        public boolean isLeaf(Object node) {
+            boolean result = true;
+            if (node instanceof INode) {
+                INode iNode = (INode) node;
+                @SuppressWarnings("unchecked")
+                List<DefaultMutableTreeNode> linkNodes = (List<DefaultMutableTreeNode>) iNode.getNodeData().getUserObject();
+                if (null == linkNodes) {
+                    linkNodes = updateUserObject(iNode);
+                }
+
+                result = 0 == iNode.getChildCount() && 0 == linkNodes.size();
+            }
+            return result;
+        }
+
+        @Override
+        public void valueForPathChanged(TreePath path, Object newValue) {
+            Object o = path.getLastPathComponent();
+            if (o instanceof INode) {
+                INode node = (INode) o;
+                if (newValue instanceof String) {
+                    String text = (String) newValue;
+                    if (!node.getNodeData().getName().equals(text)) {
+                        node.getNodeData().setName(text);
+                        node.getNodeData().setIsPreprocessed(false);
+                        if (isSource) {
+                            sourceModified = true;
+                        } else {
+                            targetModified = true;
+                        }
+                        setChanged();
+                        notifyObservers();
+                    }
+                }
+            } else if (o instanceof DefaultMutableTreeNode) {
+                DefaultMutableTreeNode dmtn = (DefaultMutableTreeNode) o;
+                if (newValue instanceof Character && dmtn.getUserObject() instanceof IMappingElement) {
+                    Character rel = (Character) newValue;
+                    @SuppressWarnings("unchecked")
+                    IMappingElement<INode> me = (IMappingElement<INode>) dmtn.getUserObject();
+                    mapping.setRelation(me.getSource(), me.getTarget(), rel);
+                    mappingModified = true;
+                    setChanged();
+                    notifyObservers();
+                }
+            }
+        }
+
+        @Override
+        public int getIndexOfChild(Object parent, Object child) {
+            int result = -1;
+            if (null != parent && null != child) {
+                if (parent instanceof INode) {
+                    INode pNode = (INode) parent;
+                    Coalesce c = coalesce.get(pNode);
+                    if (null == c) {
+                        if (child instanceof INode) {
+                            INode cNode = (INode) child;
+                            result = pNode.getChildIndex(cNode);
+                        } else {
+                            if (child instanceof DefaultMutableTreeNode) {
+                                DefaultMutableTreeNode dmtn = (DefaultMutableTreeNode) child;
+                                @SuppressWarnings("unchecked")
+                                List<DefaultMutableTreeNode> linkNodes = (List<DefaultMutableTreeNode>) pNode.getNodeData().getUserObject();
+                                if (null == linkNodes) {
+                                    linkNodes = updateUserObject(pNode);
+                                }
+                                result = pNode.getChildCount() + linkNodes.indexOf(dmtn);
+                            }
+                        }
+                    } else {
+                        final int coalescedLength = c.range.y - c.range.x;
+                        if (child instanceof INode) {
+                            INode cNode = (INode) child;
+                            result = pNode.getChildIndex(cNode);
+                            if (c.range.x <= result && result <= c.range.y) {
+                                //should not get here
+                            } else if (c.range.y < result) {
+                                result = result - coalescedLength;
+                            }
+                        } else {
+                            if (child instanceof DefaultMutableTreeNode) {
+                                DefaultMutableTreeNode dmtn = (DefaultMutableTreeNode) child;
+                                if (dmtn.getUserObject() instanceof String) {
+                                    //sub node
+                                    result = c.range.x;
+                                } else {
+                                    @SuppressWarnings("unchecked")
+                                    List<DefaultMutableTreeNode> linkNodes = (List<DefaultMutableTreeNode>) pNode.getNodeData().getUserObject();
+                                    if (null == linkNodes) {
+                                        linkNodes = updateUserObject(pNode);
+                                    }
+                                    result = (pNode.getChildCount() - coalescedLength) + linkNodes.indexOf(dmtn);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            return result;
+        }
+
+        @Override
+        public void nodesWereInserted(TreeNode node, int[] childIndices) {
+            if (listenerList != null && node != null && childIndices != null && childIndices.length > 0) {
+                int cCount = childIndices.length;
+                Object[] newChildren = new Object[cCount];
+
+                for (int counter = 0; counter < cCount; counter++) {
+                    newChildren[counter] = getChild(node, childIndices[counter]);
+                }
+                fireTreeNodesInserted(this, getPathToRoot(node), childIndices, newChildren);
+            }
+        }
+
+        @Override
+        public void nodesChanged(TreeNode node, int[] childIndices) {
+            if (node != null) {
+                if (childIndices != null) {
+                    int cCount = childIndices.length;
+
+                    if (cCount > 0) {
+                        Object[] cChildren = new Object[cCount];
+
+                        for (int counter = 0; counter < cCount; counter++) {
+                            cChildren[counter] = getChild(node, childIndices[counter]);
+                        }
+                        fireTreeNodesChanged(this, getPathToRoot(node), childIndices, cChildren);
+                    }
+                } else if (node == getRoot()) {
+                    fireTreeNodesChanged(this, getPathToRoot(node), null, null);
+                }
+            }
+        }
+    }
+
     private class ActionSourceCreate extends AbstractAction implements Observer {
         public ActionSourceCreate() {
             super("Create");
@@ -211,11 +688,22 @@ public class SMatchGUI extends Observable {
             if (acMappingClose.isEnabled()) {
                 acMappingClose.actionPerformed(actionEvent);
             }
-            source = mm.createContext();
-            source.createRoot("Top");
-            createTree(source, tSource, null);
-            teSourceContextLocation.setText("");
-            teSourceContextLocation.setToolTipText("");
+            if (!acMappingClose.isEnabled()) {
+                if (acSourceClose.isEnabled()) {
+                    acSourceClose.actionPerformed(actionEvent);
+                }
+                if (!acSourceClose.isEnabled()) {
+                    source = mm.createContext();
+                    source.createRoot("Top");
+                    if (null != target) {
+                        mapping = mm.getMappingFactory().getContextMappingInstance(source, target);
+                        resetMappingInModel(tTarget);
+                    }
+                    createTree(source, tSource, mapping);
+                    sourceLocation = null;
+                    sourceModified = false;
+                }
+            }
             setChanged();
             notifyObservers();
         }
@@ -235,17 +723,16 @@ public class SMatchGUI extends Observable {
             if (acMappingClose.isEnabled()) {
                 acMappingClose.actionPerformed(actionEvent);
             }
-            ff.setDescription(mm.getContextLoader().getDescription());
-            fc.addChoosableFileFilter(ff);
-            final int returnVal = fc.showOpenDialog(mainPanel);
-            fc.removeChoosableFileFilter(ff);
+            if (!acMappingClose.isEnabled()) {
+                ff.setDescription(mm.getContextLoader().getDescription());
+                fc.addChoosableFileFilter(ff);
+                final int returnVal = fc.showOpenDialog(mainPanel);
+                fc.removeChoosableFileFilter(ff);
 
-            if (returnVal == JFileChooser.APPROVE_OPTION) {
-                File file = fc.getSelectedFile();
-                if (acMappingClose.isEnabled()) {
-                    acMappingClose.actionPerformed(actionEvent);
+                if (returnVal == JFileChooser.APPROVE_OPTION) {
+                    File file = fc.getSelectedFile();
+                    open(file);
                 }
-                open(file);
             }
         }
 
@@ -289,6 +776,19 @@ public class SMatchGUI extends Observable {
         }
 
         @Override
+        public void actionPerformed(ActionEvent actionEvent) {
+            if (acSourceClose.isEnabled()) {
+                acSourceClose.actionPerformed(actionEvent);
+            }
+            if (!acSourceClose.isEnabled()) {
+                super.actionPerformed(actionEvent);
+            }
+            sourceModified = false;
+            setChanged();
+            notifyObservers();
+        }
+
+        @Override
         protected void open(File file) {
             openSource(file);
         }
@@ -305,6 +805,9 @@ public class SMatchGUI extends Observable {
 
         public void actionPerformed(ActionEvent actionEvent) {
             preprocess(source);
+            sourceModified = true;
+            setChanged();
+            notifyObservers();
         }
 
         public void update(Observable o, Object arg) {
@@ -325,13 +828,37 @@ public class SMatchGUI extends Observable {
             if (acMappingClose.isEnabled()) {
                 acMappingClose.actionPerformed(actionEvent);
             }
-            source = null;
-            sourceLocation = null;
-            createTree(source, tSource, null);
-            teSourceContextLocation.setText("");
-            teSourceContextLocation.setToolTipText("");
-            setChanged();
-            notifyObservers();
+            if (!acMappingClose.isEnabled()) {
+                int choice = 1;//no, don't save.
+                if (sourceModified) {
+                    choice = JOptionPane.showOptionDialog(frame,
+                            "The source context has been changed.\n\nSave the source context?",
+                            "Save the source context?",
+                            JOptionPane.YES_NO_CANCEL_OPTION,
+                            JOptionPane.QUESTION_MESSAGE,
+                            null,
+                            null,
+                            0);
+                }
+                switch (choice) {
+                    case 0: {//yes, save
+                        acSourceSave.actionPerformed(actionEvent);
+                        if (!acSourceSave.isEnabled()) {
+                            closeSource();
+                        }
+                        break;
+                    }
+                    case 1: {//no, don't save
+                        closeSource();
+                        break;
+                    }
+                    case 2: {//cancel
+                        break;
+                    }
+                    default: {//cancel
+                    }
+                }
+            }
         }
 
         public void update(Observable o, Object arg) {
@@ -367,6 +894,7 @@ public class SMatchGUI extends Observable {
                 log.info("Saving source: " + sourceLocation);
                 try {
                     mm.renderContext(source, sourceLocation);
+                    sourceModified = false;
                 } catch (SMatchException e) {
                     if (log.isEnabledFor(Level.ERROR)) {
                         log.error("Error while saving source context", e);
@@ -374,10 +902,13 @@ public class SMatchGUI extends Observable {
                     JOptionPane.showMessageDialog(frame, "Error occurred while saving the context.\n\n" + e.getMessage() + "\n\nPlease, ensure the S-Match is intact, configured properly and try again.", "Context save error", JOptionPane.ERROR_MESSAGE);
                 }
             }
+
+            setChanged();
+            notifyObservers();
         }
 
         public void update(Observable o, Object arg) {
-            setEnabled(null != mm && null != source && null != mm.getContextRenderer());
+            setEnabled(null != mm && null != source && null != mm.getContextRenderer() && sourceModified);
         }
     }
 
@@ -406,8 +937,7 @@ public class SMatchGUI extends Observable {
                 log.info("Saving source: " + sourceLocation);
                 try {
                     mm.renderContext(source, sourceLocation);
-                    teSourceContextLocation.setText(sourceLocation);
-                    teSourceContextLocation.setToolTipText(sourceLocation);
+                    sourceModified = false;
                 } catch (SMatchException e) {
                     if (log.isEnabledFor(Level.ERROR)) {
                         log.error("Error while saving source context", e);
@@ -415,6 +945,9 @@ public class SMatchGUI extends Observable {
                     JOptionPane.showMessageDialog(frame, "Error occurred while saving the context.\n\n" + e.getMessage() + "\n\nPlease, ensure the S-Match is intact, configured properly and try again.", "Context save error", JOptionPane.ERROR_MESSAGE);
                 }
             }
+
+            setChanged();
+            notifyObservers();
         }
 
         public void update(Observable o, Object arg) {
@@ -435,11 +968,23 @@ public class SMatchGUI extends Observable {
             if (acMappingClose.isEnabled()) {
                 acMappingClose.actionPerformed(actionEvent);
             }
-            target = mm.createContext();
-            target.createRoot("Top");
-            createTree(target, tTarget, null);
-            teTargetContextLocation.setText("");
-            teTargetContextLocation.setToolTipText("");
+            if (!acMappingClose.isEnabled()) {
+                if (acTargetClose.isEnabled()) {
+                    acTargetClose.actionPerformed(actionEvent);
+                }
+                if (!acTargetClose.isEnabled()) {
+                    target = mm.createContext();
+                    target.createRoot("Top");
+                    if (null != source) {
+                        mapping = mm.getMappingFactory().getContextMappingInstance(source, target);
+                        resetMappingInModel(tSource);
+                    }
+                    createTree(target, tTarget, mapping);
+                    targetLocation = null;
+                    targetModified = false;
+                }
+            }
+
             setChanged();
             notifyObservers();
         }
@@ -461,6 +1006,19 @@ public class SMatchGUI extends Observable {
         }
 
         @Override
+        public void actionPerformed(ActionEvent actionEvent) {
+            if (acTargetClose.isEnabled()) {
+                acTargetClose.actionPerformed(actionEvent);
+            }
+            if (!acTargetClose.isEnabled()) {
+                super.actionPerformed(actionEvent);
+            }
+            targetModified = false;
+            setChanged();
+            notifyObservers();
+        }
+
+        @Override
         protected void open(File file) {
             openTarget(file);
         }
@@ -477,6 +1035,9 @@ public class SMatchGUI extends Observable {
 
         public void actionPerformed(ActionEvent actionEvent) {
             preprocess(target);
+            targetModified = true;
+            setChanged();
+            notifyObservers();
         }
 
         public void update(Observable o, Object arg) {
@@ -497,13 +1058,37 @@ public class SMatchGUI extends Observable {
             if (acMappingClose.isEnabled()) {
                 acMappingClose.actionPerformed(actionEvent);
             }
-            target = null;
-            targetLocation = null;
-            createTree(target, tTarget, null);
-            teTargetContextLocation.setText("");
-            teTargetContextLocation.setToolTipText("");
-            setChanged();
-            notifyObservers();
+            if (!acMappingClose.isEnabled()) {
+                int choice = 1;//no, don't save.
+                if (targetModified) {
+                    choice = JOptionPane.showOptionDialog(frame,
+                            "The target context has been changed.\n\nSave the target context?",
+                            "Save the target context?",
+                            JOptionPane.YES_NO_CANCEL_OPTION,
+                            JOptionPane.QUESTION_MESSAGE,
+                            null,
+                            null,
+                            0);
+                }
+                switch (choice) {
+                    case 0: {//yes, save
+                        acTargetSave.actionPerformed(actionEvent);
+                        if (!acTargetSave.isEnabled()) {
+                            closeTarget();
+                        }
+                        break;
+                    }
+                    case 1: {//no, don't save
+                        closeTarget();
+                        break;
+                    }
+                    case 2: {//cancel
+                        break;
+                    }
+                    default: {//cancel
+                    }
+                }
+            }
         }
 
         public void update(Observable o, Object arg) {
@@ -539,6 +1124,7 @@ public class SMatchGUI extends Observable {
                 log.info("Saving target: " + targetLocation);
                 try {
                     mm.renderContext(target, targetLocation);
+                    targetModified = false;
                 } catch (SMatchException e) {
                     if (log.isEnabledFor(Level.ERROR)) {
                         log.error("Error while saving target context", e);
@@ -546,10 +1132,13 @@ public class SMatchGUI extends Observable {
                     JOptionPane.showMessageDialog(frame, "Error occurred while saving the context.\n\n" + e.getMessage() + "\n\nPlease, ensure the S-Match is intact, configured properly and try again.", "Context save error", JOptionPane.ERROR_MESSAGE);
                 }
             }
+
+            setChanged();
+            notifyObservers();
         }
 
         public void update(Observable o, Object arg) {
-            setEnabled(null != mm && null != target && null != mm.getContextRenderer());
+            setEnabled(null != mm && null != target && null != mm.getContextRenderer() && targetModified);
         }
     }
 
@@ -578,8 +1167,7 @@ public class SMatchGUI extends Observable {
                 log.info("Saving target: " + targetLocation);
                 try {
                     mm.renderContext(target, targetLocation);
-                    teTargetContextLocation.setText(targetLocation);
-                    teTargetContextLocation.setToolTipText(targetLocation);
+                    targetModified = false;
                 } catch (SMatchException e) {
                     if (log.isEnabledFor(Level.ERROR)) {
                         log.error("Error while saving target context", e);
@@ -587,6 +1175,9 @@ public class SMatchGUI extends Observable {
                     JOptionPane.showMessageDialog(frame, "Error occurred while saving the context.\n\n" + e.getMessage() + "\n\nPlease, ensure the S-Match is intact, configured properly and try again.", "Context save error", JOptionPane.ERROR_MESSAGE);
                 }
             }
+
+            setChanged();
+            notifyObservers();
         }
 
         public void update(Observable o, Object arg) {
@@ -602,7 +1193,13 @@ public class SMatchGUI extends Observable {
             tree = null;
         }
 
-        protected abstract void doAction(JTree tree);
+        protected void doAction(JTree tree) {
+            if (tSource == tree) {
+                sourceModified = true;
+            } else if (tTarget == tree) {
+                targetModified = true;
+            }
+        }
 
         public void actionPerformed(ActionEvent actionEvent) {
             if (null == tree) {
@@ -610,6 +1207,9 @@ public class SMatchGUI extends Observable {
             } else {
                 doAction(tree);
             }
+
+            setChanged();
+            notifyObservers();
         }
 
         protected abstract void setEnabled(JTree tree);
@@ -621,7 +1221,6 @@ public class SMatchGUI extends Observable {
                 setEnabled(tree);
             }
         }
-
     }
 
     private class ActionEditAddNode extends ActionTreeEdit implements Observer {
@@ -644,6 +1243,7 @@ public class SMatchGUI extends Observable {
 
         @Override
         protected void doAction(JTree tree) {
+            super.doAction(tree);
             addNode(tree);
         }
 
@@ -675,6 +1275,7 @@ public class SMatchGUI extends Observable {
 
         @Override
         protected void doAction(JTree tree) {
+            super.doAction(tree);
             addChildNode(tree);
         }
 
@@ -702,6 +1303,14 @@ public class SMatchGUI extends Observable {
                     && (tTarget.getSelectionPath().getLastPathComponent() instanceof INode)) {
                 INode sourceNode = (INode) tSource.getSelectionPath().getLastPathComponent();
                 INode targetNode = (INode) tTarget.getSelectionPath().getLastPathComponent();
+
+                if (null == mapping) {
+                    JTree oldLastFocusedTree = lastFocusedTree;
+                    mapping = mm.getMappingFactory().getContextMappingInstance(source, target);
+                    resetMappingInModel(tSource);
+                    resetMappingInModel(tTarget);
+                    lastFocusedTree = oldLastFocusedTree;
+                }
 
                 TreePath sourcePath = createPathToRoot(sourceNode);
                 TreePath targetPath = createPathToRoot(targetNode);
@@ -749,13 +1358,19 @@ public class SMatchGUI extends Observable {
                     // start editing
                     if (null != lastFocusedTree) {
                         if (lastFocusedTree == tSource) {
+                            tSource.setSelectionPath(sourcePath);
                             tSource.scrollPathToVisible(sourcePath);
                             tSource.startEditingAtPath(sourcePath);
                         } else if (lastFocusedTree == tTarget) {
+                            tTarget.setSelectionPath(targetPath);
                             tTarget.scrollPathToVisible(targetPath);
                             tTarget.startEditingAtPath(targetPath);
                         }
                     }
+
+                    mappingModified = true;
+                    setChanged();
+                    notifyObservers();
                 }
             }
         }
@@ -913,30 +1528,32 @@ public class SMatchGUI extends Observable {
             if (acMappingClose.isEnabled()) {
                 acMappingClose.actionPerformed(actionEvent);
             }
-            try {
-                if (!source.getRoot().getNodeData().isSubtreePreprocessed()) {
-                    log.info("Source is not preprocessed.");
-                    log.info("Preprocessing source.");
-                    mm.offline(source);
+            if (!acMappingClose.isEnabled()) {
+                try {
+                    if (!source.getRoot().getNodeData().isSubtreePreprocessed()) {
+                        log.info("Source is not preprocessed.");
+                        log.info("Preprocessing source.");
+                        mm.offline(source);
+                    }
+                    if (!target.getRoot().getNodeData().isSubtreePreprocessed()) {
+                        log.info("Target is not preprocessed.");
+                        log.info("Preprocessing target.");
+                        mm.offline(target);
+                    }
+                    mapping = mm.online(source, target);
+                    createTree(source, tSource, mapping);
+                    createTree(target, tTarget, mapping);
+                    mappingLocation = null;
+                    mappingModified = true;
+                    setChanged();
+                    notifyObservers();
+                } catch (SMatchException e) {
+                    if (log.isEnabledFor(Level.ERROR)) {
+                        log.error("Error while creating a mapping between source and target contexts", e);
+                        log.debug(e);
+                    }
+                    JOptionPane.showMessageDialog(frame, "Error occurred while creating the mapping.\n\n" + e.getMessage() + "\n\nPlease, ensure the S-Match is intact, configured properly and try again.", "Mapping creation error", JOptionPane.ERROR_MESSAGE);
                 }
-                if (!target.getRoot().getNodeData().isSubtreePreprocessed()) {
-                    log.info("Target is not preprocessed.");
-                    log.info("Preprocessing target.");
-                    mm.offline(target);
-                }
-                mapping = mm.online(source, target);
-                createTree(source, tSource, mapping);
-                createTree(target, tTarget, mapping);
-                teMappingLocation.setText("");
-                teMappingLocation.setToolTipText("");
-                setChanged();
-                notifyObservers();
-            } catch (SMatchException e) {
-                if (log.isEnabledFor(Level.ERROR)) {
-                    log.error("Error while creating a mapping between source and target contexts", e);
-                    log.debug(e);
-                }
-                JOptionPane.showMessageDialog(frame, "Error occurred while creating the mapping.\n\n" + e.getMessage() + "\n\nPlease, ensure the S-Match is intact, configured properly and try again.", "Mapping creation error", JOptionPane.ERROR_MESSAGE);
             }
         }
 
@@ -957,15 +1574,23 @@ public class SMatchGUI extends Observable {
         }
 
         public void actionPerformed(ActionEvent actionEvent) {
-            ff.setDescription(mm.getMappingLoader().getDescription());
-            fc.addChoosableFileFilter(ff);
-            final int returnVal = fc.showOpenDialog(mainPanel);
-            fc.removeChoosableFileFilter(ff);
-
-            if (returnVal == JFileChooser.APPROVE_OPTION) {
-                File file = fc.getSelectedFile();
-                openMapping(file);
+            if (acMappingClose.isEnabled()) {
+                acMappingClose.actionPerformed(actionEvent);
             }
+            if (!acMappingClose.isEnabled()) {
+                ff.setDescription(mm.getMappingLoader().getDescription());
+                fc.addChoosableFileFilter(ff);
+                final int returnVal = fc.showOpenDialog(mainPanel);
+                fc.removeChoosableFileFilter(ff);
+
+                if (returnVal == JFileChooser.APPROVE_OPTION) {
+                    File file = fc.getSelectedFile();
+                    openMapping(file);
+                    mappingModified = false;
+                }
+            }
+            setChanged();
+            notifyObservers();
         }
 
         public void update(Observable o, Object arg) {
@@ -983,15 +1608,35 @@ public class SMatchGUI extends Observable {
         }
 
         public void actionPerformed(ActionEvent actionEvent) {
-            mapping = null;
-            mappingLocation = null;
-            createTree(source, tSource, mapping);
-            createTree(target, tTarget, mapping);
-            pnContexts.repaint();
-            teMappingLocation.setText("");
-            teMappingLocation.setToolTipText("");
-            setChanged();
-            notifyObservers();
+            int choice = 1;//no, don't save.
+            if (mappingModified) {
+                choice = JOptionPane.showOptionDialog(frame,
+                        "The mapping has been changed.\n\nSave the mapping?",
+                        "Save the mapping?",
+                        JOptionPane.YES_NO_CANCEL_OPTION,
+                        JOptionPane.QUESTION_MESSAGE,
+                        null,
+                        null,
+                        0);
+            }
+            switch (choice) {
+                case 0: {//yes, save
+                    acMappingSave.actionPerformed(actionEvent);
+                    if (!acMappingSave.isEnabled()) {
+                        closeMapping();
+                    }
+                    break;
+                }
+                case 1: {//no, don't save
+                    closeMapping();
+                    break;
+                }
+                case 2: {//cancel
+                    break;
+                }
+                default: {//cancel
+                }
+            }
         }
 
         public void update(Observable o, Object arg) {
@@ -1012,32 +1657,14 @@ public class SMatchGUI extends Observable {
 
         public void actionPerformed(ActionEvent actionEvent) {
             if (null == mappingLocation) {
-                ff.setDescription(mm.getMappingRenderer().getDescription());
-                fc.addChoosableFileFilter(ff);
-                final int returnVal = fc.showSaveDialog(mainPanel);
-                fc.removeChoosableFileFilter(ff);
-
-                if (returnVal == JFileChooser.APPROVE_OPTION) {
-                    File file = fc.getSelectedFile();
-                    mappingLocation = file.getAbsolutePath();
-                }
+                askMappingLocation();
             }
 
-            if (null != mappingLocation) {
-                log.info("Saving mapping: " + mappingLocation);
-                try {
-                    mm.renderMapping(mapping, mappingLocation);
-                } catch (SMatchException e) {
-                    if (log.isEnabledFor(Level.ERROR)) {
-                        log.error("Error while saving mapping", e);
-                    }
-                    JOptionPane.showMessageDialog(frame, "Error occurred while saving the mapping.\n\n" + e.getMessage() + "\n\nPlease, ensure the S-Match is intact, configured properly and try again.", "Mapping save error", JOptionPane.ERROR_MESSAGE);
-                }
-            }
+            saveMapping();
         }
 
         public void update(Observable o, Object arg) {
-            setEnabled(null != mm && null != mapping && null != mm.getMappingRenderer());
+            setEnabled(null != mm && null != mapping && null != mm.getMappingRenderer() && mappingModified);
         }
     }
 
@@ -1052,29 +1679,8 @@ public class SMatchGUI extends Observable {
         }
 
         public void actionPerformed(ActionEvent actionEvent) {
-            ff.setDescription(mm.getMappingRenderer().getDescription());
-            fc.addChoosableFileFilter(ff);
-            final int returnVal = fc.showSaveDialog(mainPanel);
-            fc.removeChoosableFileFilter(ff);
-
-            if (returnVal == JFileChooser.APPROVE_OPTION) {
-                File file = fc.getSelectedFile();
-                mappingLocation = file.getAbsolutePath();
-            }
-
-            if (null != mappingLocation) {
-                log.info("Saving mapping: " + mappingLocation);
-                try {
-                    mm.renderMapping(mapping, mappingLocation);
-                    teMappingLocation.setText(mappingLocation);
-                    teMappingLocation.setToolTipText(mappingLocation);
-                } catch (SMatchException e) {
-                    if (log.isEnabledFor(Level.ERROR)) {
-                        log.error("Error while saving mapping", e);
-                    }
-                    JOptionPane.showMessageDialog(frame, "Error occurred while saving the mapping.\n\n" + e.getMessage() + "\n\nPlease, ensure the S-Match is intact, configured properly and try again.", "Mapping save error", JOptionPane.ERROR_MESSAGE);
-                }
-            }
+            askMappingLocation();
+            saveMapping();
         }
 
         public void update(Observable o, Object arg) {
@@ -1164,7 +1770,6 @@ public class SMatchGUI extends Observable {
         }
     };
 
-
     private final FocusListener treeFocusListener = new FocusListener() {
         public void focusGained(FocusEvent e) {
             if (!e.isTemporary()) {
@@ -1253,13 +1858,13 @@ public class SMatchGUI extends Observable {
                         scrollToMatchVerticalPosition(tSource, tTarget, spSource, spTarget);
                         if (!isRootVisible(tTarget)) {
                             // second try coalescing nodes, starting from those in the top
-                            for (int i= 0; i < ppList.size() - 1; i++) {
+                            for (int i = 0; i < ppList.size() - 1; i++) {
                                 if (ppList.get(i) instanceof INode && ppList.get(i + 1) instanceof INode) {
                                     INode node = (INode) ppList.get(i);
                                     INode child = (INode) ppList.get(i + 1);
                                     int idx = node.getChildIndex(child);
                                     mtm.coalesce(node, 0, idx - 1);
-                                    
+
                                     scrollToMatchVerticalPosition(tSource, tTarget, spSource, spTarget);
                                     if (isRootVisible(tTarget)) {
                                         break;
@@ -1290,21 +1895,24 @@ public class SMatchGUI extends Observable {
 
     /**
      * Scroll <code>spTarget</code> to match vertical position of <code>tTarget</code>'s selected node to the
-     * vertical position of <code>tSource</code>'s selected node.  
-     * @param tSource source tree
-     * @param tTarget target tree
+     * vertical position of <code>tSource</code>'s selected node.
+     *
+     * @param tSource  source tree
+     * @param tTarget  target tree
      * @param spSource JScroll pane which contains source tree
      * @param spTarget JScroll pane which contains target tree
      */
     private void scrollToMatchVerticalPosition(JTree tSource, JTree tTarget, JScrollPane spSource, JScrollPane spTarget) {
-        int sourceSelRowIdx = tSource.getSelectionRows()[0];
-        int targetSelRowIdx = tTarget.getSelectionRows()[0];
-        Rectangle sr = tSource.getRowBounds(sourceSelRowIdx);
-        Rectangle tr = tTarget.getRowBounds(targetSelRowIdx);
-        Point sp = spSource.getViewport().getViewPosition();
-        Point tp = spTarget.getViewport().getViewPosition();
-        int delta = (tr.y - tp.y) - (sr.y - sp.y);
-        spTarget.getViewport().setViewPosition(new Point(tp.x, tp.y + delta));
+        if (0 < tSource.getSelectionCount() && 0 < tTarget.getSelectionCount()) {
+            int sourceSelRowIdx = tSource.getSelectionRows()[0];
+            int targetSelRowIdx = tTarget.getSelectionRows()[0];
+            Rectangle sr = tSource.getRowBounds(sourceSelRowIdx);
+            Rectangle tr = tTarget.getRowBounds(targetSelRowIdx);
+            Point sp = spSource.getViewport().getViewPosition();
+            Point tp = spTarget.getViewport().getViewPosition();
+            int delta = (tr.y - tp.y) - (sr.y - sp.y);
+            spTarget.getViewport().setViewPosition(new Point(tp.x, tp.y + delta));
+        }
     }
 
     private class MappingTreeCellRenderer extends DefaultTreeCellRenderer {
@@ -1337,7 +1945,10 @@ public class SMatchGUI extends Observable {
                     if (dmtn.getUserObject() instanceof IMappingElement) {
                         @SuppressWarnings("unchecked")
                         IMappingElement<INode> me = (IMappingElement<INode>) dmtn.getUserObject();
-                        final char relation = mapping.getRelation(me.getSource(), me.getTarget());
+                        char relation = IMappingElement.IDK;
+                        if (null != mapping) {
+                            relation = mapping.getRelation(me.getSource(), me.getTarget());
+                        }
                         if (tree == tSource) {
                             setText(me.getTarget().getNodeData().getName());
                             //TODO links with the same named target in different contexts - add tooltips
@@ -1526,7 +2137,9 @@ public class SMatchGUI extends Observable {
 
             public void focusGained(FocusEvent e) {
                 if (!e.isTemporary()) {
-                    this.showPopup();
+                    if (null != mapping) {
+                        this.showPopup();
+                    }
                 }
             }
 
@@ -1690,67 +2303,6 @@ public class SMatchGUI extends Observable {
 
     }
 
-    // GUI static elements
-    private JFrame frame;
-    private JPanel mainPanel;
-    private JMenuBar mainMenu;
-    private JTextArea taLog;
-    private DefaultComboBoxModel cmConfigs;
-    private JComboBox cbConfig;
-    private JFileChooser fc;
-    private JTree tSource;
-    private JTree tTarget;
-    private JSplitPane spnContexts;
-    private JPanel pnContexts;
-    private JScrollPane spSource;
-    private JScrollPane spTarget;
-    private JSplitPane spnContextsLog;
-    private JPopupMenu popSource;
-    private JPopupMenu popTarget;
-    private JTextField teMappingLocation;
-    private JTextField teSourceContextLocation;
-    private JTextField teTargetContextLocation;
-
-
-    // actions
-    private Action acSourceCreate;
-    private Action acSourceAddNode;
-    private Action acSourceAddChildNode;
-    private Action acSourceDelete;
-    private Action acSourceUncoalesce;
-    private Action acSourceUncoalesceAll;
-    private Action acSourceOpen;
-    private Action acSourcePreprocess;
-    private Action acSourceClose;
-    private Action acSourceSave;
-    private Action acSourceSaveAs;
-
-    private Action acTargetCreate;
-    private Action acTargetAddNode;
-    private Action acTargetAddChildNode;
-    private Action acTargetDelete;
-    private Action acTargetUncoalesce;
-    private Action acTargetUncoalesceAll;
-    private Action acTargetOpen;
-    private Action acTargetPreprocess;
-    private Action acTargetClose;
-    private Action acTargetSave;
-    private Action acTargetSaveAs;
-
-    private Action acMappingCreate;
-    private Action acMappingOpen;
-    private Action acMappingClose;
-    private Action acMappingSave;
-    private Action acMappingSaveAs;
-
-    private Action acEditAddNode;
-    private Action acEditAddChildNode;
-    private Action acEditAddLink;
-    private Action acEditDelete;
-
-    private Action acViewUncoalesce;
-    private Action acViewUncoalesceAll;
-
     private void addNode(JTree tree) {
         Object o = tree.getSelectionPath().getLastPathComponent();
         if (o instanceof INode) {
@@ -1769,6 +2321,7 @@ public class SMatchGUI extends Observable {
                 tree.scrollPathToVisible(p);
                 tree.setSelectionPath(p);
                 tree.startEditingAtPath(p);
+                recreateMapping();
             }
         }
     }
@@ -1787,6 +2340,7 @@ public class SMatchGUI extends Observable {
                 tree.scrollPathToVisible(p);
                 tree.setSelectionPath(p);
                 tree.startEditingAtPath(p);
+                recreateMapping();
             }
         }
     }
@@ -1810,6 +2364,12 @@ public class SMatchGUI extends Observable {
                 int idx = dtm.getIndexOfChild(parent, node);
                 parent.removeChild(node);
                 dtm.nodesWereRemoved(parent, new int[]{idx}, new Object[]{node});
+                if (tSource == tree) {
+                    sourceModified = true;
+                } else if (tTarget == tree) {
+                    targetModified = true;
+                }
+                recreateMapping();
             }
         } else if (o instanceof DefaultMutableTreeNode) {
             // link
@@ -1836,6 +2396,7 @@ public class SMatchGUI extends Observable {
                     mapping.setRelation(me.getSource(), me.getTarget(), IMappingElement.IDK);
                     // remove link node from the target tree
                     removeLinkFromTargetTree(tree, me);
+                    mappingModified = true;
                 }
             }
         }
@@ -1845,22 +2406,95 @@ public class SMatchGUI extends Observable {
         tree.scrollPathToVisible(parentPath);
     }
 
+    private void closeSource() {
+        source = null;
+        sourceLocation = null;
+        sourceModified = false;
+        createTree(source, tSource, null);
+        setChanged();
+        notifyObservers();
+    }
+
+    private void closeTarget() {
+        target = null;
+        targetLocation = null;
+        targetModified = false;
+        createTree(target, tTarget, null);
+        setChanged();
+        notifyObservers();
+    }
+
+    private void askMappingLocation() {
+        ff.setDescription(mm.getMappingRenderer().getDescription());
+        fc.addChoosableFileFilter(ff);
+        final int returnVal = fc.showSaveDialog(mainPanel);
+        fc.removeChoosableFileFilter(ff);
+
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
+            File file = fc.getSelectedFile();
+            mappingLocation = file.getAbsolutePath();
+        }
+    }
+
+    private void saveMapping() {
+        if (null != mappingLocation) {
+            log.info("Saving mapping: " + mappingLocation);
+            try {
+                mm.renderMapping(mapping, mappingLocation);
+                mappingModified = false;
+            } catch (SMatchException e) {
+                if (log.isEnabledFor(Level.ERROR)) {
+                    log.error("Error while saving mapping", e);
+                }
+                JOptionPane.showMessageDialog(frame, "Error occurred while saving the mapping.\n\n" + e.getMessage() + "\n\nPlease, ensure the S-Match is intact, configured properly and try again.", "Mapping save error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+
+        setChanged();
+        notifyObservers();
+    }
+
+    private void closeMapping() {
+        mapping = null;
+        mappingLocation = null;
+        mappingModified = false;
+        createTree(source, tSource, mapping);
+        createTree(target, tTarget, mapping);
+        pnContexts.repaint();
+        setChanged();
+        notifyObservers();
+    }
+
+    private void recreateMapping() {
+        IContextMapping<INode> newMapping = mm.getMappingFactory().getContextMappingInstance(source, target);
+        // not a nice solution, although matrix backing the mapping should be recreated anyway if a context changes
+        newMapping.addAll(mapping);
+        mapping = newMapping;
+        resetMappingInModel(tSource);
+        resetMappingInModel(tTarget);
+    }
+
+    private void resetMappingInModel(JTree tree) {
+        if (tree.getModel() instanceof MappingTreeModel) {
+            MappingTreeModel mtm = (MappingTreeModel) tree.getModel();
+            mtm.setMapping(mapping);
+        }
+    }
+
     private void removeLinks(final JTree tree, final INode node) {
         // does not delete the links themselves, because it is called from the deleteNode, which
         // deletes the container node anyway
-        if (node.getNodeData().getUserObject() instanceof List) {
-            @SuppressWarnings("unchecked")
-            List<DefaultMutableTreeNode> linkNodes = (List<DefaultMutableTreeNode>) node.getNodeData().getUserObject();
-            for (DefaultMutableTreeNode linkNode : linkNodes) {
-                // delete from mapping and from target
-                if (linkNode.getUserObject() instanceof IMappingElement) {
-                    // remove from mapping
-                    @SuppressWarnings("unchecked")
-                    IMappingElement<INode> me = (IMappingElement<INode>) linkNode.getUserObject();
-                    mapping.setRelation(me.getSource(), me.getTarget(), IMappingElement.IDK);
-                    // remove link node from the target tree
-                    removeLinkFromTargetTree(tree, me);
-                }
+        List<IMappingElement<INode>> links;
+        if (null != mapping) {
+            if (tree == tSource) {
+                links = mapping.getSources(node);
+            } else {
+                links = mapping.getTargets(node);
+            }
+            for (IMappingElement<INode> me : links) {
+                mapping.setRelation(me.getSource(), me.getTarget(), IMappingElement.IDK);
+                mappingModified = true;
+                removeLinkFromTargetTree(tree, me);
             }
         }
     }
@@ -1952,9 +2586,12 @@ public class SMatchGUI extends Observable {
 
         try {
             source = loadTree(file.getAbsolutePath());
+            if (null != target) {
+                mapping = mm.getMappingFactory().getContextMappingInstance(source, target);
+                resetMappingInModel(tTarget);
+            }
             createTree(source, tSource, mapping);
-            teSourceContextLocation.setText(file.getAbsolutePath());
-            teSourceContextLocation.setToolTipText(file.getAbsolutePath());
+            sourceLocation = file.getAbsolutePath();
         } catch (SMatchException e) {
             if (log.isEnabledFor(Level.ERROR)) {
                 log.error("Error while loading context from " + file.getAbsolutePath(), e);
@@ -1971,18 +2608,18 @@ public class SMatchGUI extends Observable {
 
         try {
             target = loadTree(file.getAbsolutePath());
+            if (null != source) {
+                mapping = mm.getMappingFactory().getContextMappingInstance(source, target);
+                resetMappingInModel(tSource);
+            }
             createTree(target, tTarget, mapping);
-            teTargetContextLocation.setText(file.getAbsolutePath());
-            teTargetContextLocation.setToolTipText(file.getAbsolutePath());
+            targetLocation = file.getAbsolutePath();
         } catch (SMatchException e) {
             if (log.isEnabledFor(Level.ERROR)) {
                 log.error("Error while loading context from " + file.getAbsolutePath(), e);
             }
             JOptionPane.showMessageDialog(frame, "Error occurred while loading the context from " + file.getAbsolutePath() + "\n\n" + e.getMessage() + "\n\nPlease, ensure the file format is correct.", "Context loading error", JOptionPane.ERROR_MESSAGE);
         }
-
-        setChanged();
-        notifyObservers();
     }
 
     private void openMapping(File file) {
@@ -1993,10 +2630,7 @@ public class SMatchGUI extends Observable {
             createTree(source, tSource, mapping);
             createTree(target, tTarget, mapping);
             pnContexts.repaint();
-            teMappingLocation.setText(file.getAbsolutePath());
-            teMappingLocation.setToolTipText(file.getAbsolutePath());
-            setChanged();
-            notifyObservers();
+            mappingLocation = file.getAbsolutePath();
         } catch (SMatchException e) {
             if (log.isEnabledFor(Level.ERROR)) {
                 log.error("Error while loading the mapping", e);
@@ -2019,6 +2653,41 @@ public class SMatchGUI extends Observable {
         return pp;
     }
 
+    public void update(Observable o, Object arg) {
+        //update source location
+        String sourceLocationText = sourceLocation;
+        if (null == sourceLocationText) {
+            sourceLocationText = "unnamed";
+        }
+        if (sourceModified) {
+            sourceLocationText = sourceLocationText + " *";
+        }
+        teSourceContextLocation.setText(sourceLocationText);
+        teSourceContextLocation.setToolTipText(sourceLocationText);
+
+        //update target location
+        String targetLocationText = targetLocation;
+        if (null == targetLocationText) {
+            targetLocationText = "unnamed";
+        }
+        if (targetModified) {
+            targetLocationText = targetLocationText + " *";
+        }
+        teTargetContextLocation.setText(targetLocationText);
+        teTargetContextLocation.setToolTipText(targetLocationText);
+
+        //update mapping location
+        String mappingLocationText = mappingLocation;
+        if (null == mappingLocationText) {
+            mappingLocationText = "unnamed";
+        }
+        if (mappingModified) {
+            mappingLocationText = mappingLocationText + " *";
+        }
+        teMappingLocation.setText(mappingLocationText);
+        teMappingLocation.setToolTipText(mappingLocationText);
+    }
+
     private void buildMenu() {
         mainMenu = new JMenuBar();
 
@@ -2035,7 +2704,7 @@ public class SMatchGUI extends Observable {
         jmSource.addSeparator();
         jmSource.add(acSourceOpen);
         jmSource.add(acSourcePreprocess);
-        jmSource.add(acSourceClose);
+        jmiSourceClose = jmSource.add(acSourceClose);
         jmSource.add(acSourceSave);
         jmSource.add(acSourceSaveAs);
         mainMenu.add(jmSource);
@@ -2053,7 +2722,7 @@ public class SMatchGUI extends Observable {
         jmTarget.addSeparator();
         jmTarget.add(acTargetOpen);
         jmTarget.add(acTargetPreprocess);
-        jmTarget.add(acTargetClose);
+        jmiTargetClose = jmTarget.add(acTargetClose);
         jmTarget.add(acTargetSave);
         jmTarget.add(acTargetSaveAs);
         mainMenu.add(jmTarget);
@@ -2062,7 +2731,7 @@ public class SMatchGUI extends Observable {
         jmMapping.setMnemonic('M');
         jmMapping.add(acMappingCreate);
         jmMapping.add(acMappingOpen);
-        jmMapping.add(acMappingClose);
+        jmiMappingClose = jmMapping.add(acMappingClose);
         jmMapping.add(acMappingSave);
         jmMapping.add(acMappingSaveAs);
         mainMenu.add(jmMapping);
@@ -2168,6 +2837,7 @@ public class SMatchGUI extends Observable {
         teMappingLocation = new JTextField();
         teMappingLocation.setEnabled(false);
         teMappingLocation.setHorizontalAlignment(JTextField.RIGHT);
+        ToolTipManager.sharedInstance().registerComponent(teMappingLocation);
         builder.add(teMappingLocation, cc.xy(1, 3, CellConstraints.FILL, CellConstraints.FILL));
 
 
@@ -2334,13 +3004,11 @@ public class SMatchGUI extends Observable {
                 this.addObserver((Observer) a);
             }
         }
+        this.addObserver(this);
     }
 
     private IContext loadTree(String fileName) throws SMatchException {
-        IContext context = null;
-        context = mm.loadContext(fileName);
-
-        return context;
+        return mm.loadContext(fileName);
     }
 
     /**
@@ -2362,14 +3030,8 @@ public class SMatchGUI extends Observable {
         } else {
             TreeModel treeModel;
             clearUserObjects(context.getRoot());
-            if (null == mapping) {
-                treeModel = new NodeTreeModel(context.getRoot());
-                jTree.addTreeSelectionListener(treeSelectionListener);
-                jTree.addFocusListener(treeFocusListener);
-            } else {
-                treeModel = new MappingTreeModel(context.getRoot(), jTree == tSource, mapping);
-                jTree.addFocusListener(treeFocusListener);
-            }
+            treeModel = new MappingTreeModel(context.getRoot(), jTree == tSource, mapping);
+            jTree.addFocusListener(treeFocusListener);
 
             jTree.setModel(treeModel);
 
@@ -2574,8 +3236,16 @@ public class SMatchGUI extends Observable {
 
     private final WindowListener windowListener = new WindowAdapter() {
         public void windowClosing(WindowEvent e) {
-            //TODO check matching in progress
-            e.getWindow().dispose();
+            acMappingClose.actionPerformed(null);
+            if (!mappingModified) {
+                acSourceClose.actionPerformed(null);
+                if (!sourceModified) {
+                    acTargetClose.actionPerformed(null);
+                    if (!targetModified) {
+                        e.getWindow().dispose();
+                    }
+                }
+            }
         }
     };
 

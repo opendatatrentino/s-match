@@ -157,6 +157,10 @@ public class MatchManager extends Configurable implements IMatchManager {
         return new Context();
     }
 
+    public IMappingFactory getMappingFactory() {
+        return mappingFactory;
+    }
+
     public IContext loadContext(String fileName) throws SMatchException {
         if (null == contextLoader) {
             throw new SMatchException("Context loader is not configured.");

@@ -177,5 +177,30 @@ public interface INode extends MutableTreeNode, IIndexedObject {
      *
      * @return interface to the node metadata
      */
-    public INodeData getNodeData();
+    INodeData getNodeData();
+
+    /**
+     * Adds a listener <code>l</code> to the the listener list.
+     *
+     * @param l listener
+     */
+    void addTreeStructureChangedListener(ITreeStructureChangedListener l);
+
+    /**
+     * Removes a listener <code>l</code> from the listeners list.
+     *
+     * @param l listener
+     */
+    void removeTreeStructureChangedListener(ITreeStructureChangedListener l);
+
+    /**
+     * Fires the tree structure changed event.
+     *
+     * @param node the root of the tree which is changed
+     */
+    void fireTreeStructureChanged(INode node);
+    // parent needs to know the changes in children. it can subscribe to changes in its children
+    // but this will create listenerList in each child. therefore the method is public
+    // to allow children to signal parent directly, propagating event up the tree, resetting caches
+    // and finally allowing context to reset its caches too.  
 }

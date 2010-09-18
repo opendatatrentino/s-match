@@ -4,6 +4,7 @@ import it.unitn.disi.smatch.data.ling.AtomicConceptOfLabel;
 import it.unitn.disi.smatch.data.ling.IAtomicConceptOfLabel;
 import it.unitn.disi.smatch.data.matrices.IndexedObject;
 
+import javax.swing.event.EventListenerList;
 import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeNode;
 import java.util.*;
@@ -18,29 +19,31 @@ import java.util.*;
  */
 public class Node extends IndexedObject implements INode, INodeData {
 
-    private INode parent;
-    private ArrayList<INode> children;
-    private ArrayList<INode> ancestors;
-    private int ancestorCount;
-    private ArrayList<INode> descendants;
-    private int descendantCount;
-    private boolean isPreprocessed;
+    protected INode parent;
+    protected ArrayList<INode> children;
+    protected ArrayList<INode> ancestors;
+    protected int ancestorCount;
+    protected ArrayList<INode> descendants;
+    protected int descendantCount;
+    protected boolean isPreprocessed;
+
+    protected EventListenerList listenerList;
 
     // id is needed to store cNodeFormulas correctly.
     // cNodeFormula is made of cLabFormulas, each of which refers to tokens and tokens should have unique id
     // within a context. This is achieved by using node id + token id for each token 
-    private String id;
-    private String name;
-    private String cLabFormula;
-    private String cNodeFormula;
+    protected String id;
+    protected String name;
+    protected String cLabFormula;
+    protected String cNodeFormula;
     // might be better implemented for a whole context via BitSet
-    private boolean source;
-    private Object userObject;
+    protected boolean source;
+    protected Object userObject;
 
-    private ArrayList<IAtomicConceptOfLabel> acols;
+    protected ArrayList<IAtomicConceptOfLabel> acols;
 
     // node counter to set unique node id during creation
-    private static long countNode = 0;
+    protected static long countNode = 0;
 
     // iterator which iterates over all parent nodes
 
@@ -138,7 +141,7 @@ public class Node extends IndexedObject implements INode, INodeData {
         descendants = null;
         descendantCount = -1;
         isPreprocessed = false;
-
+        listenerList = null;
 
         source = false;
         // need to set node id to keep track of acols in c@node formulas
@@ -240,11 +243,13 @@ public class Node extends IndexedObject implements INode, INodeData {
             children = new ArrayList<INode>();
         }
         children.add(index, child);
+        fireTreeStructureChanged(this);
     }
 
     public void removeChild(int index) {
         INode child = getChildAt(index);
         children.remove(index);
+        fireTreeStructureChanged(this);
         child.setParent(null);
     }
 
@@ -578,6 +583,38 @@ public class Node extends IndexedObject implements INode, INodeData {
             for (INode child : children) {
                 ((Node) child).trim();
             }
+        }
+    }
+
+    public void addTreeStructureChangedListener(ITreeStructureChangedListener l) {
+        if (null == listenerList) {
+            listenerList = new EventListenerList();
+        }
+        listenerList.add(ITreeStructureChangedListener.class, l);
+    }
+
+    public void removeTreeStructureChangedListener(ITreeStructureChangedListener l) {
+        if (null != listenerList) {
+            listenerList.remove(ITreeStructureChangedListener.class, l);
+        }
+    }
+
+    public void fireTreeStructureChanged(INode node) {
+        descendants = null;
+        if (null != listenerList) {
+            // Guaranteed to return a non-null array
+            Object[] listeners = listenerList.getListenerList();
+            // Process the listeners last to first, notifying
+            // those that are interested in this event
+            for (int i = listeners.length - 2; i >= 0; i -= 2) {
+                if (listeners[i] == ITreeStructureChangedListener.class) {
+                    // Lazily create the event:
+                    ((ITreeStructureChangedListener) listeners[i + 1]).treeStructureChanged(node);
+                }
+            }
+        }
+        if (null != parent) {
+            parent.fireTreeStructureChanged(node);
         }
     }
 }

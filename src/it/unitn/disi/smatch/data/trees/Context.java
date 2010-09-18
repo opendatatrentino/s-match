@@ -10,7 +10,7 @@ import java.util.List;
  *
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
-public class Context implements IContext {
+public class Context implements IContext, ITreeStructureChangedListener {
 
     private INode root;
     private ArrayList<INode> nodes;
@@ -22,6 +22,7 @@ public class Context implements IContext {
 
     public void setRoot(INode root) {
         this.root = root;
+        root.addTreeStructureChangedListener(this);
     }
 
     public INode getRoot() {
@@ -42,12 +43,14 @@ public class Context implements IContext {
 
     public INode createRoot() {
         root = new Node();
+        root.addTreeStructureChangedListener(this);
         return root;
     }
 
     public INode createRoot(String name) {
-        root = new Node(name);
-        return root;
+        INode result = createRoot();
+        result.getNodeData().setName(name);
+        return result;
     }
 
     public Iterator<INode> getNodes() {
@@ -78,5 +81,9 @@ public class Context implements IContext {
         if (root instanceof Node) {
             ((Node) root).trim();
         }
+    }
+
+    public void treeStructureChanged(INode node) {
+        nodes = null;
     }
 }

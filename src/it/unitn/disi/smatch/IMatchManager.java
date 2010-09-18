@@ -3,6 +3,7 @@ package it.unitn.disi.smatch;
 import it.unitn.disi.smatch.components.IConfigurable;
 import it.unitn.disi.smatch.data.ling.IAtomicConceptOfLabel;
 import it.unitn.disi.smatch.data.mappings.IContextMapping;
+import it.unitn.disi.smatch.data.mappings.IMappingFactory;
 import it.unitn.disi.smatch.data.trees.IContext;
 import it.unitn.disi.smatch.data.trees.INode;
 import it.unitn.disi.smatch.loaders.context.IContextLoader;
@@ -29,6 +30,12 @@ public interface IMatchManager extends IConfigurable {
      * @return a context instance
      */
     public IContext createContext();
+
+    /**
+     * Returns mapping factory.
+     * @return mapping factory 
+     */
+    public IMappingFactory getMappingFactory();
 
     /**
      * Uses current loader to load the context from external source into internal data structure.
