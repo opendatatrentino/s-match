@@ -2700,7 +2700,7 @@ public class SMatchGUI extends Observable implements Observer {
         jmSource.addSeparator();
         jmSource.add(acSourceOpen);
         jmSource.add(acSourcePreprocess);
-        jmiSourceClose = jmSource.add(acSourceClose);
+        jmSource.add(acSourceClose);
         jmSource.add(acSourceSave);
         jmSource.add(acSourceSaveAs);
         mainMenu.add(jmSource);
@@ -2718,7 +2718,7 @@ public class SMatchGUI extends Observable implements Observer {
         jmTarget.addSeparator();
         jmTarget.add(acTargetOpen);
         jmTarget.add(acTargetPreprocess);
-        jmiTargetClose = jmTarget.add(acTargetClose);
+        jmTarget.add(acTargetClose);
         jmTarget.add(acTargetSave);
         jmTarget.add(acTargetSaveAs);
         mainMenu.add(jmTarget);
@@ -2727,7 +2727,7 @@ public class SMatchGUI extends Observable implements Observer {
         jmMapping.setMnemonic('M');
         jmMapping.add(acMappingCreate);
         jmMapping.add(acMappingOpen);
-        jmiMappingClose = jmMapping.add(acMappingClose);
+        jmMapping.add(acMappingClose);
         jmMapping.add(acMappingSave);
         jmMapping.add(acMappingSaveAs);
         mainMenu.add(jmMapping);
