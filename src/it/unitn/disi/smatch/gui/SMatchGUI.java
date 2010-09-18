@@ -96,10 +96,6 @@ public class SMatchGUI extends Observable implements Observer {
     private JTextField teMappingLocation;
     private JTextField teSourceContextLocation;
     private JTextField teTargetContextLocation;
-    private JMenuItem jmiMappingClose;
-    private JMenuItem jmiSourceClose;
-    private JMenuItem jmiTargetClose;
-
 
     // actions
     private Action acSourceCreate;
@@ -1728,7 +1724,7 @@ public class SMatchGUI extends Observable implements Observer {
         public void itemStateChanged(ItemEvent e) {
             if ((e.getSource() == cbConfig) && (e.getStateChange() == ItemEvent.SELECTED)) {
                 if (null != mm) {
-                    String configFile = (new File(CONF_FILE)).getParent() + File.separator + e.getItem();
+                    configFileName = (new File(CONF_FILE)).getParent() + File.separator + e.getItem();
                     try {
                         Properties config = new Properties();
                         config.load(new FileInputStream(configFileName));
@@ -1739,19 +1735,19 @@ public class SMatchGUI extends Observable implements Observer {
                         notifyObservers();
                     } catch (ConfigurableException exc) {
                         if (log.isEnabledFor(Level.ERROR)) {
-                            log.error("Error while loading configuration from " + configFile, exc);
+                            log.error("Error while loading configuration from " + configFileName, exc);
                         }
-                        JOptionPane.showMessageDialog(frame, "Error occurred while loading the configuration from " + configFile + ".\n\n" + exc.getMessage() + "\n\nPlease, ensure the configuration file is correct and try again.", "Configuration loading error", JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.showMessageDialog(frame, "Error occurred while loading the configuration from " + configFileName + ".\n\n" + exc.getMessage() + "\n\nPlease, ensure the configuration file is correct and try again.", "Configuration loading error", JOptionPane.ERROR_MESSAGE);
                     } catch (FileNotFoundException exc) {
                         if (log.isEnabledFor(Level.ERROR)) {
-                            log.error("Error while loading configuration from " + configFile, exc);
+                            log.error("Error while loading configuration from " + configFileName, exc);
                         }
-                        JOptionPane.showMessageDialog(frame, "Error occurred while loading the configuration from " + configFile + ".\n\n" + exc.getMessage(), "Configuration loading error", JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.showMessageDialog(frame, "Error occurred while loading the configuration from " + configFileName + ".\n\n" + exc.getMessage(), "Configuration loading error", JOptionPane.ERROR_MESSAGE);
                     } catch (IOException exc) {
                         if (log.isEnabledFor(Level.ERROR)) {
-                            log.error("Error while loading configuration from " + configFile, exc);
+                            log.error("Error while loading configuration from " + configFileName, exc);
                         }
-                        JOptionPane.showMessageDialog(frame, "Error occurred while loading the configuration from " + configFile + ".\n\n" + exc.getMessage(), "Configuration loading error", JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.showMessageDialog(frame, "Error occurred while loading the configuration from " + configFileName + ".\n\n" + exc.getMessage(), "Configuration loading error", JOptionPane.ERROR_MESSAGE);
                     }
                 }
             }
