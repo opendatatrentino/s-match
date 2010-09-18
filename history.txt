@@ -1,3 +1,10 @@
+2010.09.14
+ * new GUI with edit and advanced navigation facilities
+ * SPSM integrated
+ * additional knowledge bases
+ * additional renderer
+ * precision and recall calculation filters
+
 2010.06.15
  * improved CLI & API
  * added API demos
