@@ -17,7 +17,7 @@
     </target>
 
     <target name="compile" depends="init" description="compile the source">
-        <javac srcdir="src" destdir="classes" encoding="utf-8">
+        <javac srcdir="src" destdir="classes" encoding="utf-8" includeantruntime="false">
             <classpath>
                 <fileset dir="../../build">
                     <include name="**/*.jar"/>
