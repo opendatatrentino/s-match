@@ -180,7 +180,7 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
             throw new ContextPreprocessorException(errMessage, e);
         }
 
-        log.info("Unrecognized words: " + unrecognizedWords.size());
+        log.debug("Unrecognized words: " + unrecognizedWords.size());        
         if (debugUnrecognizedWords) {
             TreeSet<String> sortedWords = new TreeSet<String>(unrecognizedWords);
             for (String unrecognizedWord : sortedWords) {
@@ -315,7 +315,7 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
                             // mark id as meaningful
                             meaningfulTokens = meaningfulTokens + id_tok + " ";
                             // if there no WN senses
-                            if (0 == wnSense.size()) {
+                            if (0 == wnSense.size() && !("top".equals(labelOfNode) && !node.hasParent())) {
                                 unrecognizedWords.add(token);
                             }
                             // add senses to ACoL
