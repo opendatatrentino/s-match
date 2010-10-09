@@ -98,11 +98,18 @@ public class PR extends BaseFilter {
         if (1 < mappingLocations.length) {
             long negTruePositiveSize = filterMappings[1].size();
             if (0 < (posTruePositiveSize + negTruePositiveSize) && 0 < posSize) {
+                if (log.isEnabledFor(Level.INFO)) {
+                    log.info("positive true positive:\t" + posTruePositiveSize);
+                    log.info("negative true positive:\t" + negTruePositiveSize);
+                }
                 p = posTruePositiveSize / (double) (posTruePositiveSize + negTruePositiveSize);
                 r = posTruePositiveSize / (double) posSize;
             }
         } else {
             if (0 < mapping.size() && 0 < posSize) {
+                if (log.isEnabledFor(Level.INFO)) {
+                    log.info("positive true positive:\t" + posTruePositiveSize);
+                }
                 p = posTruePositiveSize / (double) mapping.size();
                 r = posTruePositiveSize / (double) posSize;
             }
