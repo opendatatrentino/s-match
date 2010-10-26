@@ -96,10 +96,6 @@ public class MatcherLibrary extends Configurable implements IMatcherLibrary {
                 useWeakSemanticsElementLevelMatchersLibrary = Boolean.parseBoolean(newProperties.getProperty(USE_WEAK_SEMANTICS_MATCHERS_KEY));
             }
 
-            if (newProperties.containsKey(USE_WEAK_SEMANTICS_MATCHERS_KEY)) {
-                useWeakSemanticsElementLevelMatchersLibrary = Boolean.parseBoolean(newProperties.getProperty(USE_WEAK_SEMANTICS_MATCHERS_KEY));
-            }
-
             if (newProperties.containsKey(STRING_MATCHERS_KEY)) {
                 stringMatchers.clear();
                 for (Object o : ClassFactory.stringToClasses(newProperties.getProperty(STRING_MATCHERS_KEY), ";")) {
