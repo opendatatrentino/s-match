@@ -13,4 +13,5 @@ public interface ILoader {
     static String TXT_FILES = "Text Files (*.txt)";
     static String RDF_FILES = "RDF Files (*.rdf)";
     static String OWL_FILES = "OWL Ontology Files (*.owl)";
+    static String SKOS_FILES = "SKOS Files (*.xml)";
 }
