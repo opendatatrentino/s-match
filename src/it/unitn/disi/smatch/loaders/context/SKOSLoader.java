@@ -21,7 +21,10 @@ import org.semanticweb.skosapibinding.SKOSReasoner;
 import java.util.*;
 
 /**
- * Loads a context from a SKOS file using SKOS API (based on OWL API)  and HermiT reasoner.
+ * Loads a context from a SKOS file using SKOS API (based on OWL API) and HermiT reasoner.
+ * Takes in a preferredLanguage parameter, which defines the language which should be preferred for labels.
+ * If specified, the loader will search for the label in the specified language among preferred labels and then among
+ * alternative labels.
  *
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
