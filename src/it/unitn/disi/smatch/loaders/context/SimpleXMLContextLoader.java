@@ -141,6 +141,8 @@ public class SimpleXMLContextLoader extends BaseFileContextLoader implements ICo
             pathToRoot.getLast().getNodeData().setcLabFormula(content.toString());
         } else if ("node-formula".equals(localName)) {
             pathToRoot.getLast().getNodeData().setcNodeFormula(content.toString());
+        } else if ("provenance".equals(localName)) {
+            pathToRoot.getLast().getNodeData().setProvenance(content.toString());
         } else if ("text".equals(localName)) {
             acol.setToken(makeUnique(content.toString()));
         } else if ("lemma".equals(localName)) {

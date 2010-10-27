@@ -184,4 +184,16 @@ public interface INodeData {
      * @return whether the subtree rooted at this node has been preprocessed
      */
     boolean isSubtreePreprocessed();
+
+    /**
+     * Returns provenance information.
+     * @return provenance information
+     */
+    String getProvenance();
+
+    /**
+     * Sets provenance information.
+     * @param provenance provenance information
+     */
+    void setProvenance(String provenance);
 }

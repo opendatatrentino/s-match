@@ -80,6 +80,7 @@ public class SimpleXMLContextRenderer extends BaseXMLContextRenderer {
         renderString(hd, new AttributesImpl(), "name", curNodeData.getName());
         renderString(hd, new AttributesImpl(), "label-formula", curNodeData.getcLabFormula());
         renderString(hd, new AttributesImpl(), "node-formula", curNodeData.getcNodeFormula());
+        renderString(hd, new AttributesImpl(), "provenance", curNodeData.getProvenance());
 
         // senses
         if (0 < curNodeData.getACoLCount()) {

@@ -39,6 +39,7 @@ public class Node extends IndexedObject implements INode, INodeData {
     // might be better implemented for a whole context via BitSet
     protected boolean source;
     protected Object userObject;
+    protected String provenance;
 
     protected ArrayList<IAtomicConceptOfLabel> acols;
 
@@ -155,6 +156,7 @@ public class Node extends IndexedObject implements INode, INodeData {
         cNodeFormula = "";
         acols = null;
         index = -1;
+        provenance = null;
     }
 
     /**
@@ -520,6 +522,14 @@ public class Node extends IndexedObject implements INode, INodeData {
             }
         }
         return result;
+    }
+
+    public String getProvenance() {
+        return provenance;
+    }
+
+    public void setProvenance(String provenance) {
+        this.provenance = provenance;
     }
 
     public Object getUserObject() {
