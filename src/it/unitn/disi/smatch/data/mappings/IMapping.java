@@ -52,7 +52,7 @@ public interface IMapping<T> extends Set<IMappingElement<T>> {
     List<IMappingElement<T>> getSources(T source);
 
     /**
-     * Returns mapping elements with target element equal to <code>source</code>.
+     * Returns mapping elements with target element equal to <code>target</code>.
      *
      * @param target target element
      * @return mapping elements with target element equal to <code>target</code>
