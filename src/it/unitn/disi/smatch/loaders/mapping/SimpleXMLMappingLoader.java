@@ -112,6 +112,7 @@ public class SimpleXMLMappingLoader extends BaseFileMappingLoader implements Con
             char rel = atts.getValue("relation").charAt(0);
             if ((null != source) && (null != target)) {
                 mapping.setRelation(source, target, rel);
+                countRelation(rel);
                 reportProgress();
             } else {
                 if (log.isEnabledFor(Level.WARN)) {

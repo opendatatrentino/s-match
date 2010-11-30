@@ -45,7 +45,6 @@ public class PlainMappingLoader extends BaseFileMappingLoader {
             } else {
                 //tokens = left \t relation \t right
                 rel = tokens[1].toCharArray()[0];
-                countRelation(rel);
 
                 sourceNode = sNodes.get(tokens[0]);
                 if (null == sourceNode) {
@@ -63,6 +62,7 @@ public class PlainMappingLoader extends BaseFileMappingLoader {
 
                 if ((null != sourceNode) && (null != targetNode)) {
                     mapping.setRelation(sourceNode, targetNode, rel);
+                    countRelation(rel);
                     cntLoaded++;
                 } else {
                     if (log.isEnabledFor(Level.WARN)) {

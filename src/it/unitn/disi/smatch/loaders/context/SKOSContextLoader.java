@@ -28,13 +28,16 @@ import java.util.*;
  *
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
-public class SKOSLoader extends BaseContextLoader implements IContextLoader {
+public class SKOSContextLoader extends BaseContextLoader implements IContextLoader {
 
-    private static final Logger log = Logger.getLogger(SKOSLoader.class);
+    private static final Logger log = Logger.getLogger(SKOSContextLoader.class);
 
     // which language to load, default "" - load anything
     private static final String PREFERRED_LANGUAGE_KEY = "preferredLanguage";
     private String preferredLanguage = "";
+
+    private static final String REASONER_PRECOMPUTE_KEY = "reasonerPrecompute";
+    private boolean precompute = true;
 
     @Override
     public boolean setProperties(Properties newProperties) throws ConfigurableException {
@@ -44,6 +47,9 @@ public class SKOSLoader extends BaseContextLoader implements IContextLoader {
                 preferredLanguage = newProperties.getProperty(PREFERRED_LANGUAGE_KEY);
             }
 
+            if (newProperties.containsKey(REASONER_PRECOMPUTE_KEY)) {
+                precompute = Boolean.parseBoolean(newProperties.getProperty(REASONER_PRECOMPUTE_KEY));
+            }
         }
         return result;
     }
@@ -55,7 +61,9 @@ public class SKOSLoader extends BaseContextLoader implements IContextLoader {
             SKOSDataset dataSet = manager.loadDatasetFromPhysicalIRI(IRI.create(fileName));
             SKOSReasoner reasoner = new SKOSReasoner(manager, new Reasoner.ReasonerFactory());
             reasoner.loadDataset(dataSet);
-            reasoner.classify();
+            if (precompute) {
+                reasoner.classify();
+            }
 
             // IRI - INode
             Map<String, INode> conceptNode = new HashMap<String, INode>();
