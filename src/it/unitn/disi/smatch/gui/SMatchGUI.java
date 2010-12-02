@@ -24,10 +24,10 @@ import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
 import javax.swing.*;
 import javax.swing.border.Border;
-import javax.swing.event.CellEditorListener;
-import javax.swing.event.TreeSelectionEvent;
-import javax.swing.event.TreeSelectionListener;
+import javax.swing.event.*;
 import javax.swing.plaf.FontUIResource;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.tree.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -86,10 +86,14 @@ public class SMatchGUI extends Observable implements Observer {
     private JFileChooser fc;
     private JTree tSource;
     private JTree tTarget;
+    private JTable tblMapping;
     private JSplitPane spnContexts;
+    private JSplitPane spnContextsMapping;
     private JPanel pnContexts;
+    private JPanel pnContextsMapping;
     private JScrollPane spSource;
     private JScrollPane spTarget;
+    private JScrollPane spMappingTable;
     private JSplitPane spnContextsLog;
     private JPopupMenu popSource;
     private JPopupMenu popTarget;
@@ -188,6 +192,18 @@ public class SMatchGUI extends Observable implements Observer {
     private static final String EMPTY_ROOT_NODE_LABEL = "Create or open context";
     private static final String ELLIPSIS = "...";
 
+
+    private static final String NAME_EQ = "equivalent";
+    private static final String NAME_LG = "less general";
+    private static final String NAME_MG = "more general";
+    private static final String NAME_DJ = "disjoint";
+
+    private static String[] relStrings = {NAME_EQ, NAME_LG, NAME_MG, NAME_DJ};
+
+    private static final HashMap<Character, String> relationToDescription = new HashMap<Character, String>(4);
+    private static final HashMap<String, Character> descriptionToRelation = new HashMap<String, Character>(4);
+    private static final HashMap<String, Icon> descriptionToIcon = new HashMap<String, Icon>(4);
+
     static {
         JIconFile icon = loadIconFile(TANGO_ICONS_PATH + "actions/document-open");
         documentOpenSmall = icon.getIcon(SMALL_ICON_SIZE);
@@ -260,6 +276,21 @@ public class SMatchGUI extends Observable implements Observer {
         icon = loadIconFile(TANGO_ICONS_PATH + "actions/view-fullscreen");
         iconUncoalesceSmall = icon.getIcon(SMALL_ICON_SIZE);
         iconUncoalesceLarge = icon.getIcon(LARGE_ICON_SIZE);
+
+        relationToDescription.put(IMappingElement.EQUIVALENCE, NAME_EQ);
+        relationToDescription.put(IMappingElement.LESS_GENERAL, NAME_LG);
+        relationToDescription.put(IMappingElement.MORE_GENERAL, NAME_MG);
+        relationToDescription.put(IMappingElement.DISJOINT, NAME_DJ);
+
+        descriptionToRelation.put(NAME_EQ, IMappingElement.EQUIVALENCE);
+        descriptionToRelation.put(NAME_LG, IMappingElement.LESS_GENERAL);
+        descriptionToRelation.put(NAME_MG, IMappingElement.MORE_GENERAL);
+        descriptionToRelation.put(NAME_DJ, IMappingElement.DISJOINT);
+
+        descriptionToIcon.put(NAME_EQ, smallIconEQ);
+        descriptionToIcon.put(NAME_LG, smallIconLG);
+        descriptionToIcon.put(NAME_MG, smallIconMG);
+        descriptionToIcon.put(NAME_DJ, smallIconDJ);
     }
 
     /**
@@ -325,7 +356,13 @@ public class SMatchGUI extends Observable implements Observer {
             if (null != c) {
                 uncoalesce(parent);
             }
-            if (0 <= start && end < parent.getChildCount() && start < end) {
+            @SuppressWarnings("unchecked")
+            List<DefaultMutableTreeNode> linkNodes = (List<DefaultMutableTreeNode>) parent.getNodeData().getUserObject();
+            if (null == linkNodes) {
+                linkNodes = updateUserObject(parent);
+            }
+
+            if (0 <= start && end < getChildCount(parent) && start < end) {
                 DefaultMutableTreeNode dmtn = new DefaultMutableTreeNode();
                 c = new Coalesce(new Point(start, end), dmtn, parent);
                 dmtn.setUserObject(c);
@@ -335,7 +372,12 @@ public class SMatchGUI extends Observable implements Observer {
                 Object[] removedChildren = new Object[end - start + 1];
                 for (int i = 0; i < childIndices.length; i++) {
                     childIndices[i] = start + i;
-                    removedChildren[i] = parent.getChildAt(start + i);
+                    if ((start + i) < parent.getChildCount()) {
+                        removedChildren[i] = parent.getChildAt(start + i);
+                    } else {
+                        removedChildren[i] = linkNodes.get(start + i - parent.getChildCount());
+                    }
+
                 }
                 //signal the "removal" of a range
                 nodesWereRemoved(parent, childIndices, removedChildren);
@@ -447,7 +489,7 @@ public class SMatchGUI extends Observable implements Observer {
             return root;
         }
 
-        private List<DefaultMutableTreeNode> updateUserObject(final INode node) {
+        public List<DefaultMutableTreeNode> updateUserObject(final INode node) {
             List<DefaultMutableTreeNode> result = Collections.emptyList();
             List<IMappingElement<INode>> links;
             if (null != mapping) {
@@ -485,27 +527,32 @@ public class SMatchGUI extends Observable implements Observer {
                         }
                     }
                 } else {
+                    @SuppressWarnings("unchecked")
+                    List<DefaultMutableTreeNode> linkNodes = (List<DefaultMutableTreeNode>) parentNode.getNodeData().getUserObject();
+                    if (null == linkNodes) {
+                        linkNodes = updateUserObject(parentNode);
+                    }
                     final int coalescedLength = c.range.y - c.range.x;
-                    final int coalescedIdx = parentNode.getChildCount() - coalescedLength;
+                    final int coalescedIdx = parentNode.getChildCount() + linkNodes.size() - coalescedLength;
                     if (0 <= index && index < coalescedIdx) {
                         if (index == c.range.x) {
                             result = c.sub;
                         } else {
                             if (index < c.range.x) {
-                                result = parentNode.getChildAt(index);
+                                if (index < parentNode.getChildCount()) {
+                                    result = parentNode.getChildAt(index);
+                                } else {
+                                    result = linkNodes.get(index - parentNode.getChildCount());
+                                }
                             } else {
                                 //index > c.range.x
-                                result = parentNode.getChildAt(index + coalescedLength);
+                                //result = parentNode.getChildAt(index + coalescedLength);
+                                if ((index + coalescedLength) < parentNode.getChildCount()) {
+                                    result = parentNode.getChildAt(index + coalescedLength);
+                                } else {
+                                    result = linkNodes.get(index - parentNode.getChildCount() + coalescedLength);
+                                }
                             }
-                        }
-                    } else {
-                        @SuppressWarnings("unchecked")
-                        List<DefaultMutableTreeNode> linkNodes = (List<DefaultMutableTreeNode>) parentNode.getNodeData().getUserObject();
-                        if (null == linkNodes) {
-                            linkNodes = updateUserObject(parentNode);
-                        }
-                        if (coalescedIdx <= index && index < (coalescedIdx + linkNodes.size())) {
-                            result = linkNodes.get(index - coalescedIdx);
                         }
                     }
                 }
@@ -565,6 +612,19 @@ public class SMatchGUI extends Observable implements Observer {
                         } else {
                             targetModified = true;
                         }
+                        //notify mapping table
+                        if (tblMapping.getModel() instanceof MappingTableModel) {
+                            MappingTableModel mtm = (MappingTableModel) tblMapping.getModel();
+                            List<IMappingElement<INode>> links;
+                            if (isSource) {
+                                links = mapping.getSources(node);
+                            } else {
+                                links = mapping.getTargets(node);
+                            }
+                            for (IMappingElement<INode> me : links) {
+                                mtm.fireElementChanged(me);
+                            }
+                        }
                         setChanged();
                         notifyObservers();
                     }
@@ -577,6 +637,11 @@ public class SMatchGUI extends Observable implements Observer {
                     IMappingElement<INode> me = (IMappingElement<INode>) dmtn.getUserObject();
                     mapping.setRelation(me.getSource(), me.getTarget(), rel);
                     mappingModified = true;
+                    //notify mapping table
+                    if (tblMapping.getModel() instanceof MappingTableModel) {
+                        MappingTableModel mtm = (MappingTableModel) tblMapping.getModel();
+                        mtm.fireElementChanged(me);
+                    }
                     setChanged();
                     notifyObservers();
                 }
@@ -610,10 +675,12 @@ public class SMatchGUI extends Observable implements Observer {
                         if (child instanceof INode) {
                             INode cNode = (INode) child;
                             result = pNode.getChildIndex(cNode);
-                            if (c.range.x <= result && result <= c.range.y) {
-                                //should not get here
-                            } else if (c.range.y < result) {
-                                result = result - coalescedLength;
+                            if (c.range.x < result && result < c.range.y) {
+                                result = -1;//the node is coalesced? 
+                            } else {
+                                if (c.range.y < result) {
+                                    result = result - coalescedLength;
+                                }
                             }
                         } else {
                             if (child instanceof DefaultMutableTreeNode) {
@@ -627,7 +694,17 @@ public class SMatchGUI extends Observable implements Observer {
                                     if (null == linkNodes) {
                                         linkNodes = updateUserObject(pNode);
                                     }
-                                    result = (pNode.getChildCount() - coalescedLength) + linkNodes.indexOf(dmtn);
+                                    result = linkNodes.indexOf(dmtn);
+                                    if (-1 < result) {
+                                        result = pNode.getChildCount() + result;
+                                        if (c.range.x < result && result < c.range.y) {
+                                            result = -1;//coalesced?
+                                        } else {
+                                            if (c.range.y < result) {
+                                                result = result - coalescedLength;
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -671,6 +748,125 @@ public class SMatchGUI extends Observable implements Observer {
         }
     }
 
+    private class MappingTableModel extends AbstractTableModel {
+
+        private IContextMapping<INode> mapping;
+        private HashMap<Integer, IMappingElement<INode>> order;
+        private HashMap<IMappingElement<INode>, Integer> backOrder;
+
+        public final static int C_SOURCE = 0;
+        public final static int C_RELATION = 1;
+        public final static int C_TARGET = 2;
+
+        private final String[] columnNames = {"Source", "Relation", "Target"};
+
+        private MappingTableModel(IContextMapping<INode> mapping) {
+            this.mapping = mapping;
+            if (null != mapping) {
+                imposeOrder(mapping);
+
+            }
+        }
+
+        private void imposeOrder(IContextMapping<INode> mapping) {
+            order = new HashMap<Integer, IMappingElement<INode>>(mapping.size());
+            backOrder = new HashMap<IMappingElement<INode>, Integer>(mapping.size());
+            int i = 0;
+            for (INode source : mapping.getSourceContext().getNodesList()) {
+                for (IMappingElement<INode> e : mapping.getSources(source)) {
+                    order.put(i, e);
+                    backOrder.put(e, i);
+                    i++;
+                }
+            }
+        }
+
+        @Override
+        public Class<?> getColumnClass(int columnIndex) {
+            return IMappingElement.class;
+        }
+
+        public String getColumnName(int col) {
+            return columnNames[col];
+        }
+
+        public int getRowCount() {
+            if (null != mapping) {
+                return mapping.size();
+            } else {
+                return 0;
+            }
+        }
+
+        public int getColumnCount() {
+            return columnNames.length;
+        }
+
+        public IMappingElement<INode> getElementAt(int row) {
+            IMappingElement<INode> result = null;
+            if (null != mapping) {
+                result = order.get(row);
+            }
+            return result;
+        }
+
+        public int getIndexOf(IMappingElement<INode> me) {
+            Integer result = null;
+            if (null != mapping) {
+                result = backOrder.get(me);
+            }
+            if (null != result) {
+                return result;
+            } else {
+                return -1;
+            }
+        }
+
+
+        public Object getValueAt(int row, int col) {
+            return order.get(row);
+        }
+
+        public boolean isCellEditable(int row, int col) {
+            return C_RELATION == col;
+        }
+
+        public void setValueAt(Object value, int row, int col) {
+            super.fireTableCellUpdated(row, col);
+        }
+
+        public void fireElementInserted(IMappingElement<INode> me) {
+            final int idx = getRowCount() - 1;
+            order.put(idx, me);
+            backOrder.put(me, idx);
+            super.fireTableRowsInserted(idx, idx);
+        }
+
+        public void fireElementRemoved(IMappingElement<INode> me) {
+            Integer idx = backOrder.get(me);
+            if (null != idx) {
+                backOrder.remove(me);
+                order.remove(idx);
+                order.remove(getRowCount() + 1);
+                //decrease all the row numbers following the deleted one
+                for (Map.Entry<IMappingElement<INode>, Integer> e : backOrder.entrySet()) {
+                    if (idx < e.getValue()) {
+                        e.setValue(e.getValue() - 1);
+                    }
+                    order.put(e.getValue(), e.getKey());
+                }
+                super.fireTableRowsDeleted(idx, idx);
+            }
+        }
+
+        public void fireElementChanged(IMappingElement<INode> me) {
+            Integer idx = backOrder.get(me);
+            if (null != idx) {
+                super.fireTableRowsUpdated(idx, idx);
+            }
+        }
+    }
+
     private class ActionSourceCreate extends AbstractAction implements Observer {
         public ActionSourceCreate() {
             super("Create");
@@ -694,6 +890,7 @@ public class SMatchGUI extends Observable implements Observer {
                     if (null != target) {
                         mapping = mm.getMappingFactory().getContextMappingInstance(source, target);
                         resetMappingInModel(tTarget);
+                        resetMappingInTable();
                     }
                     createTree(source, tSource, mapping);
                     sourceLocation = null;
@@ -973,6 +1170,7 @@ public class SMatchGUI extends Observable implements Observer {
                     target.createRoot("Top");
                     if (null != source) {
                         mapping = mm.getMappingFactory().getContextMappingInstance(source, target);
+                        resetMappingInTable();
                         resetMappingInModel(tSource);
                     }
                     createTree(target, tTarget, mapping);
@@ -1305,6 +1503,7 @@ public class SMatchGUI extends Observable implements Observer {
                     mapping = mm.getMappingFactory().getContextMappingInstance(source, target);
                     resetMappingInModel(tSource);
                     resetMappingInModel(tTarget);
+                    resetMappingInTable();
                     lastFocusedTree = oldLastFocusedTree;
                 }
 
@@ -1323,14 +1522,23 @@ public class SMatchGUI extends Observable implements Observer {
 
                     // check mapping
                     char existingRel = mapping.getRelation(sourceNode, targetNode);
+                    boolean edit = false;
                     if (IMappingElement.IDK == existingRel) {
                         // add the mapping
                         mapping.setRelation(sourceNode, targetNode, IMappingElement.EQUIVALENCE);
                         IMappingElement<INode> me = new MappingElement<INode>(sourceNode, targetNode, IMappingElement.EQUIVALENCE);
                         // add the link nodes
                         sourceLinkNode = new DefaultMutableTreeNode(me);
+                        if (0 == sourceLinkNodes.size()) {
+                            sourceLinkNodes = new ArrayList<DefaultMutableTreeNode>();
+                            sourceNode.getNodeData().setUserObject(sourceLinkNodes);
+                        }
                         sourceLinkNodes.add(sourceLinkNode);
                         targetLinkNode = new DefaultMutableTreeNode(me);
+                        if (0 == targetLinkNodes.size()) {
+                            targetLinkNodes = new ArrayList<DefaultMutableTreeNode>();
+                            targetNode.getNodeData().setUserObject(targetLinkNodes);
+                        }
                         targetLinkNodes.add(targetLinkNode);
 
                         // signal insertion
@@ -1343,24 +1551,34 @@ public class SMatchGUI extends Observable implements Observer {
                             dtmSource.nodesWereInserted(sourceNode, new int[]{sIdx});
                             dtmTarget.nodesWereInserted(targetNode, new int[]{tIdx});
                         }
+
+                        //signal mapping table
+                        if (tblMapping.getModel() instanceof MappingTableModel) {
+                            MappingTableModel mtm = (MappingTableModel) tblMapping.getModel();
+                            mtm.fireElementInserted(me);
+                        }
+
                     } else {
                         // find them
                         sourceLinkNode = findLinkNode(sourceNode, targetNode, sourceLinkNodes, existingRel);
                         targetLinkNode = findLinkNode(sourceNode, targetNode, targetLinkNodes, existingRel);
+                        edit = true;
                     }
 
                     sourcePath = sourcePath.pathByAddingChild(sourceLinkNode);
                     targetPath = targetPath.pathByAddingChild(targetLinkNode);
                     // start editing
                     if (null != lastFocusedTree) {
+                        TreePath tp;
                         if (lastFocusedTree == tSource) {
-                            tSource.setSelectionPath(sourcePath);
-                            tSource.scrollPathToVisible(sourcePath);
-                            tSource.startEditingAtPath(sourcePath);
-                        } else if (lastFocusedTree == tTarget) {
-                            tTarget.setSelectionPath(targetPath);
-                            tTarget.scrollPathToVisible(targetPath);
-                            tTarget.startEditingAtPath(targetPath);
+                            tp = sourcePath;
+                        } else {
+                            tp = targetPath;
+                        }
+                        lastFocusedTree.setSelectionPath(tp);
+                        lastFocusedTree.scrollPathToVisible(tp);
+                        if (edit) {
+                            lastFocusedTree.startEditingAtPath(tp);
                         }
                     }
 
@@ -1377,7 +1595,7 @@ public class SMatchGUI extends Observable implements Observer {
                 if (linkNode.getUserObject() instanceof IMappingElement) {
                     @SuppressWarnings("unchecked")
                     IMappingElement<INode> me = (IMappingElement<INode>) linkNode.getUserObject();
-                    if (me.getSource() == sourceNode && me.getTarget() == targetNode && me.getRelation() == existingRel) {
+                    if (me.getSource() == sourceNode && me.getTarget() == targetNode && getRelation(me) == existingRel) {
                         result = linkNode;
                         break;
                     }
@@ -1537,6 +1755,7 @@ public class SMatchGUI extends Observable implements Observer {
                         mm.offline(target);
                     }
                     mapping = mm.online(source, target);
+                    resetMappingInTable();
                     createTree(source, tSource, mapping);
                     createTree(target, tTarget, mapping);
                     mappingLocation = null;
@@ -1796,7 +2015,94 @@ public class SMatchGUI extends Observable implements Observer {
         }
     };
 
-    private final TreeSelectionListener treeSelectionListener = new TreeSelectionListener() {
+    private final ListSelectionListener tableSelectionListener = new ListSelectionListener() {
+        public void valueChanged(ListSelectionEvent e) {
+            MappingTableModel mtm = (MappingTableModel) tblMapping.getModel();
+            if (-1 != tblMapping.getSelectedRow()) {
+                IMappingElement<INode> me = mtm.getElementAt(tblMapping.getSelectedRow());
+                if (null != me) {
+                    //select source node in source tree
+                    uncoalesceTree(tSource);
+                    //find the link node
+                    DefaultMutableTreeNode linkNode = null;
+                    @SuppressWarnings("unchecked")
+                    List<DefaultMutableTreeNode> linkNodes = (List<DefaultMutableTreeNode>) me.getSource().getNodeData().getUserObject();
+                    MappingTreeModel matm = (MappingTreeModel) tSource.getModel();
+                    if (null == linkNodes) {
+                        linkNodes = matm.updateUserObject(me.getSource());
+                    }
+                    for (DefaultMutableTreeNode dmtn : linkNodes) {
+                        if (me.equals(dmtn.getUserObject())) {
+                            linkNode = dmtn;
+                            break;
+                        }
+                    }
+                    if (null != linkNode) {
+                        // construct path to root
+                        TreePath pp = createPathToRoot(me.getSource());
+                        pp = pp.pathByAddingChild(linkNode);
+                        List<Object> ppList = Arrays.asList(pp.getPath());
+                        tSource.makeVisible(pp);
+                        tSource.setSelectionPath(pp);
+                        tSource.scrollPathToVisible(pp);
+
+                        // check whether root is visible
+                        if (!isRootVisible(tSource)) {
+                            // first try collapsing all the nodes above the target one
+                            INode curNode = me.getSource();
+                            while (null != curNode) {
+                                for (INode child : curNode.getChildrenList()) {
+                                    if (!ppList.contains(child) && !matm.isCoalesced(child)) {
+                                        tSource.collapsePath(createPathToRoot(child));
+                                    }
+                                }
+                                curNode = curNode.getParent();
+                            }
+
+                            tSource.scrollPathToVisible(pp);
+                            if (!isRootVisible(tSource)) {
+                                // second try coalescing nodes, starting from those in the top
+                                for (int i = 0; i < (ppList.size() - 1); i++) {
+                                    if (ppList.get(i) instanceof INode) {
+                                        INode node = (INode) ppList.get(i);
+                                        int idx = tSource.getModel().getIndexOfChild(node, ppList.get(i + 1));
+                                        matm.coalesce(node, 0, idx - 1);
+
+                                        tSource.scrollPathToVisible(pp);
+                                        if (isRootVisible(tSource)) {
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                            scrollToTop(spSource);
+                        }
+
+                        treeSelectionListener.adjustTargetTree(tSource, tTarget, spSource, spTarget, me.getSource(), me.getTarget());
+                        if (null == lastFocusedTree) {
+                            //"focus" source tree because we select link node there
+                            //and then delete works
+                            lastFocusedTree = tSource;
+                        }
+                        //to update actions of selection change
+                        setChanged();
+                        notifyObservers();
+                    } else {
+                        //shouldn't happen
+                        log.error("Can't find link node!");
+                    }
+                }
+            }
+        }
+    };
+
+    private void scrollToTop(JScrollPane scrollPane) {
+        scrollPane.getViewport().setViewPosition(new Point(scrollPane.getViewport().getViewPosition().x, 0));
+    }
+
+    private final AdjustingTreeSelectionListener treeSelectionListener = new AdjustingTreeSelectionListener();
+
+    private class AdjustingTreeSelectionListener implements TreeSelectionListener {
         public void valueChanged(TreeSelectionEvent e) {
             if (e.getSource() instanceof JTree) {
                 TreePath p = e.getNewLeadSelectionPath();
@@ -1812,6 +2118,7 @@ public class SMatchGUI extends Observable implements Observer {
                             } else if (e.getSource() == tTarget) {
                                 adjustTargetTree(tTarget, tSource, spTarget, spSource, me.getTarget(), me.getSource());
                             }
+                            adjustMappingTable(me);
                         }
                     }
                 }
@@ -1821,7 +2128,7 @@ public class SMatchGUI extends Observable implements Observer {
             notifyObservers();
         }
 
-        private void adjustTargetTree(JTree tSource, JTree tTarget, JScrollPane spSource, JScrollPane spTarget, INode source, INode target) {
+        public void adjustTargetTree(JTree tSource, JTree tTarget, JScrollPane spSource, JScrollPane spTarget, INode source, INode target) {
             if (tTarget.getModel() instanceof MappingTreeModel) {
                 MappingTreeModel mtm = (MappingTreeModel) tTarget.getModel();
                 mtm.uncoalesceParents(target);
@@ -1874,7 +2181,21 @@ public class SMatchGUI extends Observable implements Observer {
                 spTarget.repaint();
             }
         }
-    };
+    }
+
+    private void adjustMappingTable(IMappingElement<INode> me) {
+        if (tblMapping.getModel() instanceof MappingTableModel) {
+            //to avoid cycle -> tree scrolled -> we scroll table -> it scrolls tree
+            tblMapping.getSelectionModel().removeListSelectionListener(tableSelectionListener);
+            MappingTableModel mtm = (MappingTableModel) tblMapping.getModel();
+            int idx = mtm.getIndexOf(me);
+            if (-1 != idx) {
+                tblMapping.getSelectionModel().setSelectionInterval(idx, idx);
+                tblMapping.scrollRectToVisible(tblMapping.getCellRect(idx, 0, true));
+            }
+            tblMapping.getSelectionModel().addListSelectionListener(tableSelectionListener);
+        }
+    }
 
     private boolean isRootVisible(JTree tTarget) {
         boolean result = false;
@@ -1900,14 +2221,16 @@ public class SMatchGUI extends Observable implements Observer {
      */
     private void scrollToMatchVerticalPosition(JTree tSource, JTree tTarget, JScrollPane spSource, JScrollPane spTarget) {
         if (0 < tSource.getSelectionCount() && 0 < tTarget.getSelectionCount()) {
-            int sourceSelRowIdx = tSource.getSelectionRows()[0];
-            int targetSelRowIdx = tTarget.getSelectionRows()[0];
-            Rectangle sr = tSource.getRowBounds(sourceSelRowIdx);
-            Rectangle tr = tTarget.getRowBounds(targetSelRowIdx);
-            Point sp = spSource.getViewport().getViewPosition();
-            Point tp = spTarget.getViewport().getViewPosition();
-            int delta = (tr.y - tp.y) - (sr.y - sp.y);
-            spTarget.getViewport().setViewPosition(new Point(tp.x, tp.y + delta));
+            if (null != tSource.getSelectionRows() && null != tTarget.getSelectionRows()) {
+                int sourceSelRowIdx = tSource.getSelectionRows()[0];
+                int targetSelRowIdx = tTarget.getSelectionRows()[0];
+                Rectangle sr = tSource.getRowBounds(sourceSelRowIdx);
+                Rectangle tr = tTarget.getRowBounds(targetSelRowIdx);
+                Point sp = spSource.getViewport().getViewPosition();
+                Point tp = spTarget.getViewport().getViewPosition();
+                int delta = (tr.y - tp.y) - (sr.y - sp.y);
+                spTarget.getViewport().setViewPosition(new Point(tp.x, tp.y + delta));
+            }
         }
     }
 
@@ -1943,7 +2266,7 @@ public class SMatchGUI extends Observable implements Observer {
                         IMappingElement<INode> me = (IMappingElement<INode>) dmtn.getUserObject();
                         char relation = IMappingElement.IDK;
                         if (null != mapping) {
-                            relation = mapping.getRelation(me.getSource(), me.getTarget());
+                            relation = getRelation(me);
                         }
                         if (tree == tSource) {
                             setText(me.getTarget().getNodeData().getName());
@@ -1987,15 +2310,42 @@ public class SMatchGUI extends Observable implements Observer {
                         setText(ELLIPSIS);
                         setIcon(iconUncoalesceSmall);
                         StringBuilder tip = new StringBuilder();
-                        for (int i = c.range.x; i <= c.range.y; i++) {
-                            tip.append(c.parent.getChildAt(i).getNodeData().getName());
-                            if (i < c.range.y) {
-                                tip.append(", ");
+                        @SuppressWarnings("unchecked")
+                        List<DefaultMutableTreeNode> linkNodes = (List<DefaultMutableTreeNode>) c.parent.getNodeData().getUserObject();
+                        if (null == linkNodes) {
+                            if (tree.getModel() instanceof MappingTreeModel) {
+                                linkNodes = ((MappingTreeModel) tree.getModel()).updateUserObject(c.parent);
                             }
                         }
-                        if (50 < tip.length()) {
-                            tip.delete(25, tip.length() - 25);
-                            tip.insert(25, "...");
+                        for (int i = c.range.x; i <= c.range.y; i++) {
+                            if (i < c.parent.getChildCount()) {
+                                tip.append(c.parent.getChildAt(i).getNodeData().getName());
+                                if (i < c.range.y) {
+                                    tip.append(", ");
+                                }
+                            } else {
+                                if (null != linkNodes) {
+                                    if (linkNodes.get(i - c.parent.getChildCount()).getUserObject() instanceof IMappingElement) {
+                                        @SuppressWarnings("unchecked")
+                                        IMappingElement<INode> me = (IMappingElement<INode>) linkNodes.get(i - c.parent.getChildCount()).getUserObject();
+                                        tip.append("->");
+                                        if (tree == tSource) {
+                                            tip.append(me.getTarget().getNodeData().getName());
+                                        } else {
+                                            tip.append(me.getSource().getNodeData().getName());
+                                        }
+
+                                        if (i < c.range.y) {
+                                            tip.append(", ");
+                                        }
+
+                                    }
+                                }
+                            }
+                        }
+                        if (100 < tip.length()) {
+                            tip.delete(50, tip.length() - 50);
+                            tip.insert(50, "...");
                         }
                         setToolTipText(tip.toString());
                     }
@@ -2040,18 +2390,81 @@ public class SMatchGUI extends Observable implements Observer {
 
     private final CustomFileFilter ff = new CustomFileFilter();
 
+    private class MappingTableCellRenderer extends DefaultTableCellRenderer {
+        public MappingTableCellRenderer() {
+            super();
+        }
+
+        public Component getTableCellRendererComponent(JTable table, Object value,
+                                                       boolean isSelected, boolean hasFocus, int row, int column) {
+            super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            setToolTipText("");
+            setIcon(null);
+            if (value instanceof IMappingElement) {
+                @SuppressWarnings("unchecked")
+                IMappingElement<INode> me = (IMappingElement<INode>) value;
+                switch (column) {
+                    case MappingTableModel.C_SOURCE: {
+                        setText(me.getSource().getNodeData().getName());
+                        setToolTipText(getStringPathToRoot(me.getSource()));
+                        break;
+                    }
+                    case MappingTableModel.C_TARGET: {
+                        setText(me.getTarget().getNodeData().getName());
+                        setToolTipText(getStringPathToRoot(me.getTarget()));
+                        break;
+                    }
+                    case MappingTableModel.C_RELATION: {
+                        setText(relationToDescription.get(getRelation(me)));
+                        switch (getRelation(me)) {
+                            case IMappingElement.LESS_GENERAL: {
+                                setIcon(iconLG);
+                                break;
+                            }
+                            case IMappingElement.MORE_GENERAL: {
+                                setIcon(iconMG);
+                                break;
+                            }
+                            case IMappingElement.EQUIVALENCE: {
+                                setIcon(iconEQ);
+                                break;
+                            }
+                            case IMappingElement.DISJOINT: {
+                                setIcon(iconDJ);
+                                break;
+                            }
+                        }
+                        break;
+                    }
+                    default: {
+                        break;
+                    }
+                }
+            }
+
+            return this;
+        }
+
+    }
+
+    private String getStringPathToRoot(INode source) {
+        StringBuilder result = new StringBuilder("");
+        TreePath path = createPathToRoot(source);
+        for (int i = 0; i < path.getPathCount(); i++) {
+            INode node = (INode) path.getPathComponent(i);
+            if (0 == i) {
+                result.append(node.getNodeData().getName());
+            } else {
+                result.append("\\").append(node.getNodeData().getName());
+            }
+        }
+        return result.toString();
+    }
+
+    private final MappingTableCellRenderer mappingTableCellRenderer = new MappingTableCellRenderer();
+
+
     private class NodeTreeCellEditor extends DefaultTreeCellEditor {
-
-        private final String NAME_EQ = "equivalent";
-        private final String NAME_LG = "less general";
-        private final String NAME_MG = "more general";
-        private final String NAME_DJ = "disjoint";
-
-        private String[] relStrings = {NAME_EQ, NAME_LG, NAME_MG, NAME_DJ};
-
-        private final HashMap<Character, String> relationToDescription = new HashMap<Character, String>(4);
-        private final HashMap<String, Character> descriptionToRelation = new HashMap<String, Character>(4);
-        private final HashMap<String, Icon> descriptionToIcon = new HashMap<String, Icon>(4);
 
         private TreeCellEditor oldRealEditor;
         private TreeCellEditor comboEditor;
@@ -2156,7 +2569,7 @@ public class SMatchGUI extends Observable implements Observer {
                             if (dmtn.getUserObject() instanceof IMappingElement) {
                                 @SuppressWarnings("unchecked")
                                 IMappingElement<INode> me = (IMappingElement<INode>) dmtn.getUserObject();
-                                comboBox.setSelectedItem(relationToDescription.get(mapping.getRelation(me.getSource(), me.getTarget())));
+                                comboBox.setSelectedItem(relationToDescription.get(getRelation(me)));
                             }
                         }
                     }
@@ -2214,21 +2627,6 @@ public class SMatchGUI extends Observable implements Observer {
 
         public NodeTreeCellEditor(JTree tree, DefaultTreeCellRenderer renderer) {
             super(tree, renderer);
-            relationToDescription.put(IMappingElement.EQUIVALENCE, NAME_EQ);
-            relationToDescription.put(IMappingElement.LESS_GENERAL, NAME_LG);
-            relationToDescription.put(IMappingElement.MORE_GENERAL, NAME_MG);
-            relationToDescription.put(IMappingElement.DISJOINT, NAME_DJ);
-
-            descriptionToRelation.put(NAME_EQ, IMappingElement.EQUIVALENCE);
-            descriptionToRelation.put(NAME_LG, IMappingElement.LESS_GENERAL);
-            descriptionToRelation.put(NAME_MG, IMappingElement.MORE_GENERAL);
-            descriptionToRelation.put(NAME_DJ, IMappingElement.DISJOINT);
-
-            descriptionToIcon.put(NAME_EQ, smallIconEQ);
-            descriptionToIcon.put(NAME_LG, smallIconLG);
-            descriptionToIcon.put(NAME_MG, smallIconMG);
-            descriptionToIcon.put(NAME_DJ, smallIconDJ);
-
             comboEditor = createTreeCellComboEditor();
             oldRealEditor = realEditor;
         }
@@ -2297,6 +2695,10 @@ public class SMatchGUI extends Observable implements Observer {
             super.removeCellEditorListener(l);
         }
 
+    }
+
+    private char getRelation(IMappingElement<INode> me) {
+        return mapping.getRelation(me.getSource(), me.getTarget());
     }
 
     private void addNode(JTree tree) {
@@ -2390,9 +2792,13 @@ public class SMatchGUI extends Observable implements Observer {
                     IMappingElement<INode> me = (IMappingElement<INode>) dmtn.getUserObject();
                     // remove from mapping
                     mapping.setRelation(me.getSource(), me.getTarget(), IMappingElement.IDK);
+                    mappingModified = true;
                     // remove link node from the target tree
                     removeLinkFromTargetTree(tree, me);
-                    mappingModified = true;
+                    if (tblMapping.getModel() instanceof MappingTableModel) {
+                        MappingTableModel mtm = (MappingTableModel) tblMapping.getModel();
+                        mtm.fireElementRemoved(me);
+                    }
                 }
             }
         }
@@ -2407,6 +2813,7 @@ public class SMatchGUI extends Observable implements Observer {
         sourceLocation = null;
         sourceModified = false;
         createTree(source, tSource, null);
+        resetMappingInTable();
         setChanged();
         notifyObservers();
     }
@@ -2416,6 +2823,7 @@ public class SMatchGUI extends Observable implements Observer {
         targetLocation = null;
         targetModified = false;
         createTree(target, tTarget, null);
+        resetMappingInTable();
         setChanged();
         notifyObservers();
     }
@@ -2456,6 +2864,7 @@ public class SMatchGUI extends Observable implements Observer {
         mappingModified = false;
         createTree(source, tSource, mapping);
         createTree(target, tTarget, mapping);
+        resetMappingInTable();
         pnContexts.repaint();
         setChanged();
         notifyObservers();
@@ -2468,6 +2877,7 @@ public class SMatchGUI extends Observable implements Observer {
         mapping = newMapping;
         resetMappingInModel(tSource);
         resetMappingInModel(tTarget);
+        resetMappingInTable();
     }
 
     private void resetMappingInModel(JTree tree) {
@@ -2487,10 +2897,17 @@ public class SMatchGUI extends Observable implements Observer {
             } else {
                 links = mapping.getTargets(node);
             }
+            MappingTableModel mtm = null;
+            if (tblMapping.getModel() instanceof MappingTableModel) {
+                mtm = (MappingTableModel) tblMapping.getModel();
+            }
             for (IMappingElement<INode> me : links) {
                 mapping.setRelation(me.getSource(), me.getTarget(), IMappingElement.IDK);
                 mappingModified = true;
                 removeLinkFromTargetTree(tree, me);
+                if (null != mtm) {
+                    mtm.fireElementRemoved(me);
+                }
             }
         }
     }
@@ -2585,6 +3002,7 @@ public class SMatchGUI extends Observable implements Observer {
             if (null != target) {
                 mapping = mm.getMappingFactory().getContextMappingInstance(source, target);
                 resetMappingInModel(tTarget);
+                resetMappingInTable();
             }
             createTree(source, tSource, mapping);
             sourceLocation = file.getAbsolutePath();
@@ -2607,6 +3025,7 @@ public class SMatchGUI extends Observable implements Observer {
             if (null != source) {
                 mapping = mm.getMappingFactory().getContextMappingInstance(source, target);
                 resetMappingInModel(tSource);
+                resetMappingInTable();
             }
             createTree(target, tTarget, mapping);
             targetLocation = file.getAbsolutePath();
@@ -2625,6 +3044,7 @@ public class SMatchGUI extends Observable implements Observer {
             mapping = mm.loadMapping(source, target, file.getAbsolutePath());
             createTree(source, tSource, mapping);
             createTree(target, tTarget, mapping);
+            resetMappingInTable();
             pnContexts.repaint();
             mappingLocation = file.getAbsolutePath();
         } catch (SMatchException e) {
@@ -2844,13 +3264,23 @@ public class SMatchGUI extends Observable implements Observer {
         spnContextsLog.setOneTouchExpandable(true);
 
         builder.add(spnContextsLog, cc.xy(1, 5, CellConstraints.DEFAULT, CellConstraints.FILL));
+
+        //split pane for context above and mapping table below
+        spnContextsMapping = new JSplitPane();
+        spnContextsMapping.setContinuousLayout(true);
+        spnContextsMapping.setOrientation(JSplitPane.VERTICAL_SPLIT);
+        spnContextsMapping.setOneTouchExpandable(true);
+        pnContextsMapping = new JPanel();
+        pnContextsMapping.setLayout(new FormLayout("fill:d:grow", "fill:d:grow"));
+        pnContextsMapping.add(spnContextsMapping, cc.xy(1, 1));
+
         spnContexts = new JSplitPane();
-
-
         pnContexts = new JPanel();
         pnContexts.setLayout(new FormLayout("fill:d:grow", "fill:d:grow"));
 
-        spnContextsLog.setLeftComponent(pnContexts);
+        spnContextsMapping.setLeftComponent(pnContexts);
+
+        spnContextsLog.setLeftComponent(pnContextsMapping);
         pnContexts.add(spnContexts, cc.xy(1, 1));
 
         //build source
@@ -2963,6 +3393,14 @@ public class SMatchGUI extends Observable implements Observer {
         popTarget.add(acTargetAddChildNode);
         popTarget.add(acTargetDelete);
 
+        //build mapping table
+        tblMapping = new JTable(new MappingTableModel(null));
+        spMappingTable = new JScrollPane(tblMapping);
+        tblMapping.setFillsViewportHeight(true);
+        spnContextsMapping.setRightComponent(spMappingTable);
+        tblMapping.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        tblMapping.setDefaultRenderer(IMappingElement.class, mappingTableCellRenderer);
+
         //build log panel
         JPanel pnLog = new JPanel();
         pnLog.setLayout(new FormLayout("fill:d:grow", "fill:d:grow"));
@@ -3050,6 +3488,15 @@ public class SMatchGUI extends Observable implements Observer {
             lastFocusedTree = null;
         }
     }
+
+    private void resetMappingInTable() {
+        tblMapping.getSelectionModel().removeListSelectionListener(tableSelectionListener);
+        tblMapping.setModel(new MappingTableModel(mapping));
+        if (null != mapping) {
+            tblMapping.getSelectionModel().addListSelectionListener(tableSelectionListener);
+        }
+    }
+
 
     private void clearUserObjects(INode root) {
         root.getNodeData().setUserObject(null);
@@ -3186,9 +3633,11 @@ public class SMatchGUI extends Observable implements Observer {
         frame.setJMenuBar(mainMenu);
         frame.addWindowListener(windowListener);
         frame.pack();
+        frame.setSize(650, 900);
 
         spnContextsLog.setDividerLocation(.8);
         spnContexts.setDividerLocation(.5);
+        spnContextsMapping.setDividerLocation(.8);
 
         //try to set an icon
         try {
