@@ -32,6 +32,8 @@ import javax.swing.tree.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.*;
 import java.util.List;
 
@@ -140,6 +142,7 @@ public class SMatchGUI extends Observable implements Observer {
     private Action acViewUncoalesce;
     private Action acViewUncoalesceAll;
 
+    private Action acConfigurationEdit;
 
     private static final String TANGO_ICONS_PATH = "/tango-icon-theme-0.8.90/";
 
@@ -863,6 +866,78 @@ public class SMatchGUI extends Observable implements Observer {
             Integer idx = backOrder.get(me);
             if (null != idx) {
                 super.fireTableRowsUpdated(idx, idx);
+            }
+        }
+    }
+
+    private class ActionConfigurationEdit extends AbstractAction implements Observer {
+        public ActionConfigurationEdit() {
+            super("Edit configuration...");
+            putValue(Action.SHORT_DESCRIPTION, "Edit configuration file");
+            putValue(Action.LONG_DESCRIPTION, "Edit current configuration file");
+        }
+
+        public void actionPerformed(ActionEvent actionEvent) {
+            JOptionPane.showMessageDialog(frame, "Please edit the file " + configFileName + " using your preferred text editor.",
+                    "Edit configuration", JOptionPane.INFORMATION_MESSAGE);
+//            //.properties files are not associated with anything usually and sadly, just an error pops up.
+//            try {
+//                if (Desktop.isDesktopSupported()) {
+//                    Desktop desktop = Desktop.getDesktop();
+//                    final File fileToEdit = new File(configFileName);
+//                    desktop.edit(fileToEdit.getCanonicalFile());
+//                } else {
+//                    JOptionPane.showMessageDialog(frame, "This Desktop environment is not supported by the Java machine.", "Desktop not supported", JOptionPane.WARNING_MESSAGE);
+//                }
+//
+//                setChanged();
+//                notifyObservers();
+//            } catch (IOException e) {
+//                if (log.isEnabledFor(Level.ERROR)) {
+//                    log.error("Error launching editor for configuration file " + configFileName, e);
+//                }
+//                JOptionPane.showMessageDialog(frame, "Error launching editor for configuration file " + configFileName + ".\n\n" +
+//                        e.getMessage() + "\nPlease edit the file " + configFileName + " using your preferred text editor.",
+//                        "Configuration editing error", JOptionPane.ERROR_MESSAGE);
+//            }
+        }
+
+        public void update(Observable o, Object arg) {
+            setEnabled(null != configFileName);
+        }
+    }
+
+    private class ActionBrowseURL extends AbstractAction {
+
+        private String url;
+
+        private ActionBrowseURL(String url, String name) {
+            super(name);
+            this.url = url;
+        }
+
+        public void actionPerformed(ActionEvent actionEvent) {
+            try {
+                if (Desktop.isDesktopSupported()) {
+                    Desktop desktop = Desktop.getDesktop();
+                    desktop.browse(new URI(url));
+                } else {
+                    JOptionPane.showMessageDialog(frame, "This Desktop environment is not supported by the Java machine.", "Desktop not supported", JOptionPane.WARNING_MESSAGE);
+                }
+            } catch (IOException e) {
+                if (log.isEnabledFor(Level.ERROR)) {
+                    log.error("Error while launching a browser at " + url, e);
+                }
+                JOptionPane.showMessageDialog(frame, "Error while launching a browser at " + url + ".\n\n" +
+                        e.getMessage() + "\nPlease open a browser at " + url,
+                        "Browser launch error", JOptionPane.ERROR_MESSAGE);
+            } catch (URISyntaxException e) {
+                if (log.isEnabledFor(Level.ERROR)) {
+                    log.error("Error while launching a browser at " + url, e);
+                }
+                JOptionPane.showMessageDialog(frame, "Error while launching a browser at " + url + ".\n\n" +
+                        e.getMessage() + "\nPlease open a browser at " + url,
+                        "Browser launch error", JOptionPane.ERROR_MESSAGE);
             }
         }
     }
@@ -3168,6 +3243,18 @@ public class SMatchGUI extends Observable implements Observer {
         jmView.addSeparator();
         jmView.add(acViewClearLog);
         mainMenu.add(jmView);
+
+        JMenu jmOptions = new JMenu("Options");
+        jmOptions.setMnemonic('O');
+        jmOptions.add(acConfigurationEdit);
+        mainMenu.add(jmOptions);
+
+        JMenu jmHelp = new JMenu("Help");
+        jmHelp.setMnemonic('H');
+        jmHelp.add(new ActionBrowseURL("http://sourceforge.net/apps/trac/s-match/wiki/Manual", "Open S-Match Manual..."));
+        jmHelp.add(new ActionBrowseURL("http://sourceforge.net/projects/s-match/", "Open S-Match project web site..."));
+        jmHelp.add(new ActionBrowseURL("http://semanticmatching.org/", "Open SemanticMatching.org web site..."));
+        mainMenu.add(jmHelp);
     }
 
     private void buildStaticGUI() {
@@ -3198,6 +3285,8 @@ public class SMatchGUI extends Observable implements Observer {
 
         acViewUncoalesce = new ActionViewUncoalesce();
         acViewUncoalesceAll = new ActionViewUncoalesceAll();
+
+        acConfigurationEdit = new ActionConfigurationEdit();
 
         String layoutColumns = "fill:default:grow";
         String layoutRows = "top:d:noGrow,top:4dlu:noGrow,top:d:noGrow,top:4dlu:noGrow,fill:max(d;100px):grow";
@@ -3430,7 +3519,7 @@ public class SMatchGUI extends Observable implements Observer {
                 acTargetOpen, acTargetPreprocess, acTargetClose, acTargetSave, acTargetSaveAs,
                 acMappingCreate, acMappingOpen, acMappingClose, acMappingSave, acMappingSaveAs,
                 acEditAddNode, acEditAddChildNode, acEditAddLink, acEditDelete,
-                acViewUncoalesce, acViewUncoalesceAll
+                acViewUncoalesce, acViewUncoalesceAll, acConfigurationEdit
         };
 
         for (Action a : actions) {
