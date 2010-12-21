@@ -258,6 +258,7 @@ public class MatchManager extends Configurable implements IMatchManager {
         log.info("Structure level matching...");
         IContextMapping<INode> mapping = treeMatcher.treeMatch(sourceContext, targetContext, acolMapping);
         log.info("Structure level matching finished");
+        log.info("Returning links: " + mapping.size());
         return mapping;
     }
 
