@@ -250,6 +250,10 @@ public class WordNet extends Configurable implements ILinguisticOracle, ISenseMa
             final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
             log.error(errMessage, e);
             throw new SenseMatcherException(errMessage, e);
+        } catch (CloneNotSupportedException e) {
+            final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
+            log.error(errMessage, e);
+            throw new SenseMatcherException(errMessage, e);
         }
         return false;
     }
@@ -274,6 +278,10 @@ public class WordNet extends Configurable implements ILinguisticOracle, ISenseMa
             log.error(errMessage, e);
             throw new SenseMatcherException(errMessage, e);
         } catch (LinguisticOracleException e) {
+            final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
+            log.error(errMessage, e);
+            throw new SenseMatcherException(errMessage, e);
+        } catch (CloneNotSupportedException e) {
             final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
             log.error(errMessage, e);
             throw new SenseMatcherException(errMessage, e);
@@ -331,6 +339,10 @@ public class WordNet extends Configurable implements ILinguisticOracle, ISenseMa
                 log.error(errMessage, e);
                 throw new SenseMatcherException(errMessage, e);
             } catch (LinguisticOracleException e) {
+                final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
+                log.error(errMessage, e);
+                throw new SenseMatcherException(errMessage, e);
+            } catch (CloneNotSupportedException e) {
                 final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
                 log.error(errMessage, e);
                 throw new SenseMatcherException(errMessage, e);
