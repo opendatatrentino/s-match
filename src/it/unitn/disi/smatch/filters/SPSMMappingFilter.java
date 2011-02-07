@@ -71,6 +71,7 @@ public class SPSMMappingFilter extends BaseFilter implements IMappingFilter {
             spsmMapping = mappingFactory.getContextMappingInstance(sourceContext, targetContext);
 
             spsmMapping.setSimilarity(computeSimilarity(mapping));
+            log.info("Similarity: " + spsmMapping.getSimilarity());
 
             if (isRelated(sourceContext.getRoot(), targetContext.getRoot(), IMappingElement.EQUIVALENCE) ||
                     isRelated(sourceContext.getRoot(), targetContext.getRoot(), IMappingElement.LESS_GENERAL) ||
