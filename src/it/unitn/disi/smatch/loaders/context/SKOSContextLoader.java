@@ -18,6 +18,7 @@ import org.semanticweb.skos.properties.SKOSPrefLabelProperty;
 import org.semanticweb.skosapibinding.SKOSManager;
 import org.semanticweb.skosapibinding.SKOSReasoner;
 
+import java.io.File;
 import java.util.*;
 
 /**
@@ -57,6 +58,11 @@ public class SKOSContextLoader extends BaseContextLoader implements IContextLoad
     public IContext loadContext(String fileName) throws ContextLoaderException {
         IContext result = new Context();
         try {
+            //check fileName whether it is URL or not
+            if (!fileName.startsWith("http://") && !fileName.startsWith("file://")) {
+                File f = new File(fileName);
+                fileName = "file:///" + f.getAbsolutePath().replace('\\', '/');
+            }
             SKOSManager manager = new SKOSManager();
             SKOSDataset dataSet = manager.loadDatasetFromPhysicalIRI(IRI.create(fileName));
             SKOSReasoner reasoner = new SKOSReasoner(manager, new Reasoner.ReasonerFactory());

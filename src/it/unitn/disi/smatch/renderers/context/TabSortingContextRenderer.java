@@ -12,7 +12,7 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- * Renders a context in a tab-indented file.
+ * Renders a context in a tab-indented file sorting the nodes by their labels.
  *
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
