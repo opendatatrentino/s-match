@@ -52,7 +52,7 @@
                  docencoding="utf8"
                  windowtitle="S-Match API">
             <bottom>
-                <![CDATA[<i>&copy; 2010 <a href="http://disi.unitn.it/~knowdive/">Knowdive</a> @ <a href="http://disi.unitn.it/">DISI</a></i>]]></bottom>
+                <![CDATA[<i>&copy; 2010-2011 <a href="http://disi.unitn.it/~knowdive/">Knowdive</a> @ <a href="http://disi.unitn.it/">DISI</a></i>]]></bottom>
             <classpath>
                 <fileset dir="lib">
                     <include name="**/*.jar"/>
