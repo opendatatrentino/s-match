@@ -18,7 +18,7 @@ import java.util.List;
  */
 public class TabSortingContextRenderer extends BaseFileContextRenderer {
 
-    private static final Comparator<INode> nodeComparator = new Comparator<INode>() {
+    public static final Comparator<INode> NODE_NAME_COMPARATOR = new Comparator<INode>() {
         public int compare(INode e1, INode e2) {
             return e1.getNodeData().getName().compareTo(e2.getNodeData().getName());
         }
@@ -44,7 +44,7 @@ public class TabSortingContextRenderer extends BaseFileContextRenderer {
                     nodeQ.add(0, null);
                     //adding to the top of the queue
                     List<INode> childList = new ArrayList<INode>(curNode.getChildrenList());
-                    Collections.sort(childList, nodeComparator);
+                    Collections.sort(childList, NODE_NAME_COMPARATOR);
                     for (int i = childList.size() - 1; i >= 0; i--) {
                         nodeQ.add(0, childList.get(i));
                     }

@@ -219,8 +219,12 @@ public class SKOSContextLoader extends BaseContextLoader implements IContextLoad
 
                         int childIndex = parent.getChildIndex(child);
                         if (-1 == childIndex) {
-                            parent.addChild(child);
-                            linksCreated++;
+                            if (!checkCycle(parent, child)) {
+                                parent.addChild(child);
+                                linksCreated++;
+                            } else {
+                                log.warn("Cycle found: " + parent.getNodeData().getName() + " -> " + child.getNodeData().getName());
+                            }
                         } else {
                             if (log.isEnabledFor(Level.WARN)) {
                                 log.warn("Child already exist under this parent: " + parent.getNodeData().getName() + " -> child -> " + child.getNodeData().getName());
@@ -286,6 +290,18 @@ public class SKOSContextLoader extends BaseContextLoader implements IContextLoad
         }
 
         return result;
+    }
+
+    private boolean checkCycle(INode parent, INode child) {
+        INode ancestor = parent;
+
+        do {
+            if (ancestor == child) {
+                return true;
+            }
+        } while ((ancestor = ancestor.getParent()) != null);
+
+        return false;
     }
 
     public String getDescription() {
