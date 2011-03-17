@@ -5,6 +5,7 @@ import it.unitn.disi.smatch.data.ling.ISense;
 import it.unitn.disi.smatch.data.trees.IContext;
 import it.unitn.disi.smatch.data.trees.INode;
 import it.unitn.disi.smatch.data.trees.INodeData;
+import it.unitn.disi.smatch.data.trees.Node;
 import it.unitn.disi.smatch.loaders.ILoader;
 import org.apache.log4j.Logger;
 import org.xml.sax.SAXException;
@@ -18,6 +19,8 @@ import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 
 /**
@@ -112,8 +115,16 @@ public class SimpleXMLContextRenderer extends BaseXMLContextRenderer {
 
         if (0 < curNode.getChildCount()) {
             hd.startElement("", "", "children", new AttributesImpl());
-            for (Iterator<INode> i = curNode.getChildren(); i.hasNext();) {
-                renderNode(hd, i.next());
+            Iterator<INode> children;
+            if (sort) {
+                ArrayList<INode> childrenList = new ArrayList<INode>(curNode.getChildrenList());
+                Collections.sort(childrenList, Node.NODE_NAME_COMPARATOR);
+                children = childrenList.iterator();
+            } else {
+                children = curNode.getChildren();
+            }
+            while (children.hasNext()) {
+                renderNode(hd, children.next());
             }
             hd.endElement("", "", "children");
         }

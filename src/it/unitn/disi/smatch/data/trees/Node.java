@@ -134,6 +134,12 @@ public class Node extends IndexedObject implements INode, INodeData {
         }
     }
 
+    public static final Comparator<INode> NODE_NAME_COMPARATOR = new Comparator<INode>() {
+        public int compare(INode e1, INode e2) {
+            return e1.getNodeData().getName().compareTo(e2.getNodeData().getName());
+        }
+    };
+
     public Node() {
         parent = null;
         children = null;

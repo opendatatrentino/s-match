@@ -2,11 +2,14 @@ package it.unitn.disi.smatch.renderers.context;
 
 import it.unitn.disi.smatch.data.trees.IContext;
 import it.unitn.disi.smatch.data.trees.INode;
+import it.unitn.disi.smatch.data.trees.Node;
 import it.unitn.disi.smatch.loaders.ILoader;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
 
 /**
  * Renders a context in a tab-separated file, one line per path to root.
@@ -25,25 +28,29 @@ public class TabPathContextRenderer extends BaseFileContextRenderer {
                 out.write(getPathToRoot(curNode));
             }
             reportProgress();
-            nodeQ.addAll(curNode.getChildrenList());
+            if (curNode.getChildCount() > 0) {
+                Iterator<INode> children;
+                if (sort) {
+                    ArrayList<INode> childrenList = new ArrayList<INode>(curNode.getChildrenList());
+                    Collections.sort(childrenList, Node.NODE_NAME_COMPARATOR);
+                    children = childrenList.iterator();
+                } else {
+                    children = curNode.getChildren();
+                }
+                while (children.hasNext()) {
+                    nodeQ.add(children.next());
+                }
+            }
         }
         reportStats(context);
     }
 
     private String getPathToRoot(INode node) {
-        StringBuilder result = new StringBuilder();
-        ArrayList<String> path = new ArrayList<String>();
-        INode curNode = node;
+        StringBuilder result = new StringBuilder(node.getNodeData().getName());
+        INode curNode = node.getParent();
         while (null != curNode) {
-            path.add(0, curNode.getNodeData().getName());
+            result.insert(0, curNode.getNodeData().getName() + "\t");
             curNode = curNode.getParent();
-        }
-        for (int i = 0; i < path.size(); i++) {
-            if (0 == i) {
-                result.append(path.get(i));
-            } else {
-                result.append("\t").append(path.get(i));
-            }
         }
         result.append("\n");
         return result.toString();

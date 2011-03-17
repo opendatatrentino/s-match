@@ -105,19 +105,11 @@ public class TabPathMappingLoader extends BaseFileMappingLoader {
      * @return the string of the path from root to node
      */
     private String getPathToRoot(INode node) {
-        StringBuilder result = new StringBuilder();
-        ArrayList<String> path = new ArrayList<String>();
-        INode curNode = node;
+        StringBuilder result = new StringBuilder(node.getNodeData().getName());
+        INode curNode = node.getParent();
         while (null != curNode) {
-            path.add(0, curNode.getNodeData().getName());
+            result.insert(0, curNode.getNodeData().getName() + "\t");
             curNode = curNode.getParent();
-        }
-        for (int i = 0; i < path.size(); i++) {
-            if (0 == i) {
-                result.append(path.get(i));
-            } else {
-                result.append("\t").append(path.get(i));
-            }
         }
         return result.toString();
     }

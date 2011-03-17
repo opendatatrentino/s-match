@@ -4,6 +4,7 @@ import it.unitn.disi.smatch.components.ConfigurableException;
 import it.unitn.disi.smatch.data.trees.IContext;
 import it.unitn.disi.smatch.data.trees.INode;
 import it.unitn.disi.smatch.data.trees.INodeData;
+import it.unitn.disi.smatch.data.trees.Node;
 import it.unitn.disi.smatch.loaders.ILoader;
 import org.apache.log4j.Logger;
 import org.xml.sax.SAXException;
@@ -17,8 +18,7 @@ import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.util.Iterator;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * Renders a context into an OWL file. Created for OAEI webdirs track export, therefore takes into account
@@ -125,8 +125,16 @@ public class OWLContextRenderer extends BaseXMLContextRenderer {
 
         // render children
         if (0 < curNode.getChildCount()) {
-            for (Iterator<INode> i = curNode.getChildren(); i.hasNext();) {
-                renderNode(hd, i.next());
+            Iterator<INode> children;
+            if (sort) {
+                ArrayList<INode> childrenList = new ArrayList<INode>(curNode.getChildrenList());
+                Collections.sort(childrenList, Node.NODE_NAME_COMPARATOR);
+                children = childrenList.iterator();
+            } else {
+                children = curNode.getChildren();
+            }
+            while (children.hasNext()) {
+                renderNode(hd, children.next());
             }
         }
 

@@ -2,12 +2,17 @@ package it.unitn.disi.smatch.renderers.context;
 
 import it.unitn.disi.smatch.SMatchConstants;
 import it.unitn.disi.smatch.components.Configurable;
+import it.unitn.disi.smatch.components.ConfigurableException;
 import it.unitn.disi.smatch.data.trees.IContext;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
+import java.util.Properties;
+
 /**
  * Base class for context renderers.
+ * <p/>
+ * Accepts sort parameter.
  *
  * @author Aliaksandr Autayeu avtaev@gmail.com
  */
@@ -18,6 +23,20 @@ public abstract class BaseContextRenderer extends Configurable implements IConte
     protected long counter;
     protected long total;
     protected long reportInt;
+
+    protected final static String SORT_KEY = "sort";
+    protected boolean sort = false;
+
+    @Override
+    public boolean setProperties(Properties newProperties) throws ConfigurableException {
+        boolean result = super.setProperties(newProperties);
+        if (result) {
+            if (newProperties.containsKey(SORT_KEY)) {
+                sort = Boolean.parseBoolean(newProperties.getProperty(SORT_KEY));
+            }
+        }
+        return result;
+    }
 
     public void render(IContext context, String fileName) throws ContextRendererException {
         counter = 0;
@@ -43,5 +62,4 @@ public abstract class BaseContextRenderer extends Configurable implements IConte
             log.info(100 * counter / total + "%");
         }
     }
-
 }
