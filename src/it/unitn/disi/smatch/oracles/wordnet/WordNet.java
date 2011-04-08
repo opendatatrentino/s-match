@@ -6,17 +6,16 @@ import it.unitn.disi.smatch.data.ling.ISense;
 import it.unitn.disi.smatch.data.ling.Sense;
 import it.unitn.disi.smatch.data.mappings.IMappingElement;
 import it.unitn.disi.smatch.oracles.*;
-import net.didion.jwnl.JWNL;
-import net.didion.jwnl.JWNLException;
-import net.didion.jwnl.data.*;
-import net.didion.jwnl.data.list.PointerTargetNode;
-import net.didion.jwnl.data.list.PointerTargetNodeList;
-import net.didion.jwnl.data.list.PointerTargetTree;
-import net.didion.jwnl.data.relationship.AsymmetricRelationship;
-import net.didion.jwnl.data.relationship.Relationship;
-import net.didion.jwnl.data.relationship.RelationshipFinder;
-import net.didion.jwnl.data.relationship.RelationshipList;
-import net.didion.jwnl.dictionary.Dictionary;
+import net.sf.extjwnl.JWNL;
+import net.sf.extjwnl.JWNLException;
+import net.sf.extjwnl.data.*;
+import net.sf.extjwnl.data.list.PointerTargetNode;
+import net.sf.extjwnl.data.list.PointerTargetNodeList;
+import net.sf.extjwnl.data.list.PointerTargetTree;
+import net.sf.extjwnl.data.relationship.AsymmetricRelationship;
+import net.sf.extjwnl.data.relationship.RelationshipFinder;
+import net.sf.extjwnl.data.relationship.RelationshipList;
+import net.sf.extjwnl.dictionary.Dictionary;
 import org.apache.log4j.Logger;
 
 import java.io.FileInputStream;
@@ -81,8 +80,8 @@ public class WordNet extends Configurable implements ILinguisticOracle, ISenseMa
                 //Looping on all words in indexWordSet
                 for (int i = 0; i < lemmas.getIndexWordArray().length; i++) {
                     IndexWord lemma = lemmas.getIndexWordArray()[i];
-                    for (int j = 0; j < lemma.getSenseCount(); j++) {
-                        Synset synset = lemma.getSenses()[j];
+                    for (int j = 0; j < lemma.getSenses().size(); j++) {
+                        Synset synset = lemma.getSenses().get(j);
                         result.add(new Sense(synset.getPOS().getKey().charAt(0), synset.getOffset()));
                     }
                 }
@@ -127,8 +126,9 @@ public class WordNet extends Configurable implements ILinguisticOracle, ISenseMa
                 IndexWord[] v2 = lemmas2.getIndexWordArray();
                 for (IndexWord aV1 : v1) {
                     for (IndexWord aV2 : v2) {
-                        if (aV1.equals(aV2))
+                        if (aV1.equals(aV2)) {
                             return true;
+                        }
                     }
                 }
             }
@@ -234,18 +234,14 @@ public class WordNet extends Configurable implements ILinguisticOracle, ISenseMa
             Synset sourceSyn = getSynset(source);
             Synset targetSyn = getSynset(target);
             //is synonym
-            RelationshipList list = RelationshipFinder.getInstance().findRelationships(sourceSyn, targetSyn, PointerType.SIMILAR_TO);
+            RelationshipList list = RelationshipFinder.findRelationships(sourceSyn, targetSyn, PointerType.SIMILAR_TO);
             if (list.size() > 0) {
                 if (('a' == source.getPos()) || ('a' == target.getPos())) {
-                    return (((Relationship) list.get(0)).getDepth() == 0);
+                    return (list.get(0).getDepth() == 0);
                 } else {
                     return true;
                 }
             }
-        } catch (JWNLException e) {
-            final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
-            log.error(errMessage, e);
-            throw new SenseMatcherException(errMessage, e);
         } catch (LinguisticOracleException e) {
             final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
             log.error(errMessage, e);
@@ -268,15 +264,11 @@ public class WordNet extends Configurable implements ILinguisticOracle, ISenseMa
             //  Checks whether senses are siblings (thus they are opposite)
             if ('n' == source.getPos() && 'n' == target.getPos()) {
             } else {
-                RelationshipList list = RelationshipFinder.getInstance().findRelationships(sourceSyn, targetSyn, PointerType.ANTONYM);
+                RelationshipList list = RelationshipFinder.findRelationships(sourceSyn, targetSyn, PointerType.ANTONYM);
                 if (list.size() > 0) {
                     return true;
                 }
             }
-        } catch (JWNLException e) {
-            final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
-            log.error(errMessage, e);
-            throw new SenseMatcherException(errMessage, e);
         } catch (LinguisticOracleException e) {
             final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
             log.error(errMessage, e);
@@ -312,16 +304,16 @@ public class WordNet extends Configurable implements ILinguisticOracle, ISenseMa
                 Synset sourceSyn = getSynset(source);
                 Synset targetSyn = getSynset(target);
                 // find all more general relationships from WordNet
-                RelationshipList list = RelationshipFinder.getInstance().findRelationships(sourceSyn, targetSyn, PointerType.HYPERNYM);
+                RelationshipList list = RelationshipFinder.findRelationships(sourceSyn, targetSyn, PointerType.HYPERNYM);
                 if (!isUnidirestionalList(list)) {
-                    PointerTargetTree ptt = PointerUtils.getInstance().getInheritedMemberHolonyms(targetSyn);
-                    PointerTargetNodeList ptnl = PointerUtils.getInstance().getMemberHolonyms(targetSyn);
+                    PointerTargetTree ptt = PointerUtils.getInheritedMemberHolonyms(targetSyn);
+                    PointerTargetNodeList ptnl = PointerUtils.getMemberHolonyms(targetSyn);
                     if (!traverseTree(ptt, ptnl, sourceSyn)) {
-                        ptt = PointerUtils.getInstance().getInheritedPartHolonyms(targetSyn);
-                        ptnl = PointerUtils.getInstance().getPartHolonyms(targetSyn);
+                        ptt = PointerUtils.getInheritedPartHolonyms(targetSyn);
+                        ptnl = PointerUtils.getPartHolonyms(targetSyn);
                         if (!traverseTree(ptt, ptnl, sourceSyn)) {
-                            ptt = PointerUtils.getInstance().getInheritedSubstanceHolonyms(targetSyn);
-                            ptnl = PointerUtils.getInstance().getSubstanceHolonyms(targetSyn);
+                            ptt = PointerUtils.getInheritedSubstanceHolonyms(targetSyn);
+                            ptnl = PointerUtils.getSubstanceHolonyms(targetSyn);
                             if (traverseTree(ptt, ptnl, sourceSyn)) {
                                 return true;
                             }
@@ -334,10 +326,6 @@ public class WordNet extends Configurable implements ILinguisticOracle, ISenseMa
                 } else {
                     return true;
                 }
-            } catch (JWNLException e) {
-                final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
-                log.error(errMessage, e);
-                throw new SenseMatcherException(errMessage, e);
             } catch (LinguisticOracleException e) {
                 final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
                 log.error(errMessage, e);
@@ -354,8 +342,8 @@ public class WordNet extends Configurable implements ILinguisticOracle, ISenseMa
     /**
      * traverses PointerTargetTree.
      *
-     * @param syn synonyms
-     * @param ptnl target node list
+     * @param syn    synonyms
+     * @param ptnl   target node list
      * @param source source synset
      * @return if source was found
      */

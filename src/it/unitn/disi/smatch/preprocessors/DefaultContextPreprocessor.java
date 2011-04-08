@@ -13,10 +13,10 @@ import it.unitn.disi.smatch.oracles.ISenseMatcher;
 import it.unitn.disi.smatch.oracles.LinguisticOracleException;
 import it.unitn.disi.smatch.oracles.SenseMatcherException;
 import it.unitn.disi.smatch.utils.SMatchUtils;
-import net.didion.jwnl.JWNL;
-import net.didion.jwnl.JWNLException;
-import net.didion.jwnl.data.IndexWord;
-import net.didion.jwnl.data.POS;
+import net.sf.extjwnl.JWNL;
+import net.sf.extjwnl.JWNLException;
+import net.sf.extjwnl.data.IndexWord;
+import net.sf.extjwnl.data.POS;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
@@ -966,7 +966,7 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
     private static void collectMultiwords(HashMap<String, ArrayList<ArrayList<String>>> multiwords, POS pos) throws SMatchException {
         try {
             int count = 0;
-            Iterator i = net.didion.jwnl.dictionary.Dictionary.getInstance().getIndexWordIterator(pos);
+            Iterator i = net.sf.extjwnl.dictionary.Dictionary.getInstance().getIndexWordIterator(pos);
             while (i.hasNext()) {
                 IndexWord iw = (IndexWord) i.next();
                 String lemma = iw.getLemma();

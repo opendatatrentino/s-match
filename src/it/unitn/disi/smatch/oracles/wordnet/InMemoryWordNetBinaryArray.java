@@ -7,13 +7,13 @@ import it.unitn.disi.smatch.data.ling.ISense;
 import it.unitn.disi.smatch.data.mappings.IMappingElement;
 import it.unitn.disi.smatch.oracles.ISenseMatcher;
 import it.unitn.disi.smatch.utils.SMatchUtils;
-import net.didion.jwnl.JWNL;
-import net.didion.jwnl.JWNLException;
-import net.didion.jwnl.data.*;
-import net.didion.jwnl.data.list.PointerTargetNode;
-import net.didion.jwnl.data.list.PointerTargetNodeList;
-import net.didion.jwnl.data.list.PointerTargetTree;
-import net.didion.jwnl.dictionary.Dictionary;
+import net.sf.extjwnl.JWNL;
+import net.sf.extjwnl.JWNLException;
+import net.sf.extjwnl.data.*;
+import net.sf.extjwnl.data.list.PointerTargetNode;
+import net.sf.extjwnl.data.list.PointerTargetNodeList;
+import net.sf.extjwnl.data.list.PointerTargetTree;
+import net.sf.extjwnl.dictionary.Dictionary;
 import org.apache.log4j.Logger;
 
 import java.io.FileInputStream;
@@ -283,7 +283,7 @@ public class InMemoryWordNetBinaryArray extends Configurable implements ISenseMa
                     log.info(count);
                 }
                 Synset source = (Synset) it.next();
-                Pointer[] pointers = source.getPointers(PointerType.NOMINALIZATION);
+                List<Pointer> pointers = source.getPointers(PointerType.NOMINALIZATION);
                 for (Pointer pointer : pointers) {
                     long targetOffset = pointer.getTargetOffset();
                     long key = (source.getOffset() << 32) + targetOffset;
@@ -320,7 +320,7 @@ public class InMemoryWordNetBinaryArray extends Configurable implements ISenseMa
                 }
                 Synset source = (Synset) it.next();
                 long sourceOffset = source.getOffset();
-                Pointer[] pointers = source.getPointers(PointerType.SIMILAR_TO);
+                List<Pointer> pointers = source.getPointers(PointerType.SIMILAR_TO);
                 for (Pointer ptr : pointers) {
                     long targetOffset = ptr.getTargetOffset();
                     long key;
@@ -363,7 +363,7 @@ public class InMemoryWordNetBinaryArray extends Configurable implements ISenseMa
                 }
                 Synset source = (Synset) it.next();
                 long sourceOffset = source.getOffset();
-                Pointer[] pointers = source.getPointers(PointerType.ANTONYM);
+                List<Pointer> pointers = source.getPointers(PointerType.ANTONYM);
                 for (Pointer ptr : pointers) {
                     long targetOffset = ptr.getTargetOffset();
                     long key;
@@ -396,7 +396,6 @@ public class InMemoryWordNetBinaryArray extends Configurable implements ISenseMa
         log.info("Creating adjective antonyms array...");
         HashSet<Long> keys = new HashSet<Long>();
 
-        PointerUtils pu = PointerUtils.getInstance();
         int count = 0;
         try {
             Iterator it = Dictionary.getInstance().getSynsetIterator(POS.ADJECTIVE);
@@ -406,8 +405,8 @@ public class InMemoryWordNetBinaryArray extends Configurable implements ISenseMa
                     log.info(count);
                 }
                 Synset current = (Synset) it.next();
-                traverseTree(keys, pu.getExtendedAntonyms(current), current.getOffset());
-                traverseListSym(keys, pu.getAntonyms(current), current.getOffset());
+                traverseTree(keys, PointerUtils.getExtendedAntonyms(current), current.getOffset());
+                traverseListSym(keys, PointerUtils.getAntonyms(current), current.getOffset());
             }
             log.info("Adjective antonyms: " + keys.size());
 
@@ -466,7 +465,6 @@ public class InMemoryWordNetBinaryArray extends Configurable implements ISenseMa
         log.info("Creating noun mg array...");
         HashSet<Long> keys = new HashSet<Long>();
 
-        PointerUtils pu = PointerUtils.getInstance();
         int count = 0;
         try {
             Iterator it = Dictionary.getInstance().getSynsetIterator(POS.NOUN);
@@ -477,15 +475,15 @@ public class InMemoryWordNetBinaryArray extends Configurable implements ISenseMa
                 }
                 Synset source = (Synset) it.next();
                 long sourceOffset = source.getOffset();
-                traverseTreeMG(keys, pu.getHypernymTree(source), sourceOffset);
-                traverseTreeMG(keys, pu.getInheritedHolonyms(source), sourceOffset);
-                traverseTreeMG(keys, pu.getInheritedMemberHolonyms(source), sourceOffset);
-                traverseTreeMG(keys, pu.getInheritedPartHolonyms(source), sourceOffset);
-                traverseTreeMG(keys, pu.getInheritedSubstanceHolonyms(source), sourceOffset);
-                traverseListMG(keys, pu.getHolonyms(source), sourceOffset);
-                traverseListMG(keys, pu.getMemberHolonyms(source), sourceOffset);
-                traverseListMG(keys, pu.getPartHolonyms(source), sourceOffset);
-                traverseListMG(keys, pu.getSubstanceHolonyms(source), sourceOffset);
+                traverseTreeMG(keys, PointerUtils.getHypernymTree(source), sourceOffset);
+                traverseTreeMG(keys, PointerUtils.getInheritedHolonyms(source), sourceOffset);
+                traverseTreeMG(keys, PointerUtils.getInheritedMemberHolonyms(source), sourceOffset);
+                traverseTreeMG(keys, PointerUtils.getInheritedPartHolonyms(source), sourceOffset);
+                traverseTreeMG(keys, PointerUtils.getInheritedSubstanceHolonyms(source), sourceOffset);
+                traverseListMG(keys, PointerUtils.getHolonyms(source), sourceOffset);
+                traverseListMG(keys, PointerUtils.getMemberHolonyms(source), sourceOffset);
+                traverseListMG(keys, PointerUtils.getPartHolonyms(source), sourceOffset);
+                traverseListMG(keys, PointerUtils.getSubstanceHolonyms(source), sourceOffset);
             }
             log.info("Noun mg: " + keys.size());
 
@@ -508,7 +506,6 @@ public class InMemoryWordNetBinaryArray extends Configurable implements ISenseMa
         log.info("Creating verb mg array...");
         HashSet<Long> keys = new HashSet<Long>();
 
-        PointerUtils pu = PointerUtils.getInstance();
         int count = 0;
         try {
             Iterator it = Dictionary.getInstance().getSynsetIterator(POS.VERB);
@@ -519,7 +516,7 @@ public class InMemoryWordNetBinaryArray extends Configurable implements ISenseMa
                 }
                 Synset source = (Synset) it.next();
                 long sourceOffset = source.getOffset();
-                traverseTreeMG(keys, pu.getHypernymTree(source), sourceOffset);
+                traverseTreeMG(keys, PointerUtils.getHypernymTree(source), sourceOffset);
             }
             log.info("Verb mg: " + keys.size());
 
@@ -538,29 +535,23 @@ public class InMemoryWordNetBinaryArray extends Configurable implements ISenseMa
         }
     }
 
-    private static void cartPr(HashSet<Long> keys, Pointer[] t) throws SMatchException {
-        try {
-            for (int i = 0; i < t.length; i++) {
-                Pointer ps = t[i];
-                long sourceOffset = ps.getTargetSynset().getOffset();
-                for (int j = i + 1; j < t.length; j++) {
-                    Pointer pt = t[j];
-                    long targetOffset = pt.getTargetSynset().getOffset();
-                    if (sourceOffset != targetOffset) {
-                        long key;
-                        if (targetOffset > sourceOffset) {
-                            key = (targetOffset << 32) + sourceOffset;
-                        } else {
-                            key = (sourceOffset << 32) + targetOffset;
-                        }
-                        keys.add(key);
+    private static void cartPr(HashSet<Long> keys, List<Pointer> t) {
+        for (int i = 0; i < t.size(); i++) {
+            Pointer ps = t.get(i);
+            long sourceOffset = ps.getTargetSynset().getOffset();
+            for (int j = i + 1; j < t.size(); j++) {
+                Pointer pt = t.get(j);
+                long targetOffset = pt.getTargetSynset().getOffset();
+                if (sourceOffset != targetOffset) {
+                    long key;
+                    if (targetOffset > sourceOffset) {
+                        key = (targetOffset << 32) + sourceOffset;
+                    } else {
+                        key = (sourceOffset << 32) + targetOffset;
                     }
+                    keys.add(key);
                 }
             }
-        } catch (JWNLException e) {
-            final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
-            log.error(errMessage, e);
-            throw new SMatchException(errMessage, e);
         }
     }
 
