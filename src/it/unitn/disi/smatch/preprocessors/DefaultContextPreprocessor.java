@@ -240,7 +240,7 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
             labelOfNode = replacePunctuation(labelOfNode);
             labelOfNode = labelOfNode.toLowerCase();
             List<ISense> wnSense = new ArrayList<ISense>();
-            if (!("top".equals(labelOfNode) && !node.hasParent()) && (meaninglessWords.indexOf(labelOfNode + " ") == -1) && (isTokenMeaningful(labelOfNode))) {
+            if (!(("top".equals(labelOfNode) || "thing".equals(labelOfNode)) && !node.hasParent()) && (meaninglessWords.indexOf(labelOfNode + " ") == -1) && (isTokenMeaningful(labelOfNode))) {
                 wnSense = linguisticOracle.getSenses(labelOfNode);
             }
 
@@ -289,7 +289,7 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
                         if ((andWords.indexOf(token) == -1) && ((orWords.indexOf(token)) == -1)
                                 && ((notWords.indexOf(token)) == -1) && (!isNumber(token))) {
                             // get WN senses for token
-                            if (!("top".equals(token) && !node.hasParent())) {
+                            if (!(("top".equals(token) || "thing".equals(token)) && !node.hasParent())) {
                                 wnSense = linguisticOracle.getSenses(token);
                             } else {
                                 wnSense = new ArrayList<ISense>();
@@ -315,7 +315,7 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
                             // mark id as meaningful
                             meaningfulTokens = meaningfulTokens + id_tok + " ";
                             // if there no WN senses
-                            if (0 == wnSense.size() && !("top".equals(labelOfNode) && !node.hasParent())) {
+                            if (0 == wnSense.size() && !(("top".equals(labelOfNode) || "thing".equals(labelOfNode)) && !node.hasParent())) {
                                 unrecognizedWords.add(token);
                             }
                             // add senses to ACoL
