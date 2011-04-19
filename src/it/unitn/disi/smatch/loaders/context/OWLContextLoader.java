@@ -14,6 +14,7 @@ import org.semanticweb.owlapi.reasoner.OWLReasoner;
 import org.semanticweb.owlapi.reasoner.OWLReasonerFactory;
 import org.semanticweb.owlapi.vocab.OWLRDFVocabulary;
 
+import java.io.File;
 import java.util.Properties;
 import java.util.Set;
 
@@ -137,6 +138,7 @@ public class OWLContextLoader extends BaseContextLoader implements IContextLoade
                 if (!excludeNothing || !NOTHING_CLASS.equals(childClass)) {
                     if (!childClass.equals(clazz)) {
                         INode childNode = c.createNode(labelFor(o, childClass));
+                        childNode.getNodeData().setProvenance(childClass.getIRI().toString());
                         root.addChild(childNode);
                         buildHierarchy(reasoner, o, c, childNode, childClass);
                     } else {
@@ -153,6 +155,11 @@ public class OWLContextLoader extends BaseContextLoader implements IContextLoade
         IContext result = new Context();
         try {
             OWLOntologyManager manager = OWLManager.createOWLOntologyManager();
+            //check fileName whether it is URL or not
+            if (!fileName.startsWith("http://") && !fileName.startsWith("file://")) {
+                File f = new File(fileName);
+                fileName = "file:///" + f.getAbsolutePath().replace('\\', '/');
+            }
             IRI iri = IRI.create(fileName);
             OWLOntology o = manager.loadOntologyFromOntologyDocument(iri);
 
@@ -178,7 +185,9 @@ public class OWLContextLoader extends BaseContextLoader implements IContextLoade
             /* Now any unsatisfiable classes */
             for (OWLClass cl : o.getClassesInSignature()) {
                 if (!reasoner.isSatisfiable(cl)) {
-                    result.getRoot().addChild(result.createNode(labelFor(o, cl)));
+                    INode node = result.createNode(labelFor(o, cl));
+                    node.getNodeData().setProvenance(cl.getIRI().toString());
+                    result.getRoot().addChild(node);
                 }
             }
 
