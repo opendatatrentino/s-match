@@ -15,7 +15,7 @@ import java.util.Properties;
 /**
  * Demonstrates S-Match API demo.
  *
-* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
+ * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  */
 public class SMatchAPIDemo {
 

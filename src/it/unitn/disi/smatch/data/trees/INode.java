@@ -9,7 +9,7 @@ import java.util.List;
 /**
  * An interface to a node.
  *
-* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
+ * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  */
 public interface INode extends MutableTreeNode, IIndexedObject {
 

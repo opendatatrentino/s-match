@@ -12,7 +12,7 @@ import java.io.IOException;
 /**
  * Writes the mapping sorting it by relation: disjointness, equivalent, less and more generality.
  *
-* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
+ * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  */
 public class RelationSortingPlainMappingRenderer extends PlainMappingRenderer {
 

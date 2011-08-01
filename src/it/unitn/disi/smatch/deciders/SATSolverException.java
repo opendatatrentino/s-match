@@ -5,7 +5,7 @@ import it.unitn.disi.smatch.SMatchException;
 /**
  * Exception for SAT Solvers.
  *
-* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
+ * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  */
 public class SATSolverException extends SMatchException {
 

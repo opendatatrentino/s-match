@@ -5,7 +5,7 @@ import java.util.EventListener;
 /**
  * Listener for the tree structure changed event.
  *
-* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
+ * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  */
 public interface ITreeStructureChangedListener extends EventListener {
 

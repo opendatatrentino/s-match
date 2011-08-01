@@ -9,7 +9,7 @@ import it.unitn.disi.smatch.matchers.element.IStringBasedElementLevelSemanticMat
  * See Element Level Semantic matchers paper for more details.
  *
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
-* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
+ * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  */
 public class Synonym extends Configurable implements IStringBasedElementLevelSemanticMatcher {
 

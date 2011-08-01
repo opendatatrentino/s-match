@@ -13,7 +13,7 @@ import java.util.HashSet;
  * Tries to use morphological knowledge (prefixes) to enhance relations returned.
  * It is called GSuffix because it matches words with equal suffixes, which differ in prefixes only.
  *
-* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
+ * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  */
 
 public class GSuffix extends Configurable implements IStringBasedElementLevelSemanticMatcher {

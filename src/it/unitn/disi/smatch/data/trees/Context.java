@@ -8,7 +8,7 @@ import java.util.List;
 /**
  * A Context that contains tree data structure.
  *
-* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
+ * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  */
 public class Context implements IContext, ITreeStructureChangedListener {
 

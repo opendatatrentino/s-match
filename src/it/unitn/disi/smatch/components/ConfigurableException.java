@@ -3,7 +3,7 @@ package it.unitn.disi.smatch.components;
 /**
  * Exception for Configurables.
  *
-* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
+ * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  */
 public class ConfigurableException extends Exception {
 

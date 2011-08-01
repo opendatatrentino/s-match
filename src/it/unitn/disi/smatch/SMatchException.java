@@ -5,7 +5,7 @@ import it.unitn.disi.smatch.components.ConfigurableException;
 /**
  * Main S-Match exception.
  *
-* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
+ * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  */
 public class SMatchException extends ConfigurableException {
 

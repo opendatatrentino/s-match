@@ -3,7 +3,7 @@ package it.unitn.disi.smatch.loaders;
 /**
  * Contains constants for loaders.
  *
-* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
+ * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  */
 public interface ILoader {
 

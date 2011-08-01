@@ -22,7 +22,7 @@ import java.util.*;
  * Integrates S-Match into AlignAPI. Matches class names, using hierarchy of subClassOf if available.
  * Requires a configuration key "config" to point to S-Match configuration file.
  *
- * @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
+  * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  */
 public class SMatchMatcher extends ObjectAlignment implements AlignmentProcess {
 

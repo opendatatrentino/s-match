@@ -12,7 +12,7 @@ import java.util.Arrays;
  * Does not have max density limit.
  * No boundary checks.
  *
-* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
+ * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  */
 public class JavaSparseArray extends Configurable implements IMatchMatrix, IMatchMatrixFactory {
 

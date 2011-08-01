@@ -28,7 +28,7 @@ import java.util.*;
  * Needs  JWNLPropertiesPath string parameter which should point to a JWNL configuration file.
  *
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
-* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
+ * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  */
 public class WordNet extends Configurable implements ILinguisticOracle, ISenseMatcher {
 

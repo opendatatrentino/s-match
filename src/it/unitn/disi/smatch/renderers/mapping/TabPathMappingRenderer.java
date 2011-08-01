@@ -15,7 +15,7 @@ import java.util.ArrayList;
  * Format: source-node tab tab relation tab tab target-node.
  * Source and target nodes are rendered with tabs separating path to root levels.
  *
-* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
+ * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  */
 public class TabPathMappingRenderer extends BaseFileMappingRenderer implements IMappingRenderer {
 

@@ -22,7 +22,7 @@ import java.io.IOException;
 /**
  * Renders the mapping in a Simple XML file.
  *
-* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
+ * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  */
 public class SimpleXMLMappingRenderer extends BaseFileMappingRenderer {
 

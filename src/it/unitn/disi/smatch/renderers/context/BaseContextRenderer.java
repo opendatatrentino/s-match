@@ -14,7 +14,7 @@ import java.util.Properties;
  * <p/>
  * Accepts sort parameter.
  *
-* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
+ * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  */
 public abstract class BaseContextRenderer extends Configurable implements IContextRenderer {
 

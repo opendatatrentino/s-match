@@ -40,7 +40,7 @@ import java.util.List;
 /**
  * GUI for S-Match.
  *
-* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
+ * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  */
 public class SMatchGUI extends Observable implements Observer {
 
@@ -311,7 +311,7 @@ public class SMatchGUI extends Observable implements Observer {
      * <p/>
      * Coalesce operation hides the nodes by not reporting them to the tree.
      *
-    * @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
+     * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
      */
     private class MappingTreeModel extends DefaultTreeModel {
 

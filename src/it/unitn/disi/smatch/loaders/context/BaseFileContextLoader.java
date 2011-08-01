@@ -12,7 +12,7 @@ import java.io.InputStreamReader;
 /**
  * Base class for file loaders.
  *
-* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
+ * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  */
 public abstract class BaseFileContextLoader extends BaseContextLoader implements IContextLoader {
 

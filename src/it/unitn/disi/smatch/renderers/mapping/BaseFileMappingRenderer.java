@@ -13,7 +13,7 @@ import java.io.OutputStreamWriter;
 /**
  * Base class for file mapping renderers.
  *
-* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
+ * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  */
 public abstract class BaseFileMappingRenderer extends BaseMappingRenderer {
 

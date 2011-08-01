@@ -13,7 +13,7 @@ import java.util.HashSet;
  * Tries to use morphological knowledge (suffixes) to enhance relations returned.
  * It is called GPefix because it matches words with equal prefixes, which differ in suffixes only.
  *
-* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
+ * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  */
 public class GPrefix extends Configurable implements IStringBasedElementLevelSemanticMatcher {
 

@@ -7,7 +7,7 @@ import java.util.AbstractSet;
 /**
  * Base mapping class.
  *
-* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
+ * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  */
 public abstract class BaseMapping<T> extends AbstractSet<IMappingElement<T>> implements IContextMapping<T> {
 

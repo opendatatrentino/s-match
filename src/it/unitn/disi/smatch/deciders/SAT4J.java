@@ -18,7 +18,7 @@ import java.io.IOException;
  * SAT4J-based Solver.
  *
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
-* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
+ * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  */
 public class SAT4J extends Configurable implements ISATSolver {
 

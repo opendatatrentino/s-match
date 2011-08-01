@@ -15,7 +15,7 @@ import java.util.Properties;
  * By default retains only equivalences (=). For other relation kinds see constants in
  * {@link it.unitn.disi.smatch.data.mappings.IMappingElement}.
  *
-* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
+ * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  */
 public class RetainRelationsMappingFilter extends BaseFilter implements IMappingFilter {
 

@@ -24,7 +24,7 @@ import java.util.Set;
  * Takes in an excludeNothing parameter, which specifies whether to exclude Nothing class. Default true.
  * Takes in a replaceUnderscore parameter, which specifies whether to replace _ in class names. Default true.
  *
-* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
+ * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  */
 public class OWLContextLoader extends BaseContextLoader implements IContextLoader {
 

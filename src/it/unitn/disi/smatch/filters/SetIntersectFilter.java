@@ -12,7 +12,7 @@ import it.unitn.disi.smatch.data.trees.INode;
  * mapping - location of the mapping
  * <p/>
  *
-* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
+ * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  */
 public class SetIntersectFilter extends BaseMappingBasedFilter {
 

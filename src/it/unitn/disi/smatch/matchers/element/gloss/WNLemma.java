@@ -13,7 +13,7 @@ import java.util.List;
  * See Element Level Semantic matchers paper for more details.
  *
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
-* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
+ * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  */
 
 public class WNLemma extends Configurable implements ISenseGlossBasedElementLevelSemanticMatcher {

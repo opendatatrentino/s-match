@@ -8,7 +8,7 @@ import it.unitn.disi.smatch.loaders.ILoader;
 /**
  * Renders nothing.
  *
-* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
+ * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  */
 public class ZeroMappingRenderer extends Configurable implements IMappingRenderer {
 

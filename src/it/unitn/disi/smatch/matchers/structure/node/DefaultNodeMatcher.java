@@ -13,7 +13,7 @@ import java.util.Map;
  * Default node matcher used by a {@link it.unitn.disi.smatch.matchers.structure.tree.def.DefaultTreeMatcher}.
  *
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
-* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
+ * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  */
 public class DefaultNodeMatcher extends BaseNodeMatcher implements INodeMatcher {
 

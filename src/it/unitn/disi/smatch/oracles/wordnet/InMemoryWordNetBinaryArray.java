@@ -30,7 +30,7 @@ import java.util.*;
  * By default equals true, it is useful during generation of WordNet caches when it should be set to false.
  *
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
-* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
+ * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  */
 public class InMemoryWordNetBinaryArray extends Configurable implements ISenseMatcher {
 

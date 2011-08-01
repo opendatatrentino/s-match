@@ -20,7 +20,7 @@ import java.util.Properties;
  * linguisticOracle - an instance of ILinguisticOracle
  *
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
-* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
+ * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  */
 public class BasicGlossMatcher extends Configurable {
 

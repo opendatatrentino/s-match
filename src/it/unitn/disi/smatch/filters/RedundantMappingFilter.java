@@ -20,7 +20,7 @@ import java.util.Iterator;
  * Technical Report DISI-08-078, Department of Information Engineering and Computer Science, University of Trento.
  * Proc. of the Fourth Ontology Matching Workshop at ISWC 2009.
  *
-* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
+ * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  */
 public class RedundantMappingFilter extends BaseFilter implements IMappingFilter {
 

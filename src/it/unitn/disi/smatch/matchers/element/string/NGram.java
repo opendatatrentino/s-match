@@ -18,7 +18,7 @@ import java.util.Properties;
  * gramlength - integer parameter which by default equals 3.
  *
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
-* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
+ * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  */
 public class NGram extends Configurable implements IStringBasedElementLevelSemanticMatcher {
 

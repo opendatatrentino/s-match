@@ -16,7 +16,7 @@ import java.util.List;
  * WordNet-based synset implementation.
  *
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
-* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
+ * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  */
 public class WordNetSynset implements ISynset {
 

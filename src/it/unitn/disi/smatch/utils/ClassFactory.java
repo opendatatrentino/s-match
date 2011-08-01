@@ -13,7 +13,7 @@ import java.util.StringTokenizer;
 /**
  * Constructs class instances.
  *
-* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
+ * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  */
 public class ClassFactory {
 

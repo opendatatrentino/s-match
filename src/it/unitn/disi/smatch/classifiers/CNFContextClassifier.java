@@ -14,7 +14,7 @@ import org.apache.log4j.Logger;
  * Create concept at node formulas for each node of the context.
  * Converts concept at node formula into CNF.
  *
-* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
+ * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  */
 public class CNFContextClassifier extends Configurable implements IContextClassifier {
 

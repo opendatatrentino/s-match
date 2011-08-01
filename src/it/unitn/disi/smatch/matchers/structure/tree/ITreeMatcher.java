@@ -10,7 +10,7 @@ import it.unitn.disi.smatch.data.trees.INode;
  * An interface for tree matchers.
  *
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
-* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
+ * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  */
 public interface ITreeMatcher extends IConfigurable {
 

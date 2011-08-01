@@ -32,7 +32,7 @@ import java.util.Properties;
  *  onto1URI, onto2URI - URIs of ontologies
  *  onto1Location, onto2Location - locations of ontologies 
  *
-* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
+ * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  */
 public class AlignAPIMappingRenderer extends Configurable implements IMappingRenderer {
 

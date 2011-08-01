@@ -8,7 +8,7 @@ import it.unitn.disi.smatch.data.trees.INode;
 /**
  * Mapping between context nodes based on a matrix.
  *
-* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
+ * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  */
 public class NodesMatrixMapping extends MatrixMapping<INode> {
 

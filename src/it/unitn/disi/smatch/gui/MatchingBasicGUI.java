@@ -36,7 +36,7 @@ import java.util.Iterator;
  * Provides basic S-Match GUI.
  *
  * @author Juan Pane (pane@disi.unitn.it)
-* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
+ * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  */
 public class MatchingBasicGUI extends JPanel
         implements ActionListener, ComponentListener, AdjustmentListener, TreeExpansionListener {

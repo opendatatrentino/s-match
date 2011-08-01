@@ -28,7 +28,7 @@ import java.util.*;
  * <p/>
  * datasetURI which will be used as a base for the ontology.
  *
-* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
+ * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  */
 public class OWLContextRenderer extends BaseXMLContextRenderer {
 

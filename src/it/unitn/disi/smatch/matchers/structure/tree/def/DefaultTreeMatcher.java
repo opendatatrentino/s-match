@@ -19,7 +19,7 @@ import java.util.Map;
  * Matches all nodes of the source context with all nodes of the target context.
  *
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
-* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
+ * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  */
 public class DefaultTreeMatcher extends BaseTreeMatcher implements ITreeMatcher {
 

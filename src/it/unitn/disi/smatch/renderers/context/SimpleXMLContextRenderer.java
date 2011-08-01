@@ -26,7 +26,7 @@ import java.util.Iterator;
 /**
  * Renders a context into an XML file.
  *
-* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
+ * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  */
 public class SimpleXMLContextRenderer extends BaseXMLContextRenderer {
 

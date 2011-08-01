@@ -15,7 +15,7 @@ import java.util.Properties;
  * parameter, which by default equals 2.
  *
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
-* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
+ * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  */
 public class WNHierarchy extends Configurable implements ISenseGlossBasedElementLevelSemanticMatcher {
 

@@ -5,7 +5,7 @@ import it.unitn.disi.smatch.components.IConfigurable;
 /**
  * Produces matching matrices.
  *
-* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
+ * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  */
 public interface IMatchMatrixFactory extends IConfigurable {
 

@@ -27,7 +27,7 @@ import java.util.*;
  * If specified, the loader will search for the label in the specified language among preferred labels and then among
  * alternative labels.
  *
-* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
+ * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  */
 public class SKOSContextLoader extends BaseContextLoader implements IContextLoader {
 

@@ -11,7 +11,7 @@ import org.apache.log4j.Logger;
 /**
  * Base class for mapping renderers.
  *
-* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
+ * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  */
 public abstract class BaseMappingRenderer extends Configurable implements IMappingRenderer {
 

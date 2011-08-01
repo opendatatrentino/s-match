@@ -6,7 +6,7 @@ import java.util.Set;
 /**
  * Interface for mappings.
  *
-* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
+ * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  */
 public interface IMapping<T> extends Set<IMappingElement<T>> {
 

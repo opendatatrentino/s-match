@@ -3,7 +3,7 @@ package it.unitn.disi.smatch.data.matrices;
 /**
  * Objects which could be referenced by index. Used to store relations in the matrices.
  *
-* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
+ * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  */
 public interface IIndexedObject {
     /**

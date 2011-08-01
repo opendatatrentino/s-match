@@ -13,7 +13,7 @@ import java.util.ArrayList;
  * Loads context from a tab-delimited file, one line per path to root.
  * Expects a single-rooted hierarchy, otherwise adds an artificial "Top" node.
  *
-* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
+ * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  */
 public class TabPathContextLoader extends BaseFileContextLoader implements IContextLoader {
 

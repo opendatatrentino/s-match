@@ -12,7 +12,7 @@ import java.util.Map;
  * Node matcher for {@link it.unitn.disi.smatch.matchers.structure.tree.mini.OptimizedStageTreeMatcher} for minimal links
  * matching. For comments on the code see {@link it.unitn.disi.smatch.matchers.structure.node.DefaultNodeMatcher}
  *
-* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
+ * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  */
 public class OptimizedStageNodeMatcher extends BaseNodeMatcher implements INodeMatcher {
 

@@ -12,7 +12,7 @@ import java.io.OutputStreamWriter;
 /**
  * Base class for file context renderers.
  *
-* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
+ * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  */
 public abstract class BaseFileContextRenderer extends BaseContextRenderer {
 
