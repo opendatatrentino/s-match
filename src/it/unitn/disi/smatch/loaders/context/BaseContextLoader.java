@@ -8,7 +8,7 @@ import org.apache.log4j.Logger;
 /**
  * Base class for loaders.
  *
- * @author Aliaksandr Autayeu avtaev@gmail.com
+* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
  */
 public abstract class BaseContextLoader extends Configurable implements IContextLoader {
 

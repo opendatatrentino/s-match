@@ -24,7 +24,7 @@ import java.util.ArrayList;
  * \t\tComputer Science
  *
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
- * @author Aliaksandr Autayeu avtaev@gmail.com
+* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
  * @author Juan Pane pane@disi.unitn.it
  */
 public class TabContextLoader extends BaseFileContextLoader implements IContextLoader {

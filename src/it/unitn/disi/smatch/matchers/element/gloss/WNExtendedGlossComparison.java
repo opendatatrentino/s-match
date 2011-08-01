@@ -21,7 +21,7 @@ import java.util.StringTokenizer;
  * meaninglessWords - string parameter which indicates words to ignore. Check the source file for default value.
  *
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
- * @author Aliaksandr Autayeu avtaev@gmail.com
+* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
  */
 public class WNExtendedGlossComparison extends BasicGlossMatcher implements ISenseGlossBasedElementLevelSemanticMatcher {
 

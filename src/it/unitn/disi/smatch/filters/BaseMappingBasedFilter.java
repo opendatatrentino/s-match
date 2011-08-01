@@ -18,7 +18,7 @@ import java.util.Properties;
  * mapping - location of the mapping
  * <p/>
  *
- * @author Aliaksandr Autayeu avtaev@gmail.com
+* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
  */
 public abstract class BaseMappingBasedFilter extends BaseFilter {
 

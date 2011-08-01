@@ -11,7 +11,7 @@ import java.io.IOException;
  * Loads a function from a file into a tree structure.
  * The file should contain one string to be converted in the form: fn(arg,arg,..), where arg can be fn(arg,..)
  *
- * @author Aliaksandr Autayeu avtaev@gmail.com
+* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
  */
 public class FileFunctionLoader extends BaseFileContextLoader implements IContextLoader {
 

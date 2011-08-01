@@ -12,7 +12,7 @@ import java.io.OutputStreamWriter;
 /**
  * Base class for file context renderers.
  *
- * @author Aliaksandr Autayeu avtaev@gmail.com
+* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
  */
 public abstract class BaseFileContextRenderer extends BaseContextRenderer {
 

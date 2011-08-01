@@ -5,7 +5,7 @@ import java.util.Properties;
 /**
  * Represents a component that supports a configuration.
  *
- * @author Aliaksandr Autayeu avtaev@gmail.com
+* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
  */
 public interface IConfigurable {
 

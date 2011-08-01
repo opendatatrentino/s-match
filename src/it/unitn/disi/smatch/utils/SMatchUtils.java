@@ -10,7 +10,7 @@ import java.io.*;
 /**
  * Utility class.
  *
- * @author Aliaksandr Autayeu avtaev@gmail.com
+* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
  */
 public class SMatchUtils {
 

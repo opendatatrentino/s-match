@@ -8,7 +8,7 @@ import it.unitn.disi.smatch.loaders.ILoader;
 /**
  * An interface for mapping renderers.
  *
- * @author Aliaksandr Autayeu avtaev@gmail.com
+* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
  */
 public interface IMappingRenderer extends IConfigurable {
 

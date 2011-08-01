@@ -14,7 +14,7 @@ import java.util.Iterator;
 /**
  * Renders a context in a tab-indented file.
  *
- * @author Aliaksandr Autayeu avtaev@gmail.com
+* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
  */
 public class TabContextRenderer extends BaseFileContextRenderer {
 

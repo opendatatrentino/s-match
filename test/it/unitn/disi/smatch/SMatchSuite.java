@@ -6,7 +6,7 @@ import org.junit.runners.Suite;
 /**
  * SMatch tests.
  *
- * @author Aliaksandr Autayeu avtaev@gmail.com
+* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
  * @author Juan Pane pane@disi.unitn.it
  */
 

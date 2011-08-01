@@ -4,7 +4,7 @@ package it.unitn.disi.smatch.data.matrices;
  * An interface to a matrix with matching results.
  *
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
- * @author Aliaksandr Autayeu avtaev@gmail.com
+* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
  */
 public interface IMatchMatrix {
 

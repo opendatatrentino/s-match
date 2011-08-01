@@ -7,7 +7,7 @@ import it.unitn.disi.smatch.data.trees.INode;
 /**
  * Does nothing.
  *
- * @author Aliaksandr Autayeu avtaev@gmail.com
+* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
  */
 public class ZeroFilter extends Configurable implements IMappingFilter {
     

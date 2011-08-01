@@ -9,7 +9,7 @@ import it.unitn.disi.smatch.data.mappings.IContextMapping;
  * Interface for collections of matchers, which perform element-level matching.
  *
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
- * @author Aliaksandr Autayeu avtaev@gmail.com
+* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
  */
 public interface IMatcherLibrary extends IConfigurable {
 

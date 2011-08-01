@@ -35,7 +35,7 @@ import java.util.Properties;
  * MatchManager controls the process of matching, loads contexts and performs other auxiliary work.
  *
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
- * @author Aliaksandr Autayeu avtaev@gmail.com
+* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
  */
 public class MatchManager extends Configurable implements IMatchManager {
 

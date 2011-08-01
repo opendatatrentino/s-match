@@ -19,7 +19,7 @@ import java.util.StringTokenizer;
 /**
  * Loader for old CTXML format, remains for compatibility.
  *
- * @author Aliaksandr Autayeu avtaev@gmail.com
+* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
  */
 public class CTXMLContextLoader extends BaseFileContextLoader implements IContextLoader, ContentHandler {

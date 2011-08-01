@@ -14,7 +14,7 @@ import java.util.List;
 /**
  * Generates entailed links which logically follow from the links in the mapping.
  *
- * @author Aliaksandr Autayeu avtaev@gmail.com
+* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
  */
 public class RedundantGeneratorMappingFilter extends Configurable implements IMappingFilter {
 

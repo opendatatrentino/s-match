@@ -16,7 +16,7 @@ import java.util.*;
  * Manages a mapping using a matrix. Needs a configuration key matchMatrixFactory with a class implementing
  * {@link it.unitn.disi.smatch.data.matrices.IMatchMatrixFactory} to produce matrix instances.
  *
- * @author Aliaksandr Autayeu avtaev@gmail.com
+* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
  */
 public class MatrixMapping<T extends IIndexedObject> extends BaseMapping<T> implements IContextMapping<T>, IMappingFactory {
 

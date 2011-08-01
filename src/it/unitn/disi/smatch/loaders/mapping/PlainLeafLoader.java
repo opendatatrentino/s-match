@@ -14,7 +14,7 @@ import java.util.HashMap;
  * Needs mappingFactory configuration parameter, which should point to an instance of a class implementing
  * {@link it.unitn.disi.smatch.data.mappings.IMappingFactory} interface.
  *
- * @author Aliaksandr Autayeu avtaev@gmail.com
+* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
  */
 public class PlainLeafLoader extends PlainMappingLoader {
 

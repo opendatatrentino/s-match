@@ -3,7 +3,7 @@ package it.unitn.disi.smatch.data.mappings;
 /**
  * Mapping element implementation.
  *
- * @author Aliaksandr Autayeu avtaev@gmail.com
+* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
  */
 public class MappingElement<T> implements IMappingElement<T> {
 

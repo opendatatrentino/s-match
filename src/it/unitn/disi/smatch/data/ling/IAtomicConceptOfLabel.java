@@ -10,7 +10,7 @@ import java.util.List;
  * In most cases the correspondence is one-to-one, but multiwords can be represented as a single atomic concept.
  *
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
- * @author Aliaksandr Autayeu avtaev@gmail.com
+* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
  */
 public interface IAtomicConceptOfLabel extends IIndexedObject {
 

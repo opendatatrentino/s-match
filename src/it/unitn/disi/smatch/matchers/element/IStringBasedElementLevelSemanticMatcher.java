@@ -6,7 +6,7 @@ import it.unitn.disi.smatch.components.IConfigurable;
  * Interface for string-based element-level matchers.
  *
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
- * @author Aliaksandr Autayeu avtaev@gmail.com
+* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
  */
 public interface IStringBasedElementLevelSemanticMatcher extends IConfigurable {
 

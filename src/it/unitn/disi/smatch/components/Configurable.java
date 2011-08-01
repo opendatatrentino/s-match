@@ -13,7 +13,7 @@ import java.util.Properties;
 /**
  * Configurable component base class.
  *
- * @author Aliaksandr Autayeu avtaev@gmail.com
+* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
  */
 public abstract class Configurable implements IConfigurable {
 

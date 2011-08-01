@@ -15,7 +15,7 @@ import it.unitn.disi.smatch.data.trees.INode;
  * Technical Report DISI-08-078, Department of Information Engineering and Computer Science, University of Trento.
  * Proc. of the Fourth Ontology Matching Workshop at ISWC 2009.
  *
- * @author Aliaksandr Autayeu avtaev@gmail.com
+* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
  */
 public class RedundantMappingFilterEQ extends RedundantMappingFilter {
 

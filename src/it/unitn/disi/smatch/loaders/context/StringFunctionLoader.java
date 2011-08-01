@@ -15,7 +15,7 @@ import java.util.List;
  * The string to be converted in the form: fn(arg,arg,..), where arg can be fn(arg,..)
  *
  * @author Juan Pane pane@disi.unitn.it
- * @author Aliaksandr Autayeu avtaev@gmail.com
+* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
  */
 public class StringFunctionLoader extends BaseContextLoader implements IContextLoader {
 

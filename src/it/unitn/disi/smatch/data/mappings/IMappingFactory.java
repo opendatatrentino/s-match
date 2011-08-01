@@ -8,7 +8,7 @@ import it.unitn.disi.smatch.data.trees.INode;
 /**
  * Produces mappings.
  *
- * @author Aliaksandr Autayeu avtaev@gmail.com
+* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
  */
 public interface IMappingFactory extends IConfigurable {
 

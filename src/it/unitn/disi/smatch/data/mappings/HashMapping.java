@@ -12,7 +12,7 @@ import java.util.*;
  * Default mapping implementation. Permits only one relation between source and target. Maps source and target pairs to
  * the index of the relation character stored in a string.
  *
- * @author Aliaksandr Autayeu avtaev@gmail.com
+* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
  */
 public class HashMapping<T> extends BaseMapping<T> implements IContextMapping<T>, IMappingFactory {
 

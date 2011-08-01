@@ -3,7 +3,7 @@ package it.unitn.disi.smatch.data.matrices;
 /**
  * An object with an index.
  *
- * @author Aliaksandr Autayeu avtaev@gmail.com
+* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
  */
 public class IndexedObject implements IIndexedObject {
 

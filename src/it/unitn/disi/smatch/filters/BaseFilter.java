@@ -11,7 +11,7 @@ import java.util.Properties;
  * Base class for filters. Needs a configuration key mappingFactory with a class implementing
  * {@link it.unitn.disi.smatch.data.mappings.IMappingFactory} to produce mapping instances.
  *
- * @author Aliaksandr Autayeu avtaev@gmail.com
+* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
  */
 public abstract class BaseFilter extends Configurable implements IMappingFilter {
 

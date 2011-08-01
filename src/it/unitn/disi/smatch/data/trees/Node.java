@@ -15,7 +15,7 @@ import java.util.*;
  * <p/>
  * Many things are modeled after DefaultMutableTreeNode.
  *
- * @author Aliaksandr Autayeu avtaev@gmail.com
+* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
  */
 public class Node extends IndexedObject implements INode, INodeData {
 

@@ -8,7 +8,7 @@ import javax.swing.*;
 /**
  * Logs Log4J messages into S-Match GUI window.
  *
- * @author Aliaksandr Autayeu avtaev@gmail.com
+* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
  */
 public class SMatchGUILog4Appender extends AppenderSkeleton {
 

@@ -10,7 +10,7 @@ import org.apache.log4j.Logger;
 /**
  * Removes links having a root node on the one or the other side from the mapping.
  *
- * @author Aliaksandr Autayeu avtaev@gmail.com
+* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
  */
 public class TopMappingFilter extends BaseFilter implements IMappingFilter {
 

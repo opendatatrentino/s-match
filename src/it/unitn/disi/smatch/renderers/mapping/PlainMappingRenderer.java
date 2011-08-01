@@ -14,7 +14,7 @@ import java.io.IOException;
  * Format: source-node tab relation target-node.
  * Source and target nodes are rendered with \ separating path to root levels.
  *
- * @author Aliaksandr Autayeu avtaev@gmail.com
+* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
  */
 public class PlainMappingRenderer extends BaseFileMappingRenderer implements IMappingRenderer {
 

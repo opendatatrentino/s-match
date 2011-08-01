@@ -13,7 +13,7 @@ import java.util.Map;
  * An interface for node matchers.
  *
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
- * @author Aliaksandr Autayeu avtaev@gmail.com
+* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
  */
 public interface INodeMatcher extends IConfigurable {
 

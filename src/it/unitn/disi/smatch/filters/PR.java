@@ -26,7 +26,7 @@ import java.util.Properties;
  * A Large Scale Dataset for the Evaluation of Ontology Matching Systems by
  * Giunchiglia, Fausto and Yatskevich, Mikalai and Avesani, Paolo and Shvaiko, Pavel
  *
- * @author Aliaksandr Autayeu avtaev@gmail.com
+* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
  */
 public class PR extends BaseFilter {
 

@@ -9,7 +9,7 @@ import java.util.List;
  * Interface to Linguistic Oracles, such as WordNet.
  *
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
- * @author Aliaksandr Autayeu avtaev@gmail.com
+* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
  */
 public interface ILinguisticOracle extends IConfigurable {
 

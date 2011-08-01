@@ -5,7 +5,7 @@ import it.unitn.disi.smatch.matchers.structure.tree.TreeMatcherException;
 /**
  * Exception for Node Matchers.
  *
- * @author Aliaksandr Autayeu avtaev@gmail.com
+* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
  */
 public class NodeMatcherException extends TreeMatcherException {
 

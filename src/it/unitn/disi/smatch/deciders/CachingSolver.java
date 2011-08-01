@@ -12,7 +12,7 @@ import java.util.Properties;
  * to 99% on large (hundreds of nodes) tasks. Needs SATSolver configuration parameter pointing to a class implementing
  * {@link it.unitn.disi.smatch.deciders.ISATSolver} to solve SAT problems.
  *
- * @author Aliaksandr Autayeu avtaev@gmail.com
+* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
  */
 public class CachingSolver extends Configurable implements ISATSolver {
 

@@ -12,7 +12,7 @@ import java.util.HashSet;
  * See Element Level Semantic matchers paper for more details.
  *
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
- * @author Aliaksandr Autayeu avtaev@gmail.com
+* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
  */
 public class Suffix extends Configurable implements IStringBasedElementLevelSemanticMatcher {
     private static int invocationCount = 0;

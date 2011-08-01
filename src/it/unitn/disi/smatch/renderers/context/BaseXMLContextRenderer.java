@@ -8,7 +8,7 @@ import javax.xml.transform.sax.TransformerHandler;
 /**
  * Base class for xml context renderers.
  *
- * @author Aliaksandr Autayeu avtaev@gmail.com
+* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
  */
 public abstract class BaseXMLContextRenderer extends BaseFileContextRenderer {
 

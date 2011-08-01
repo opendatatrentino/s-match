@@ -7,7 +7,7 @@ import it.unitn.disi.smatch.data.trees.IContext;
  * Interface for classifiers.
  *
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
- * @author Aliaksandr Autayeu avtaev@gmail.com
+* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
  */
 public interface IContextClassifier extends IConfigurable {
 

@@ -3,7 +3,7 @@ package it.unitn.disi.smatch.data.ling;
 /**
  * Default sense implementation.
  *
- * @author Aliaksandr Autayeu avtaev@gmail.com
+* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
  */
 public class Sense implements ISense {
 

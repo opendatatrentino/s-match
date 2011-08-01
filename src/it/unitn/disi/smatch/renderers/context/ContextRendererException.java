@@ -5,7 +5,7 @@ import it.unitn.disi.smatch.SMatchException;
 /**
  * Exception for Context Renderers.
  *
- * @author Aliaksandr Autayeu avtaev@gmail.com
+* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
  */
 public class ContextRendererException extends SMatchException {
 

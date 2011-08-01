@@ -15,7 +15,7 @@ import java.util.Random;
  * Selects random sample. Accepts sample size parameter as sampleSize.
  * By default samples 100 links.
  *
- * @author Aliaksandr Autayeu avtaev@gmail.com
+* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
  */
 public class RandomSampleMappingFilter extends BaseFilter implements IMappingFilter {
 

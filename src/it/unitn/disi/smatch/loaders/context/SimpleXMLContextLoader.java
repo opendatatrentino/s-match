@@ -21,7 +21,7 @@ import java.util.Properties;
  * separate instances or save memory by reusing string instances. False by default, it is useful for
  * contexts with a lot of repetition on the level of labels or label tokens.
  *
- * @author Aliaksandr Autayeu avtaev@gmail.com
+* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
  */
 public class SimpleXMLContextLoader extends BaseFileContextLoader implements IContextLoader, ContentHandler {
 

@@ -15,7 +15,7 @@ import java.util.Properties;
 /**
  * Base class for mapping loaders.
  *
- * @author Aliaksandr Autayeu avtaev@gmail.com
+* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
  */
 public abstract class BaseMappingLoader extends Configurable implements IMappingLoader {
 

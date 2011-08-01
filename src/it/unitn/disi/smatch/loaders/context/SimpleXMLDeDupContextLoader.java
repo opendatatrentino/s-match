@@ -17,7 +17,7 @@ import java.util.List;
  * Loader for XML format. Check whether there are duplicates among siblings and leaves only ones of them
  * consolidating children.
  *
- * @author Aliaksandr Autayeu avtaev@gmail.com
+* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
  */
 public class SimpleXMLDeDupContextLoader extends SimpleXMLContextLoader {
 

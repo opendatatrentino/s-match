@@ -11,7 +11,7 @@ import java.io.IOException;
 /**
  * Writes the mapping eXcluding Top node mappings.
  *
- * @author Aliaksandr Autayeu avtaev@gmail.com
+* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
  */
 public class PlainXTopMappingRenderer extends PlainMappingRenderer {
 

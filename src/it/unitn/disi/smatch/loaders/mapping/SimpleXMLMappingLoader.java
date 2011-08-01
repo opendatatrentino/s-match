@@ -18,7 +18,7 @@ import java.util.HashMap;
 /**
  * Loads mappings in SimpleXML format as rendered by SimpleXMLMappingRenderer.
  *
- * @author Aliaksandr Autayeu avtaev@gmail.com
+* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
  */
 public class SimpleXMLMappingLoader extends BaseFileMappingLoader implements ContentHandler {
 

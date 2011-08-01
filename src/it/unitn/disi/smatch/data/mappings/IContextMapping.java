@@ -5,7 +5,7 @@ import it.unitn.disi.smatch.data.trees.IContext;
 /**
  * Interface for context mappings.
  *
- * @author Aliaksandr Autayeu avtaev@gmail.com
+* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
  */
 public interface IContextMapping<T> extends IMapping<T> {
 

@@ -15,7 +15,7 @@ import java.util.Properties;
 /**
  * Demonstrates S-Match API demo.
  *
- * @author Aliaksandr Autayeu avtaev@gmail.com
+* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
  */
 public class SMatchAPIDemo {
 

@@ -20,7 +20,7 @@ import it.unitn.disi.smatch.renderers.mapping.IMappingRenderer;
  * An S-Match.properties file contain an example configuration with documented properties names and values.
  *
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
- * @author Aliaksandr Autayeu avtaev@gmail.com
+* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
  */
 public interface IMatchManager extends IConfigurable {
 

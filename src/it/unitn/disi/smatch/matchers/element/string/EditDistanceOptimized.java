@@ -15,7 +15,7 @@ import java.util.Properties;
  * <p/>
  * threshold - float parameter, which by default equals 0.9.
  *
- * @author Aliaksandr Autayeu avtaev@gmail.com
+* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
  */
 public class EditDistanceOptimized extends Configurable implements IStringBasedElementLevelSemanticMatcher {
 

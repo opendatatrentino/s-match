@@ -9,7 +9,7 @@ import it.unitn.disi.smatch.loaders.ILoader;
 /**
  * Interface for mapping loaders.
  *
- * @author Aliaksandr Autayeu avtaev@gmail.com
+* @author <a rel="author" href="http://autayeu.com">Aliaksandr Autayeu</a>
  */
 public interface IMappingLoader extends IConfigurable {
 
