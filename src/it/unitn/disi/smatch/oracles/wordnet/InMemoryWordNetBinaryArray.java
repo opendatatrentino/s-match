@@ -1,12 +1,13 @@
 package it.unitn.disi.smatch.oracles.wordnet;
 
+import it.unitn.disi.common.DISIException;
 import it.unitn.disi.smatch.SMatchException;
-import it.unitn.disi.smatch.components.Configurable;
-import it.unitn.disi.smatch.components.ConfigurableException;
+import it.unitn.disi.common.components.Configurable;
+import it.unitn.disi.common.components.ConfigurableException;
 import it.unitn.disi.smatch.data.ling.ISense;
 import it.unitn.disi.smatch.data.mappings.IMappingElement;
 import it.unitn.disi.smatch.oracles.ISenseMatcher;
-import it.unitn.disi.smatch.utils.SMatchUtils;
+import it.unitn.disi.common.utils.MiscUtils;
 import net.sf.extjwnl.JWNL;
 import net.sf.extjwnl.JWNLException;
 import net.sf.extjwnl.data.*;
@@ -119,7 +120,7 @@ public class InMemoryWordNetBinaryArray extends Configurable implements ISenseMa
         return IMappingElement.IDK;
     }
 
-    private boolean isSourceOppositeToTargetInt(long sourceSense, long targetSense, char sourcePOS, char targetPOS) {
+    private boolean isSourceOppositeToTargetInt(long sourceSense, long targetSense, POS sourcePOS, POS targetPOS) {
         long key;
         if (targetSense > sourceSense) {
             key = (targetSense << 32) + sourceSense;
@@ -127,17 +128,17 @@ public class InMemoryWordNetBinaryArray extends Configurable implements ISenseMa
             key = (sourceSense << 32) + targetSense;
         }
 
-        if (('n' == sourcePOS) && ('n' == targetPOS)) {
+        if ((POS.NOUN == sourcePOS) && (POS.NOUN == targetPOS)) {
             if (java.util.Arrays.binarySearch(noun_opp, key) >= 0) {
                 return true;
             }
         } else {
-            if (('a' == sourcePOS) && ('a' == targetPOS)) {
+            if ((POS.ADJECTIVE == sourcePOS) && (POS.ADJECTIVE == targetPOS)) {
                 if (java.util.Arrays.binarySearch(adj_opp, key) >= 0) {
                     return true;
                 }
             } else {
-                if (('r' == sourcePOS) && ('r' == targetPOS)) {
+                if ((POS.ADVERB == sourcePOS) && (POS.ADVERB == targetPOS)) {
                     if (java.util.Arrays.binarySearch(adv_opp, key) >= 0) {
                         return true;
                     }
@@ -148,14 +149,14 @@ public class InMemoryWordNetBinaryArray extends Configurable implements ISenseMa
         return false;
     }
 
-    private boolean isSourceLessGeneralThanTargetInt(long sourceSense, long targetSense, char sourcePOS, char targetPOS) {
+    private boolean isSourceLessGeneralThanTargetInt(long sourceSense, long targetSense, POS sourcePOS, POS targetPOS) {
         long key = (sourceSense << 32) + targetSense;
-        if (('n' == sourcePOS) && ('n' == targetPOS)) {
+        if ((POS.NOUN == sourcePOS) && (POS.NOUN == targetPOS)) {
             if (java.util.Arrays.binarySearch(noun_mg, key) >= 0) {
                 return true;
             }
         } else {
-            if (('v' == sourcePOS) && ('v' == targetPOS)) {
+            if ((POS.VERB == sourcePOS) && (POS.VERB == targetPOS)) {
                 if (java.util.Arrays.binarySearch(verb_mg, key) >= 0) {
                     return true;
                 }
@@ -165,7 +166,7 @@ public class InMemoryWordNetBinaryArray extends Configurable implements ISenseMa
         return false;
     }
 
-    private boolean isSourceSynonymTargetInt(long sourceSense, long targetSense, char sourcePOS, char targetPOS) {
+    private boolean isSourceSynonymTargetInt(long sourceSense, long targetSense, POS sourcePOS, POS targetPOS) {
         if (sourceSense == targetSense) {
             return true;
         }
@@ -177,18 +178,18 @@ public class InMemoryWordNetBinaryArray extends Configurable implements ISenseMa
             key = (sourceSense << 32) + targetSense;
         }
 
-        if (('a' == sourcePOS) && ('a' == targetPOS)) {
+        if ((POS.ADJECTIVE == sourcePOS) && (POS.ADJECTIVE == targetPOS)) {
             if (java.util.Arrays.binarySearch(adj_syn, key) >= 0) {
                 return true;
             }
         }
-        if (('n' == sourcePOS) && ('v' == targetPOS)) {
+        if ((POS.NOUN == sourcePOS) && (POS.VERB == targetPOS)) {
             key = (targetSense << 32) + sourceSense;
             if (java.util.Arrays.binarySearch(nominalizations, key) >= 0) {
                 return true;
             }
         }
-        if (('v' == sourcePOS) && ('n' == targetPOS)) {
+        if ((POS.VERB == sourcePOS) && (POS.NOUN == targetPOS)) {
             key = (sourceSense << 32) + targetSense;
             if (java.util.Arrays.binarySearch(nominalizations, key) >= 0) {
                 return true;
@@ -211,7 +212,11 @@ public class InMemoryWordNetBinaryArray extends Configurable implements ISenseMa
     }
 
     private static long[] readHash(String fileName) throws SMatchException {
-        return (long[]) SMatchUtils.readObject(fileName);
+        try {
+            return (long[]) MiscUtils.readObject(fileName);
+        } catch (DISIException e) {
+            throw new SMatchException(e.getMessage(), e);
+        }
     }
 
     public boolean isSourceMoreGeneralThanTarget(ISense source, ISense target) {
@@ -219,15 +224,24 @@ public class InMemoryWordNetBinaryArray extends Configurable implements ISenseMa
     }
 
     public boolean isSourceLessGeneralThanTarget(ISense source, ISense target) {
-        return isSourceLessGeneralThanTargetInt(source.getId(), target.getId(), source.getPos(), target.getPos());
+        if ((source instanceof WordNetSense) && (target instanceof WordNetSense)) {
+            return isSourceLessGeneralThanTargetInt(((WordNetSense) source).getOffset(), ((WordNetSense) target).getOffset(), ((WordNetSense) source).getPOS(), ((WordNetSense) target).getPOS());
+        }
+        return false;
     }
 
     public boolean isSourceSynonymTarget(ISense source, ISense target) {
-        return isSourceSynonymTargetInt(source.getId(), target.getId(), source.getPos(), target.getPos());
+        if ((source instanceof WordNetSense) && (target instanceof WordNetSense)) {
+            return isSourceSynonymTargetInt(((WordNetSense) source).getOffset(), ((WordNetSense) target).getOffset(), ((WordNetSense) source).getPOS(), ((WordNetSense) target).getPOS());
+        }
+        return false;
     }
 
     public boolean isSourceOppositeToTarget(ISense source, ISense target) {
-        return isSourceOppositeToTargetInt(source.getId(), target.getId(), source.getPos(), target.getPos());
+        if ((source instanceof WordNetSense) && (target instanceof WordNetSense)) {
+            return isSourceOppositeToTargetInt(((WordNetSense) source).getOffset(), ((WordNetSense) target).getOffset(), ((WordNetSense) source).getPOS(), ((WordNetSense) target).getPOS());
+        }
+        return false;
     }
 
     /**
@@ -299,11 +313,13 @@ public class InMemoryWordNetBinaryArray extends Configurable implements ISenseMa
                 i++;
             }
             Arrays.sort(keysArr);
-            SMatchUtils.writeObject(keysArr, properties.getProperty(NOMINALIZATION_KEY));
+            MiscUtils.writeObject(keysArr, properties.getProperty(NOMINALIZATION_KEY));
         } catch (JWNLException e) {
             final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
             log.error(errMessage, e);
             throw new SMatchException(errMessage, e);
+        } catch (DISIException e) {
+            throw new SMatchException(e.getMessage(), e);
         }
     }
 
@@ -341,11 +357,13 @@ public class InMemoryWordNetBinaryArray extends Configurable implements ISenseMa
                 i++;
             }
             Arrays.sort(keysArr);
-            SMatchUtils.writeObject(keysArr, properties.getProperty(ADJ_SYN_KEY));
+            MiscUtils.writeObject(keysArr, properties.getProperty(ADJ_SYN_KEY));
         } catch (JWNLException e) {
             final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
             log.error(errMessage, e);
             throw new SMatchException(errMessage, e);
+        } catch (DISIException e) {
+            throw new SMatchException(e.getMessage(), e);
         }
     }
 
@@ -384,11 +402,13 @@ public class InMemoryWordNetBinaryArray extends Configurable implements ISenseMa
                 i++;
             }
             Arrays.sort(keysArr);
-            SMatchUtils.writeObject(keysArr, properties.getProperty(ADV_ANT_KEY));
+            MiscUtils.writeObject(keysArr, properties.getProperty(ADV_ANT_KEY));
         } catch (JWNLException e) {
             final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
             log.error(errMessage, e);
             throw new SMatchException(errMessage, e);
+        } catch (DISIException e) {
+            throw new SMatchException(e.getMessage(), e);
         }
     }
 
@@ -417,11 +437,13 @@ public class InMemoryWordNetBinaryArray extends Configurable implements ISenseMa
                 i++;
             }
             Arrays.sort(keysArr);
-            SMatchUtils.writeObject(keysArr, properties.getProperty(ADJ_ANT_KEY));
+            MiscUtils.writeObject(keysArr, properties.getProperty(ADJ_ANT_KEY));
         } catch (JWNLException e) {
             final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
             log.error(errMessage, e);
             throw new SMatchException(errMessage, e);
+        } catch (DISIException e) {
+            throw new SMatchException(e.getMessage(), e);
         }
     }
 
@@ -453,11 +475,13 @@ public class InMemoryWordNetBinaryArray extends Configurable implements ISenseMa
                 i++;
             }
             Arrays.sort(keysArr);
-            SMatchUtils.writeObject(keysArr, properties.getProperty(NOUN_ANT_KEY));
+            MiscUtils.writeObject(keysArr, properties.getProperty(NOUN_ANT_KEY));
         } catch (JWNLException e) {
             final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
             log.error(errMessage, e);
             throw new SMatchException(errMessage, e);
+        } catch (DISIException e) {
+            throw new SMatchException(e.getMessage(), e);
         }
     }
 
@@ -494,11 +518,13 @@ public class InMemoryWordNetBinaryArray extends Configurable implements ISenseMa
                 i++;
             }
             Arrays.sort(keysArr);
-            SMatchUtils.writeObject(keysArr, properties.getProperty(NOUN_MG_KEY));
+            MiscUtils.writeObject(keysArr, properties.getProperty(NOUN_MG_KEY));
         } catch (JWNLException e) {
             final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
             log.error(errMessage, e);
             throw new SMatchException(errMessage, e);
+        } catch (DISIException e) {
+            throw new SMatchException(e.getMessage(), e);
         }
     }
 
@@ -527,11 +553,13 @@ public class InMemoryWordNetBinaryArray extends Configurable implements ISenseMa
                 i++;
             }
             Arrays.sort(keysArr);
-            SMatchUtils.writeObject(keysArr, properties.getProperty(VERB_MG_KEY));
+            MiscUtils.writeObject(keysArr, properties.getProperty(VERB_MG_KEY));
         } catch (JWNLException e) {
             final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
             log.error(errMessage, e);
             throw new SMatchException(errMessage, e);
+        } catch (DISIException e) {
+            throw new SMatchException(e.getMessage(), e);
         }
     }
 

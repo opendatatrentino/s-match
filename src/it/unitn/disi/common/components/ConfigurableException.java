@@ -1,11 +1,13 @@
-package it.unitn.disi.smatch.components;
+package it.unitn.disi.common.components;
+
+import it.unitn.disi.common.DISIException;
 
 /**
  * Exception for Configurables.
  *
  * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  */
-public class ConfigurableException extends Exception {
+public class ConfigurableException extends DISIException {
 
     public ConfigurableException(String errorDescription) {
         super(errorDescription);

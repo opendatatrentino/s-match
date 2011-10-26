@@ -96,15 +96,6 @@ public interface IAtomicConceptOfLabel extends IIndexedObject {
     List<ISense> getSenseList();
 
     /**
-     * Creates a sense and adds it as the last sense.
-     *
-     * @param pos pos
-     * @param id id
-     * @return a newly created sense
-     */
-    ISense createSense(char pos, long id);
-
-    /**
      * Adds a sense to the acol as the last sense.
      *
      * @param sense sense to add

@@ -1,7 +1,7 @@
 import it.unitn.disi.smatch.IMatchManager;
 import it.unitn.disi.smatch.MatchManager;
 import it.unitn.disi.smatch.SMatchException;
-import it.unitn.disi.smatch.components.ConfigurableException;
+import it.unitn.disi.common.components.ConfigurableException;
 import it.unitn.disi.smatch.data.trees.IContext;
 import it.unitn.disi.smatch.data.trees.INode;
 import it.unitn.disi.smatch.data.mappings.IContextMapping;

@@ -1,6 +1,6 @@
-package it.unitn.disi.smatch.utils;
+package it.unitn.disi.common.utils;
 
-import it.unitn.disi.smatch.SMatchException;
+import it.unitn.disi.common.DISIException;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
@@ -12,9 +12,9 @@ import java.io.*;
  *
  * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  */
-public class SMatchUtils {
+public class MiscUtils {
 
-    private static final Logger log = Logger.getLogger(SMatchUtils.class);
+    private static final Logger log = Logger.getLogger(MiscUtils.class);
 
     /**
      * Configures LOG4J using a configuration file given in a log4j.configuration system property.
@@ -24,7 +24,8 @@ public class SMatchUtils {
         if (null != log4jConf) {
             PropertyConfigurator.configure(log4jConf);
         } else {
-            System.err.println("No log4j.configuration property specified.");
+            System.err.println("No log4j.configuration property specified. Using defaults.");
+            BasicConfigurator.configure();
         }
     }
 
@@ -33,9 +34,9 @@ public class SMatchUtils {
      *
      * @param object   the object
      * @param fileName the file where the object will be written
-     * @throws SMatchException SMatchException
+     * @throws DISIException DISIException
      */
-    public static void writeObject(Object object, String fileName) throws SMatchException {
+    public static void writeObject(Object object, String fileName) throws DISIException {
         log.info("Writing " + fileName);
         try {
             FileOutputStream fos = new FileOutputStream(fileName);
@@ -46,7 +47,7 @@ public class SMatchUtils {
         } catch (IOException e) {
             final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
             log.error(errMessage, e);
-            throw new SMatchException(errMessage, e);
+            throw new DISIException(errMessage, e);
         }
     }
 
@@ -55,9 +56,9 @@ public class SMatchUtils {
      *
      * @param fileName the file where the object is stored
      * @return the object
-     * @throws SMatchException SMatchException
+     * @throws DISIException DISIException
      */
-    public static Object readObject(String fileName) throws SMatchException {
+    public static Object readObject(String fileName) throws DISIException {
         Object result;
         try {
             FileInputStream fos = new FileInputStream(fileName);
@@ -68,11 +69,11 @@ public class SMatchUtils {
             } catch (IOException e) {
                 final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
                 log.error(errMessage, e);
-                throw new SMatchException(errMessage, e);
+                throw new DISIException(errMessage, e);
             } catch (ClassNotFoundException e) {
                 final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
                 log.error(errMessage, e);
-                throw new SMatchException(errMessage, e);
+                throw new DISIException(errMessage, e);
             }
             oos.close();
             bis.close();
@@ -80,7 +81,7 @@ public class SMatchUtils {
         } catch (IOException e) {
             final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
             log.error(errMessage, e);
-            throw new SMatchException(errMessage, e);
+            throw new DISIException(errMessage, e);
         }
         return result;
     }

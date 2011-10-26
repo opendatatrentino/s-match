@@ -1,10 +1,14 @@
 package it.unitn.disi.smatch.loaders.context;
 
+import it.unitn.disi.common.components.ConfigurableException;
 import it.unitn.disi.smatch.data.ling.IAtomicConceptOfLabel;
 import it.unitn.disi.smatch.data.trees.Context;
 import it.unitn.disi.smatch.data.trees.IContext;
 import it.unitn.disi.smatch.data.trees.INode;
+import it.unitn.disi.smatch.deciders.ISATSolver;
 import it.unitn.disi.smatch.loaders.ILoader;
+import it.unitn.disi.smatch.oracles.ILinguisticOracle;
+import it.unitn.disi.smatch.oracles.LinguisticOracleException;
 import org.apache.log4j.Logger;
 import org.xml.sax.*;
 import org.xml.sax.helpers.XMLReaderFactory;
@@ -14,6 +18,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
+import java.util.Properties;
 import java.util.StringTokenizer;
 
 /**
@@ -42,6 +47,9 @@ public class CTXMLContextLoader extends BaseFileContextLoader implements IContex
     // node unique name -> node
     private HashMap<String, INode> nodes;
 
+    private final static String LINGUISTIC_ORACLE = "oracle";
+    private ILinguisticOracle oracle;
+
     public CTXMLContextLoader() throws ContextLoaderException {
         try {
             parser = XMLReaderFactory.createXMLReader(DEFAULT_PARSER_NAME);
@@ -53,6 +61,25 @@ public class CTXMLContextLoader extends BaseFileContextLoader implements IContex
             throw new ContextLoaderException(errMessage, e);
         }
     }
+
+    @Override
+    public boolean setProperties(Properties newProperties) throws ConfigurableException {
+        Properties oldProperties = new Properties();
+        oldProperties.putAll(properties);
+
+        boolean result = super.setProperties(newProperties);
+        if (result) {
+            if (newProperties.containsKey(LINGUISTIC_ORACLE)) {
+                oracle = (ILinguisticOracle) configureComponent(oracle, oldProperties, newProperties, "linguistic oracle", LINGUISTIC_ORACLE, ISATSolver.class);
+            } else {
+                final String errMessage = "Cannot find configuration key " + LINGUISTIC_ORACLE;
+                log.warn(errMessage);
+                oracle = null;
+            }
+        }
+        return result;
+    }
+
 
     @Override
     protected void createIds(IContext result) {
@@ -141,10 +168,14 @@ public class CTXMLContextLoader extends BaseFileContextLoader implements IContex
             } else if ("lemma".equals(localName)) {
                 sense.setLemma(content.toString());
             } else if ("wSenses".equals(localName)) {
-                if (-1 < content.indexOf("#")) {
+                if (-1 < content.indexOf("#") && null != oracle) {
                     String[] senses = content.toString().trim().split(" ");
                     for (String s : senses) {
-                        sense.createSense(s.charAt(0), Long.parseLong(s.substring(2)));
+                        try {
+                            sense.addSense(oracle.createSense(s));
+                        } catch (LinguisticOracleException e) {
+                            throw new RuntimeException(e.getMessage(), e);
+                        }
                     }
                 }
             }

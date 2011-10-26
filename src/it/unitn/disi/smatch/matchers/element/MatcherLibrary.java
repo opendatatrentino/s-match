@@ -1,8 +1,9 @@
 package it.unitn.disi.smatch.matchers.element;
 
+import it.unitn.disi.common.components.Configurable;
+import it.unitn.disi.common.components.ConfigurableException;
+import it.unitn.disi.common.utils.ClassFactory;
 import it.unitn.disi.smatch.SMatchConstants;
-import it.unitn.disi.smatch.components.Configurable;
-import it.unitn.disi.smatch.components.ConfigurableException;
 import it.unitn.disi.smatch.data.ling.IAtomicConceptOfLabel;
 import it.unitn.disi.smatch.data.ling.ISense;
 import it.unitn.disi.smatch.data.mappings.IContextMapping;
@@ -10,8 +11,9 @@ import it.unitn.disi.smatch.data.mappings.IMappingElement;
 import it.unitn.disi.smatch.data.mappings.IMappingFactory;
 import it.unitn.disi.smatch.data.trees.IContext;
 import it.unitn.disi.smatch.data.trees.INode;
-import it.unitn.disi.smatch.oracles.*;
-import it.unitn.disi.smatch.utils.ClassFactory;
+import it.unitn.disi.smatch.oracles.ILinguisticOracle;
+import it.unitn.disi.smatch.oracles.ISenseMatcher;
+import it.unitn.disi.smatch.oracles.SenseMatcherException;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
@@ -224,28 +226,20 @@ public class MatcherLibrary extends Configurable implements IMatcherLibrary {
      * @throws MatcherLibraryException MatcherLibraryException
      */
     private char getRelationFromSenseGlossMatchers(List<ISense> sourceSenses, List<ISense> targetSenses) throws MatcherLibraryException {
-        try {
-            char relation = IMappingElement.IDK;
-            if (0 < senseGlossMatchers.size()) {
-                for (ISense sourceSense : sourceSenses) {
-                    ISynset sourceSynset = linguisticOracle.getISynset(sourceSense);
-                    for (ISense targetSense : targetSenses) {
-                        ISynset targetSynset = linguisticOracle.getISynset(targetSense);
-                        int k = 0;
-                        while ((relation == IMappingElement.IDK) && (k < senseGlossMatchers.size())) {
-                            relation = senseGlossMatchers.get(k).match(sourceSynset, targetSynset);
-                            k++;
-                        }
-                        return relation;
+        char relation = IMappingElement.IDK;
+        if (0 < senseGlossMatchers.size()) {
+            for (ISense sourceSense : sourceSenses) {
+                for (ISense targetSense : targetSenses) {
+                    int k = 0;
+                    while ((relation == IMappingElement.IDK) && (k < senseGlossMatchers.size())) {
+                        relation = senseGlossMatchers.get(k).match(sourceSense, targetSense);
+                        k++;
                     }
+                    return relation;
                 }
             }
-            return relation;
-        } catch (LinguisticOracleException e) {
-            final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
-            log.error(errMessage, e);
-            throw new MatcherLibraryException(errMessage, e);
         }
+        return relation;
     }
 
     protected long getACoLCount(IContext context) {

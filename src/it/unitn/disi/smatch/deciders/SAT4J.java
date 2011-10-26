@@ -1,6 +1,6 @@
 package it.unitn.disi.smatch.deciders;
 
-import it.unitn.disi.smatch.components.Configurable;
+import it.unitn.disi.common.components.Configurable;
 import org.apache.log4j.Logger;
 import org.sat4j.minisat.SolverFactory;
 import org.sat4j.reader.DimacsReader;

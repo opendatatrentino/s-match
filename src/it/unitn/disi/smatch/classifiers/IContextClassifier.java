@@ -1,6 +1,6 @@
 package it.unitn.disi.smatch.classifiers;
 
-import it.unitn.disi.smatch.components.IConfigurable;
+import it.unitn.disi.common.components.IConfigurable;
 import it.unitn.disi.smatch.data.trees.IContext;
 
 /**

@@ -9,15 +9,15 @@ import com.jgoodies.forms.layout.FormLayout;
 import it.unitn.disi.smatch.IMatchManager;
 import it.unitn.disi.smatch.MatchManager;
 import it.unitn.disi.smatch.SMatchException;
-import it.unitn.disi.smatch.components.ConfigurableException;
+import it.unitn.disi.common.components.ConfigurableException;
 import it.unitn.disi.smatch.data.mappings.IContextMapping;
 import it.unitn.disi.smatch.data.mappings.IMappingElement;
 import it.unitn.disi.smatch.data.mappings.MappingElement;
 import it.unitn.disi.smatch.data.trees.IContext;
 import it.unitn.disi.smatch.data.trees.INode;
+import it.unitn.disi.common.utils.MiscUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
@@ -47,14 +47,9 @@ public class SMatchGUI extends Observable implements Observer {
     private static Logger log;
 
     static {
+        MiscUtils.configureLog4J();
+
         log = Logger.getLogger(SMatchGUI.class);
-        String log4jConf = System.getProperty("log4j.configuration");
-        if (log4jConf != null) {
-            System.out.println("Configuring Log4J");
-            PropertyConfigurator.configure(log4jConf);
-        } else {
-            System.err.println("No log4j.configuration property specified.");
-        }
     }
 
     private static final String MAIN_ICON_FILE = "/s-match.ico";

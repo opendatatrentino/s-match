@@ -1,8 +1,9 @@
 package it.unitn.disi.smatch.oracles;
 
-import it.unitn.disi.smatch.components.IConfigurable;
+import it.unitn.disi.common.components.IConfigurable;
 import it.unitn.disi.smatch.data.ling.ISense;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -14,15 +15,6 @@ import java.util.List;
 public interface ILinguisticOracle extends IConfigurable {
 
     /**
-     * Returns a synset given its id.
-     *
-     * @param sense sense
-     * @return synset
-     * @throws LinguisticOracleException LinguisticOracleException
-     */
-    public ISynset getISynset(ISense sense) throws LinguisticOracleException;
-
-    /**
      * Checks if lemmas of two strings are equal (e. g. the string are the same modulo inflections).
      *
      * @param str1 source string
@@ -30,7 +22,7 @@ public interface ILinguisticOracle extends IConfigurable {
      * @return true if lemmas are equal
      * @throws LinguisticOracleException LinguisticOracleException
      */
-    public boolean isEqual(String str1, String str2) throws LinguisticOracleException;
+    boolean isEqual(String str1, String str2) throws LinguisticOracleException;
 
     /**
      * Returns all senses of a word.
@@ -39,14 +31,31 @@ public interface ILinguisticOracle extends IConfigurable {
      * @return word senses
      * @throws LinguisticOracleException LinguisticOracleException
      */
-    public List<ISense> getSenses(String word) throws LinguisticOracleException;
+    List<ISense> getSenses(String word) throws LinguisticOracleException;
 
     /**
-     * Returns base form (lemma) of a word.
+     * Returns base forms (lemmas) of a word.
      *
      * @param derivation the word to get a base form for
-     * @return base form of a derivation
+     * @return base forms of a derivation
      * @throws LinguisticOracleException LinguisticOracleException
      */
-    public String getBaseForm(String derivation) throws LinguisticOracleException;
+    List<String> getBaseForms(String derivation) throws LinguisticOracleException;
+
+    /**
+     * Creates an instance of a sense.
+     *
+     * @param id sense id.
+     * @return an instance of a senses.
+     * @throws LinguisticOracleException LinguisticOracleException
+     */
+    ISense createSense(String id) throws LinguisticOracleException;
+
+    /**
+     * Returns list of possible multiword endings.
+     * @param beginning first words of a multiword
+     * @return list of possible multiword endings
+     * @throws LinguisticOracleException LinguisticOracleException
+     */
+    ArrayList<ArrayList<String>> getMultiwords(String beginning) throws LinguisticOracleException;
 }

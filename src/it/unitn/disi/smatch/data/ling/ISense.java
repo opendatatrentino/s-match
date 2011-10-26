@@ -1,5 +1,9 @@
 package it.unitn.disi.smatch.data.ling;
 
+import it.unitn.disi.smatch.oracles.LinguisticOracleException;
+
+import java.util.List;
+
 /**
  * Interface for a dictionary sense.
  *
@@ -7,11 +11,58 @@ package it.unitn.disi.smatch.data.ling;
  */
 public interface ISense {
 
-    char getPos();
+    /**
+     * Returns sense id. The format of the sense id is up to the implementation of the linguistic oracle.
+     *
+     * @return sense id
+     */
+    String getId();
 
-    void setPos(char pos);
+    /**
+     * Returns a sense gloss, that is a textual description of the meaning.
+     *
+     * @return a gloss
+     */
+    String getGloss();
 
-    long getId();
+    /**
+     * Get lemmas of this sense.
+     *
+     * @return lemmas
+     */
+    List<String> getLemmas();
 
-    void setId(long id);
+    /**
+     * Returns "parents", that is hypernyms of the sense.
+     *
+     * @return hypernyms of the sense
+     * @throws LinguisticOracleException LinguisticOracleException
+     */
+    List<ISense> getParents() throws LinguisticOracleException;
+
+    /**
+     * Returns "parents", that is hypernyms of the sense, up to certain depth.
+     *
+     * @param depth a search depth
+     * @return "parents"
+     * @throws LinguisticOracleException LinguisticOracleException
+     */
+    List<ISense> getParents(int depth) throws LinguisticOracleException;
+
+    /**
+     * Returns "children", that is hyponyms of the sense.
+     *
+     * @return "children"
+     * @throws LinguisticOracleException LinguisticOracleException
+     */
+    List<ISense> getChildren() throws LinguisticOracleException;
+
+    /**
+     * Returns "children", that is hyponyms of the sense, down to certain depth.
+     *
+     * @param depth a search depth
+     * @return "children"
+     * @throws LinguisticOracleException LinguisticOracleException
+     */
+    List<ISense> getChildren(int depth) throws LinguisticOracleException;
 }

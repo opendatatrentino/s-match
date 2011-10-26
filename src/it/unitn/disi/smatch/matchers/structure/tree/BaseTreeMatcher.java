@@ -1,7 +1,7 @@
 package it.unitn.disi.smatch.matchers.structure.tree;
 
-import it.unitn.disi.smatch.components.Configurable;
-import it.unitn.disi.smatch.components.ConfigurableException;
+import it.unitn.disi.common.components.Configurable;
+import it.unitn.disi.common.components.ConfigurableException;
 import it.unitn.disi.smatch.data.mappings.IMappingFactory;
 import it.unitn.disi.smatch.matchers.structure.node.INodeMatcher;
 import org.apache.log4j.Logger;

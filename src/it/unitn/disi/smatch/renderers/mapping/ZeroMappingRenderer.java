@@ -1,6 +1,6 @@
 package it.unitn.disi.smatch.renderers.mapping;
 
-import it.unitn.disi.smatch.components.Configurable;
+import it.unitn.disi.common.components.Configurable;
 import it.unitn.disi.smatch.data.mappings.IContextMapping;
 import it.unitn.disi.smatch.data.trees.INode;
 import it.unitn.disi.smatch.loaders.ILoader;

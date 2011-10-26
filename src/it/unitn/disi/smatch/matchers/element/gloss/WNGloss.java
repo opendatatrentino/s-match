@@ -1,11 +1,11 @@
 package it.unitn.disi.smatch.matchers.element.gloss;
 
-import it.unitn.disi.smatch.components.Configurable;
-import it.unitn.disi.smatch.components.ConfigurableException;
+import it.unitn.disi.common.components.Configurable;
+import it.unitn.disi.common.components.ConfigurableException;
+import it.unitn.disi.smatch.data.ling.ISense;
 import it.unitn.disi.smatch.data.mappings.IMappingElement;
 import it.unitn.disi.smatch.matchers.element.ISenseGlossBasedElementLevelSemanticMatcher;
 import it.unitn.disi.smatch.matchers.element.MatcherLibraryException;
-import it.unitn.disi.smatch.oracles.ISynset;
 
 import java.util.List;
 import java.util.Properties;
@@ -54,7 +54,7 @@ public class WNGloss extends Configurable implements ISenseGlossBasedElementLeve
      * @param target gloss of target
      * @return more general, less general or IDK relation
      */
-    public char match(ISynset source, ISynset target) throws MatcherLibraryException {
+    public char match(ISense source, ISense target) throws MatcherLibraryException {
         String sSynset = source.getGloss();
         String tSynset = target.getGloss();
         StringTokenizer stSource = new StringTokenizer(sSynset, " ,.\"'();");
@@ -63,7 +63,7 @@ public class WNGloss extends Configurable implements ISenseGlossBasedElementLeve
         int counter = 0;
         while (stSource.hasMoreTokens()) {
             lemma = stSource.nextToken();
-            if (meaninglessWords.indexOf(lemma) == -1) {
+            if (!meaninglessWords.contains(lemma)) {
                 List<String> lemmas = target.getLemmas();
                 for (String lemmaToCompare : lemmas) {
                     if (lemma.equals(lemmaToCompare)) {
@@ -78,7 +78,7 @@ public class WNGloss extends Configurable implements ISenseGlossBasedElementLeve
 
         while (stTarget.hasMoreTokens()) {
             lemma = stTarget.nextToken();
-            if (meaninglessWords.indexOf(lemma) == -1) {
+            if (!meaninglessWords.contains(lemma)) {
                 List<String> lemmas = source.getLemmas();
                 for (String lemmaToCompare : lemmas) {
                     if (lemma.equals(lemmaToCompare)) {

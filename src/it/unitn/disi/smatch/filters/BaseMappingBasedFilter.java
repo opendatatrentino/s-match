@@ -1,6 +1,6 @@
 package it.unitn.disi.smatch.filters;
 
-import it.unitn.disi.smatch.components.ConfigurableException;
+import it.unitn.disi.common.components.ConfigurableException;
 import it.unitn.disi.smatch.data.mappings.IContextMapping;
 import it.unitn.disi.smatch.data.trees.INode;
 import it.unitn.disi.smatch.loaders.mapping.IMappingLoader;

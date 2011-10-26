@@ -1,6 +1,6 @@
 package it.unitn.disi.smatch.loaders.context;
 
-import it.unitn.disi.smatch.components.ConfigurableException;
+import it.unitn.disi.common.components.ConfigurableException;
 import it.unitn.disi.smatch.data.trees.Context;
 import it.unitn.disi.smatch.data.trees.IContext;
 import it.unitn.disi.smatch.data.trees.INode;

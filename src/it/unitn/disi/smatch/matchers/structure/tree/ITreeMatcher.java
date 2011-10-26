@@ -1,6 +1,6 @@
 package it.unitn.disi.smatch.matchers.structure.tree;
 
-import it.unitn.disi.smatch.components.IConfigurable;
+import it.unitn.disi.common.components.IConfigurable;
 import it.unitn.disi.smatch.data.ling.IAtomicConceptOfLabel;
 import it.unitn.disi.smatch.data.mappings.IContextMapping;
 import it.unitn.disi.smatch.data.trees.IContext;

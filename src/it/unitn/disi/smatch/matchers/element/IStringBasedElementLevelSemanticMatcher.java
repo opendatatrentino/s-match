@@ -1,6 +1,6 @@
 package it.unitn.disi.smatch.matchers.element;
 
-import it.unitn.disi.smatch.components.IConfigurable;
+import it.unitn.disi.common.components.IConfigurable;
 
 /**
  * Interface for string-based element-level matchers.

@@ -1,6 +1,6 @@
-package it.unitn.disi.smatch.utils;
+package it.unitn.disi.common.utils;
 
-import it.unitn.disi.smatch.SMatchException;
+import it.unitn.disi.common.DISIException;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
@@ -54,25 +54,26 @@ public class ClassFactory {
      * @param attrTypes  attrTypes
      * @param attrValues attrValues
      * @return instance of the class
-     * @throws SMatchException SMatchException
+     * @throws DISIException DISIException
      */
     @SuppressWarnings("unchecked")
     public static Object getClassInstance(String className,
                                           Class[] attrTypes,
-                                          Object[] attrValues) throws SMatchException {
+                                          Object[] attrValues) throws DISIException {
 
         Constructor constr;
         try {
             Class cl = Class.forName(className);
             constr = cl.getConstructor(attrTypes);
         } catch (ClassNotFoundException e) {
+            //yep, log and throw...
             final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
             log.error(errMessage, e);
-            throw new SMatchException(errMessage, e);
+            throw new DISIException(errMessage, e);
         } catch (NoSuchMethodException e) {
             final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
             log.error(errMessage, e);
-            throw new SMatchException(errMessage, e);
+            throw new DISIException(errMessage, e);
         }
 
         Object classInst;
@@ -82,15 +83,15 @@ public class ClassFactory {
         } catch (InstantiationException e) {
             final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
             log.error(errMessage, e);
-            throw new SMatchException(errMessage, e);
+            throw new DISIException(errMessage, e);
         } catch (IllegalAccessException e) {
             final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
             log.error(errMessage, e);
-            throw new SMatchException(errMessage, e);
+            throw new DISIException(errMessage, e);
         } catch (InvocationTargetException e) {
             final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
             log.error(errMessage, e);
-            throw new SMatchException(errMessage, e);
+            throw new DISIException(errMessage, e);
         }
         return classInst;
     }
@@ -123,10 +124,10 @@ public class ClassFactory {
      * @param attrTypes  attrTypes
      * @param attrValues attrValues
      * @return ArrayList of class instances
-     * @throws SMatchException SMatchException
+     * @throws DISIException DISIException
      */
     public static List<Object> stringToClassInstances(String str, String separator, Class[] attrTypes,
-                                                      Object[] attrValues) throws SMatchException {
+                                                      Object[] attrValues) throws DISIException {
         ArrayList<Object> tmp = new ArrayList<Object>();
         StringTokenizer stringTokenizer = new StringTokenizer(str, separator);
         while (stringTokenizer.hasMoreTokens()) {

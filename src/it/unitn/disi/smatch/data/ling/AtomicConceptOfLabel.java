@@ -21,7 +21,6 @@ public class AtomicConceptOfLabel extends IndexedObject implements IAtomicConcep
     private String lemma;
 
     private ArrayList<ISense> senses;
-    private static final Iterator<ISense> EMPTY_SENSE_ITERATOR = Collections.<ISense>emptyList().iterator();
 
     public AtomicConceptOfLabel() {
     }
@@ -92,7 +91,7 @@ public class AtomicConceptOfLabel extends IndexedObject implements IAtomicConcep
 
     public Iterator<ISense> getSenses() {
         if (null == senses) {
-            return EMPTY_SENSE_ITERATOR;
+            return Collections.<ISense>emptyList().iterator();
         } else {
             return senses.iterator();
         }
@@ -104,12 +103,6 @@ public class AtomicConceptOfLabel extends IndexedObject implements IAtomicConcep
         } else {
             return Collections.emptyList();
         }
-    }
-
-    public ISense createSense(char pos, long id) {
-        ISense sense = new Sense(pos, id);
-        addSense(sense);
-        return sense;
     }
 
     public void addSense(ISense sense) {

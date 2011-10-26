@@ -1,6 +1,6 @@
 package it.unitn.disi.smatch.data.matrices;
 
-import it.unitn.disi.smatch.components.Configurable;
+import it.unitn.disi.common.components.Configurable;
 import it.unitn.disi.smatch.data.mappings.IMappingElement;
 
 import java.util.Arrays;

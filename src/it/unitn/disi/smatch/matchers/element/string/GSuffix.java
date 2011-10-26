@@ -1,6 +1,6 @@
 package it.unitn.disi.smatch.matchers.element.string;
 
-import it.unitn.disi.smatch.components.Configurable;
+import it.unitn.disi.common.components.Configurable;
 import it.unitn.disi.smatch.data.mappings.IMappingElement;
 import it.unitn.disi.smatch.matchers.element.IStringBasedElementLevelSemanticMatcher;
 

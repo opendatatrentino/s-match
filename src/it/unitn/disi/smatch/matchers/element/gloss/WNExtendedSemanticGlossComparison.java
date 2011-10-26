@@ -1,10 +1,10 @@
 package it.unitn.disi.smatch.matchers.element.gloss;
 
-import it.unitn.disi.smatch.components.ConfigurableException;
+import it.unitn.disi.common.components.ConfigurableException;
+import it.unitn.disi.smatch.data.ling.ISense;
 import it.unitn.disi.smatch.data.mappings.IMappingElement;
 import it.unitn.disi.smatch.matchers.element.ISenseGlossBasedElementLevelSemanticMatcher;
 import it.unitn.disi.smatch.matchers.element.MatcherLibraryException;
-import it.unitn.disi.smatch.oracles.ISynset;
 import it.unitn.disi.smatch.oracles.LinguisticOracleException;
 import org.apache.log4j.Logger;
 
@@ -13,9 +13,9 @@ import java.util.StringTokenizer;
 
 /**
  * Implements WNExtendedSemanticGlossComparison matcher. See Element Level Semantic matchers paper for more details.
- *
+ * <p/>
  * Accepts the following parameters:
- *
+ * <p/>
  * meaninglessWords - string parameter which indicates words to ignore. Check the source file for default value.
  *
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
@@ -47,7 +47,7 @@ public class WNExtendedSemanticGlossComparison extends BasicGlossMatcher impleme
      * @param target the gloss of target
      * @return more general, less general or IDK relation
      */
-    public char match(ISynset source, ISynset target) throws MatcherLibraryException {
+    public char match(ISense source, ISense target) throws MatcherLibraryException {
         char result = IMappingElement.IDK;
         try {
             String sSynset = source.getGloss();
@@ -98,20 +98,22 @@ public class WNExtendedSemanticGlossComparison extends BasicGlossMatcher impleme
         while (stSource.hasMoreTokens()) {
             StringTokenizer stTarget = new StringTokenizer(tExtendedGloss, " ,.\"'()");
             lemmaS = stSource.nextToken();
-            if (meaninglessWords.indexOf(lemmaS) == -1)
+            if (!meaninglessWords.contains(lemmaS)) {
                 while (stTarget.hasMoreTokens()) {
                     lemmaT = stTarget.nextToken();
-                    if (meaninglessWords.indexOf(lemmaT) == -1) {
-                        if (isWordLessGeneral(lemmaS, lemmaT))
+                    if (!meaninglessWords.contains(lemmaT)) {
+                        if (isWordLessGeneral(lemmaS, lemmaT)) {
                             lessGeneral++;
-                        else if (isWordMoreGeneral(lemmaS, lemmaT))
+                        } else if (isWordMoreGeneral(lemmaS, lemmaT)) {
                             moreGeneral++;
-                        else if (isWordSynonym(lemmaS, lemmaT))
+                        } else if (isWordSynonym(lemmaS, lemmaT)) {
                             Equals++;
-                        else if (isWordOpposite(lemmaS, lemmaT))
+                        } else if (isWordOpposite(lemmaS, lemmaT)) {
                             Opposite++;
+                        }
                     }
                 }
+            }
         }
         return getRelationFromInts(lessGeneral, moreGeneral, Equals, Opposite);
     }
@@ -126,14 +128,18 @@ public class WNExtendedSemanticGlossComparison extends BasicGlossMatcher impleme
      * @return the more frequent relation between two extended glosses.
      */
     private char getRelationFromInts(int lg, int mg, int syn, int opp) {
-        if ((lg >= mg) && (lg >= syn) && (lg >= opp) && (lg > 0))
+        if ((lg >= mg) && (lg >= syn) && (lg >= opp) && (lg > 0)) {
             return IMappingElement.LESS_GENERAL;
-        if ((mg >= lg) && (mg >= syn) && (mg >= opp) && (mg > 0))
+        }
+        if ((mg >= lg) && (mg >= syn) && (mg >= opp) && (mg > 0)) {
             return IMappingElement.MORE_GENERAL;
-        if ((syn >= mg) && (syn >= lg) && (syn >= opp) && (syn > 0))
+        }
+        if ((syn >= mg) && (syn >= lg) && (syn >= opp) && (syn > 0)) {
             return IMappingElement.LESS_GENERAL;
-        if ((opp >= mg) && (opp >= syn) && (opp >= lg) && (opp > 0))
+        }
+        if ((opp >= mg) && (opp >= syn) && (opp >= lg) && (opp > 0)) {
             return IMappingElement.LESS_GENERAL;
+        }
         return IMappingElement.IDK;
     }
 
@@ -145,14 +151,19 @@ public class WNExtendedSemanticGlossComparison extends BasicGlossMatcher impleme
      * @return less general, more general or IDK relation
      */
     private char getRelationFromRels(char builtForRel, char glossRel) {
-        if (builtForRel == IMappingElement.EQUIVALENCE)
+        if (builtForRel == IMappingElement.EQUIVALENCE) {
             return glossRel;
-        if (builtForRel == IMappingElement.LESS_GENERAL)
-            if ((glossRel == IMappingElement.LESS_GENERAL) || (glossRel == IMappingElement.EQUIVALENCE))
+        }
+        if (builtForRel == IMappingElement.LESS_GENERAL) {
+            if ((glossRel == IMappingElement.LESS_GENERAL) || (glossRel == IMappingElement.EQUIVALENCE)) {
                 return IMappingElement.LESS_GENERAL;
-        if (builtForRel == IMappingElement.MORE_GENERAL)
-            if ((glossRel == IMappingElement.MORE_GENERAL) || (glossRel == IMappingElement.EQUIVALENCE))
+            }
+        }
+        if (builtForRel == IMappingElement.MORE_GENERAL) {
+            if ((glossRel == IMappingElement.MORE_GENERAL) || (glossRel == IMappingElement.EQUIVALENCE)) {
                 return IMappingElement.MORE_GENERAL;
+            }
+        }
         return IMappingElement.IDK;
     }
 }

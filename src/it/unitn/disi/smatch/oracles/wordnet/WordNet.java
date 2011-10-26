@@ -1,11 +1,16 @@
 package it.unitn.disi.smatch.oracles.wordnet;
 
-import it.unitn.disi.smatch.components.Configurable;
-import it.unitn.disi.smatch.components.ConfigurableException;
+import it.unitn.disi.common.DISIException;
+import it.unitn.disi.common.components.Configurable;
+import it.unitn.disi.common.components.ConfigurableException;
+import it.unitn.disi.common.utils.MiscUtils;
+import it.unitn.disi.smatch.SMatchException;
 import it.unitn.disi.smatch.data.ling.ISense;
-import it.unitn.disi.smatch.data.ling.Sense;
 import it.unitn.disi.smatch.data.mappings.IMappingElement;
-import it.unitn.disi.smatch.oracles.*;
+import it.unitn.disi.smatch.oracles.ILinguisticOracle;
+import it.unitn.disi.smatch.oracles.ISenseMatcher;
+import it.unitn.disi.smatch.oracles.LinguisticOracleException;
+import it.unitn.disi.smatch.oracles.SenseMatcherException;
 import net.sf.extjwnl.JWNL;
 import net.sf.extjwnl.JWNLException;
 import net.sf.extjwnl.data.*;
@@ -21,6 +26,7 @@ import org.apache.log4j.Logger;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.*;
+import java.util.regex.Pattern;
 
 /**
  * Implements a Linguistic Oracle and Sense Matcher using WordNet.
@@ -37,6 +43,15 @@ public class WordNet extends Configurable implements ILinguisticOracle, ISenseMa
     private static final String JWNL_PROPERTIES_PATH_KEY = "JWNLPropertiesPath";
     private Dictionary dic = null;
 
+    // controls loading of arrays, used to skip loading before conversion
+    private static final String LOAD_ARRAYS_KEY = "loadArrays";
+
+    // contains all the multiwords in WordNet
+    private static final String MULTIWORDS_FILE_KEY = "multiwordsFileName";
+    private HashMap<String, ArrayList<ArrayList<String>>> multiwords = null;
+
+    private static final Pattern offset = Pattern.compile("\\d+");
+
     private Map<String, Character> sensesCache;
 
     public WordNet() {
@@ -47,6 +62,11 @@ public class WordNet extends Configurable implements ILinguisticOracle, ISenseMa
     public boolean setProperties(Properties newProperties) throws ConfigurableException {
         boolean result = super.setProperties(newProperties);
         if (result) {
+            boolean loadArrays = true;
+            if (newProperties.containsKey(LOAD_ARRAYS_KEY)) {
+                loadArrays = Boolean.parseBoolean(newProperties.getProperty(LOAD_ARRAYS_KEY));
+            }
+
             if (newProperties.containsKey(JWNL_PROPERTIES_PATH_KEY)) {
                 // initialize JWNL (this must be done before JWNL library can be used)
                 try {
@@ -68,6 +88,22 @@ public class WordNet extends Configurable implements ILinguisticOracle, ISenseMa
                 log.error(errMessage);
                 throw new ConfigurableException(errMessage);
             }
+
+            if (newProperties.containsKey(MULTIWORDS_FILE_KEY)) {
+                if (loadArrays) {
+                    String multiwordFileName = newProperties.getProperty(MULTIWORDS_FILE_KEY);
+                    log.info("Loading multiwords: " + multiwordFileName);
+                    multiwords = readHash(multiwordFileName);
+                    log.info("loaded multiwords: " + multiwords.size());
+                } else {
+                    multiwords = new HashMap<String, ArrayList<ArrayList<String>>>();
+                }
+            } else {
+                final String errMessage = "Cannot find configuration key " + MULTIWORDS_FILE_KEY;
+                log.error(errMessage);
+                throw new ConfigurableException(errMessage);
+            }
+
         }
         return result;
     }
@@ -82,7 +118,7 @@ public class WordNet extends Configurable implements ILinguisticOracle, ISenseMa
                     IndexWord lemma = lemmas.getIndexWordArray()[i];
                     for (int j = 0; j < lemma.getSenses().size(); j++) {
                         Synset synset = lemma.getSenses().get(j);
-                        result.add(new Sense(synset.getPOS().getKey().charAt(0), synset.getOffset()));
+                        result.add(new WordNetSense(synset));
                     }
                 }
             }
@@ -94,21 +130,36 @@ public class WordNet extends Configurable implements ILinguisticOracle, ISenseMa
         return result;
     }
 
-    public String getBaseForm(String derivation) throws LinguisticOracleException {
+    public List<String> getBaseForms(String derivation) throws LinguisticOracleException {
         try {
-            String result = derivation;
+            List<String> result = new ArrayList<String>();
             IndexWordSet tmp = dic.lookupAllIndexWords(derivation);
             if (null != tmp) {
-                for (IndexWord indexWord : tmp.getIndexWordArray()) {
-                    String word = indexWord.getLemma();
-                    if (null != word) {
-                        result = word;
-                        break;
+                IndexWord[] indexWordArray = tmp.getIndexWordArray();
+                for (IndexWord indexWord : indexWordArray) {
+                    String lemma = indexWord.getLemma();
+                    if (null != lemma && !result.contains(lemma)) {
+                        result.add(lemma);
+                    }
+                }
+            } else {
+                if (null != dic.getMorphologicalProcessor()) {
+                    for (POS pos : POS.values()) {
+                        List<String> posLemmas = dic.getMorphologicalProcessor().lookupAllBaseForms(pos, derivation);
+                        for (String lemma : posLemmas) {
+                            if (!result.contains(lemma)) {
+                                result.add(lemma);
+                            }
+                        }
                     }
                 }
             }
+            if (0 == result.size()) {
+                result.add(derivation);
+            }
             return result;
         } catch (JWNLException e) {
+            //TODO fix "log and throw" everywhere
             final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
             log.error(errMessage, e);
             throw new LinguisticOracleException(errMessage, e);
@@ -138,10 +189,6 @@ public class WordNet extends Configurable implements ILinguisticOracle, ISenseMa
             throw new LinguisticOracleException(errMessage, e);
         }
         return false;
-    }
-
-    public ISynset getISynset(ISense source) throws LinguisticOracleException {
-        return new WordNetSynset(getSynset(source));
     }
 
     public char getRelation(List<ISense> sourceSenses, List<ISense> targetSenses) throws SenseMatcherException {
@@ -230,26 +277,20 @@ public class WordNet extends Configurable implements ILinguisticOracle, ISenseMa
         if (source.equals(target)) {
             return true;
         }
-        try {
-            Synset sourceSyn = getSynset(source);
-            Synset targetSyn = getSynset(target);
-            //is synonym
-            RelationshipList list = RelationshipFinder.findRelationships(sourceSyn, targetSyn, PointerType.SIMILAR_TO);
-            if (list.size() > 0) {
-                if (('a' == source.getPos()) || ('a' == target.getPos())) {
-                    return (list.get(0).getDepth() == 0);
-                } else {
-                    return true;
+        if ((source instanceof WordNetSense) && (target instanceof WordNetSense)) {
+            try {
+                WordNetSense sourceSyn = (WordNetSense) source;
+                WordNetSense targetSyn = (WordNetSense) target;
+                //is synonym
+                RelationshipList list = RelationshipFinder.findRelationships(sourceSyn.getSynset(), targetSyn.getSynset(), PointerType.SIMILAR_TO);
+                if (list.size() > 0) {
+                    return !((POS.ADJECTIVE == sourceSyn.getPOS()) || (POS.ADJECTIVE == targetSyn.getPOS())) || (list.get(0).getDepth() == 0);
                 }
+            } catch (CloneNotSupportedException e) {
+                final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
+                log.error(errMessage, e);
+                throw new SenseMatcherException(errMessage, e);
             }
-        } catch (LinguisticOracleException e) {
-            final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
-            log.error(errMessage, e);
-            throw new SenseMatcherException(errMessage, e);
-        } catch (CloneNotSupportedException e) {
-            final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
-            log.error(errMessage, e);
-            throw new SenseMatcherException(errMessage, e);
         }
         return false;
     }
@@ -258,25 +299,23 @@ public class WordNet extends Configurable implements ILinguisticOracle, ISenseMa
         if (source.equals(target)) {
             return false;
         }
-        try {
-            Synset sourceSyn = getSynset(source);
-            Synset targetSyn = getSynset(target);
-            //  Checks whether senses are siblings (thus they are opposite)
-            if ('n' == source.getPos() && 'n' == target.getPos()) {
-            } else {
-                RelationshipList list = RelationshipFinder.findRelationships(sourceSyn, targetSyn, PointerType.ANTONYM);
-                if (list.size() > 0) {
-                    return true;
+        if ((source instanceof WordNetSense) && (target instanceof WordNetSense)) {
+            try {
+                WordNetSense sourceSyn = (WordNetSense) source;
+                WordNetSense targetSyn = (WordNetSense) target;
+                //  Checks whether senses are siblings (thus they are opposite)
+                if (POS.NOUN == sourceSyn.getPOS() && POS.NOUN == targetSyn.getPOS()) {
+                } else {
+                    RelationshipList list = RelationshipFinder.findRelationships(sourceSyn.getSynset(), targetSyn.getSynset(), PointerType.ANTONYM);
+                    if (list.size() > 0) {
+                        return true;
+                    }
                 }
+            } catch (CloneNotSupportedException e) {
+                final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
+                log.error(errMessage, e);
+                throw new SenseMatcherException(errMessage, e);
             }
-        } catch (LinguisticOracleException e) {
-            final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
-            log.error(errMessage, e);
-            throw new SenseMatcherException(errMessage, e);
-        } catch (CloneNotSupportedException e) {
-            final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
-            log.error(errMessage, e);
-            throw new SenseMatcherException(errMessage, e);
         }
         return false;
     }
@@ -296,25 +335,30 @@ public class WordNet extends Configurable implements ILinguisticOracle, ISenseMa
     }
 
     public boolean isSourceMoreGeneralThanTarget(ISense source, ISense target) throws SenseMatcherException {
-        if (('n' == source.getPos() && 'n' == target.getPos()) || ('v' == source.getPos() && 'v' == target.getPos())) {
-            if (source.equals(target)) {
-                return false;
-            }
-            try {
-                Synset sourceSyn = getSynset(source);
-                Synset targetSyn = getSynset(target);
-                // find all more general relationships from WordNet
-                RelationshipList list = RelationshipFinder.findRelationships(sourceSyn, targetSyn, PointerType.HYPERNYM);
-                if (!isUnidirestionalList(list)) {
-                    PointerTargetTree ptt = PointerUtils.getInheritedMemberHolonyms(targetSyn);
-                    PointerTargetNodeList ptnl = PointerUtils.getMemberHolonyms(targetSyn);
-                    if (!traverseTree(ptt, ptnl, sourceSyn)) {
-                        ptt = PointerUtils.getInheritedPartHolonyms(targetSyn);
-                        ptnl = PointerUtils.getPartHolonyms(targetSyn);
-                        if (!traverseTree(ptt, ptnl, sourceSyn)) {
-                            ptt = PointerUtils.getInheritedSubstanceHolonyms(targetSyn);
-                            ptnl = PointerUtils.getSubstanceHolonyms(targetSyn);
-                            if (traverseTree(ptt, ptnl, sourceSyn)) {
+        if ((source instanceof WordNetSense) && (target instanceof WordNetSense)) {
+            WordNetSense sourceSyn = (WordNetSense) source;
+            WordNetSense targetSyn = (WordNetSense) target;
+
+            if ((POS.NOUN == sourceSyn.getPOS() && POS.NOUN == targetSyn.getPOS()) || (POS.VERB == sourceSyn.getPOS() && POS.VERB == targetSyn.getPOS())) {
+                if (source.equals(target)) {
+                    return false;
+                }
+                try {
+                    // find all more general relationships from WordNet
+                    RelationshipList list = RelationshipFinder.findRelationships(sourceSyn.getSynset(), targetSyn.getSynset(), PointerType.HYPERNYM);
+                    if (!isUnidirestionalList(list)) {
+                        PointerTargetTree ptt = PointerUtils.getInheritedMemberHolonyms(targetSyn.getSynset());
+                        PointerTargetNodeList ptnl = PointerUtils.getMemberHolonyms(targetSyn.getSynset());
+                        if (!traverseTree(ptt, ptnl, sourceSyn.getSynset())) {
+                            ptt = PointerUtils.getInheritedPartHolonyms(targetSyn.getSynset());
+                            ptnl = PointerUtils.getPartHolonyms(targetSyn.getSynset());
+                            if (!traverseTree(ptt, ptnl, sourceSyn.getSynset())) {
+                                ptt = PointerUtils.getInheritedSubstanceHolonyms(targetSyn.getSynset());
+                                ptnl = PointerUtils.getSubstanceHolonyms(targetSyn.getSynset());
+                                if (traverseTree(ptt, ptnl, sourceSyn.getSynset())) {
+                                    return true;
+                                }
+                            } else {
                                 return true;
                             }
                         } else {
@@ -323,20 +367,30 @@ public class WordNet extends Configurable implements ILinguisticOracle, ISenseMa
                     } else {
                         return true;
                     }
-                } else {
-                    return true;
+                } catch (CloneNotSupportedException e) {
+                    final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
+                    log.error(errMessage, e);
+                    throw new SenseMatcherException(errMessage, e);
                 }
-            } catch (LinguisticOracleException e) {
-                final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
-                log.error(errMessage, e);
-                throw new SenseMatcherException(errMessage, e);
-            } catch (CloneNotSupportedException e) {
-                final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
-                log.error(errMessage, e);
-                throw new SenseMatcherException(errMessage, e);
             }
         }
         return false;
+    }
+
+    public ISense createSense(String id) throws LinguisticOracleException {
+        if (id.length() < 3 || 1 != id.indexOf('#') || !"navr".contains(id.substring(0, 1)) || !offset.matcher(id.substring(2)).matches()) {
+            throw new LinguisticOracleException("Malformed sense id: " + id);
+        }
+        try {
+            Synset synset = dic.getSynsetAt(POS.getPOSForKey(id.substring(0, 1)), Long.parseLong(id.substring(2)));
+            return new WordNetSense(synset);
+        } catch (JWNLException e) {
+            throw new LinguisticOracleException(e.getMessage(), e);
+        }
+    }
+
+    public ArrayList<ArrayList<String>> getMultiwords(String beginning) throws LinguisticOracleException {
+        return multiwords.get(beginning);
     }
 
     /**
@@ -387,20 +441,100 @@ public class WordNet extends Configurable implements ILinguisticOracle, ISenseMa
     }
 
     /**
-     * Returns a synset for a sense.
+     * Loads the hashmap with multiwords. The multiwords are stored in the following format:
+     * Key - the first word in the multiwords
+     * Value - List of Lists, which contain the other words in the all the multiwords starting with key.
      *
-     * @param source a sense
-     * @return synset
-     * @throws LinguisticOracleException LinguisticOracleException
+     * @param fileName the file name from which the hashmap will be read
+     * @return multiwords hashmap
+     * @throws it.unitn.disi.smatch.SMatchException SMatchException
      */
-    private Synset getSynset(ISense source) throws LinguisticOracleException {
+    @SuppressWarnings("unchecked")
+    private static HashMap<String, ArrayList<ArrayList<String>>> readHash(String fileName) throws SMatchException {
         try {
-            POS POSSource = POS.getPOSForKey(Character.toString(source.getPos()));
-            return dic.getSynsetAt(POSSource, source.getId());
+            return (HashMap<String, ArrayList<ArrayList<String>>>) MiscUtils.readObject(fileName);
+        } catch (DISIException e) {
+            throw new SMatchException(e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Create caches of WordNet to speed up matching.
+     *
+     * @param componentKey a key to the component in the configuration
+     * @param properties   configuration
+     * @throws SMatchException SMatchException
+     */
+    public static void createWordNetCaches(String componentKey, Properties properties) throws SMatchException {
+        properties = getComponentProperties(makeComponentPrefix(componentKey, WordNet.class.getSimpleName()), properties);
+        if (properties.containsKey(JWNL_PROPERTIES_PATH_KEY)) {
+            // initialize JWNL (this must be done before JWNL library can be used)
+            try {
+                final String configPath = properties.getProperty(JWNL_PROPERTIES_PATH_KEY);
+                log.info("Initializing JWNL from " + configPath);
+                JWNL.initialize(new FileInputStream(configPath));
+                log.info("Creating WordNet caches...");
+                writeMultiwords(properties);
+                log.info("Done");
+            } catch (JWNLException e) {
+                final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
+                log.error(errMessage, e);
+                throw new SMatchException(errMessage, e);
+            } catch (FileNotFoundException e) {
+                final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
+                log.error(errMessage, e);
+                throw new SMatchException(errMessage, e);
+            }
+        } else {
+            final String errMessage = "Cannot find configuration key " + JWNL_PROPERTIES_PATH_KEY;
+            log.error(errMessage);
+            throw new SMatchException(errMessage);
+        }
+    }
+
+    private static void writeMultiwords(Properties properties) throws SMatchException {
+        log.info("Creating multiword hash...");
+        HashMap<String, ArrayList<ArrayList<String>>> multiwords = new HashMap<String, ArrayList<ArrayList<String>>>();
+        POS[] parts = new POS[]{POS.NOUN, POS.ADJECTIVE, POS.VERB, POS.ADVERB};
+        for (POS pos : parts) {
+            collectMultiwords(multiwords, pos);
+        }
+        log.info("Multiwords: " + multiwords.size());
+        try {
+            MiscUtils.writeObject(multiwords, properties.getProperty(MULTIWORDS_FILE_KEY));
+        } catch (DISIException e) {
+            throw new SMatchException(e.getMessage(), e);
+        }
+    }
+
+    private static void collectMultiwords(HashMap<String, ArrayList<ArrayList<String>>> multiwords, POS pos) throws SMatchException {
+        try {
+            int count = 0;
+            Iterator i = net.sf.extjwnl.dictionary.Dictionary.getInstance().getIndexWordIterator(pos);
+            while (i.hasNext()) {
+                IndexWord iw = (IndexWord) i.next();
+                String lemma = iw.getLemma();
+                if (-1 < lemma.indexOf(' ')) {
+                    count++;
+                    if (0 == count % 10000) {
+                        log.info(count);
+                    }
+                    String[] tokens = lemma.split(" ");
+                    ArrayList<ArrayList<String>> mwEnds = multiwords.get(tokens[0]);
+                    if (null == mwEnds) {
+                        mwEnds = new ArrayList<ArrayList<String>>();
+                    }
+                    ArrayList<String> currentMWEnd = new ArrayList<String>(Arrays.asList(tokens));
+                    currentMWEnd.remove(0);
+                    mwEnds.add(currentMWEnd);
+                    multiwords.put(tokens[0], mwEnds);
+                }
+            }
+            log.info(pos.getKey() + " multiwords: " + count);
         } catch (JWNLException e) {
-            final String errMessage = "Malformed synset id: " + source + ". Error: " + e.getClass().getSimpleName() + ": " + e.getMessage();
+            final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
             log.error(errMessage, e);
-            throw new LinguisticOracleException(errMessage, e);
+            throw new SMatchException(errMessage, e);
         }
     }
 }

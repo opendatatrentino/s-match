@@ -1,6 +1,6 @@
 package it.unitn.disi.smatch;
 
-import it.unitn.disi.smatch.components.ConfigurableException;
+import it.unitn.disi.common.components.ConfigurableException;
 
 /**
  * Main S-Match exception.

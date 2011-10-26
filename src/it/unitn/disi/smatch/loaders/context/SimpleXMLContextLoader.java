@@ -1,16 +1,22 @@
 package it.unitn.disi.smatch.loaders.context;
 
-import it.unitn.disi.smatch.components.ConfigurableException;
+import it.unitn.disi.common.components.ConfigurableException;
 import it.unitn.disi.smatch.data.ling.IAtomicConceptOfLabel;
 import it.unitn.disi.smatch.data.trees.Context;
 import it.unitn.disi.smatch.data.trees.IContext;
 import it.unitn.disi.smatch.data.trees.INode;
+import it.unitn.disi.smatch.deciders.ISATSolver;
 import it.unitn.disi.smatch.loaders.ILoader;
+import it.unitn.disi.smatch.oracles.ILinguisticOracle;
+import it.unitn.disi.smatch.oracles.LinguisticOracleException;
 import org.apache.log4j.Logger;
 import org.xml.sax.*;
 import org.xml.sax.helpers.XMLReaderFactory;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.HashMap;
@@ -45,12 +51,26 @@ public class SimpleXMLContextLoader extends BaseFileContextLoader implements ICo
     private boolean uniqueStrings = false;
     private final HashMap<String, String> unique = new HashMap<String, String>();
 
+    private final static String LINGUISTIC_ORACLE = "oracle";
+    private ILinguisticOracle oracle;
+
     @Override
     public boolean setProperties(Properties newProperties) throws ConfigurableException {
+        Properties oldProperties = new Properties();
+        oldProperties.putAll(properties);
+
         boolean result = super.setProperties(newProperties);
         if (result) {
             if (newProperties.containsKey(UNIQUE_STRINGS_KEY)) {
                 uniqueStrings = Boolean.parseBoolean(newProperties.getProperty(UNIQUE_STRINGS_KEY));
+            }
+
+            if (newProperties.containsKey(LINGUISTIC_ORACLE)) {
+                oracle = (ILinguisticOracle) configureComponent(oracle, oldProperties, newProperties, "linguistic oracle", LINGUISTIC_ORACLE, ISATSolver.class);
+            } else {
+                final String errMessage = "Cannot find configuration key " + LINGUISTIC_ORACLE;
+                log.warn(errMessage);
+                oracle = null;
             }
         }
         return result;
@@ -128,7 +148,21 @@ public class SimpleXMLContextLoader extends BaseFileContextLoader implements ICo
             acol = pathToRoot.getLast().getNodeData().createACoL();
             acol.setId(Integer.parseInt(atts.getValue("id")));
         } else if ("sense".equals(localName)) {
-            acol.createSense(atts.getValue("pos").charAt(0), Long.parseLong(atts.getValue("id")));
+            if (null != oracle) {
+                if (-1 == atts.getIndex("pos")) {
+                    try {
+                        acol.addSense(oracle.createSense(atts.getValue("id")));
+                    } catch (LinguisticOracleException e) {
+                        throw new RuntimeException(e.getMessage(), e);
+                    }
+                } else {
+                    try {
+                        acol.addSense(oracle.createSense(atts.getValue("pos") + "#" + atts.getValue("id")));
+                    } catch (LinguisticOracleException e) {
+                        throw new RuntimeException(e.getMessage(), e);
+                    }
+                }
+            }
         } else {
             content = new StringBuilder();
         }

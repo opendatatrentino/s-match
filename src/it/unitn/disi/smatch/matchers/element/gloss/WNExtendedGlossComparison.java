@@ -1,10 +1,10 @@
 package it.unitn.disi.smatch.matchers.element.gloss;
 
-import it.unitn.disi.smatch.components.ConfigurableException;
+import it.unitn.disi.common.components.ConfigurableException;
+import it.unitn.disi.smatch.data.ling.ISense;
 import it.unitn.disi.smatch.data.mappings.IMappingElement;
 import it.unitn.disi.smatch.matchers.element.ISenseGlossBasedElementLevelSemanticMatcher;
 import it.unitn.disi.smatch.matchers.element.MatcherLibraryException;
-import it.unitn.disi.smatch.oracles.ISynset;
 import it.unitn.disi.smatch.oracles.LinguisticOracleException;
 import org.apache.log4j.Logger;
 
@@ -57,7 +57,7 @@ public class WNExtendedGlossComparison extends BasicGlossMatcher implements ISen
      * @param target1 the gloss of target
      * @return synonym or IDK relation
      */
-    public char match(ISynset source1, ISynset target1) throws MatcherLibraryException {
+    public char match(ISense source1, ISense target1) throws MatcherLibraryException {
         char result = IMappingElement.IDK;
         try {
             String tExtendedGloss = getExtendedGloss(target1, 1, IMappingElement.LESS_GENERAL);
@@ -69,10 +69,10 @@ public class WNExtendedGlossComparison extends BasicGlossMatcher implements ISen
             while (stSource.hasMoreTokens()) {
                 StringTokenizer stTarget = new StringTokenizer(sExtendedGloss, " ,.\"'();");
                 lemmaS = stSource.nextToken();
-                if (meaninglessWords.indexOf(lemmaS) == -1)
+                if (!meaninglessWords.contains(lemmaS))
                     while (stTarget.hasMoreTokens()) {
                         lemmaT = stTarget.nextToken();
-                        if (meaninglessWords.indexOf(lemmaT) == -1)
+                        if (!meaninglessWords.contains(lemmaT))
                             if (lemmaS.equalsIgnoreCase(lemmaT))
                                 counter++;
                     }

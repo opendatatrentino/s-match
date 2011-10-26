@@ -1,8 +1,8 @@
 package it.unitn.disi.smatch.renderers.context;
 
 import it.unitn.disi.smatch.SMatchConstants;
-import it.unitn.disi.smatch.components.Configurable;
-import it.unitn.disi.smatch.components.ConfigurableException;
+import it.unitn.disi.common.components.Configurable;
+import it.unitn.disi.common.components.ConfigurableException;
 import it.unitn.disi.smatch.data.trees.IContext;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;

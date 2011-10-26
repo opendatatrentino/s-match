@@ -1,7 +1,7 @@
 package it.unitn.disi.smatch.matchers.element.gloss;
 
-import it.unitn.disi.smatch.components.Configurable;
-import it.unitn.disi.smatch.components.ConfigurableException;
+import it.unitn.disi.common.components.Configurable;
+import it.unitn.disi.common.components.ConfigurableException;
 import it.unitn.disi.smatch.data.ling.ISense;
 import it.unitn.disi.smatch.data.mappings.IMappingElement;
 import it.unitn.disi.smatch.matchers.element.MatcherLibraryException;
@@ -191,16 +191,16 @@ public class BasicGlossMatcher extends Configurable {
      * @return the extended gloss
      * @throws LinguisticOracleException LinguisticOracleException
      */
-    public String getExtendedGloss(ISynset original, int intSource, char Rel) throws LinguisticOracleException {
-        List<ISynset> children = new ArrayList<ISynset>();
+    public String getExtendedGloss(ISense original, int intSource, char Rel) throws LinguisticOracleException {
+        List<ISense> children = new ArrayList<ISense>();
         StringBuilder result = new StringBuilder();
         if (Rel == IMappingElement.LESS_GENERAL) {
             children = original.getChildren(intSource);
         } else if (Rel == IMappingElement.MORE_GENERAL) {
             children = original.getParents(intSource);
         }
-        for (ISynset iSynset : children) {
-            String gloss = iSynset.getGloss();
+        for (ISense ISense : children) {
+            String gloss = ISense.getGloss();
             result.append(gloss).append(".");
         }
         return result.toString();

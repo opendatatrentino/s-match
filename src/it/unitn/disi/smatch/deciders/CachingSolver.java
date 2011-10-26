@@ -1,7 +1,7 @@
 package it.unitn.disi.smatch.deciders;
 
-import it.unitn.disi.smatch.components.Configurable;
-import it.unitn.disi.smatch.components.ConfigurableException;
+import it.unitn.disi.common.components.Configurable;
+import it.unitn.disi.common.components.ConfigurableException;
 import org.apache.log4j.Logger;
 
 import java.util.HashMap;

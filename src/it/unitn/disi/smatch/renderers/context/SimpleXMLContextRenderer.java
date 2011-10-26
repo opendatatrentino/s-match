@@ -101,8 +101,7 @@ public class SimpleXMLContextRenderer extends BaseXMLContextRenderer {
                 for (Iterator<ISense> i = acol.getSenses(); i.hasNext();) {
                     ISense sense = i.next();
                     atts = new AttributesImpl();
-                    atts.addAttribute("", "", "pos", "CDATA", Character.toString(sense.getPos()));
-                    atts.addAttribute("", "", "id", "CDATA", Long.toString(sense.getId()));
+                    atts.addAttribute("", "", "id", "CDATA", sense.getId());
                     hd.startElement("", "", "sense", atts);
                     hd.endElement("", "", "sense");
                 }

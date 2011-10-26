@@ -1,4 +1,4 @@
-package it.unitn.disi.smatch.components;
+package it.unitn.disi.common.components;
 
 import java.util.Properties;
 

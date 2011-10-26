@@ -1,0 +1,268 @@
+/**
+ * JavaCC file
+ */
+
+options {
+  JDK_VERSION = "1.5";
+  STATIC      = false;
+}
+PARSER_BEGIN(DMOZBNFParser)
+package it.unitn.disi.nlptools.components.parsers.controlled.dmozparser;
+
+import it.unitn.disi.nlptools.NLPToolsConstants;
+import it.unitn.disi.nlptools.components.PipelineComponentException;
+import it.unitn.disi.nlptools.data.ISentence;
+import it.unitn.disi.nlptools.data.IToken;
+import it.unitn.disi.nlptools.pipelines.PipelineComponent;
+import it.unitn.disi.nlptools.pipelines.IPipelineComponent;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+
+import java.io.StringReader;
+import java.util.List;
+import java.util.regex.Pattern;
+
+/**
+ * Label parsing using DMOZ BNF created by Ju Qi and implemented in JavaCC. Parses pretty much nothing but
+ * very few DMoz-like label without any proper names. Outputs a formula pattern.
+ *
+ * @author Ju Qi
+ */
+public class DMOZBNFParser extends PipelineComponent implements IPipelineComponent {
+
+    private static final Logger log = Logger.getLogger(DMOZBNFParser.class);
+
+    private DMOZBNFParser parser = null;
+    
+    //pattern to replace ", and" sequences. first comma is removed
+    //regexp needed to preserve token indexes
+    private final static Pattern ccCommaCCAnd = Pattern.compile("CC_,(\\|\\d+) CC_and(\\|\\d+)");
+
+    public DMOZBNFParser() {
+        parser = new DMOZBNFParser(new StringReader(""));
+    }
+
+    public void process(ISentence sentence) throws PipelineComponentException {
+        String initialPattern = preparePattern(sentence);
+        String inputPattern = processCCs(initialPattern);
+        parser.ReInit(new StringReader(inputPattern));
+        try {
+            sentence.setFormula(parser.NL_Label());
+        } catch (ParseException e) {
+            if (log.isEnabledFor(Level.ERROR)) {
+                log.error("Cannot parse the label (" + sentence.getText() + ") with pattern (" + initialPattern + "): " + e.getMessage(), e);
+            }
+            throw new PipelineComponentException(e.getMessage(), e);
+        } catch (TokenMgrError e) {
+            if (log.isEnabledFor(Level.ERROR)) {
+                log.error("Cannot parse the label (" + sentence.getText() + ") with pattern (" + initialPattern + "): " + e.getMessage());
+            }
+            throw new PipelineComponentException(e.getMessage(), e);
+        }
+    }
+
+    private String processCCs(String inputPattern) {
+        String processedPattern = "";
+
+        //used to split into set of formulas. by OR?
+        //boolean or = false;
+
+        //contains to pieces of formula - inside the brackets piece and outside the bracket
+        String[] patternPieces = new String[2];
+
+        //replace ", and" with "and" preserving token index
+        if (ccCommaCCAnd.matcher(inputPattern).find()) {
+            inputPattern = ccCommaCCAnd.matcher(inputPattern).replaceAll("CC_and$2");
+        }
+
+        //coordination disambiguation. too simple. and it should be supplied. by whom?
+        if (inputPattern.contains("(") && inputPattern.contains(")")) {
+            int index1 = inputPattern.indexOf("(");
+            int index2 = inputPattern.indexOf(")");
+            if (index1 == 0) {
+                patternPieces[0] = inputPattern.substring(index1 + 1, index2);
+                patternPieces[1] = inputPattern.substring(index2 + 1);
+                if (patternPieces[0].contains("CC_and")) {
+                    int ccAndIdx = patternPieces[0].indexOf("CC_and");
+                    String before = patternPieces[0].substring(0, ccAndIdx);
+                    int ccAndEndIdx = patternPieces[0].indexOf(" ", ccAndIdx);
+                    String after = patternPieces[0].substring(ccAndEndIdx);
+                    int ccPostFixIdx = patternPieces[0].indexOf("|", ccAndIdx);
+                    String ccPostFix = patternPieces[0].substring(ccPostFixIdx, ccAndEndIdx); //|token_no
+                    processedPattern = before + " " + patternPieces[1] + " " + "CC" + ccPostFix + " " + after + " " + patternPieces[1];
+                }
+            } else {
+                patternPieces[0] = inputPattern.substring(0, index1 - 1);
+                patternPieces[1] = inputPattern.substring(index1 + 1, index2);
+                if (patternPieces[1].contains("CC_and")) {
+                    int ccAndIdx = patternPieces[1].indexOf("CC_and");
+                    String before = patternPieces[1].substring(0, ccAndIdx);
+                    int ccAndEndIdx = patternPieces[1].indexOf(" ", ccAndIdx);
+                    String after = patternPieces[1].substring(ccAndEndIdx);
+                    int ccPostFixIdx = patternPieces[1].indexOf("|", ccAndIdx);
+                    String ccPostFix = patternPieces[1].substring(ccPostFixIdx, ccAndEndIdx); //|token_no
+                    processedPattern = patternPieces[0] + " " + before + "CC" + ccPostFix + " " + patternPieces[0] + " " + after;
+                }
+            }
+        } else {
+            String[] tokens = inputPattern.split(" ");
+            for (int i = 0; i < tokens.length; i++) {
+                if (tokens[i].startsWith("CC_and") || tokens[i].startsWith("CC_,")) {
+                    tokens[i] = "CC" + tokens[i].substring(tokens[i].indexOf("|"));
+                }
+                if (tokens[i].startsWith("CC_or")) {
+                    //or = true;
+                    tokens[i] = "CC" + tokens[i].substring(tokens[i].indexOf("|"));
+                }
+                if (i != 0) {
+                    processedPattern = processedPattern + " " + tokens[i];
+                } else {
+                    processedPattern = tokens[0];
+                }
+            }
+        }
+
+        return processedPattern;
+    }
+
+    //prepares initial pattern for parsing, which looks like
+    //NN|0 NN|1 CC_and|2 NN|3
+    //NN|0 ( NN|1 CC_and|2 NN|3 )
+    //( NN|1 CC_and|2 NN|3 ) NN|4
+    private String preparePattern(ISentence sentence) throws PipelineComponentException {
+        StringBuilder result = new StringBuilder("");
+        List<IToken> nlTokens = sentence.getTokens();
+        for (int i = 0; i < nlTokens.size(); i++) {
+            IToken nlToken = nlTokens.get(i);
+            String tokenLabel = nlToken.getText();
+            String posTag = nlToken.getPOSTag();
+            //if there are brackets in the input label (but they should not be there!)
+            //we pass them down...
+            if ("(".equals(tokenLabel) || ")".equals(tokenLabel)) {
+                result.append(tokenLabel);
+            } else {
+                if (null != posTag && (posTag.length() > 0)) {
+                    result.append(posTag);
+                    final String lowerCasedToken = tokenLabel.toLowerCase();
+                    if (NLPToolsConstants.COORDINATING_CON.equals(posTag) && (",".equals(tokenLabel) || "and".equals(lowerCasedToken) || "or".equals(lowerCasedToken))) {//CC
+                        result.append("_").append(lowerCasedToken);
+                    }
+                    result.append("|").append(Integer.toString(i)).append(" ");
+                } else {
+                    if (log.isEnabledFor(Level.ERROR)) {
+                        log.error("Empty POS tag for token " + tokenLabel);
+                    }
+                    throw new PipelineComponentException("Empty POS tag for token " + tokenLabel);
+                }
+            }
+        }
+        return result.toString();
+    }
+
+    private String getTokenIndex(String image) {
+        if (image.contains("|")) {
+            return image.split("\\|")[1];
+        } else {
+            return "";
+        }
+    }
+}
+PARSER_END(DMOZBNFParser)
+
+SKIP :
+{
+" "
+| "\t"
+| "\n"
+| "\r"
+| "/"
+| "\r\n"
+}
+
+//I added token indexes to track tokens to create real formula
+TOKEN :
+{
+  < INDEX_SEPARATOR: "|">
+| < INDEX: (["0"-"9"])+ >
+| < NN: "NN"<INDEX_SEPARATOR><INDEX> >
+| < NNS: "NNS"<INDEX_SEPARATOR><INDEX> >
+| < VBG: "VBG"<INDEX_SEPARATOR><INDEX> >
+| < JJ: "JJ"<INDEX_SEPARATOR><INDEX> >
+| < VBN: "VBN"<INDEX_SEPARATOR><INDEX> >
+| < CC: "CC"<INDEX_SEPARATOR><INDEX> >
+| < COMMA: ","<INDEX_SEPARATOR><INDEX> >
+| < IN: "IN"<INDEX_SEPARATOR><INDEX> >
+}
+
+String NL_Label() :
+{String label="",b,d,c="";}
+{
+   c=Phrase(){label=c;}
+  (
+	b=Conn()(c=Conn())?d=Phrase(){label=label+" "+b+" "+d;}
+  )* <EOF>
+  {return label;}
+}
+
+String Phrase() :
+{String a="",b="",c="";}
+{
+   a=Adjectives()(b=NounPhrase(){{c=" & ";}})?{a=a+c+b;}{return a;}
+    |
+   a=NounPhrase()
+   {return a;}
+}
+
+String Adjectives() :
+{String a="",b;}
+{
+	b=Adjective(){a=b;}
+    (b=Adjective(){a=a+" & "+b;})*
+    {return a;}
+}
+
+
+String NounPhrase() :
+{String a="",b;}
+{
+	b=Noun(){a=b;}
+    (b=Noun(){a=a+" & "+b;})*
+    {return a;}
+}
+
+String Conn() :
+{String a,b;}
+{
+   a=ConjunctionConn(){return a;}
+    |
+   a=PrepositionConn()
+   {return a;}
+}
+
+String Noun() :
+{Token t;}
+{
+    t = <NN>  {return getTokenIndex(t.image);}
+  | t = <NNS> {return getTokenIndex(t.image);}
+  | t = <VBG> {return getTokenIndex(t.image);}
+}
+
+String Adjective() :
+{Token t;}
+{
+    t = <JJ> {return getTokenIndex(t.image);}
+  | t = <VBN> {return getTokenIndex(t.image);}
+  }
+String ConjunctionConn() :
+{String a;}
+{
+    <CC> {a=" | ";}{return a;}
+  | <COMMA> {a=" | ";}{return a;}
+}
+
+String PrepositionConn() :
+{String a;}
+{
+  <IN> {a=" & ";}
+  {return a;}
+}

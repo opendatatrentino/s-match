@@ -1,10 +1,10 @@
 package it.unitn.disi.smatch.matchers.element.gloss;
 
-import it.unitn.disi.smatch.components.Configurable;
-import it.unitn.disi.smatch.components.ConfigurableException;
+import it.unitn.disi.common.components.Configurable;
+import it.unitn.disi.common.components.ConfigurableException;
+import it.unitn.disi.smatch.data.ling.ISense;
 import it.unitn.disi.smatch.data.mappings.IMappingElement;
 import it.unitn.disi.smatch.matchers.element.ISenseGlossBasedElementLevelSemanticMatcher;
-import it.unitn.disi.smatch.oracles.ISynset;
 
 import java.util.Properties;
 import java.util.StringTokenizer;
@@ -52,7 +52,7 @@ public class WNGlossComparison extends Configurable implements ISenseGlossBasedE
      * @param target gloss of target
      * @return synonym or IDK relation
      */
-    public char match(ISynset source, ISynset target) {
+    public char match(ISense source, ISense target) {
         String sSynset = source.getGloss();
         String tSynset = target.getGloss();
         StringTokenizer stSource = new StringTokenizer(sSynset, " ,.\"'();");
@@ -61,10 +61,10 @@ public class WNGlossComparison extends Configurable implements ISenseGlossBasedE
         while (stSource.hasMoreTokens()) {
             StringTokenizer stTarget = new StringTokenizer(tSynset, " ,.\"'();");
             lemmaS = stSource.nextToken();
-            if (meaninglessWords.indexOf(lemmaS) == -1)
+            if (!meaninglessWords.contains(lemmaS))
                 while (stTarget.hasMoreTokens()) {
                     lemmaT = stTarget.nextToken();
-                    if (meaninglessWords.indexOf(lemmaT) == -1)
+                    if (!meaninglessWords.contains(lemmaT))
                         if (lemmaS.equals(lemmaT))
                             counter++;
                 }

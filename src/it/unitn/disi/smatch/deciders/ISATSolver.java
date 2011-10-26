@@ -1,6 +1,6 @@
 package it.unitn.disi.smatch.deciders;
 
-import it.unitn.disi.smatch.components.IConfigurable;
+import it.unitn.disi.common.components.IConfigurable;
 
 /**
  * Each SAT solver needs to implement only one method,

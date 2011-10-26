@@ -1,7 +1,7 @@
 package it.unitn.disi.smatch.data.mappings;
 
-import it.unitn.disi.smatch.components.Configurable;
-import it.unitn.disi.smatch.components.ConfigurableException;
+import it.unitn.disi.common.components.Configurable;
+import it.unitn.disi.common.components.ConfigurableException;
 import it.unitn.disi.smatch.data.ling.IAtomicConceptOfLabel;
 import it.unitn.disi.smatch.data.matrices.IIndexedObject;
 import it.unitn.disi.smatch.data.matrices.IMatchMatrix;

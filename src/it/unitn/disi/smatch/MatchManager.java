@@ -1,8 +1,8 @@
 package it.unitn.disi.smatch;
 
 import it.unitn.disi.smatch.classifiers.IContextClassifier;
-import it.unitn.disi.smatch.components.Configurable;
-import it.unitn.disi.smatch.components.ConfigurableException;
+import it.unitn.disi.common.components.Configurable;
+import it.unitn.disi.common.components.ConfigurableException;
 import it.unitn.disi.smatch.data.ling.IAtomicConceptOfLabel;
 import it.unitn.disi.smatch.data.mappings.IContextMapping;
 import it.unitn.disi.smatch.data.mappings.IMappingFactory;
@@ -17,11 +17,11 @@ import it.unitn.disi.smatch.matchers.structure.tree.ITreeMatcher;
 import it.unitn.disi.smatch.oracles.ILinguisticOracle;
 import it.unitn.disi.smatch.oracles.ISenseMatcher;
 import it.unitn.disi.smatch.oracles.wordnet.InMemoryWordNetBinaryArray;
-import it.unitn.disi.smatch.preprocessors.DefaultContextPreprocessor;
+import it.unitn.disi.smatch.oracles.wordnet.WordNet;
 import it.unitn.disi.smatch.preprocessors.IContextPreprocessor;
 import it.unitn.disi.smatch.renderers.context.IContextRenderer;
 import it.unitn.disi.smatch.renderers.mapping.IMappingRenderer;
-import it.unitn.disi.smatch.utils.SMatchUtils;
+import it.unitn.disi.common.utils.MiscUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
@@ -40,7 +40,7 @@ import java.util.Properties;
 public class MatchManager extends Configurable implements IMatchManager {
 
     static {
-        SMatchUtils.configureLog4J();
+        MiscUtils.configureLog4J();
     }
 
     private static final Logger log = Logger.getLogger(MatchManager.class);
@@ -350,7 +350,7 @@ public class MatchManager extends Configurable implements IMatchManager {
      */
     private void convertWordNetToFlat(Properties properties) throws SMatchException {
         InMemoryWordNetBinaryArray.createWordNetCaches(GLOBAL_PREFIX + SENSE_MATCHER_KEY, properties);
-        DefaultContextPreprocessor.createWordNetCaches(CONTEXT_PREPROCESSOR_KEY, properties);
+        WordNet.createWordNetCaches(CONTEXT_PREPROCESSOR_KEY, properties);
     }
 
     /**

@@ -1,10 +1,10 @@
 package it.unitn.disi.smatch.matchers.element.gloss;
 
-import it.unitn.disi.smatch.components.ConfigurableException;
+import it.unitn.disi.common.components.ConfigurableException;
+import it.unitn.disi.smatch.data.ling.ISense;
 import it.unitn.disi.smatch.data.mappings.IMappingElement;
 import it.unitn.disi.smatch.matchers.element.ISenseGlossBasedElementLevelSemanticMatcher;
 import it.unitn.disi.smatch.matchers.element.MatcherLibraryException;
-import it.unitn.disi.smatch.oracles.ISynset;
 
 import java.util.Properties;
 import java.util.StringTokenizer;
@@ -43,7 +43,7 @@ public class WNSemanticGlossComparison extends BasicGlossMatcher implements ISen
      * @param target the gloss of target
      * @return less general, more general, equal, opposite or IDK relation
      */
-    public char match(ISynset source, ISynset target) throws MatcherLibraryException {
+    public char match(ISense source, ISense target) throws MatcherLibraryException {
         int Equals = 0;
         int moreGeneral = 0;
         int lessGeneral = 0;
@@ -55,10 +55,10 @@ public class WNSemanticGlossComparison extends BasicGlossMatcher implements ISen
         while (stSource.hasMoreTokens()) {
             StringTokenizer stTarget = new StringTokenizer(tSynset, " ,.\"'()");
             lemmaS = stSource.nextToken();
-            if (meaninglessWords.indexOf(lemmaS) == -1)
+            if (!meaninglessWords.contains(lemmaS))
                 while (stTarget.hasMoreTokens()) {
                     lemmaT = stTarget.nextToken();
-                    if (meaninglessWords.indexOf(lemmaT) == -1) {
+                    if (!meaninglessWords.contains(lemmaT)) {
                         if (isWordLessGeneral(lemmaS, lemmaT))
                             lessGeneral++;
                         else if (isWordMoreGeneral(lemmaS, lemmaT))

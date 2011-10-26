@@ -1,6 +1,6 @@
-package it.unitn.disi.smatch.components;
+package it.unitn.disi.common.components;
 
-import it.unitn.disi.smatch.utils.ClassFactory;
+import it.unitn.disi.common.utils.ClassFactory;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 

@@ -1,9 +1,9 @@
 package it.unitn.disi.smatch.matchers.element;
 
-import it.unitn.disi.smatch.components.Configurable;
-import it.unitn.disi.smatch.components.ConfigurableException;
+import it.unitn.disi.common.components.Configurable;
+import it.unitn.disi.common.components.ConfigurableException;
+import it.unitn.disi.smatch.data.ling.ISense;
 import it.unitn.disi.smatch.data.mappings.IMappingElement;
-import it.unitn.disi.smatch.oracles.ISynset;
 import it.unitn.disi.smatch.oracles.LinguisticOracleException;
 import org.apache.log4j.Logger;
 
@@ -47,9 +47,9 @@ public class WNHierarchy extends Configurable implements ISenseGlossBasedElement
      * @param target gloss of target label
      * @return synonym or IDk relation
      */
-    public char match(ISynset source, ISynset target) throws MatcherLibraryException {
-        List<ISynset> sourceList = getAncestors(source, depth);
-        List<ISynset> targetList = getAncestors(target, depth);
+    public char match(ISense source, ISense target) throws MatcherLibraryException {
+        List<ISense> sourceList = getAncestors(source, depth);
+        List<ISense> targetList = getAncestors(target, depth);
         targetList.retainAll(sourceList);
         if (targetList.size() > 0)
             return IMappingElement.EQUIVALENCE;
@@ -57,7 +57,7 @@ public class WNHierarchy extends Configurable implements ISenseGlossBasedElement
             return IMappingElement.IDK;
     }
 
-    private List<ISynset> getAncestors(ISynset node, int depth) throws MatcherLibraryException {
+    private List<ISense> getAncestors(ISense node, int depth) throws MatcherLibraryException {
         try {
             return node.getParents(depth);
         } catch (LinguisticOracleException e) {

@@ -1,7 +1,7 @@
 package it.unitn.disi.smatch.matchers.element;
 
-import it.unitn.disi.smatch.components.IConfigurable;
-import it.unitn.disi.smatch.oracles.ISynset;
+import it.unitn.disi.common.components.IConfigurable;
+import it.unitn.disi.smatch.data.ling.ISense;
 
 /**
  * An interface for sense and gloss based element level matchers.
@@ -19,5 +19,5 @@ public interface ISenseGlossBasedElementLevelSemanticMatcher extends IConfigurab
      * @return a relation between source and target synsets
      * @throws MatcherLibraryException MatcherLibraryException
      */
-    char match(ISynset source, ISynset target) throws MatcherLibraryException;
+    char match(ISense source, ISense target) throws MatcherLibraryException;
 }
