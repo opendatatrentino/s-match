@@ -1,1 +1,1 @@
-default models from OpenNLP 1.5.2
+default models from OpenNLP 1.5.1
