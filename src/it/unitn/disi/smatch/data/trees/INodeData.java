@@ -11,21 +11,7 @@ import java.util.List;
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
  * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  */
-public interface INodeData {
-
-    /**
-     * Returns the node name, that is a natural language label associated with it.
-     *
-     * @return the node name
-     */
-    String getName();
-
-    /**
-     * Sets the node name.
-     *
-     * @param newName new node name
-     */
-    void setName(String newName);
+public interface INodeData extends IBaseNodeData {
 
     /**
      * Returns the concept of a label formula. Concept of a label is a logical representation of the
@@ -56,20 +42,6 @@ public interface INodeData {
      * @param cNodeFormula the concept at node formula
      */
     void setcNodeFormula(String cNodeFormula);
-
-    /**
-     * Returns the id of the node. The id of the node should be unique within a context.
-     *
-     * @return the id of the node
-     */
-    String getId();
-
-    /**
-     * Sets the id of the node.
-     *
-     * @param newId the new id of the node
-     */
-    void setId(String newId);
 
     /**
      * Indicates whether this node belongs to the source context.
@@ -159,10 +131,6 @@ public interface INodeData {
      * @param acol acol to remove
      */
     void removeACoL(IAtomicConceptOfLabel acol);
-
-    Object getUserObject();
-
-    void setUserObject(Object newObject);
 
     /**
      * Returns whether the node has been preprocessed.

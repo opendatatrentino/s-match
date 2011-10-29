@@ -9,6 +9,9 @@ public abstract class TextSpan {
 
     protected String text;
 
+    protected TextSpan() {
+    }
+
     protected TextSpan(String text) {
         this.text = text;
     }

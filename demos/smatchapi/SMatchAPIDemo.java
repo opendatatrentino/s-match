@@ -44,10 +44,10 @@ public class SMatchAPIDemo {
         mm.setProperties(config);
 
         System.out.println("Loading source context...");
-        IContext s = mm.loadContext("../test-data/cw/c.txt");
+        IContext s = (IContext) mm.loadContext("../test-data/cw/c.txt");
 
         System.out.println("Loading target context...");
-        IContext t = mm.loadContext("../test-data/cw/w.txt");
+        IContext t = (IContext) mm.loadContext("../test-data/cw/w.txt");
 
         config.load(new FileInputStream(CONFIG_FILE_PREFIX + "s-match.properties"));
         System.out.println("Configuring MatchManager from " + CONFIG_FILE_PREFIX + "s-match.properties" + "...");

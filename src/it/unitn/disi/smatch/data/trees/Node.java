@@ -2,12 +2,11 @@ package it.unitn.disi.smatch.data.trees;
 
 import it.unitn.disi.smatch.data.ling.AtomicConceptOfLabel;
 import it.unitn.disi.smatch.data.ling.IAtomicConceptOfLabel;
-import it.unitn.disi.smatch.data.matrices.IndexedObject;
 
-import javax.swing.event.EventListenerList;
-import javax.swing.tree.MutableTreeNode;
-import javax.swing.tree.TreeNode;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * This class represents a node in the hierarchy. It contains logical (cNode and cLab formulas),
@@ -17,147 +16,23 @@ import java.util.*;
  *
  * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  */
-public class Node extends IndexedObject implements INode, INodeData {
+public class Node extends BaseNode<INode, INodeData> implements INode, INodeData {
 
-    protected INode parent;
-    protected ArrayList<INode> children;
-    protected ArrayList<INode> ancestors;
-    protected int ancestorCount;
-    protected ArrayList<INode> descendants;
-    protected int descendantCount;
     protected boolean isPreprocessed;
 
-    protected EventListenerList listenerList;
-
-    // id is needed to store cNodeFormulas correctly.
-    // cNodeFormula is made of cLabFormulas, each of which refers to tokens and tokens should have unique id
-    // within a context. This is achieved by using node id + token id for each token 
-    protected String id;
-    protected String name;
     protected String cLabFormula;
     protected String cNodeFormula;
     // might be better implemented for a whole context via BitSet
     protected boolean source;
-    protected Object userObject;
     protected String provenance;
 
     protected ArrayList<IAtomicConceptOfLabel> acols;
 
-    // node counter to set unique node id during creation
-    protected static long countNode = 0;
-
-    // iterator which iterates over all parent nodes
-
-    private static final class Ancestors implements Iterator<INode> {
-        private INode current;
-
-        public Ancestors(INode start) {
-            if (null == start) {
-                throw new IllegalArgumentException("argument is null");
-            }
-            this.current = start;
-        }
-
-        public boolean hasNext() {
-            return current.hasParent();
-        }
-
-        public INode next() {
-            current = current.getParent();
-            return current;
-        }
-
-        public void remove() {
-            throw new UnsupportedOperationException();
-        }
-    }
-
-    // start with a start node and then iterates over nodes from iterator i
-
-    static final class StartIterator implements Iterator<INode> {
-        private INode start;
-        private Iterator<INode> i;
-
-        public StartIterator(INode start, Iterator<INode> i) {
-            if (null == start) {
-                throw new IllegalArgumentException("argument is null");
-            }
-            this.start = start;
-            this.i = i;
-        }
-
-        public boolean hasNext() {
-            return (null != start || i.hasNext());
-        }
-
-        public INode next() {
-            INode result = start;
-            if (null != start) {
-                start = null;
-            } else {
-                result = i.next();
-            }
-            return result;
-        }
-
-        public void remove() {
-            throw new UnsupportedOperationException();
-        }
-    }
-
-    static final class BreadthFirstSearch implements Iterator<INode> {
-        private Deque<INode> queue;
-
-        public BreadthFirstSearch(INode start) {
-            if (null == start) {
-                throw new IllegalArgumentException("argument is null");
-            }
-            queue = new ArrayDeque<INode>();
-            queue.addFirst(start);
-            next();
-        }
-
-        public boolean hasNext() {
-            return !queue.isEmpty();
-        }
-
-        public INode next() {
-            INode current = queue.removeFirst();
-            for (Iterator<INode> i = current.getChildren(); i.hasNext();) {
-                queue.add(i.next());
-            }
-            return current;
-        }
-
-        public void remove() {
-            throw new UnsupportedOperationException();
-        }
-    }
-
-    public static final Comparator<INode> NODE_NAME_COMPARATOR = new Comparator<INode>() {
-        public int compare(INode e1, INode e2) {
-            return e1.getNodeData().getName().compareTo(e2.getNodeData().getName());
-        }
-    };
-
     public Node() {
-        parent = null;
-        children = null;
-        ancestors = null;
-        ancestorCount = -1;
-        descendants = null;
-        descendantCount = -1;
+        super();
         isPreprocessed = false;
-        listenerList = null;
 
         source = false;
-        // need to set node id to keep track of acols in c@node formulas
-        // synchronized to make counts unique within JVM and decrease the chance of creating the same id
-        synchronized (Node.class) {
-            id = "n" + countNode + "_" + ((System.currentTimeMillis() / 1000) % (365 * 24 * 3600));
-            countNode++;
-        }
-        name = "";
         cLabFormula = "";
         cNodeFormula = "";
         acols = null;
@@ -171,247 +46,9 @@ public class Node extends IndexedObject implements INode, INodeData {
      * @param name the name of the node
      */
     public Node(String name) {
-        this();
-        this.name = name;
+        super(name);
     }
 
-    public INode getChildAt(int index) {
-        if (children == null) {
-            throw new ArrayIndexOutOfBoundsException("node has no children");
-        }
-        return children.get(index);
-    }
-
-    public int getChildCount() {
-        if (children == null) {
-            return 0;
-        } else {
-            return children.size();
-        }
-    }
-
-    public int getChildIndex(INode child) {
-        if (null == child) {
-            throw new IllegalArgumentException("argument is null");
-        }
-
-        if (!isNodeChild(child)) {
-            return -1;
-        }
-        return children.indexOf(child);
-    }
-
-    public Iterator<INode> getChildren() {
-        if (null == children) {
-            return Collections.<INode>emptyList().iterator();
-        } else {
-            return children.iterator();
-        }
-    }
-
-    public List<INode> getChildrenList() {
-        if (null != children) {
-            return Collections.unmodifiableList(children);
-        } else {
-            return Collections.emptyList();
-        }
-    }
-
-    public INode createChild() {
-        INode child = new Node();
-        addChild(child);
-        return child;
-    }
-
-    public INode createChild(String name) {
-        INode child = new Node(name);
-        addChild(child);
-        return child;
-    }
-
-    public void addChild(INode child) {
-        addChild(getChildCount(), child);
-    }
-
-    public void addChild(int index, INode child) {
-        if (null == child) {
-            throw new IllegalArgumentException("new child is null");
-        } else if (isNodeAncestor(child)) {
-            throw new IllegalArgumentException("new child is an ancestor");
-        }
-
-        INode oldParent = child.getParent();
-
-        if (null != oldParent) {
-            oldParent.removeChild(child);
-        }
-
-        child.setParent(this);
-        if (null == children) {
-            children = new ArrayList<INode>();
-        }
-        children.add(index, child);
-        fireTreeStructureChanged(this);
-    }
-
-    public void removeChild(int index) {
-        INode child = getChildAt(index);
-        children.remove(index);
-        fireTreeStructureChanged(this);
-        child.setParent(null);
-    }
-
-    public void removeChild(INode child) {
-        if (null == child) {
-            throw new IllegalArgumentException("argument is null");
-        }
-
-        if (isNodeChild(child)) {
-            removeChild(getChildIndex(child));
-        }
-    }
-
-    public INode getParent() {
-        return parent;
-    }
-
-    public void setParent(INode newParent) {
-        removeFromParent();
-        parent = newParent;
-    }
-
-    public boolean hasParent() {
-        return null != parent;
-    }
-
-    public void removeFromParent() {
-        if (null != parent) {
-            parent.removeChild(this);
-            parent = null;
-        }
-    }
-
-    public boolean isLeaf() {
-        return 0 == getChildCount();
-    }
-
-    public int getAncestorCount() {
-        if (-1 == ancestorCount) {
-            if (null == ancestors) {
-                ancestorCount = 0;
-                if (null != parent) {
-                    ancestorCount = parent.getAncestorCount() + 1;
-                }
-            } else {
-                ancestorCount = ancestors.size();
-            }
-        }
-        return ancestorCount;
-    }
-
-    public Iterator<INode> getAncestors() {
-        return new Ancestors(this);
-    }
-
-    public List<INode> getAncestorsList() {
-        if (null == ancestors) {
-            ancestors = new ArrayList<INode>(getAncestorCount());
-            if (null != parent) {
-                ancestors.add(parent);
-                ancestors.addAll(parent.getAncestorsList());
-            }
-        }
-        return Collections.unmodifiableList(ancestors);
-    }
-
-    public int getLevel() {
-        return getAncestorCount();
-    }
-
-    public int getDescendantCount() {
-        if (-1 == descendantCount) {
-            if (null == descendants) {
-                descendantCount = 0;
-                for (Iterator<INode> i = getDescendants(); i.hasNext();) {
-                    i.next();
-                    descendantCount++;
-                }
-            } else {
-                descendantCount = descendants.size();
-            }
-        }
-        return descendantCount;
-    }
-
-    public Iterator<INode> getDescendants() {
-        return new BreadthFirstSearch(this);
-    }
-
-    public List<INode> getDescendantsList() {
-        if (null == descendants) {
-            descendants = new ArrayList<INode>(getChildCount());
-            if (null != children) {
-                descendants.addAll(children);
-                for (INode child : children) {
-                    descendants.addAll(child.getDescendantsList());
-                }
-                descendants.trimToSize();
-            }
-        }
-        return Collections.unmodifiableList(descendants);
-    }
-
-    public Iterator<INode> getSubtree() {
-        return new StartIterator(this, getDescendants());
-    }
-
-    public INodeData getNodeData() {
-        return this;
-    }
-
-    private boolean isNodeAncestor(INode anotherNode) {
-        if (null == anotherNode) {
-            return false;
-        }
-
-        INode ancestor = this;
-
-        do {
-            if (ancestor == anotherNode) {
-                return true;
-            }
-        } while ((ancestor = ancestor.getParent()) != null);
-
-        return false;
-    }
-
-    private boolean isNodeChild(INode node) {
-        if (null == node) {
-            return false;
-        } else {
-            if (getChildCount() == 0) {
-                return false;
-            } else {
-                return (node.getParent() == this && -1 < children.indexOf(node));
-            }
-        }
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String newName) {
-        name = newName;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String newId) {
-        id = newId;
-    }
 
     public String getcLabFormula() {
         return cLabFormula;
@@ -503,10 +140,6 @@ public class Node extends IndexedObject implements INode, INodeData {
         acols.remove(acol);
     }
 
-    public void setUserObject(Object object) {
-        userObject = object;
-    }
-
     public boolean getIsPreprocessed() {
         return isPreprocessed;
     }
@@ -520,9 +153,11 @@ public class Node extends IndexedObject implements INode, INodeData {
         if (result) {
             if (null != children) {
                 for (INode child : children) {
-                    result = result && child.getNodeData().isSubtreePreprocessed();
-                    if (!result) {
-                        break;
+                    if (child instanceof INode) {
+                        result = result && ((INode) child).getNodeData().isSubtreePreprocessed();
+                        if (!result) {
+                            break;
+                        }
                     }
                 }
             }
@@ -538,51 +173,18 @@ public class Node extends IndexedObject implements INode, INodeData {
         this.provenance = provenance;
     }
 
-    public Object getUserObject() {
-        return userObject;
+    @Override
+    public INode createChild() {
+        INode child = new Node();
+        addChild(child);
+        return child;
     }
 
-
-    public String toString() {
-        return name;
-    }
-
-    public int getIndex(TreeNode node) {
-        if (node instanceof INode) {
-            return getChildIndex((INode) node);
-        } else {
-            return -1;
-        }
-    }
-
-    public boolean getAllowsChildren() {
-        return true;
-    }
-
-    public Enumeration children() {
-        return Collections.enumeration(children);
-    }
-
-    public void insert(MutableTreeNode child, int index) {
-        if (child instanceof INode) {
-            addChild(index, (INode) child);
-        }
-    }
-
-    public void remove(int index) {
-        removeChild(index);
-    }
-
-    public void remove(MutableTreeNode node) {
-        if (node instanceof INode) {
-            removeChild((INode) node);
-        }
-    }
-
-    public void setParent(MutableTreeNode newParent) {
-        if (newParent instanceof INode) {
-            setParent((Node) newParent);
-        }
+    @Override
+    public INode createChild(String name) {
+        INode child = new Node(name);
+        addChild(child);
+        return child;
     }
 
     public void trim() {
@@ -596,41 +198,9 @@ public class Node extends IndexedObject implements INode, INodeData {
         }
         if (null != children) {
             children.trimToSize();
-            for (INode child : children) {
+            for (IBaseNode child : children) {
                 ((Node) child).trim();
             }
-        }
-    }
-
-    public void addTreeStructureChangedListener(ITreeStructureChangedListener l) {
-        if (null == listenerList) {
-            listenerList = new EventListenerList();
-        }
-        listenerList.add(ITreeStructureChangedListener.class, l);
-    }
-
-    public void removeTreeStructureChangedListener(ITreeStructureChangedListener l) {
-        if (null != listenerList) {
-            listenerList.remove(ITreeStructureChangedListener.class, l);
-        }
-    }
-
-    public void fireTreeStructureChanged(INode node) {
-        descendants = null;
-        if (null != listenerList) {
-            // Guaranteed to return a non-null array
-            Object[] listeners = listenerList.getListenerList();
-            // Process the listeners last to first, notifying
-            // those that are interested in this event
-            for (int i = listeners.length - 2; i >= 0; i -= 2) {
-                if (listeners[i] == ITreeStructureChangedListener.class) {
-                    // Lazily create the event:
-                    ((ITreeStructureChangedListener) listeners[i + 1]).treeStructureChanged(node);
-                }
-            }
-        }
-        if (null != parent) {
-            parent.fireTreeStructureChanged(node);
         }
     }
 }

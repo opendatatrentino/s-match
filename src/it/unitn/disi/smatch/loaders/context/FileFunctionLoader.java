@@ -13,7 +13,7 @@ import java.io.IOException;
  *
  * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  */
-public class FileFunctionLoader extends BaseFileContextLoader implements IContextLoader {
+public class FileFunctionLoader extends BaseFileContextLoader<IContext> implements IContextLoader {
 
     protected IContext process(BufferedReader input) throws IOException {
         final String function = input.readLine();

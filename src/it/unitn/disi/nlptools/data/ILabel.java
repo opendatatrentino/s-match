@@ -3,19 +3,19 @@ package it.unitn.disi.nlptools.data;
 import java.util.List;
 
 /**
- * An interface for a short sentence.
+ * An interface for a short labels.
  *
  * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  */
-public interface ISentence extends ITextSpan {
+public interface ILabel extends ITextSpan {
 
     String getText();
 
     void setText(String text);
 
-    List<ISentence> getContext();
+    List<ILabel> getContext();
 
-    void setContext(List<ISentence> context);
+    void setContext(List<ILabel> context);
 
     List<IToken> getTokens();
 

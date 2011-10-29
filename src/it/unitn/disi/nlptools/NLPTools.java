@@ -2,26 +2,17 @@ package it.unitn.disi.nlptools;
 
 import it.unitn.disi.common.components.Configurable;
 import it.unitn.disi.common.components.ConfigurableException;
-import it.unitn.disi.common.utils.MiscUtils;
-import org.apache.log4j.Logger;
 
 import java.io.File;
 import java.util.Properties;
 
 /**
- * Provides processing of short sentences.
+ * Provides processing of short labels.
  *
  * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  */
 public class NLPTools extends Configurable implements INLPTools {
 
-    static {
-        MiscUtils.configureLog4J();
-    }
-
-    /**
-     * configuration file
-     */
     public static final String DEFAULT_CONFIG_FILE_NAME = ".." + File.separator + "conf" + File.separator + "nlptools.properties";
 
     public static final String PIPELINE_CLASS_KEY = "NLPPipeline";

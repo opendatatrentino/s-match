@@ -1,7 +1,7 @@
 package it.unitn.disi.nlptools.components.tokenizers;
 
 import it.unitn.disi.common.components.ConfigurableException;
-import it.unitn.disi.nlptools.data.ISentence;
+import it.unitn.disi.nlptools.data.ILabel;
 import it.unitn.disi.nlptools.data.IToken;
 import it.unitn.disi.nlptools.data.Token;
 import it.unitn.disi.nlptools.pipelines.PipelineComponent;
@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Properties;
 
 /**
- * Tokenizes the sentence using OpenNLP tokenizer.
+ * Tokenizes the label using OpenNLP tokenizer.
  *
  * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  */
@@ -32,13 +32,13 @@ public class OpenNLPTokenizer extends PipelineComponent {
 
     private Tokenizer tokenizer;
 
-    public void process(ISentence sentence) {
-        String tokens[] = tokenizer.tokenize(sentence.getText());
+    public void process(ILabel label) {
+        String tokens[] = tokenizer.tokenize(label.getText());
         List<IToken> tokenList = new ArrayList<IToken>(tokens.length);
         for (String token : tokens) {
             tokenList.add(new Token(token));
         }
-        sentence.setTokens(tokenList);
+        label.setTokens(tokenList);
     }
 
     @Override

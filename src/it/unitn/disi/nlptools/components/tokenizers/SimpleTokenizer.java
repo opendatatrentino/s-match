@@ -2,7 +2,7 @@ package it.unitn.disi.nlptools.components.tokenizers;
 
 import it.unitn.disi.common.components.ConfigurableException;
 import it.unitn.disi.nlptools.NLPToolsConstants;
-import it.unitn.disi.nlptools.data.ISentence;
+import it.unitn.disi.nlptools.data.ILabel;
 import it.unitn.disi.nlptools.data.IToken;
 import it.unitn.disi.nlptools.data.Token;
 import it.unitn.disi.nlptools.pipelines.PipelineComponent;
@@ -28,13 +28,13 @@ public class SimpleTokenizer extends PipelineComponent {
     private static final String DELIMITERS_KEY = "delimiters";
     private String delimiters = NLPToolsConstants.DELIMITERS_EXCLUDING_BRACKETS;
 
-    public void process(ISentence sentence) {
-        String[] tokens = tokenPattern.split(sentence.getText());
+    public void process(ILabel label) {
+        String[] tokens = tokenPattern.split(label.getText());
         List<IToken> tokenList = new ArrayList<IToken>(tokens.length);
         for (String token : tokens) {
             tokenList.add(new Token(token));
         }
-        sentence.setTokens(tokenList);
+        label.setTokens(tokenList);
     }
 
     @Override

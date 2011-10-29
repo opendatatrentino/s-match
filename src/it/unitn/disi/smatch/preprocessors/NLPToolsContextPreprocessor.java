@@ -5,9 +5,9 @@ import it.unitn.disi.common.components.ConfigurableException;
 import it.unitn.disi.nlptools.INLPPipeline;
 import it.unitn.disi.nlptools.INLPTools;
 import it.unitn.disi.nlptools.components.PipelineComponentException;
-import it.unitn.disi.nlptools.data.ISentence;
+import it.unitn.disi.nlptools.data.ILabel;
 import it.unitn.disi.nlptools.data.IToken;
-import it.unitn.disi.nlptools.data.Sentence;
+import it.unitn.disi.nlptools.data.Label;
 import it.unitn.disi.smatch.data.ling.IAtomicConceptOfLabel;
 import it.unitn.disi.smatch.data.ling.ISense;
 import it.unitn.disi.smatch.data.trees.IContext;
@@ -80,7 +80,7 @@ public class NLPToolsContextPreprocessor extends Configurable implements IContex
 
         ArrayList<INode> queue = new ArrayList<INode>();
         ArrayList<INode> pathToRoot = new ArrayList<INode>();
-        ArrayList<ISentence> pathToRootPhrases = new ArrayList<ISentence>();
+        ArrayList<ILabel> pathToRootPhrases = new ArrayList<ILabel>();
         queue.add(context.getRoot());
 
         while (!queue.isEmpty()) {
@@ -89,7 +89,7 @@ public class NLPToolsContextPreprocessor extends Configurable implements IContex
                 pathToRoot.remove(pathToRoot.size() - 1);
                 pathToRootPhrases.remove(pathToRootPhrases.size() - 1);
             } else {
-                ISentence currentPhrase;
+                ILabel currentPhrase;
                 currentPhrase = processNode(currentNode, pathToRootPhrases);
                 processedCount++;
 
@@ -118,7 +118,7 @@ public class NLPToolsContextPreprocessor extends Configurable implements IContex
      * @return phrase instance for a current node label
      * @throws ContextPreprocessorException ContextPreprocessorException
      */
-    private ISentence processNode(INode currentNode, ArrayList<ISentence> pathToRootPhrases) throws ContextPreprocessorException {
+    private ILabel processNode(INode currentNode, ArrayList<ILabel> pathToRootPhrases) throws ContextPreprocessorException {
         if (debugLabels) {
             log.debug("preprocessing node: " + currentNode.getNodeData().getId() + ", label: " + currentNode.getNodeData().getName());
         }
@@ -131,7 +131,7 @@ public class NLPToolsContextPreprocessor extends Configurable implements IContex
         }
 
         String label = currentNode.getNodeData().getName();
-        ISentence result = new Sentence(label);
+        ILabel result = new Label(label);
         result.setContext(pathToRootPhrases);
         try {
             pipeline.process(result);

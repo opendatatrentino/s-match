@@ -4,24 +4,30 @@ import java.util.Collections;
 import java.util.List;
 
 /**
+ * Default implementation of short label.
+ *
  * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  */
-public class Sentence extends TextSpan implements ISentence {
+public class Label extends TextSpan implements ILabel {
 
-    protected List<ISentence> context = Collections.<ISentence>emptyList();
-    protected List<IToken> tokens = Collections.<IToken>emptyList();
-    protected List<IMultiWord> multiWords = Collections.<IMultiWord>emptyList();
+    protected List<ILabel> context = Collections.emptyList();
+    protected List<IToken> tokens = Collections.emptyList();
+    protected List<IMultiWord> multiWords = Collections.emptyList();
     protected String formula;
 
-    public Sentence(String text) {
+    public Label() {
+        super();
+    }
+
+    public Label(String text) {
         super(text);
     }
 
-    public List<ISentence> getContext() {
+    public List<ILabel> getContext() {
         return context;
     }
 
-    public void setContext(List<ISentence> context) {
+    public void setContext(List<ILabel> context) {
         this.context = context;
     }
 

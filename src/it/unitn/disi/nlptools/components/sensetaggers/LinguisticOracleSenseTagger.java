@@ -2,7 +2,7 @@ package it.unitn.disi.nlptools.components.sensetaggers;
 
 import it.unitn.disi.common.components.ConfigurableException;
 import it.unitn.disi.nlptools.components.PipelineComponentException;
-import it.unitn.disi.nlptools.data.ISentence;
+import it.unitn.disi.nlptools.data.ILabel;
 import it.unitn.disi.nlptools.data.IToken;
 import it.unitn.disi.nlptools.pipelines.PipelineComponent;
 import it.unitn.disi.smatch.data.ling.ISense;
@@ -26,8 +26,8 @@ public class LinguisticOracleSenseTagger extends PipelineComponent {
     private static final String ORACLE_KEY = "oracle";
     private ILinguisticOracle oracle;
 
-    public void process(ISentence sentence) throws PipelineComponentException {
-        tagSenses(sentence.getTokens());
+    public void process(ILabel label) throws PipelineComponentException {
+        tagSenses(label.getTokens());
     }
 
     private void tagSenses(List<? extends IToken> tokens) throws PipelineComponentException {

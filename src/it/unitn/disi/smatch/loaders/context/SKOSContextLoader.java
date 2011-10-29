@@ -29,7 +29,7 @@ import java.util.*;
  *
  * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  */
-public class SKOSContextLoader extends BaseContextLoader implements IContextLoader {
+public class SKOSContextLoader extends BaseContextLoader<IContext> implements IContextLoader {
 
     private static final Logger log = Logger.getLogger(SKOSContextLoader.class);
 

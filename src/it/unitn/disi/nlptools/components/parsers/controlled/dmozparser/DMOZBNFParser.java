@@ -3,7 +3,7 @@ package it.unitn.disi.nlptools.components.parsers.controlled.dmozparser;
 
 import it.unitn.disi.nlptools.NLPToolsConstants;
 import it.unitn.disi.nlptools.components.PipelineComponentException;
-import it.unitn.disi.nlptools.data.ISentence;
+import it.unitn.disi.nlptools.data.ILabel;
 import it.unitn.disi.nlptools.data.IToken;
 import it.unitn.disi.nlptools.pipelines.PipelineComponent;
 import it.unitn.disi.nlptools.pipelines.IPipelineComponent;
@@ -34,20 +34,20 @@ public class DMOZBNFParser extends PipelineComponent implements IPipelineCompone
         parser = new DMOZBNFParser(new StringReader(""));
     }
 
-    public void process(ISentence sentence) throws PipelineComponentException {
-        String initialPattern = preparePattern(sentence);
+    public void process(ILabel label) throws PipelineComponentException {
+        String initialPattern = preparePattern(label);
         String inputPattern = processCCs(initialPattern);
         parser.ReInit(new StringReader(inputPattern));
         try {
-            sentence.setFormula(parser.NL_Label());
+            label.setFormula(parser.NL_Label());
         } catch (ParseException e) {
             if (log.isEnabledFor(Level.ERROR)) {
-                log.error("Cannot parse the label (" + sentence.getText() + ") with pattern (" + initialPattern + "): " + e.getMessage(), e);
+                log.error("Cannot parse the label (" + label.getText() + ") with pattern (" + initialPattern + "): " + e.getMessage(), e);
             }
             throw new PipelineComponentException(e.getMessage(), e);
         } catch (TokenMgrError e) {
             if (log.isEnabledFor(Level.ERROR)) {
-                log.error("Cannot parse the label (" + sentence.getText() + ") with pattern (" + initialPattern + "): " + e.getMessage());
+                log.error("Cannot parse the label (" + label.getText() + ") with pattern (" + initialPattern + "): " + e.getMessage());
             }
             throw new PipelineComponentException(e.getMessage(), e);
         }
@@ -121,9 +121,9 @@ public class DMOZBNFParser extends PipelineComponent implements IPipelineCompone
     //NN|0 NN|1 CC_and|2 NN|3
     //NN|0 ( NN|1 CC_and|2 NN|3 )
     //( NN|1 CC_and|2 NN|3 ) NN|4
-    private String preparePattern(ISentence sentence) throws PipelineComponentException {
+    private String preparePattern(ILabel label) throws PipelineComponentException {
         StringBuilder result = new StringBuilder("");
-        List<IToken> nlTokens = sentence.getTokens();
+        List<IToken> nlTokens = label.getTokens();
         for (int i = 0; i < nlTokens.size(); i++) {
             IToken nlToken = nlTokens.get(i);
             String tokenLabel = nlToken.getText();

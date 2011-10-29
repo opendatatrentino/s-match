@@ -1,9 +1,9 @@
 package it.unitn.disi.smatch.renderers.context;
 
-import it.unitn.disi.smatch.SMatchConstants;
 import it.unitn.disi.common.components.Configurable;
 import it.unitn.disi.common.components.ConfigurableException;
-import it.unitn.disi.smatch.data.trees.IContext;
+import it.unitn.disi.smatch.SMatchConstants;
+import it.unitn.disi.smatch.data.trees.IBaseContext;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
@@ -16,7 +16,7 @@ import java.util.Properties;
  *
  * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  */
-public abstract class BaseContextRenderer extends Configurable implements IContextRenderer {
+public abstract class BaseContextRenderer<E extends IBaseContext> extends Configurable implements IBaseContextRenderer<E> {
 
     private static final Logger log = Logger.getLogger(BaseContextRenderer.class);
 
@@ -38,7 +38,7 @@ public abstract class BaseContextRenderer extends Configurable implements IConte
         return result;
     }
 
-    public void render(IContext context, String fileName) throws ContextRendererException {
+    public void render(E context, String fileName) throws ContextRendererException {
         counter = 0;
         total = context.getNodesList().size();
         reportInt = (total / 20) + 1;//i.e. report every 5%
@@ -48,9 +48,9 @@ public abstract class BaseContextRenderer extends Configurable implements IConte
         reportStats(context);
     }
 
-    protected abstract void process(IContext context, String fileName) throws ContextRendererException;
+    protected abstract void process(E context, String fileName) throws ContextRendererException;
 
-    protected void reportStats(IContext context) {
+    protected void reportStats(E context) {
         if (log.isEnabledFor(Level.INFO)) {
             log.info("Rendered nodes: " + context.getNodesList().size());
         }

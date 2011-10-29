@@ -30,7 +30,7 @@ import java.util.*;
  *
  * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  */
-public class OWLContextRenderer extends BaseXMLContextRenderer {
+public class OWLContextRenderer extends BaseXMLContextRenderer<IContext> {
 
     private static final Logger log = Logger.getLogger(OWLContextRenderer.class);
 

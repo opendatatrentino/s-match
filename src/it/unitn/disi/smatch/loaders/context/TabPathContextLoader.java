@@ -15,7 +15,7 @@ import java.util.ArrayList;
  *
  * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  */
-public class TabPathContextLoader extends BaseFileContextLoader implements IContextLoader {
+public class TabPathContextLoader extends BaseFileContextLoader<IContext> implements IContextLoader {
 
     @Override
     protected IContext process(BufferedReader input) throws IOException {

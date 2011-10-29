@@ -2,7 +2,7 @@ package it.unitn.disi.nlptools.components.wsd;
 
 import it.unitn.disi.common.components.ConfigurableException;
 import it.unitn.disi.nlptools.components.PipelineComponentException;
-import it.unitn.disi.nlptools.data.ISentence;
+import it.unitn.disi.nlptools.data.ILabel;
 import it.unitn.disi.nlptools.data.IToken;
 import it.unitn.disi.nlptools.pipelines.PipelineComponent;
 import it.unitn.disi.smatch.data.ling.ISense;
@@ -41,12 +41,12 @@ public class HeuristicWSD extends PipelineComponent {
         return result;
     }
 
-    public void process(ISentence sentence) throws PipelineComponentException {
+    public void process(ILabel label) throws PipelineComponentException {
         HashMap<IToken, List<ISense>> refinedSenses = new HashMap<IToken, List<ISense>>();
 
         try {
-            for (IToken sourceToken : sentence.getTokens()) {
-                for (IToken targetToken : sentence.getTokens()) {
+            for (IToken sourceToken : label.getTokens()) {
+                for (IToken targetToken : label.getTokens()) {
                     if (!targetToken.equals(sourceToken)) {
                         for (ISense sourceSense : sourceToken.getSenses()) {
                             for (ISense targetSense : targetToken.getSenses()) {
@@ -63,17 +63,17 @@ public class HeuristicWSD extends PipelineComponent {
             }
 
             //sense disambiguation in context
-            for (IToken sourceToken : sentence.getTokens()) {
+            for (IToken sourceToken : label.getTokens()) {
                 if (!refinedSenses.containsKey(sourceToken)) {
                     for (ISense sourceSense : sourceToken.getSenses()) {
-                        // for all context sentences
-                        senseFilteringAmong(sentence.getContext(), sourceSense, sourceToken, refinedSenses);
+                        // for all context labels
+                        senseFilteringAmong(label.getContext(), sourceSense, sourceToken, refinedSenses);
                     }
                 }
             }
 
             //replace sense with refined ones, if there are any
-            for (IToken token : sentence.getTokens()) {
+            for (IToken token : label.getTokens()) {
                 List<ISense> refined = refinedSenses.get(token);
                 if (null != refined) {
                     token.setSenses(refined);
@@ -84,9 +84,9 @@ public class HeuristicWSD extends PipelineComponent {
         }
     }
 
-    private void senseFilteringAmong(List<ISentence> context, ISense sourceSense, IToken sourceToken, HashMap<IToken, List<ISense>> refinedSenses) throws SenseMatcherException {
-        for (ISentence targetSentence : context) {
-            for (IToken targetToken : targetSentence.getTokens()) {
+    private void senseFilteringAmong(List<ILabel> context, ISense sourceSense, IToken sourceToken, HashMap<IToken, List<ISense>> refinedSenses) throws SenseMatcherException {
+        for (ILabel targetLabel : context) {
+            for (IToken targetToken : targetLabel.getTokens()) {
                 if (!refinedSenses.containsKey(targetToken)) {
                     for (ISense targetSense : targetToken.getSenses()) {
                         //check whether each sense not synonym or more general, less general then the senses of

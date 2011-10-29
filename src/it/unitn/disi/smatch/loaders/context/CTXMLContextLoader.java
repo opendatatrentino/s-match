@@ -27,7 +27,7 @@ import java.util.StringTokenizer;
  * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
  */
-public class CTXMLContextLoader extends BaseFileContextLoader implements IContextLoader, ContentHandler {
+public class CTXMLContextLoader extends BaseFileContextLoader<IContext> implements IContextLoader, ContentHandler {
 
     private static final Logger log = Logger.getLogger(CTXMLContextLoader.class);
 

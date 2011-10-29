@@ -3526,7 +3526,7 @@ public class SMatchGUI extends Observable implements Observer {
     }
 
     private IContext loadTree(String fileName) throws SMatchException {
-        return mm.loadContext(fileName);
+        return (IContext) mm.loadContext(fileName);
     }
 
     /**

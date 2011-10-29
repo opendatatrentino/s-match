@@ -1,15 +1,18 @@
 package it.unitn.disi.smatch;
 
-import it.unitn.disi.smatch.classifiers.IContextClassifier;
 import it.unitn.disi.common.components.Configurable;
 import it.unitn.disi.common.components.ConfigurableException;
+import it.unitn.disi.common.utils.MiscUtils;
+import it.unitn.disi.smatch.classifiers.IContextClassifier;
 import it.unitn.disi.smatch.data.ling.IAtomicConceptOfLabel;
 import it.unitn.disi.smatch.data.mappings.IContextMapping;
 import it.unitn.disi.smatch.data.mappings.IMappingFactory;
 import it.unitn.disi.smatch.data.trees.Context;
+import it.unitn.disi.smatch.data.trees.IBaseContext;
 import it.unitn.disi.smatch.data.trees.IContext;
 import it.unitn.disi.smatch.data.trees.INode;
 import it.unitn.disi.smatch.filters.IMappingFilter;
+import it.unitn.disi.smatch.loaders.context.IBaseContextLoader;
 import it.unitn.disi.smatch.loaders.context.IContextLoader;
 import it.unitn.disi.smatch.loaders.mapping.IMappingLoader;
 import it.unitn.disi.smatch.matchers.element.IMatcherLibrary;
@@ -19,9 +22,9 @@ import it.unitn.disi.smatch.oracles.ISenseMatcher;
 import it.unitn.disi.smatch.oracles.wordnet.InMemoryWordNetBinaryArray;
 import it.unitn.disi.smatch.oracles.wordnet.WordNet;
 import it.unitn.disi.smatch.preprocessors.IContextPreprocessor;
+import it.unitn.disi.smatch.renderers.context.IBaseContextRenderer;
 import it.unitn.disi.smatch.renderers.context.IContextRenderer;
 import it.unitn.disi.smatch.renderers.mapping.IMappingRenderer;
-import it.unitn.disi.common.utils.MiscUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
@@ -72,10 +75,10 @@ public class MatchManager extends Configurable implements IMatchManager {
 
     // component configuration keys and component instance variables
     private static final String CONTEXT_LOADER_KEY = "ContextLoader";
-    private IContextLoader contextLoader = null;
+    private IBaseContextLoader contextLoader = null;
 
     private static final String CONTEXT_RENDERER_KEY = "ContextRenderer";
-    private IContextRenderer contextRenderer = null;
+    private IBaseContextRenderer contextRenderer = null;
 
     private static final String MAPPING_LOADER_KEY = "MappingLoader";
     private IMappingLoader mappingLoader = null;
@@ -137,7 +140,7 @@ public class MatchManager extends Configurable implements IMatchManager {
     /**
      * Constructor class with initialization.
      *
-     * @param properties the properties 
+     * @param properties the properties
      * @throws SMatchException SMatchException
      */
     public MatchManager(Properties properties) throws SMatchException {
@@ -161,13 +164,13 @@ public class MatchManager extends Configurable implements IMatchManager {
         return mappingFactory;
     }
 
-    public IContext loadContext(String fileName) throws SMatchException {
+    public IBaseContext loadContext(String fileName) throws SMatchException {
         if (null == contextLoader) {
             throw new SMatchException("Context loader is not configured.");
         }
 
         log.info("Loading context from: " + fileName);
-        final IContext result = contextLoader.loadContext(fileName);
+        final IBaseContext result = contextLoader.loadContext(fileName);
         if (result instanceof Context) {
             log.debug("Trimming context...");
             ((Context) result).trim();
@@ -177,11 +180,12 @@ public class MatchManager extends Configurable implements IMatchManager {
         return result;
     }
 
-    public IContextLoader getContextLoader() {
+    public IBaseContextLoader getContextLoader() {
         return contextLoader;
     }
 
-    public void renderContext(IContext ctxSource, String fileName) throws SMatchException {
+    @SuppressWarnings("unchecked")
+    public void renderContext(IBaseContext ctxSource, String fileName) throws SMatchException {
         if (null == contextRenderer) {
             throw new SMatchException("Context renderer is not configured.");
         }
@@ -190,7 +194,7 @@ public class MatchManager extends Configurable implements IMatchManager {
         log.info("Rendering context finished");
     }
 
-    public IContextRenderer getContextRenderer() {
+    public IBaseContextRenderer getContextRenderer() {
         return contextRenderer;
     }
 
@@ -423,7 +427,7 @@ public class MatchManager extends Configurable implements IMatchManager {
                         if (3 == args.length) {
                             String inputFile = args[1];
                             String outputFile = args[2];
-                            IContext ctxSource = mm.loadContext(inputFile);
+                            IBaseContext ctxSource = mm.loadContext(inputFile);
                             mm.renderContext(ctxSource, outputFile);
                         } else if (5 == args.length) {
                             String sourceFile = args[1];
@@ -431,10 +435,14 @@ public class MatchManager extends Configurable implements IMatchManager {
                             String inputFile = args[3];
                             String outputFile = args[4];
 
-                            IContext ctxSource = mm.loadContext(sourceFile);
-                            IContext ctxTarget = mm.loadContext(targetFile);
-                            IContextMapping<INode> map = mm.loadMapping(ctxSource, ctxTarget, inputFile);
-                            mm.renderMapping(map, outputFile);
+                            if (mm.getContextLoader() instanceof IContextLoader) {
+                                IContext ctxSource = (IContext) mm.loadContext(sourceFile);
+                                IContext ctxTarget = (IContext) mm.loadContext(targetFile);
+                                IContextMapping<INode> map = mm.loadMapping(ctxSource, ctxTarget, inputFile);
+                                mm.renderMapping(map, outputFile);
+                            } else {
+                                System.out.println("To convert a mapping, use context loaders supporting IContextLoader.");
+                            }
                         }
                     } else {
                         System.out.println("Not enough arguments for convert command.");
@@ -443,9 +451,13 @@ public class MatchManager extends Configurable implements IMatchManager {
                     if (2 < args.length) {
                         String inputFile = args[1];
                         String outputFile = args[2];
-                        IContext ctxSource = mm.loadContext(inputFile);
-                        mm.offline(ctxSource);
-                        mm.renderContext(ctxSource, outputFile);
+                        if (mm.getContextLoader() instanceof IContextLoader && mm.getContextRenderer() instanceof IContextRenderer) {
+                            IContext ctxSource = (IContext) mm.loadContext(inputFile);
+                            mm.offline(ctxSource);
+                            mm.renderContext(ctxSource, outputFile);
+                        } else {
+                            System.out.println("To preprocess a mapping, use context loaders and renderers support IContextLoader and IContextRenderer.");
+                        }
                     } else {
                         System.out.println("Not enough arguments for offline command.");
                     }
@@ -454,10 +466,14 @@ public class MatchManager extends Configurable implements IMatchManager {
                         String sourceFile = args[1];
                         String targetFile = args[2];
                         String outputFile = args[3];
-                        IContext ctxSource = mm.loadContext(sourceFile);
-                        IContext ctxTarget = mm.loadContext(targetFile);
-                        IContextMapping<INode> result = mm.online(ctxSource, ctxTarget);
-                        mm.renderMapping(result, outputFile);
+                        if (mm.getContextLoader() instanceof IContextLoader) {
+                            IContext ctxSource = (IContext) mm.loadContext(sourceFile);
+                            IContext ctxTarget = (IContext) mm.loadContext(targetFile);
+                            IContextMapping<INode> result = mm.online(ctxSource, ctxTarget);
+                            mm.renderMapping(result, outputFile);
+                        } else {
+                            System.out.println("To match contexts, use context loaders supporting IContextLoader.");
+                        }
                     } else {
                         System.out.println("Not enough arguments for online command.");
                     }
@@ -468,11 +484,15 @@ public class MatchManager extends Configurable implements IMatchManager {
                         String inputFile = args[3];
                         String outputFile = args[4];
 
-                        IContext ctxSource = mm.loadContext(sourceFile);
-                        IContext ctxTarget = mm.loadContext(targetFile);
-                        IContextMapping<INode> mapInput = mm.loadMapping(ctxSource, ctxTarget, inputFile);
-                        IContextMapping<INode> mapOutput = mm.filterMapping(mapInput);
-                        mm.renderMapping(mapOutput, outputFile);
+                        if (mm.getContextLoader() instanceof IContextLoader) {
+                            IContext ctxSource = (IContext) mm.loadContext(sourceFile);
+                            IContext ctxTarget = (IContext) mm.loadContext(targetFile);
+                            IContextMapping<INode> mapInput = mm.loadMapping(ctxSource, ctxTarget, inputFile);
+                            IContextMapping<INode> mapOutput = mm.filterMapping(mapInput);
+                            mm.renderMapping(mapOutput, outputFile);
+                        } else {
+                            System.out.println("To filter a mapping, use context loaders supporting IContextLoader.");
+                        }
                     } else {
                         System.out.println("Not enough arguments for mappingFilter command.");
                     }

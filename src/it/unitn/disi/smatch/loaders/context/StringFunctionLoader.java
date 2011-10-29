@@ -17,7 +17,7 @@ import java.util.List;
  * @author Juan Pane pane@disi.unitn.it
  * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  */
-public class StringFunctionLoader extends BaseContextLoader implements IContextLoader {
+public class StringFunctionLoader extends BaseContextLoader<IContext> implements IContextLoader {
 
     private static final Logger log = Logger.getLogger(StringFunctionLoader.class);
 

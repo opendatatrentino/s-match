@@ -2,7 +2,7 @@ package it.unitn.disi.nlptools.components.lemmatizers;
 
 import it.unitn.disi.common.components.ConfigurableException;
 import it.unitn.disi.nlptools.components.PipelineComponentException;
-import it.unitn.disi.nlptools.data.ISentence;
+import it.unitn.disi.nlptools.data.ILabel;
 import it.unitn.disi.nlptools.data.IToken;
 import it.unitn.disi.nlptools.pipelines.PipelineComponent;
 import it.unitn.disi.smatch.oracles.ILinguisticOracle;
@@ -23,8 +23,8 @@ public class LinguisticOracleLemmatizer extends PipelineComponent {
     private static final String ORACLE_KEY = "oracle";
     private ILinguisticOracle oracle;
 
-    public void process(ISentence sentence) throws PipelineComponentException {
-        for (IToken token : sentence.getTokens()) {
+    public void process(ILabel label) throws PipelineComponentException {
+        for (IToken token : label.getTokens()) {
             try {
                 List<String> lemmas = oracle.getBaseForms(token.getText());
                 if (0 < lemmas.size()) {

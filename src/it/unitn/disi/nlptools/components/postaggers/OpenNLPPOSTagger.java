@@ -1,7 +1,7 @@
 package it.unitn.disi.nlptools.components.postaggers;
 
 import it.unitn.disi.common.components.ConfigurableException;
-import it.unitn.disi.nlptools.data.ISentence;
+import it.unitn.disi.nlptools.data.ILabel;
 import it.unitn.disi.nlptools.pipelines.PipelineComponent;
 import opennlp.tools.postag.POSModel;
 import opennlp.tools.postag.POSTaggerME;
@@ -14,7 +14,7 @@ import java.io.InputStream;
 import java.util.Properties;
 
 /**
- * Tags the sentence using OpenNLP POS tagger.
+ * Tags the label using OpenNLP POS tagger.
  *
  * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  */
@@ -27,14 +27,14 @@ public class OpenNLPPOSTagger extends PipelineComponent {
 
     private POSTaggerME tagger;
 
-    public void process(ISentence sentence) {
-        String tokens[] = new String[sentence.getTokens().size()];
-        for (int i = 0; i < sentence.getTokens().size(); i++) {
-            tokens[i] = sentence.getTokens().get(i).getText();
+    public void process(ILabel label) {
+        String tokens[] = new String[label.getTokens().size()];
+        for (int i = 0; i < label.getTokens().size(); i++) {
+            tokens[i] = label.getTokens().get(i).getText();
         }
         String[] tags = tagger.tag(tokens);
-        for (int i = 0; i < sentence.getTokens().size(); i++) {
-            sentence.getTokens().get(i).setPOSTag(tags[i]);
+        for (int i = 0; i < label.getTokens().size(); i++) {
+            label.getTokens().get(i).setPOSTag(tags[i]);
         }
     }
 

@@ -14,7 +14,11 @@ public class Token extends TextSpan implements IToken {
 
     protected String lemma;
     protected String posTag;
-    protected List<ISense> senses = Collections.<ISense>emptyList();
+    protected List<ISense> senses = Collections.emptyList();
+
+    public Token() {
+        super();
+    }
 
     public Token(String text) {
         super(text);

@@ -1,7 +1,7 @@
 package it.unitn.disi.nlptools.components.mwrecognizers;
 
 import it.unitn.disi.nlptools.components.PipelineComponentException;
-import it.unitn.disi.nlptools.data.ISentence;
+import it.unitn.disi.nlptools.data.ILabel;
 import it.unitn.disi.nlptools.pipelines.PipelineComponent;
 
 /**
@@ -14,7 +14,7 @@ import it.unitn.disi.nlptools.pipelines.PipelineComponent;
  */
 public class ComplexMultiwordRecognizer extends PipelineComponent {
 
-    public void process(ISentence sentence) throws PipelineComponentException {
+    public void process(ILabel label) throws PipelineComponentException {
         //TODO
     }
 }

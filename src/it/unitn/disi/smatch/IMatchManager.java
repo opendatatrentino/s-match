@@ -4,12 +4,13 @@ import it.unitn.disi.common.components.IConfigurable;
 import it.unitn.disi.smatch.data.ling.IAtomicConceptOfLabel;
 import it.unitn.disi.smatch.data.mappings.IContextMapping;
 import it.unitn.disi.smatch.data.mappings.IMappingFactory;
+import it.unitn.disi.smatch.data.trees.IBaseContext;
 import it.unitn.disi.smatch.data.trees.IContext;
 import it.unitn.disi.smatch.data.trees.INode;
-import it.unitn.disi.smatch.loaders.context.IContextLoader;
+import it.unitn.disi.smatch.loaders.context.IBaseContextLoader;
 import it.unitn.disi.smatch.loaders.mapping.IMappingLoader;
 import it.unitn.disi.smatch.preprocessors.IContextPreprocessor;
-import it.unitn.disi.smatch.renderers.context.IContextRenderer;
+import it.unitn.disi.smatch.renderers.context.IBaseContextRenderer;
 import it.unitn.disi.smatch.renderers.mapping.IMappingRenderer;
 
 /**
@@ -33,7 +34,8 @@ public interface IMatchManager extends IConfigurable {
 
     /**
      * Returns mapping factory.
-     * @return mapping factory 
+     *
+     * @return mapping factory
      */
     public IMappingFactory getMappingFactory();
 
@@ -44,14 +46,14 @@ public interface IMatchManager extends IConfigurable {
      * @return interface to internal context representation
      * @throws SMatchException SMatchException
      */
-    IContext loadContext(String fileName) throws SMatchException;
+    IBaseContext loadContext(String fileName) throws SMatchException;
 
     /**
      * Returns currently configured context loader.
      *
      * @return currently configured context loader
      */
-    IContextLoader getContextLoader();
+    IBaseContextLoader getContextLoader();
 
     /**
      * Renders the context using a current renderer.
@@ -60,14 +62,14 @@ public interface IMatchManager extends IConfigurable {
      * @param fileName  a render destination passed to the context renderer
      * @throws SMatchException SMatchException
      */
-    void renderContext(IContext ctxSource, String fileName) throws SMatchException;
+    void renderContext(IBaseContext ctxSource, String fileName) throws SMatchException;
 
     /**
      * Returns currently configured context renderer.
      *
      * @return currently configured context renderer
      */
-    IContextRenderer getContextRenderer();
+    IBaseContextRenderer getContextRenderer();
 
     /**
      * Loads the mapping between source and target contexts using the current mapping loader.

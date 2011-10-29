@@ -2,27 +2,29 @@ package it.unitn.disi.nlptools;
 
 import it.unitn.disi.common.components.IConfigurable;
 import it.unitn.disi.nlptools.components.PipelineComponentException;
-import it.unitn.disi.nlptools.data.ISentence;
+import it.unitn.disi.nlptools.data.ILabel;
 
 /**
- * Interface for processing of short sentences.
+ * Interface for processing of short labels.
  *
  * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  */
 public interface INLPPipeline extends IConfigurable {
 
     /**
-     * Processes a short sentence.
+     * Processes a short label.
      *
-     * @param sentence short sentence to process
-     * @return interface to a processed sentence instance
+     * @param label short label to process
+     * @return interface to a processed label instance
+     * @throws it.unitn.disi.nlptools.components.PipelineComponentException PipelineComponentException
      */
-    ISentence process(String sentence) throws PipelineComponentException;
+    ILabel process(String label) throws PipelineComponentException;
 
     /**
-     * Processes a short sentence.
+     * Processes a short label.
      *
-     * @param sentence short sentence to process
+     * @param label short label to process
+     * @throws it.unitn.disi.nlptools.components.PipelineComponentException PipelineComponentException
      */
-    void process(ISentence sentence) throws PipelineComponentException;
+    void process(ILabel label) throws PipelineComponentException;
 }

@@ -26,7 +26,7 @@ import java.util.Set;
  *
  * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  */
-public class OWLContextLoader extends BaseContextLoader implements IContextLoader {
+public class OWLContextLoader extends BaseContextLoader<IContext> implements IContextLoader {
 
     private static final Logger log = Logger.getLogger(OWLContextLoader.class);
 

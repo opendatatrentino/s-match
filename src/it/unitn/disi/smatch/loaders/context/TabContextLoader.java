@@ -27,7 +27,7 @@ import java.util.ArrayList;
  * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  * @author Juan Pane pane@disi.unitn.it
  */
-public class TabContextLoader extends BaseFileContextLoader implements IContextLoader {
+public class TabContextLoader extends BaseFileContextLoader<IContext> implements IContextLoader {
 
     @Override
     protected IContext process(BufferedReader input) throws IOException {

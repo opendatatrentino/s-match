@@ -325,8 +325,8 @@ public class SPSMTest extends TestCase {
      * @throws SMatchException SMatchException
      */
     private IContextMapping<INode> matchFunctions(String fn1, String fn2) throws SMatchException {
-        IContext sourceContext = mm.loadContext(fn1);
-        IContext targetContext = mm.loadContext(fn2);
+        IContext sourceContext = (IContext) mm.loadContext(fn1);
+        IContext targetContext = (IContext) mm.loadContext(fn2);
 
         // linguistic pre-processing
         mm.offline(sourceContext);

@@ -1,6 +1,7 @@
 package it.unitn.disi.smatch.loaders.context;
 
-import it.unitn.disi.smatch.data.trees.IContext;
+import it.unitn.disi.smatch.data.trees.IBaseContext;
+import it.unitn.disi.smatch.data.trees.IBaseNode;
 import it.unitn.disi.smatch.loaders.ILoader;
 import org.apache.log4j.Logger;
 
@@ -14,12 +15,12 @@ import java.io.InputStreamReader;
  *
  * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  */
-public abstract class BaseFileContextLoader extends BaseContextLoader implements IContextLoader {
+public abstract class BaseFileContextLoader<E extends IBaseContext<? extends IBaseNode>> extends BaseContextLoader<E> implements IBaseContextLoader<E> {
 
     private static final Logger log = Logger.getLogger(BaseFileContextLoader.class);
 
-    public IContext loadContext(String fileName) throws ContextLoaderException {
-        IContext result = null;
+    public E loadContext(String fileName) throws ContextLoaderException {
+        E result = null;
         try {
             BufferedReader input = new BufferedReader(new InputStreamReader(new FileInputStream(fileName), "UTF-8"));
             try {
@@ -41,7 +42,7 @@ public abstract class BaseFileContextLoader extends BaseContextLoader implements
         return result;
     }
 
-    abstract protected IContext process(BufferedReader input) throws IOException, ContextLoaderException;
+    abstract protected E process(BufferedReader input) throws IOException, ContextLoaderException;
 
     public ILoader.LoaderType getType() {
         return ILoader.LoaderType.FILE;

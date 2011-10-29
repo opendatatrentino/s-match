@@ -16,7 +16,7 @@ import java.util.Iterator;
  *
  * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  */
-public class TabContextRenderer extends BaseFileContextRenderer {
+public class TabContextRenderer extends BaseFileContextRenderer<IContext> {
 
     protected void process(IContext context, BufferedWriter out) throws IOException, ContextRendererException {
         ArrayList<INode> nodeQ = new ArrayList<INode>();

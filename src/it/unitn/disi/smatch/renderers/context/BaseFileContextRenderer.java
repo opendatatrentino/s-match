@@ -1,6 +1,6 @@
 package it.unitn.disi.smatch.renderers.context;
 
-import it.unitn.disi.smatch.data.trees.IContext;
+import it.unitn.disi.smatch.data.trees.IBaseContext;
 import it.unitn.disi.smatch.loaders.ILoader;
 import org.apache.log4j.Logger;
 
@@ -14,12 +14,12 @@ import java.io.OutputStreamWriter;
  *
  * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  */
-public abstract class BaseFileContextRenderer extends BaseContextRenderer {
+public abstract class BaseFileContextRenderer<E extends IBaseContext> extends BaseContextRenderer<E> {
 
     private static final Logger log = Logger.getLogger(BaseFileContextRenderer.class);
 
     @Override
-    protected void process(IContext context, String fileName) throws ContextRendererException {
+    protected void process(E context, String fileName) throws ContextRendererException {
         try {
             BufferedWriter out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(fileName), "UTF-8"));
             try {
@@ -38,7 +38,7 @@ public abstract class BaseFileContextRenderer extends BaseContextRenderer {
         }
     }
 
-    protected abstract void process(IContext context, BufferedWriter out) throws IOException, ContextRendererException;
+    protected abstract void process(E context, BufferedWriter out) throws IOException, ContextRendererException;
 
     public ILoader.LoaderType getType() {
         return ILoader.LoaderType.FILE;

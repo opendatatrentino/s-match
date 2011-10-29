@@ -4,7 +4,7 @@ import it.unitn.disi.common.components.ConfigurableException;
 import it.unitn.disi.common.components.IConfigurable;
 
 /**
- * An interface for NLP operations on short sentences.
+ * An interface for NLP operations on short labels.
  *
  * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  */

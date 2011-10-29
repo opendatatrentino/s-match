@@ -4,8 +4,8 @@ import it.unitn.disi.common.components.Configurable;
 import it.unitn.disi.common.components.ConfigurableException;
 import it.unitn.disi.nlptools.INLPPipeline;
 import it.unitn.disi.nlptools.components.PipelineComponentException;
-import it.unitn.disi.nlptools.data.ISentence;
-import it.unitn.disi.nlptools.data.Sentence;
+import it.unitn.disi.nlptools.data.ILabel;
+import it.unitn.disi.nlptools.data.Label;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
@@ -24,15 +24,15 @@ public class Pipeline extends Configurable implements INLPPipeline {
 
     private List<IPipelineComponent> pipelineComponents;
 
-    public ISentence process(String sentence) throws PipelineComponentException {
-        ISentence result = new Sentence(sentence);
+    public ILabel process(String label) throws PipelineComponentException {
+        ILabel result = new Label(label);
         process(result);
         return result;
     }
 
-    public void process(ISentence sentence) throws PipelineComponentException {
+    public void process(ILabel label) throws PipelineComponentException {
         for (IPipelineComponent c : pipelineComponents) {
-            c.process(sentence);
+            c.process(label);
         }
     }
 
