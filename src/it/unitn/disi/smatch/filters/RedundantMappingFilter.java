@@ -103,40 +103,32 @@ public class RedundantMappingFilter extends BaseFilter implements IMappingFilter
     //and then all the rest is not removed because of the "gap"
 
     protected boolean verifyCondition1(IContextMapping<INode> mapping, IMappingElement<INode> e) {
-        boolean result =
-                findRelation(IMappingElement.LESS_GENERAL, e.getSource().getAncestors(), e.getTarget(), mapping) ||
-                        findRelation(IMappingElement.LESS_GENERAL, e.getSource(), e.getTarget().getDescendants(), mapping) ||
-                        findRelation(IMappingElement.LESS_GENERAL, e.getSource().getAncestors(), e.getTarget().getDescendants(), mapping);
-        return result;
+        return findRelation(IMappingElement.LESS_GENERAL, e.getSource().getAncestors(), e.getTarget(), mapping) ||
+                findRelation(IMappingElement.LESS_GENERAL, e.getSource(), e.getTarget().getDescendants(), mapping) ||
+                findRelation(IMappingElement.LESS_GENERAL, e.getSource().getAncestors(), e.getTarget().getDescendants(), mapping);
     }
 
     protected boolean verifyCondition2(IContextMapping<INode> mapping, IMappingElement<INode> e) {
-        boolean result =
-                findRelation(IMappingElement.MORE_GENERAL, e.getSource(), e.getTarget().getAncestors(), mapping) ||
-                        findRelation(IMappingElement.MORE_GENERAL, e.getSource().getDescendants(), e.getTarget(), mapping) ||
-                        findRelation(IMappingElement.MORE_GENERAL, e.getSource().getDescendants(), e.getTarget().getAncestors(), mapping);
-        return result;
+        return findRelation(IMappingElement.MORE_GENERAL, e.getSource(), e.getTarget().getAncestors(), mapping) ||
+                findRelation(IMappingElement.MORE_GENERAL, e.getSource().getDescendants(), e.getTarget(), mapping) ||
+                findRelation(IMappingElement.MORE_GENERAL, e.getSource().getDescendants(), e.getTarget().getAncestors(), mapping);
     }
 
     protected boolean verifyCondition3(IContextMapping<INode> mapping, IMappingElement<INode> e) {
-        boolean result =
-                findRelation(IMappingElement.DISJOINT, e.getSource(), e.getTarget().getAncestors(), mapping) ||
-                        findRelation(IMappingElement.DISJOINT, e.getSource().getAncestors(), e.getTarget(), mapping) ||
-                        findRelation(IMappingElement.DISJOINT, e.getSource().getAncestors(), e.getTarget().getAncestors(), mapping);
-        return result;
+        return findRelation(IMappingElement.DISJOINT, e.getSource(), e.getTarget().getAncestors(), mapping) ||
+                findRelation(IMappingElement.DISJOINT, e.getSource().getAncestors(), e.getTarget(), mapping) ||
+                findRelation(IMappingElement.DISJOINT, e.getSource().getAncestors(), e.getTarget().getAncestors(), mapping);
     }
 
     protected boolean verifyCondition4(IContextMapping<INode> mapping, IMappingElement<INode> e) {
-        boolean result =
-                (findRelation(IMappingElement.EQUIVALENCE, e.getSource(), e.getTarget().getAncestors(), mapping) &&
-                        findRelation(IMappingElement.EQUIVALENCE, e.getSource().getAncestors(), e.getTarget(), mapping))
-                        ||
-                        (findRelation(IMappingElement.EQUIVALENCE, e.getSource(), e.getTarget().getDescendants(), mapping) &&
-                                findRelation(IMappingElement.EQUIVALENCE, e.getSource().getDescendants(), e.getTarget(), mapping))
-                        ||
-                        (findRelation(IMappingElement.EQUIVALENCE, e.getSource().getAncestors(), e.getTarget().getDescendants(), mapping) &&
-                                findRelation(IMappingElement.EQUIVALENCE, e.getSource().getDescendants(), e.getTarget().getAncestors(), mapping));
-        return result;
+        return (findRelation(IMappingElement.EQUIVALENCE, e.getSource(), e.getTarget().getAncestors(), mapping) &&
+                findRelation(IMappingElement.EQUIVALENCE, e.getSource().getAncestors(), e.getTarget(), mapping))
+                ||
+                (findRelation(IMappingElement.EQUIVALENCE, e.getSource(), e.getTarget().getDescendants(), mapping) &&
+                        findRelation(IMappingElement.EQUIVALENCE, e.getSource().getDescendants(), e.getTarget(), mapping))
+                ||
+                (findRelation(IMappingElement.EQUIVALENCE, e.getSource().getAncestors(), e.getTarget().getDescendants(), mapping) &&
+                        findRelation(IMappingElement.EQUIVALENCE, e.getSource().getDescendants(), e.getTarget().getAncestors(), mapping));
     }
 
     public boolean findRelation(char relation, Iterator<INode> sourceNodes, INode targetNode, IContextMapping<INode> mapping) {

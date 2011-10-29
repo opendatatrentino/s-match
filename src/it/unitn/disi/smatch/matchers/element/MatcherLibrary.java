@@ -229,6 +229,7 @@ public class MatcherLibrary extends Configurable implements IMatcherLibrary {
         char relation = IMappingElement.IDK;
         if (0 < senseGlossMatchers.size()) {
             for (ISense sourceSense : sourceSenses) {
+                //noinspection LoopStatementThatDoesntLoop
                 for (ISense targetSense : targetSenses) {
                     int k = 0;
                     while ((relation == IMappingElement.IDK) && (k < senseGlossMatchers.size())) {

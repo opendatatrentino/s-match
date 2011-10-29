@@ -24,7 +24,7 @@ import java.util.Properties;
  *
  * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  */
-public class NLPXMLContextLoader extends BaseSimpleXMLContextLoader<INLPContext> {
+public class NLPXMLContextLoader extends BaseSimpleXMLContextLoader<INLPContext> implements INLPContextLoader {
 
     private static final Logger log = Logger.getLogger(NLPXMLContextLoader.class);
 

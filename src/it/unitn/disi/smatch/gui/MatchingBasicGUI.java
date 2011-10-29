@@ -431,13 +431,11 @@ public class MatchingBasicGUI extends JPanel
      */
     private Line2D drawBoundingLine(Rectangle leftBound, Rectangle rightBound) {//, Line2D lowerBound){
 
-        Line2D line = new Line2D.Double(
+        return new Line2D.Double(
                 leftBound.getMaxX() + leftOffset.x,
                 leftBound.getCenterY() + leftOffset.y,
                 rightBound.getMinX() + rightOffset.x,
                 rightBound.getCenterY() + rightOffset.y);
-
-        return line;
     }
 
 
@@ -449,7 +447,7 @@ public class MatchingBasicGUI extends JPanel
                 try {
                     createAndShowGUI();
                 } catch (SMatchException e) {
-                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                    log.error(e.getMessage(), e);
                 }
             }
         });

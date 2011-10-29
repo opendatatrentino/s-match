@@ -18,7 +18,7 @@ import javax.xml.transform.sax.TransformerHandler;
  *
  * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  */
-public class NLPXMLContextRenderer extends BaseSimpleXMLContextRenderer<INLPContext> {
+public class NLPXMLContextRenderer extends BaseSimpleXMLContextRenderer<INLPContext> implements INLPContextRenderer {
 
     protected void renderNodeContents(IBaseNode curNode, TransformerHandler hd) throws SAXException {
         INLPNodeData curNodeData = ((INLPNode) curNode).getNodeData();

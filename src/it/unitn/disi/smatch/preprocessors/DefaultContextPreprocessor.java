@@ -341,7 +341,7 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
 
     /**
      * Finds out if the input token is a complex word or not using WordNet. Tries to insert spaces and dash
-     * between all characters and searchs for the result to be in WordNet.
+     * between all characters and searches for the result to be in WordNet.
      *
      * @param token token
      * @return a list which contains parts of the complex word
@@ -733,6 +733,7 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
      * @return false if it contains a number
      */
     private boolean isNumber(String in1) {
+        //noinspection LoopStatementThatDoesntLoop
         for (StringTokenizer stringTokenizer = new StringTokenizer(in1, numberCharacters); stringTokenizer.hasMoreTokens(); ) {
             return false;
         }
@@ -793,7 +794,7 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
             subLemma = tokens.get(i);
             if ((!andWords.contains(subLemma)) || (!orWords.contains(subLemma))) {
                 // if there a multiword starting with a sublemma
-                ArrayList<ArrayList<String>> entries = null;
+                ArrayList<ArrayList<String>> entries;
                 try {
                     entries = linguisticOracle.getMultiwords(subLemma);
                 } catch (LinguisticOracleException e) {
@@ -818,7 +819,7 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
                             int multiword_pos = word_pos;
                             positions.add(word_pos);
                             boolean cont = true;
-                            boolean connectives_prescendence = false;
+                            boolean connectives_precedence = false;
                             int and_pos = -1;
                             for (String tok : mweTail) {
                                 int old_pos = word_pos;
@@ -834,9 +835,9 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
                                     for (int r = old_pos + 1; r < word_pos; r++) {
                                         if (andWords.contains(tokens.get(r)) || orWords.contains(tokens.get(r))) {
                                             and_pos = r;
-                                            connectives_prescendence = true;
+                                            connectives_precedence = true;
                                         } else {
-                                            //connectives_prescendence = false;
+                                            //connectives_precedence = false;
                                         }
                                     }
                                 }
@@ -854,7 +855,7 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
                                 multiword = multiword.substring(0, multiword.length() - 1);
                                 tokens.add(multiword_pos, multiword);
                             } else {
-                                if (connectives_prescendence) {
+                                if (connectives_precedence) {
                                     if (and_pos > multiword_pos) {
                                         String multiword = "";
                                         int word_distance = positions.get(positions.size() - 1) - positions.get(0);

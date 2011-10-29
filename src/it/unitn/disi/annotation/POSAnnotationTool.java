@@ -5,7 +5,9 @@ import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import it.unitn.disi.annotation.data.INLPContext;
 import it.unitn.disi.annotation.data.INLPNode;
+import it.unitn.disi.annotation.loaders.context.INLPContextLoader;
 import it.unitn.disi.annotation.loaders.context.NLPXMLContextLoader;
+import it.unitn.disi.annotation.renderers.context.INLPContextRenderer;
 import it.unitn.disi.annotation.renderers.context.NLPXMLContextRenderer;
 import it.unitn.disi.common.components.Configurable;
 import it.unitn.disi.common.components.ConfigurableException;
@@ -52,10 +54,10 @@ public class POSAnnotationTool extends Configurable {
     private String lookAndFeel = null;
 
     private static final String CONTEXT_LOADER_KEY = "contextLoader";
-    private NLPXMLContextLoader contextLoader;
+    private INLPContextLoader contextLoader;
 
     private static final String CONTEXT_RENDERER_KEY = "contextRenderer";
-    private NLPXMLContextRenderer contextRenderer;
+    private INLPContextRenderer contextRenderer;
 
     private static final String TOKENIZER_KEY = "tokenizer";
     private IPipelineComponent tokenizer;
@@ -142,7 +144,7 @@ public class POSAnnotationTool extends Configurable {
             super.actionPerforming(e);
 
             //add previous one to cache
-            ILabel curLabel = null;
+            ILabel curLabel;
             if (-1 != curIndex) {
                 curLabel = data.get(curIndex).getNodeData().getLabel();
                 if (null != curLabel) {
@@ -313,8 +315,8 @@ public class POSAnnotationTool extends Configurable {
                 lookAndFeel = newProperties.getProperty(LOOK_AND_FEEL_KEY);
             }
 
-            contextLoader = (NLPXMLContextLoader) configureComponent(contextLoader, oldProperties, newProperties, "context loader", CONTEXT_LOADER_KEY, NLPXMLContextLoader.class);
-            contextRenderer = (NLPXMLContextRenderer) configureComponent(contextRenderer, oldProperties, newProperties, "context renderer", CONTEXT_RENDERER_KEY, NLPXMLContextRenderer.class);
+            contextLoader = (INLPContextLoader) configureComponent(contextLoader, oldProperties, newProperties, "context loader", CONTEXT_LOADER_KEY, INLPContextLoader.class);
+            contextRenderer = (INLPContextRenderer) configureComponent(contextRenderer, oldProperties, newProperties, "context renderer", CONTEXT_RENDERER_KEY, INLPContextRenderer.class);
             tokenizer = (IPipelineComponent) configureComponent(tokenizer, oldProperties, newProperties, "tokenizer", TOKENIZER_KEY, IPipelineComponent.class);
             postagger = (IPipelineComponent) configureComponent(postagger, oldProperties, newProperties, "POS tagger", POS_TAGGER_KEY, IPipelineComponent.class);
         }
@@ -384,7 +386,7 @@ public class POSAnnotationTool extends Configurable {
         return result;
     }
 
-    private JTextField buildTokenTextField(ILabel phrase, IToken token) throws NLPToolsException, RemoteException {
+    private JTextField buildTokenTextField(ILabel phrase, IToken token) {
         JTextField textField = new JTextField();
         textField.setHorizontalAlignment(JTextField.TRAILING);
         textField.setText(token.getText());
@@ -552,7 +554,7 @@ public class POSAnnotationTool extends Configurable {
         modify();
     }
 
-    private JList buildTokenPOSList(IToken token) throws NLPToolsException, RemoteException {
+    private JList buildTokenPOSList(IToken token) {
         JList posList = new JList();
         posList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         DefaultListModel model = new DefaultListModel();
@@ -809,7 +811,7 @@ public class POSAnnotationTool extends Configurable {
     }
 
 
-    public void startup() throws IOException, ClassNotFoundException, ContextLoaderException {
+    public void startup() throws ContextLoaderException {
         showLFIs();
         applyLookAndFeel();
         buildStaticGUI();

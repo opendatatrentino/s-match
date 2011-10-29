@@ -10,8 +10,8 @@ import java.util.List;
  */
 public class MultiWord extends Token implements IMultiWord {
 
-    private List<Integer> tokenIndexes = Collections.<Integer>emptyList();
-    private List<IToken> tokens = Collections.<IToken>emptyList();
+    private List<Integer> tokenIndexes = Collections.emptyList();
+    private List<IToken> tokens = Collections.emptyList();
 
     public MultiWord(String text) {
         super(text);

@@ -11,7 +11,7 @@ import java.util.HashSet;
 /**
  * Implements GPrefix matcher.
  * Tries to use morphological knowledge (suffixes) to enhance relations returned.
- * It is called GPefix because it matches words with equal prefixes, which differ in suffixes only.
+ * It is called GPrefix because it matches words with equal prefixes, which differ in suffixes only.
  *
  * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  */

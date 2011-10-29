@@ -2439,7 +2439,7 @@ public class SMatchGUI extends Observable implements Observer {
 
         public boolean accept(File file) {
             String ext = getExtension(file);
-            return null != description && null != ext && -1 < description.indexOf(ext);
+            return null != description && null != ext && description.contains(ext);
         }
 
         public void setDescription(String description) {

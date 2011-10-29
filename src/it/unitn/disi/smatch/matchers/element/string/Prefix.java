@@ -35,14 +35,14 @@ public class Prefix extends Configurable implements IStringBasedElementLevelSema
         } else {
             if ((str1.length() > 3) && (str2.length() > 3)) {
                 if (str1.startsWith(str2)) {
-                    if (str1.indexOf(" ") > -1) {
+                    if (str1.contains(" ")) {
                         rel = IMappingElement.LESS_GENERAL;
                     } else {
                         rel = IMappingElement.EQUIVALENCE;
                     }
                 } else {
                     if (str2.startsWith(str1)) {
-                        if (str2.indexOf(" ") > -1) {
+                        if (str2.contains(" ")) {
                             rel = IMappingElement.MORE_GENERAL;
                         } else {
                             rel = IMappingElement.EQUIVALENCE;

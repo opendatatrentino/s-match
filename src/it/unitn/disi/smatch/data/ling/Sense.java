@@ -27,23 +27,23 @@ public abstract class Sense implements ISense {
     }
 
     public List<String> getLemmas() {
-        return Collections.<String>emptyList();
+        return Collections.emptyList();
     }
 
     public List<ISense> getParents() throws LinguisticOracleException {
-        return Collections.<ISense>emptyList();
+        return Collections.emptyList();
     }
 
     public List<ISense> getParents(int depth) throws LinguisticOracleException {
-        return Collections.<ISense>emptyList();
+        return Collections.emptyList();
     }
 
     public List<ISense> getChildren() throws LinguisticOracleException {
-        return Collections.<ISense>emptyList();
+        return Collections.emptyList();
     }
 
     public List<ISense> getChildren(int depth) throws LinguisticOracleException {
-        return Collections.<ISense>emptyList();
+        return Collections.emptyList();
     }
 
     @Override

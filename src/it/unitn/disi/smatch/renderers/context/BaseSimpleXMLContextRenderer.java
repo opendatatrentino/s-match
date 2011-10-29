@@ -24,7 +24,7 @@ import java.util.Iterator;
  * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  */
 @SuppressWarnings({"unchecked"})
-public class BaseSimpleXMLContextRenderer<E extends IBaseContext<? extends IBaseNode>> extends BaseXMLContextRenderer<E> {
+public class BaseSimpleXMLContextRenderer<E extends IBaseContext<? extends IBaseNode>> extends BaseXMLContextRenderer<E> implements IBaseContextRenderer<E> {
 
     private static final Logger log = Logger.getLogger(BaseSimpleXMLContextRenderer.class);
 
