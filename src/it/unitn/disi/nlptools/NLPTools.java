@@ -43,9 +43,9 @@ public class NLPTools extends Configurable implements INLPTools {
         setProperties(properties);
     }
 
-    public INLPPipeline getPipeline() throws ConfigurableException {
-        INLPPipeline pipeline = null;
-        pipeline = (INLPPipeline) configureComponent(pipeline, new Properties(), properties, "NLP Pipeline", PIPELINE_CLASS_KEY, INLPPipeline.class);
+    public ILabelPipeline getPipeline() throws ConfigurableException {
+        ILabelPipeline pipeline = null;
+        pipeline = (ILabelPipeline) configureComponent(pipeline, new Properties(), properties, "NLP Pipeline", PIPELINE_CLASS_KEY, ILabelPipeline.class);
         return pipeline;
     }
 }

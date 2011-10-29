@@ -5,8 +5,8 @@ import it.unitn.disi.nlptools.NLPToolsConstants;
 import it.unitn.disi.nlptools.components.PipelineComponentException;
 import it.unitn.disi.nlptools.data.ILabel;
 import it.unitn.disi.nlptools.data.IToken;
-import it.unitn.disi.nlptools.pipelines.PipelineComponent;
-import it.unitn.disi.nlptools.pipelines.IPipelineComponent;
+import it.unitn.disi.nlptools.pipelines.ILabelPipelineComponent;
+import it.unitn.disi.nlptools.pipelines.LabelPipelineComponent;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
@@ -20,7 +20,7 @@ import java.util.regex.Pattern;
  *
  * @author Ju Qi
  */
-public class DMOZBNFParser extends PipelineComponent implements IPipelineComponent, DMOZBNFParserConstants {
+public class DMOZBNFParser extends LabelPipelineComponent implements ILabelPipelineComponent, DMOZBNFParserConstants {
 
     private static final Logger log = Logger.getLogger(DMOZBNFParser.class);
 

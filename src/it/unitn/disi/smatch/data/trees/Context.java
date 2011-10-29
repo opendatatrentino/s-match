@@ -34,10 +34,4 @@ public class Context extends BaseContext<INode> implements IContext, ITreeStruct
         root.addTreeStructureChangedListener(this);
         return root;
     }
-
-    public void trim() {
-        if (root instanceof Node) {
-            ((Node) root).trim();
-        }
-    }
 }

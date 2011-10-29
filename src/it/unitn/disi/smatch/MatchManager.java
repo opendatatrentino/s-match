@@ -171,11 +171,6 @@ public class MatchManager extends Configurable implements IMatchManager {
 
         log.info("Loading context from: " + fileName);
         final IBaseContext result = contextLoader.loadContext(fileName);
-        if (result instanceof Context) {
-            log.debug("Trimming context...");
-            ((Context) result).trim();
-            log.debug("Trimming context finished");
-        }
         log.info("Loading context finished");
         return result;
     }
@@ -403,82 +398,32 @@ public class MatchManager extends Configurable implements IMatchManager {
         if (args.length < 1) {
             System.out.println(USAGE);
         } else {
-            try {
-                MatchManager mm = new MatchManager();
+            MatchManager mm = new MatchManager();
 
-                Properties config = new Properties();
-                config.load(new FileInputStream(configFileName));
+            Properties config = new Properties();
+            config.load(new FileInputStream(configFileName));
 
-                if (log.isEnabledFor(Level.DEBUG)) {
-                    for (String k : commandProperties.stringPropertyNames()) {
-                        log.debug("property override: " + k + "=" + commandProperties.getProperty(k));
-                    }
+            if (log.isEnabledFor(Level.DEBUG)) {
+                for (String k : commandProperties.stringPropertyNames()) {
+                    log.debug("property override: " + k + "=" + commandProperties.getProperty(k));
                 }
+            }
 
-                // override from command line
-                config.putAll(commandProperties);
+            // override from command line
+            config.putAll(commandProperties);
 
-                mm.setProperties(config);
+            mm.setProperties(config);
 
-                if ("wntoflat".equals(args[0])) {
-                    mm.convertWordNetToFlat(config);
-                } else if ("convert".equals(args[0])) {
-                    if (2 < args.length) {
-                        if (3 == args.length) {
-                            String inputFile = args[1];
-                            String outputFile = args[2];
-                            IBaseContext ctxSource = mm.loadContext(inputFile);
-                            mm.renderContext(ctxSource, outputFile);
-                        } else if (5 == args.length) {
-                            String sourceFile = args[1];
-                            String targetFile = args[2];
-                            String inputFile = args[3];
-                            String outputFile = args[4];
-
-                            if (mm.getContextLoader() instanceof IContextLoader) {
-                                IContext ctxSource = (IContext) mm.loadContext(sourceFile);
-                                IContext ctxTarget = (IContext) mm.loadContext(targetFile);
-                                IContextMapping<INode> map = mm.loadMapping(ctxSource, ctxTarget, inputFile);
-                                mm.renderMapping(map, outputFile);
-                            } else {
-                                System.out.println("To convert a mapping, use context loaders supporting IContextLoader.");
-                            }
-                        }
-                    } else {
-                        System.out.println("Not enough arguments for convert command.");
-                    }
-                } else if ("offline".equals(args[0])) {
-                    if (2 < args.length) {
+            if ("wntoflat".equals(args[0])) {
+                mm.convertWordNetToFlat(config);
+            } else if ("convert".equals(args[0])) {
+                if (2 < args.length) {
+                    if (3 == args.length) {
                         String inputFile = args[1];
                         String outputFile = args[2];
-                        if (mm.getContextLoader() instanceof IContextLoader && mm.getContextRenderer() instanceof IContextRenderer) {
-                            IContext ctxSource = (IContext) mm.loadContext(inputFile);
-                            mm.offline(ctxSource);
-                            mm.renderContext(ctxSource, outputFile);
-                        } else {
-                            System.out.println("To preprocess a mapping, use context loaders and renderers support IContextLoader and IContextRenderer.");
-                        }
-                    } else {
-                        System.out.println("Not enough arguments for offline command.");
-                    }
-                } else if ("online".equals(args[0])) {
-                    if (3 < args.length) {
-                        String sourceFile = args[1];
-                        String targetFile = args[2];
-                        String outputFile = args[3];
-                        if (mm.getContextLoader() instanceof IContextLoader) {
-                            IContext ctxSource = (IContext) mm.loadContext(sourceFile);
-                            IContext ctxTarget = (IContext) mm.loadContext(targetFile);
-                            IContextMapping<INode> result = mm.online(ctxSource, ctxTarget);
-                            mm.renderMapping(result, outputFile);
-                        } else {
-                            System.out.println("To match contexts, use context loaders supporting IContextLoader.");
-                        }
-                    } else {
-                        System.out.println("Not enough arguments for online command.");
-                    }
-                } else if ("filter".equals(args[0])) {
-                    if (4 < args.length) {
+                        IBaseContext ctxSource = mm.loadContext(inputFile);
+                        mm.renderContext(ctxSource, outputFile);
+                    } else if (5 == args.length) {
                         String sourceFile = args[1];
                         String targetFile = args[2];
                         String inputFile = args[3];
@@ -487,24 +432,66 @@ public class MatchManager extends Configurable implements IMatchManager {
                         if (mm.getContextLoader() instanceof IContextLoader) {
                             IContext ctxSource = (IContext) mm.loadContext(sourceFile);
                             IContext ctxTarget = (IContext) mm.loadContext(targetFile);
-                            IContextMapping<INode> mapInput = mm.loadMapping(ctxSource, ctxTarget, inputFile);
-                            IContextMapping<INode> mapOutput = mm.filterMapping(mapInput);
-                            mm.renderMapping(mapOutput, outputFile);
+                            IContextMapping<INode> map = mm.loadMapping(ctxSource, ctxTarget, inputFile);
+                            mm.renderMapping(map, outputFile);
                         } else {
-                            System.out.println("To filter a mapping, use context loaders supporting IContextLoader.");
+                            System.out.println("To convert a mapping, use context loaders supporting IContextLoader.");
                         }
-                    } else {
-                        System.out.println("Not enough arguments for mappingFilter command.");
                     }
                 } else {
-                    System.out.println("Unrecognized command.");
+                    System.out.println("Not enough arguments for convert command.");
                 }
-            } catch (ConfigurableException e) {
-                if (log.isEnabledFor(Level.ERROR)) {
-                    final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
-                    log.error(errMessage, e);
+            } else if ("offline".equals(args[0])) {
+                if (2 < args.length) {
+                    String inputFile = args[1];
+                    String outputFile = args[2];
+                    if (mm.getContextLoader() instanceof IContextLoader && mm.getContextRenderer() instanceof IContextRenderer) {
+                        IContext ctxSource = (IContext) mm.loadContext(inputFile);
+                        mm.offline(ctxSource);
+                        mm.renderContext(ctxSource, outputFile);
+                    } else {
+                        System.out.println("To preprocess a mapping, use context loaders and renderers support IContextLoader and IContextRenderer.");
+                    }
+                } else {
+                    System.out.println("Not enough arguments for offline command.");
                 }
-                throw e;
+            } else if ("online".equals(args[0])) {
+                if (3 < args.length) {
+                    String sourceFile = args[1];
+                    String targetFile = args[2];
+                    String outputFile = args[3];
+                    if (mm.getContextLoader() instanceof IContextLoader) {
+                        IContext ctxSource = (IContext) mm.loadContext(sourceFile);
+                        IContext ctxTarget = (IContext) mm.loadContext(targetFile);
+                        IContextMapping<INode> result = mm.online(ctxSource, ctxTarget);
+                        mm.renderMapping(result, outputFile);
+                    } else {
+                        System.out.println("To match contexts, use context loaders supporting IContextLoader.");
+                    }
+                } else {
+                    System.out.println("Not enough arguments for online command.");
+                }
+            } else if ("filter".equals(args[0])) {
+                if (4 < args.length) {
+                    String sourceFile = args[1];
+                    String targetFile = args[2];
+                    String inputFile = args[3];
+                    String outputFile = args[4];
+
+                    if (mm.getContextLoader() instanceof IContextLoader) {
+                        IContext ctxSource = (IContext) mm.loadContext(sourceFile);
+                        IContext ctxTarget = (IContext) mm.loadContext(targetFile);
+                        IContextMapping<INode> mapInput = mm.loadMapping(ctxSource, ctxTarget, inputFile);
+                        IContextMapping<INode> mapOutput = mm.filterMapping(mapInput);
+                        mm.renderMapping(mapOutput, outputFile);
+                    } else {
+                        System.out.println("To filter a mapping, use context loaders supporting IContextLoader.");
+                    }
+                } else {
+                    System.out.println("Not enough arguments for mappingFilter command.");
+                }
+            } else {
+                System.out.println("Unrecognized command.");
             }
         }
     }

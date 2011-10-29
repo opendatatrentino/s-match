@@ -6,7 +6,7 @@ import it.unitn.disi.nlptools.data.ILabel;
 import it.unitn.disi.nlptools.data.IMultiWord;
 import it.unitn.disi.nlptools.data.IToken;
 import it.unitn.disi.nlptools.data.MultiWord;
-import it.unitn.disi.nlptools.pipelines.PipelineComponent;
+import it.unitn.disi.nlptools.pipelines.LabelPipelineComponent;
 import it.unitn.disi.smatch.oracles.ILinguisticOracle;
 import it.unitn.disi.smatch.oracles.LinguisticOracleException;
 import org.apache.log4j.Level;
@@ -22,7 +22,7 @@ import java.util.*;
  *
  * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  */
-public class SimpleMultiwordRecognizer extends PipelineComponent {
+public class SimpleMultiwordRecognizer extends LabelPipelineComponent {
 
     private static final Logger log = Logger.getLogger(SimpleMultiwordRecognizer.class);
 
@@ -62,9 +62,9 @@ public class SimpleMultiwordRecognizer extends PipelineComponent {
         return result;
     }
 
-    public void process(ILabel label) throws PipelineComponentException {
-        for (int i = 0; i < label.getTokens().size(); i++) {
-            IToken token = label.getTokens().get(i);
+    public void process(ILabel instance) throws PipelineComponentException {
+        for (int i = 0; i < instance.getTokens().size(); i++) {
+            IToken token = instance.getTokens().get(i);
             ArrayList<ArrayList<String>> entries;
             try {
                 entries = oracle.getMultiwords(token.getLemma().toLowerCase());
@@ -74,10 +74,10 @@ public class SimpleMultiwordRecognizer extends PipelineComponent {
             if (null != entries && 0 < entries.size()) {
                 for (int j = 0, maxJ = entries.size(); j < maxJ; j++) {
                     int mwIdx = 0;
-                    while (mwIdx < entries.get(j).size() && (mwIdx < (label.getTokens().size() - i))) {
-                        if (label.getTokens().get(i + mwIdx).getText().equalsIgnoreCase(entries.get(j).get(mwIdx)) ||
+                    while (mwIdx < entries.get(j).size() && (mwIdx < (instance.getTokens().size() - i))) {
+                        if (instance.getTokens().get(i + mwIdx).getText().equalsIgnoreCase(entries.get(j).get(mwIdx)) ||
                                 //last token can be in plural
-                                (entries.get(j).size() - 1 == mwIdx && label.getTokens().get(i + mwIdx).getLemma().equalsIgnoreCase(entries.get(j).get(mwIdx)))
+                                (entries.get(j).size() - 1 == mwIdx && instance.getTokens().get(i + mwIdx).getLemma().equalsIgnoreCase(entries.get(j).get(mwIdx)))
                                 ) {
                             mwIdx++;
                         } else {
@@ -94,16 +94,16 @@ public class SimpleMultiwordRecognizer extends PipelineComponent {
                         ArrayList<IToken> tokens = new ArrayList<IToken>();
                         for (int idx = 0; idx < entries.get(j).size(); idx++) {
                             indexes.add(i + idx);
-                            tokens.add(label.getTokens().get(i + idx));
+                            tokens.add(instance.getTokens().get(i + idx));
                         }
                         mw.setTokenIndexes(indexes);
                         mw.setTokens(tokens);
                         mw.setLemma(mw.getText());
-                        mw.setPOSTag(label.getTokens().get(i + mwIdx - 1).getPOSTag());
-                        if (0 == label.getMultiWords().size()) {
-                            label.setMultiWords(new ArrayList<IMultiWord>(Arrays.asList(mw)));
+                        mw.setPOSTag(instance.getTokens().get(i + mwIdx - 1).getPOSTag());
+                        if (0 == instance.getMultiWords().size()) {
+                            instance.setMultiWords(new ArrayList<IMultiWord>(Arrays.asList(mw)));
                         } else {
-                            label.getMultiWords().add(mw);
+                            instance.getMultiWords().add(mw);
                         }
                     }
                 }//for entries
@@ -112,15 +112,15 @@ public class SimpleMultiwordRecognizer extends PipelineComponent {
 
         if (joinTokens) {
             //start from longest ones, to handle cases like "adult male", "adult male body"
-            ArrayList<IMultiWord> mws = new ArrayList<IMultiWord>(label.getMultiWords());
+            ArrayList<IMultiWord> mws = new ArrayList<IMultiWord>(instance.getMultiWords());
             Collections.sort(mws, mwComparator);
             for (IMultiWord multiWord : mws) {
-                int idx = label.getTokens().indexOf(multiWord.getTokens().get(0));
+                int idx = instance.getTokens().indexOf(multiWord.getTokens().get(0));
                 if (-1 < idx) {
                     for (IToken token : multiWord.getTokens()) {
-                        label.getTokens().remove(token);
+                        instance.getTokens().remove(token);
                     }
-                    label.getTokens().add(idx, multiWord);
+                    instance.getTokens().add(idx, multiWord);
                 }
             }
         }

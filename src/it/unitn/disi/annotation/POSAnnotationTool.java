@@ -6,9 +6,7 @@ import com.jgoodies.forms.layout.FormLayout;
 import it.unitn.disi.annotation.data.INLPContext;
 import it.unitn.disi.annotation.data.INLPNode;
 import it.unitn.disi.annotation.loaders.context.INLPContextLoader;
-import it.unitn.disi.annotation.loaders.context.NLPXMLContextLoader;
 import it.unitn.disi.annotation.renderers.context.INLPContextRenderer;
-import it.unitn.disi.annotation.renderers.context.NLPXMLContextRenderer;
 import it.unitn.disi.common.components.Configurable;
 import it.unitn.disi.common.components.ConfigurableException;
 import it.unitn.disi.common.utils.MiscUtils;
@@ -19,7 +17,7 @@ import it.unitn.disi.nlptools.data.ILabel;
 import it.unitn.disi.nlptools.data.IToken;
 import it.unitn.disi.nlptools.data.Label;
 import it.unitn.disi.nlptools.data.Token;
-import it.unitn.disi.nlptools.pipelines.IPipelineComponent;
+import it.unitn.disi.nlptools.pipelines.ILabelPipelineComponent;
 import it.unitn.disi.smatch.loaders.context.ContextLoaderException;
 import it.unitn.disi.smatch.renderers.context.ContextRendererException;
 import org.apache.log4j.Level;
@@ -60,10 +58,10 @@ public class POSAnnotationTool extends Configurable {
     private INLPContextRenderer contextRenderer;
 
     private static final String TOKENIZER_KEY = "tokenizer";
-    private IPipelineComponent tokenizer;
+    private ILabelPipelineComponent tokenizer;
 
     private static final String POS_TAGGER_KEY = "postagger";
-    private IPipelineComponent postagger;
+    private ILabelPipelineComponent postagger;
 
     private String inputFileName = null;
     //allows loading other datasets to be used as label dictionaries. semicolon-separated list
@@ -317,8 +315,8 @@ public class POSAnnotationTool extends Configurable {
 
             contextLoader = (INLPContextLoader) configureComponent(contextLoader, oldProperties, newProperties, "context loader", CONTEXT_LOADER_KEY, INLPContextLoader.class);
             contextRenderer = (INLPContextRenderer) configureComponent(contextRenderer, oldProperties, newProperties, "context renderer", CONTEXT_RENDERER_KEY, INLPContextRenderer.class);
-            tokenizer = (IPipelineComponent) configureComponent(tokenizer, oldProperties, newProperties, "tokenizer", TOKENIZER_KEY, IPipelineComponent.class);
-            postagger = (IPipelineComponent) configureComponent(postagger, oldProperties, newProperties, "POS tagger", POS_TAGGER_KEY, IPipelineComponent.class);
+            tokenizer = (ILabelPipelineComponent) configureComponent(tokenizer, oldProperties, newProperties, "tokenizer", TOKENIZER_KEY, ILabelPipelineComponent.class);
+            postagger = (ILabelPipelineComponent) configureComponent(postagger, oldProperties, newProperties, "POS tagger", POS_TAGGER_KEY, ILabelPipelineComponent.class);
         }
         return result;
     }

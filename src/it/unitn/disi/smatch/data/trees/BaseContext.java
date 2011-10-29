@@ -81,4 +81,10 @@ public class BaseContext<E extends IBaseNode> implements IBaseContext<E>, IBaseT
     public void treeStructureChanged(E node) {
         nodes = null;
     }
+
+    public void trim() {
+        if (root instanceof BaseNode) {
+            ((BaseNode) root).trim();
+        }
+    }
 }

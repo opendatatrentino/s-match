@@ -188,18 +188,13 @@ public class Node extends BaseNode<INode, INodeData> implements INode, INodeData
     }
 
     public void trim() {
+        super.trim();
         if (null != acols) {
             acols.trimToSize();
             for (IAtomicConceptOfLabel acol : acols) {
                 if (acol instanceof AtomicConceptOfLabel) {
                     ((AtomicConceptOfLabel) acol).trim();
                 }
-            }
-        }
-        if (null != children) {
-            children.trimToSize();
-            for (IBaseNode child : children) {
-                ((Node) child).trim();
             }
         }
     }

@@ -78,8 +78,8 @@ public class BaseNode<E extends IBaseNode, I extends IBaseNodeData> extends Inde
 
         public E next() {
             E current = queue.removeFirst();
-            for (Iterator<IBaseNode> i = current.getChildren(); i.hasNext();) {
-                queue.add((E) i.next());
+            for (Iterator<E> i = current.getChildren(); i.hasNext();) {
+                queue.add(i.next());
             }
             return current;
         }
@@ -434,12 +434,23 @@ public class BaseNode<E extends IBaseNode, I extends IBaseNodeData> extends Inde
             for (int i = listeners.length - 2; i >= 0; i -= 2) {
                 if (listeners[i + 1] instanceof IBaseTreeStructureChangedListener) {
                     // Lazily create the event:
-                    ((IBaseTreeStructureChangedListener) listeners[i + 1]).treeStructureChanged(node);
+                    ((IBaseTreeStructureChangedListener<E>) listeners[i + 1]).treeStructureChanged(node);
                 }
             }
         }
         if (null != parent) {
             parent.fireTreeStructureChanged(node);
+        }
+    }
+
+    public void trim() {
+        if (null != children) {
+            children.trimToSize();
+            for (IBaseNode child : children) {
+                if (child instanceof BaseNode) {
+                    ((BaseNode) child).trim();
+                }
+            }
         }
     }
 }

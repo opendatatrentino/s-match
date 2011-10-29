@@ -2,7 +2,7 @@ package it.unitn.disi.nlptools.components.postaggers;
 
 import it.unitn.disi.common.components.ConfigurableException;
 import it.unitn.disi.nlptools.data.ILabel;
-import it.unitn.disi.nlptools.pipelines.PipelineComponent;
+import it.unitn.disi.nlptools.pipelines.LabelPipelineComponent;
 import opennlp.tools.postag.POSModel;
 import opennlp.tools.postag.POSTaggerME;
 import org.apache.log4j.Level;
@@ -18,7 +18,7 @@ import java.util.Properties;
  *
  * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  */
-public class OpenNLPPOSTagger extends PipelineComponent {
+public class OpenNLPPOSTagger extends LabelPipelineComponent {
 
     private static final Logger log = Logger.getLogger(OpenNLPPOSTagger.class);
 
@@ -27,14 +27,14 @@ public class OpenNLPPOSTagger extends PipelineComponent {
 
     private POSTaggerME tagger;
 
-    public void process(ILabel label) {
-        String tokens[] = new String[label.getTokens().size()];
-        for (int i = 0; i < label.getTokens().size(); i++) {
-            tokens[i] = label.getTokens().get(i).getText();
+    public void process(ILabel instance) {
+        String tokens[] = new String[instance.getTokens().size()];
+        for (int i = 0; i < instance.getTokens().size(); i++) {
+            tokens[i] = instance.getTokens().get(i).getText();
         }
         String[] tags = tagger.tag(tokens);
-        for (int i = 0; i < label.getTokens().size(); i++) {
-            label.getTokens().get(i).setPOSTag(tags[i]);
+        for (int i = 0; i < instance.getTokens().size(); i++) {
+            instance.getTokens().get(i).setPOSTag(tags[i]);
         }
     }
 

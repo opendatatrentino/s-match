@@ -4,7 +4,7 @@ import it.unitn.disi.common.components.ConfigurableException;
 import it.unitn.disi.nlptools.data.ILabel;
 import it.unitn.disi.nlptools.data.IToken;
 import it.unitn.disi.nlptools.data.Token;
-import it.unitn.disi.nlptools.pipelines.PipelineComponent;
+import it.unitn.disi.nlptools.pipelines.LabelPipelineComponent;
 import opennlp.tools.tokenize.Tokenizer;
 import opennlp.tools.tokenize.TokenizerME;
 import opennlp.tools.tokenize.TokenizerModel;
@@ -23,7 +23,7 @@ import java.util.Properties;
  *
  * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  */
-public class OpenNLPTokenizer extends PipelineComponent {
+public class OpenNLPTokenizer extends LabelPipelineComponent {
 
     private static final Logger log = Logger.getLogger(OpenNLPTokenizer.class);
 
@@ -32,13 +32,13 @@ public class OpenNLPTokenizer extends PipelineComponent {
 
     private Tokenizer tokenizer;
 
-    public void process(ILabel label) {
-        String tokens[] = tokenizer.tokenize(label.getText());
+    public void process(ILabel instance) {
+        String tokens[] = tokenizer.tokenize(instance.getText());
         List<IToken> tokenList = new ArrayList<IToken>(tokens.length);
         for (String token : tokens) {
             tokenList.add(new Token(token));
         }
-        label.setTokens(tokenList);
+        instance.setTokens(tokenList);
     }
 
     @Override

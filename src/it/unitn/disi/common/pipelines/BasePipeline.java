@@ -1,11 +1,8 @@
-package it.unitn.disi.nlptools.pipelines;
+package it.unitn.disi.common.pipelines;
 
 import it.unitn.disi.common.components.Configurable;
 import it.unitn.disi.common.components.ConfigurableException;
-import it.unitn.disi.nlptools.INLPPipeline;
 import it.unitn.disi.nlptools.components.PipelineComponentException;
-import it.unitn.disi.nlptools.data.ILabel;
-import it.unitn.disi.nlptools.data.Label;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
@@ -14,34 +11,29 @@ import java.util.List;
 import java.util.Properties;
 
 /**
- * Default pipeline implementation.
+ * Base pipeline class.
  *
  * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  */
-public class Pipeline extends Configurable implements INLPPipeline {
+public class BasePipeline<E> extends Configurable implements IBasePipeline<E> {
 
-    private static final Logger log = Logger.getLogger(Pipeline.class);
+    private static final Logger log = Logger.getLogger(BasePipeline.class);
 
-    private List<IPipelineComponent> pipelineComponents;
+    protected List<IBasePipelineComponent<E>> pipelineComponents;
 
-    public ILabel process(String label) throws PipelineComponentException {
-        ILabel result = new Label(label);
-        process(result);
-        return result;
-    }
-
-    public void process(ILabel label) throws PipelineComponentException {
-        for (IPipelineComponent c : pipelineComponents) {
-            c.process(label);
+    public void process(E instance) throws PipelineComponentException {
+        for (IBasePipelineComponent<E> c : pipelineComponents) {
+            c.process(instance);
         }
     }
 
     @Override
+    @SuppressWarnings({"unchecked"})
     public boolean setProperties(Properties newProperties) throws ConfigurableException {
         Properties oldProperties = new Properties();
         oldProperties.putAll(properties);
 
-        pipelineComponents = new ArrayList<IPipelineComponent>();
+        pipelineComponents = new ArrayList<IBasePipelineComponent<E>>();
 
         boolean result = super.setProperties(newProperties);
         if (result) {
@@ -49,8 +41,8 @@ public class Pipeline extends Configurable implements INLPPipeline {
             String strComponentIndex = "1";
             boolean componentFound = newProperties.containsKey(strComponentIndex);
             while (componentFound) {
-                IPipelineComponent component = null;
-                component = (IPipelineComponent) configureComponent(component, oldProperties, newProperties, "pipeline component #" + strComponentIndex, strComponentIndex, IPipelineComponent.class);
+                IBasePipelineComponent<E> component = null;
+                component = (IBasePipelineComponent<E>) configureComponent(component, oldProperties, newProperties, "pipeline component #" + strComponentIndex, strComponentIndex, IBasePipelineComponent.class);
                 if (null != component) {
                     pipelineComponents.add(component);
                 }

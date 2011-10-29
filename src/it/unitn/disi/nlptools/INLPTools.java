@@ -16,5 +16,5 @@ public interface INLPTools extends IConfigurable {
      * @return a pipeline instance
      * @throws ConfigurableException ConfigurableException
      */
-    INLPPipeline getPipeline() throws ConfigurableException;
+    ILabelPipeline getPipeline() throws ConfigurableException;
 }

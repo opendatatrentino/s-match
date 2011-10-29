@@ -2,7 +2,7 @@ package it.unitn.disi.smatch.preprocessors;
 
 import it.unitn.disi.common.components.Configurable;
 import it.unitn.disi.common.components.ConfigurableException;
-import it.unitn.disi.nlptools.INLPPipeline;
+import it.unitn.disi.nlptools.ILabelPipeline;
 import it.unitn.disi.nlptools.INLPTools;
 import it.unitn.disi.nlptools.components.PipelineComponentException;
 import it.unitn.disi.nlptools.data.ILabel;
@@ -29,7 +29,7 @@ public class NLPToolsContextPreprocessor extends Configurable implements IContex
     private static final String NLPTOOLS_KEY = "nlp";
 
     private INLPTools nlpTools;
-    private INLPPipeline pipeline;
+    private ILabelPipeline pipeline;
 
     private final static String DCP_KEY = "dcp";
     private DefaultContextPreprocessor dcp;
@@ -141,6 +141,7 @@ public class NLPToolsContextPreprocessor extends Configurable implements IContex
             // 1 & 2
             // 1 & (3 | 4)
             String formula = result.getFormula();
+            currentNode.getNodeData().setIsPreprocessed(true);
 
             //create acols. one acol for each concept (meaningful) token
             //non-concept tokens should not make it up to a formula.

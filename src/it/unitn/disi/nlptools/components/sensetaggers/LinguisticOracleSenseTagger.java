@@ -4,7 +4,7 @@ import it.unitn.disi.common.components.ConfigurableException;
 import it.unitn.disi.nlptools.components.PipelineComponentException;
 import it.unitn.disi.nlptools.data.ILabel;
 import it.unitn.disi.nlptools.data.IToken;
-import it.unitn.disi.nlptools.pipelines.PipelineComponent;
+import it.unitn.disi.nlptools.pipelines.LabelPipelineComponent;
 import it.unitn.disi.smatch.data.ling.ISense;
 import it.unitn.disi.smatch.oracles.ILinguisticOracle;
 import it.unitn.disi.smatch.oracles.LinguisticOracleException;
@@ -19,15 +19,15 @@ import java.util.Properties;
  *
  * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  */
-public class LinguisticOracleSenseTagger extends PipelineComponent {
+public class LinguisticOracleSenseTagger extends LabelPipelineComponent {
 
     private static final Logger log = Logger.getLogger(LinguisticOracleSenseTagger.class);
 
     private static final String ORACLE_KEY = "oracle";
     private ILinguisticOracle oracle;
 
-    public void process(ILabel label) throws PipelineComponentException {
-        tagSenses(label.getTokens());
+    public void process(ILabel instance) throws PipelineComponentException {
+        tagSenses(instance.getTokens());
     }
 
     private void tagSenses(List<? extends IToken> tokens) throws PipelineComponentException {

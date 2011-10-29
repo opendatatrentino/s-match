@@ -8,7 +8,7 @@ import java.util.List;
  *
  * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  */
-public interface IBaseContext<E> {
+public interface IBaseContext<E extends IBaseNode> {
     /**
      * Sets a new root for the context.
      *

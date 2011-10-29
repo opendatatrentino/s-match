@@ -1,4 +1,4 @@
-package it.unitn.disi.nlptools.pipelines;
+package it.unitn.disi.common.pipelines;
 
 import it.unitn.disi.common.components.Configurable;
 
@@ -7,5 +7,5 @@ import it.unitn.disi.common.components.Configurable;
  *
  * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  */
-public abstract class PipelineComponent extends Configurable implements IPipelineComponent {
+public abstract class BasePipelineComponent<E> extends Configurable implements IBasePipelineComponent<E> {
 }

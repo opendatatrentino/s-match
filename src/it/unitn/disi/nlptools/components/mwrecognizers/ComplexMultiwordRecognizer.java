@@ -2,7 +2,7 @@ package it.unitn.disi.nlptools.components.mwrecognizers;
 
 import it.unitn.disi.nlptools.components.PipelineComponentException;
 import it.unitn.disi.nlptools.data.ILabel;
-import it.unitn.disi.nlptools.pipelines.PipelineComponent;
+import it.unitn.disi.nlptools.pipelines.LabelPipelineComponent;
 
 /**
  * Recognizes multiwords within non-consecutive tokens. Given:
@@ -12,9 +12,9 @@ import it.unitn.disi.nlptools.pipelines.PipelineComponent;
  *
  * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  */
-public class ComplexMultiwordRecognizer extends PipelineComponent {
+public class ComplexMultiwordRecognizer extends LabelPipelineComponent {
 
-    public void process(ILabel label) throws PipelineComponentException {
+    public void process(ILabel instance) throws PipelineComponentException {
         //TODO
     }
 }

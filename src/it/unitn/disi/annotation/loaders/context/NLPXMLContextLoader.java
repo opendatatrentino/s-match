@@ -96,13 +96,15 @@ public class NLPXMLContextLoader extends BaseSimpleXMLContextLoader<INLPContext>
                 label.getTokens().add(token);
             }
         } else if ("sense".equals(localName)) {
-            if (0 == token.getSenses().size()) {
-                token.setSenses(new ArrayList<ISense>());
-            }
-            try {
-                token.getSenses().add(oracle.createSense(atts.getValue("id")));
-            } catch (LinguisticOracleException e) {
-                throw new RuntimeException(e.getMessage(), e);
+            if (null != oracle) {
+                if (0 == token.getSenses().size()) {
+                    token.setSenses(new ArrayList<ISense>());
+                }
+                try {
+                    token.getSenses().add(oracle.createSense(atts.getValue("id")));
+                } catch (LinguisticOracleException e) {
+                    throw new RuntimeException(e.getMessage(), e);
+                }
             }
         } else {
             content = new StringBuilder();

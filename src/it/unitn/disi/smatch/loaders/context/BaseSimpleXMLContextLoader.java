@@ -44,12 +44,19 @@ public class BaseSimpleXMLContextLoader<E extends IBaseContext<? extends IBaseNo
     protected boolean uniqueStrings = false;
     protected final HashMap<String, String> unique = new HashMap<String, String>();
 
+    private final static String TRIM_KEY = "trim";
+    protected boolean trim = false;
+
     @Override
     public boolean setProperties(Properties newProperties) throws ConfigurableException {
         boolean result = super.setProperties(newProperties);
         if (result) {
             if (newProperties.containsKey(UNIQUE_STRINGS_KEY)) {
                 uniqueStrings = Boolean.parseBoolean(newProperties.getProperty(UNIQUE_STRINGS_KEY));
+            }
+
+            if (newProperties.containsKey(TRIM_KEY)) {
+                trim = Boolean.parseBoolean(newProperties.getProperty(TRIM_KEY));
             }
         }
         return result;
@@ -175,6 +182,11 @@ public class BaseSimpleXMLContextLoader<E extends IBaseContext<? extends IBaseNo
 
     public void endDocument() {
         unique.clear();
+        if (trim && ctx instanceof BaseContext) {
+            log.debug("Trimming context...");
+            ((BaseContext) ctx).trim();
+            log.debug("Trimming context finished");
+        }
     }
 
     public void startPrefixMapping(String prefix, String uri) throws SAXException {
