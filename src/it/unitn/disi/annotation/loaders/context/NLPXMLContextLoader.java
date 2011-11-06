@@ -115,9 +115,13 @@ public class NLPXMLContextLoader extends BaseSimpleXMLContextLoader<INLPContext>
         if ("name".equals(localName)) {
             pathToRoot.getLast().getNodeData().setName(makeUnique(content.toString()));
         } else if ("formula".equals(localName)) {
-            label.setFormula(content.toString());
+            if (null != label) {
+                label.setFormula(content.toString());
+            }
         } else if ("text".equals(localName)) {
-            label.setText(makeUnique(content.toString()));
+            if (null != label) {
+                label.setText(makeUnique(content.toString()));
+            }
         } else if ("label".equals(localName)) {
             label = null;
         } else if ("token".equals(localName)) {
