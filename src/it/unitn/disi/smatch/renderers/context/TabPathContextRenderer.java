@@ -1,8 +1,6 @@
 package it.unitn.disi.smatch.renderers.context;
 
-import it.unitn.disi.smatch.data.trees.IContext;
-import it.unitn.disi.smatch.data.trees.INode;
-import it.unitn.disi.smatch.data.trees.Node;
+import it.unitn.disi.smatch.data.trees.*;
 import it.unitn.disi.smatch.loaders.ILoader;
 
 import java.io.BufferedWriter;
@@ -16,12 +14,13 @@ import java.util.Iterator;
  *
  * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  */
-public class TabPathContextRenderer extends BaseFileContextRenderer<IContext> {
+public class TabPathContextRenderer extends BaseFileContextRenderer<IBaseContext<IBaseNode<IBaseNode, IBaseNodeData>>> {
 
-    protected void process(IContext context, BufferedWriter out) throws IOException, ContextRendererException {
-        ArrayList<INode> nodeQ = new ArrayList<INode>();
+    @SuppressWarnings({"unchecked"})
+    protected void process(IBaseContext<IBaseNode<IBaseNode, IBaseNodeData>> context, BufferedWriter out) throws IOException, ContextRendererException {
+        ArrayList<IBaseNode<IBaseNode, IBaseNodeData>> nodeQ = new ArrayList<IBaseNode<IBaseNode, IBaseNodeData>>();
         nodeQ.add(context.getRoot());
-        INode curNode;
+        IBaseNode<IBaseNode, IBaseNodeData> curNode;
         while (!nodeQ.isEmpty()) {
             curNode = nodeQ.remove(0);
             if (0 == curNode.getChildCount()) {
@@ -29,9 +28,9 @@ public class TabPathContextRenderer extends BaseFileContextRenderer<IContext> {
             }
             reportProgress();
             if (curNode.getChildCount() > 0) {
-                Iterator<INode> children;
+                Iterator<IBaseNode> children;
                 if (sort) {
-                    ArrayList<INode> childrenList = new ArrayList<INode>(curNode.getChildrenList());
+                    ArrayList<IBaseNode> childrenList = new ArrayList<IBaseNode>(curNode.getChildrenList());
                     Collections.sort(childrenList, Node.NODE_NAME_COMPARATOR);
                     children = childrenList.iterator();
                 } else {
@@ -45,9 +44,9 @@ public class TabPathContextRenderer extends BaseFileContextRenderer<IContext> {
         reportStats(context);
     }
 
-    private String getPathToRoot(INode node) {
+    private String getPathToRoot(IBaseNode node) {
         StringBuilder result = new StringBuilder(node.getNodeData().getName());
-        INode curNode = node.getParent();
+        IBaseNode curNode = node.getParent();
         while (null != curNode) {
             result.insert(0, curNode.getNodeData().getName() + "\t");
             curNode = curNode.getParent();

@@ -1,8 +1,6 @@
 package it.unitn.disi.smatch.renderers.context;
 
-import it.unitn.disi.smatch.data.trees.IContext;
-import it.unitn.disi.smatch.data.trees.INode;
-import it.unitn.disi.smatch.data.trees.Node;
+import it.unitn.disi.smatch.data.trees.*;
 import it.unitn.disi.smatch.loaders.ILoader;
 
 import java.io.BufferedWriter;
@@ -16,13 +14,14 @@ import java.util.Iterator;
  *
  * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  */
-public class TabContextRenderer extends BaseFileContextRenderer<IContext> {
+public class TabContextRenderer extends BaseFileContextRenderer<IBaseContext<IBaseNode<IBaseNode, IBaseNodeData>>> {
 
-    protected void process(IContext context, BufferedWriter out) throws IOException, ContextRendererException {
-        ArrayList<INode> nodeQ = new ArrayList<INode>();
+    @SuppressWarnings({"unchecked"})
+    protected void process(IBaseContext<IBaseNode<IBaseNode, IBaseNodeData>> context, BufferedWriter out) throws IOException, ContextRendererException {
+        ArrayList<IBaseNode<IBaseNode, IBaseNodeData>> nodeQ = new ArrayList<IBaseNode<IBaseNode, IBaseNodeData>>();
         String level = "";
         nodeQ.add(context.getRoot());
-        INode curNode;
+        IBaseNode<IBaseNode, IBaseNodeData> curNode;
         String line;
         while (!nodeQ.isEmpty()) {
             curNode = nodeQ.remove(0);
@@ -36,9 +35,9 @@ public class TabContextRenderer extends BaseFileContextRenderer<IContext> {
                 if (curNode.getChildCount() > 0) {
                     level = level + "\t";
                     nodeQ.add(0, null);
-                    Iterator<INode> children;
+                    Iterator<IBaseNode> children;
                     if (sort) {
-                        ArrayList<INode> childrenList = new ArrayList<INode>(curNode.getChildrenList());
+                        ArrayList<IBaseNode> childrenList = new ArrayList<IBaseNode>(curNode.getChildrenList());
                         Collections.sort(childrenList, Node.NODE_NAME_COMPARATOR);
                         children = childrenList.iterator();
                     } else {
