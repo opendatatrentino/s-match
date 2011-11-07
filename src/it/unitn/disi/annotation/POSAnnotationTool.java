@@ -865,8 +865,8 @@ public class POSAnnotationTool extends Configurable {
         } else {
             POSAnnotationTool tool = new POSAnnotationTool(args[0]);
             tool.setProperties(CONF_FILE);
-            if (2 == args.length && args[2].startsWith(loadAlsoCmdLineToken)) {
-                String loadAlsoFileNames = args[3].substring(loadAlsoCmdLineToken.length(), args[2].length());
+            if (2 == args.length && args[1].startsWith(loadAlsoCmdLineToken)) {
+                String loadAlsoFileNames = args[1].substring(loadAlsoCmdLineToken.length(), args[1].length());
                 tool.loadAlso(loadAlsoFileNames);
             }
             tool.startup();
