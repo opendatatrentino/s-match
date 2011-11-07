@@ -34,7 +34,7 @@ import java.rmi.RemoteException;
 import java.util.*;
 
 /**
- * POS annotation GUI for labels.
+ * POS annotation GUI for labels. Also corrects tokenization: use space to split tokens, use + to join tokens.
  *
  * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  */
@@ -394,7 +394,7 @@ public class POSAnnotationTool extends Configurable {
         textField.putClientProperty(MAGIC_LABEL, phrase);
         //splits token on space typed
         textField.addKeyListener(tokenTextFieldKeyTyped);
-        //splits token on enter typed
+        //updates token on enter typed
         textField.addKeyListener(tokenTextFieldKeyReleased);
         //splits token on dbl click
         //does not work - work selectAll
@@ -681,7 +681,7 @@ public class POSAnnotationTool extends Configurable {
         datasetSizeString = Integer.toString(data.size());
 
         curIndex = -1;
-        while (null != data.get(curIndex + 1).getNodeData().getLabel()) {
+        while (null != data.get(curIndex + 1).getNodeData().getLabel() && (curIndex < (data.size() - 2))) {
             curIndex++;
         }
 
