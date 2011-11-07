@@ -92,7 +92,7 @@ public class NLPXMLContextLoader extends BaseSimpleXMLContextLoader<INLPContext>
                     label.setTokens(new ArrayList<IToken>());
                 }
                 token.setText(atts.getValue("text"));
-                token.setPOSTag(atts.getValue("pos"));
+                token.setPOSTag(atts.getValue("pos").intern());
                 label.getTokens().add(token);
             }
         } else if ("sense".equals(localName)) {
