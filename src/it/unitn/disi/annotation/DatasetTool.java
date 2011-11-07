@@ -181,7 +181,7 @@ public class DatasetTool extends Configurable {
                     dt.renderContext(context, outputFile);
                 }
             } else {
-                System.out.println("Not enough arguments for convert command.");
+                System.out.println("Not enough arguments.");
             }
         }
     }
