@@ -524,7 +524,7 @@ public class POSAnnotationTool extends Configurable {
             //current one
             label.getTokens().remove(token);
             //next one
-            label.getTokens().remove(tokens.get(tokenIndex + 1));
+            label.getTokens().remove(tokens.get(tokenIndex));
 
             //add new one in place of original
             label.getTokens().add(tokenIndex, new Token(newTokenText));
