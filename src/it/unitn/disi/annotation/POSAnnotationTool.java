@@ -173,6 +173,18 @@ public class POSAnnotationTool extends Configurable {
                 log.info("Skipping: " + label);
                 super.actionPerformed(e);
                 curIndex++;
+
+                //create label
+                curLabel = new Label(data.get(curIndex).getNodeData().getName());
+                data.get(curIndex).getNodeData().setLabel(curLabel);
+                //process label
+                try {
+                    tokenizer.process(curLabel);
+                    postagger.process(curLabel);
+                } catch (PipelineComponentException exc) {
+                    log.error(exc.getMessage(), exc);
+                }
+
                 label = data.get(curIndex).getNodeData().getLabel().getText();
                 tabText = taggedPOS.get(label);
             }
