@@ -7,7 +7,7 @@ set CP=..\build\s-match.jar;..\lib\extjwnl\commons-logging-1.1.1.jar;..\lib\extj
 if "%D-TOOL-JVM%" EQU "" (
   java -Xmx256M -Xms256M -Dlog4j.configuration=..\conf\log4j.properties -cp %CP% it.unitn.disi.annotation.DatasetTool %*
 ) else (
-  java -Dlog4j.configuration=..\conf\log4j.properties %S-MATCH-JVM% -cp %CP% it.unitn.disi.annotation.DatasetTool %*
+  java -Dlog4j.configuration=..\conf\log4j.properties %D-TOOL-JVM% -cp %CP% it.unitn.disi.annotation.DatasetTool %*
 )
 
 endlocal
