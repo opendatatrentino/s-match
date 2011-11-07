@@ -25,12 +25,15 @@ public class NLPXMLContextRenderer extends BaseSimpleXMLContextRenderer<INLPCont
 
         if (null != curNodeData.getLabel()) {
             ILabel label = curNodeData.getLabel();
-            hd.startElement("", "", "label", new AttributesImpl());
-            renderString(hd, new AttributesImpl(), "text", label.getText());
+            AttributesImpl atts = new AttributesImpl();
+            if (null != label.getText() && !label.getText().equals(curNodeData.getName())) {
+                renderAttribute(atts, "text", label.getText());
+            }
+            hd.startElement("", "", "label", atts);
             renderString(hd, new AttributesImpl(), "formula", label.getFormula());
 
             if (0 < label.getTokens().size()) {
-                AttributesImpl atts = new AttributesImpl();
+                atts = new AttributesImpl();
                 hd.startElement("", "", "tokens", atts);
                 for (IToken token : label.getTokens()) {
                     atts = new AttributesImpl();

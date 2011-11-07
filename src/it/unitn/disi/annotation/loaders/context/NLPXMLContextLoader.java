@@ -84,7 +84,15 @@ public class NLPXMLContextLoader extends BaseSimpleXMLContextLoader<INLPContext>
             pathToRoot.addLast(node);
         } else if ("label".equals(localName)) {
             label = new Label();
-            ((INLPNode) pathToRoot.getLast()).getNodeData().setLabel(label);
+            INLPNode n = ((INLPNode) pathToRoot.getLast());
+            n.getNodeData().setLabel(label);
+            String text = atts.getValue("text");
+            if (null == text) {
+                text = makeUnique(n.getNodeData().getName());
+            } else {
+                text = makeUnique(text);
+            }
+            label.setText(text);
         } else if ("token".equals(localName)) {
             if (null != label) {
                 token = new Token();
@@ -117,10 +125,6 @@ public class NLPXMLContextLoader extends BaseSimpleXMLContextLoader<INLPContext>
         } else if ("formula".equals(localName)) {
             if (null != label) {
                 label.setFormula(content.toString());
-            }
-        } else if ("text".equals(localName)) {
-            if (null != label) {
-                label.setText(makeUnique(content.toString()));
             }
         } else if ("label".equals(localName)) {
             label = null;
