@@ -153,16 +153,19 @@ public class POSAnnotationTool extends Configurable {
             //next
             curIndex++;
 
-            //create label
-            curLabel = new Label(data.get(curIndex).getNodeData().getName());
-            data.get(curIndex).getNodeData().setLabel(curLabel);
+            curLabel = data.get(curIndex).getNodeData().getLabel();
+            if (null == curLabel) {
+                //create label
+                curLabel = new Label(data.get(curIndex).getNodeData().getName());
+                data.get(curIndex).getNodeData().setLabel(curLabel);
 
-            //process label
-            try {
-                tokenizer.process(curLabel);
-                postagger.process(curLabel);
-            } catch (PipelineComponentException exc) {
-                log.error(exc.getMessage(), exc);
+                //process label
+                try {
+                    tokenizer.process(curLabel);
+                    postagger.process(curLabel);
+                } catch (PipelineComponentException exc) {
+                    log.error(exc.getMessage(), exc);
+                }
             }
 
             //load annotation from cache into a new label
@@ -174,17 +177,19 @@ public class POSAnnotationTool extends Configurable {
                 super.actionPerformed(e);
                 curIndex++;
 
-                //create label
-                curLabel = new Label(data.get(curIndex).getNodeData().getName());
-                data.get(curIndex).getNodeData().setLabel(curLabel);
-                //process label
-                try {
-                    tokenizer.process(curLabel);
-                    postagger.process(curLabel);
-                } catch (PipelineComponentException exc) {
-                    log.error(exc.getMessage(), exc);
+                curLabel = data.get(curIndex).getNodeData().getLabel();
+                if (null == curLabel) {
+                    //create label
+                    curLabel = new Label(data.get(curIndex).getNodeData().getName());
+                    data.get(curIndex).getNodeData().setLabel(curLabel);
+                    //process label
+                    try {
+                        tokenizer.process(curLabel);
+                        postagger.process(curLabel);
+                    } catch (PipelineComponentException exc) {
+                        log.error(exc.getMessage(), exc);
+                    }
                 }
-
                 label = data.get(curIndex).getNodeData().getLabel().getText();
                 tabText = taggedPOS.get(label);
             }
