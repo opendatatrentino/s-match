@@ -94,7 +94,10 @@ public class PipelineContextPipelineComponent extends BaseContextPipelineCompone
     }
 
     protected ILabel processNode(INLPNode currentNode, ArrayList<ILabel> pathToRootPhrases) {
-        ILabel label = new Label(currentNode.getNodeData().getName());
+        ILabel label = currentNode.getNodeData().getLabel();
+        if (null == label) {
+            label = new Label(currentNode.getNodeData().getName());
+        }
         label.setContext(pathToRootPhrases);
         try {
             pipeline.process(label);

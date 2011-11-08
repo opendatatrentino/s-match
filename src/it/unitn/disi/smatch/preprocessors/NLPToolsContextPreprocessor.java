@@ -77,6 +77,11 @@ public class NLPToolsContextPreprocessor extends Configurable implements IContex
 
         int processedCount = 0;
         fallbackCount = 0;
+        try {
+            pipeline.beforeProcessing();
+        } catch (PipelineComponentException e) {
+            throw new ContextPreprocessorException(e.getMessage(), e);
+        }
 
         ArrayList<INode> queue = new ArrayList<INode>();
         ArrayList<INode> pathToRoot = new ArrayList<INode>();
@@ -106,6 +111,11 @@ public class NLPToolsContextPreprocessor extends Configurable implements IContex
             }
         }
 
+        try {
+            pipeline.afterProcessing();
+        } catch (PipelineComponentException e) {
+            throw new ContextPreprocessorException(e.getMessage(), e);
+        }
         log.info("Processed nodes: " + processedCount + ", fallbacks: " + fallbackCount);
     }
 

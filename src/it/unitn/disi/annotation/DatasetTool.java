@@ -76,7 +76,7 @@ public class DatasetTool extends Configurable {
         return result;
     }
 
-    private IBaseContext loadContext(String fileName) throws ConfigurableException {
+    public IBaseContext loadContext(String fileName) throws ConfigurableException {
         if (null == contextLoader) {
             throw new ConfigurableException("Context loader is not configured.");
         }
@@ -88,7 +88,7 @@ public class DatasetTool extends Configurable {
     }
 
     @SuppressWarnings("unchecked")
-    private void renderContext(IBaseContext context, String fileName) throws SMatchException {
+    public void renderContext(IBaseContext context, String fileName) throws SMatchException {
         if (null == contextRenderer) {
             throw new SMatchException("Context renderer is not configured.");
         }
@@ -97,7 +97,7 @@ public class DatasetTool extends Configurable {
         log.info("Rendering context finished");
     }
 
-    private void process(IBaseContext context) {
+    public void process(IBaseContext context) {
         try {
             if (null != pipeline) {
                 log.info("Processing context...");
@@ -106,6 +106,30 @@ public class DatasetTool extends Configurable {
         } catch (PipelineComponentException e) {
             if (log.isEnabledFor(Level.ERROR)) {
                 log.error(e.getMessage(), e);
+            }
+        }
+    }
+
+    public void afterProcessing() {
+        if (null != pipeline) {
+            try {
+                pipeline.afterProcessing();
+            } catch (PipelineComponentException e) {
+                if (log.isEnabledFor(Level.ERROR)) {
+                    log.error(e.getMessage(), e);
+                }
+            }
+        }
+    }
+
+    public void beforeProcessing() {
+        if (null != pipeline) {
+            try {
+                pipeline.beforeProcessing();
+            } catch (PipelineComponentException e) {
+                if (log.isEnabledFor(Level.ERROR)) {
+                    log.error(e.getMessage(), e);
+                }
             }
         }
     }
@@ -170,20 +194,24 @@ public class DatasetTool extends Configurable {
             if (!config.isEmpty()) {
                 if (1 == args.length) {
                     String[] inputFiles = args[0].split(";");
+                    dt.beforeProcessing();
                     for (String inputFile : inputFiles) {
                         IBaseContext context = dt.loadContext(inputFile);
                         dt.process(context);
                     }
+                    dt.afterProcessing();
                 } else if (2 == args.length) {
                     String[] inputFiles = args[0].split(";");
                     String[] outputFiles = args[1].split(";");
 
                     if (inputFiles.length == outputFiles.length) {
+                        dt.beforeProcessing();
                         for (int i = 0; i < inputFiles.length; i++) {
                             IBaseContext context = dt.loadContext(inputFiles[i]);
                             dt.process(context);
                             dt.renderContext(context, outputFiles[i]);
                         }
+                        dt.afterProcessing();
                     } else {
                         System.out.println("Input and output arguments count mismatch.");
                     }

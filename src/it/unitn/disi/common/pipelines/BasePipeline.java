@@ -23,7 +23,13 @@ public class BasePipeline<E> extends Configurable implements IBasePipeline<E> {
 
     public void process(E instance) throws PipelineComponentException {
         for (IBasePipelineComponent<E> c : pipelineComponents) {
+            c.beforeInstanceProcessing(instance);
+        }
+        for (IBasePipelineComponent<E> c : pipelineComponents) {
             c.process(instance);
+        }
+        for (IBasePipelineComponent<E> c : pipelineComponents) {
+            c.afterInstanceProcessing(instance);
         }
     }
 
@@ -56,5 +62,13 @@ public class BasePipeline<E> extends Configurable implements IBasePipeline<E> {
             }
         }
         return result;
+    }
+
+    public void beforeProcessing() throws PipelineComponentException {
+        //nop
+    }
+
+    public void afterProcessing() throws PipelineComponentException {
+        //nop
     }
 }

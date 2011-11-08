@@ -10,5 +10,27 @@ import it.unitn.disi.nlptools.components.PipelineComponentException;
  */
 public interface IBasePipelineComponent<E> extends IConfigurable {
 
+    /**
+     * Processes an instance of a pipeline subject matter.
+     *
+     * @param instance an instance of a pipeline subject matter.
+     * @throws PipelineComponentException PipelineComponentException
+     */
     void process(E instance) throws PipelineComponentException;
+
+    /**
+     * Occurs before pipeline starts processing an instance of a pipeline subject matter.
+     *
+     * @throws PipelineComponentException PipelineComponentException
+     * @param instance an instance of a pipeline subject matter.
+     */
+    void beforeInstanceProcessing(E instance) throws PipelineComponentException;
+
+    /**
+     * Occurs after pipeline finished processing an instance of a pipeline subject matter.
+     *
+     * @throws PipelineComponentException PipelineComponentException
+     * @param instance an instance of a pipeline subject matter.
+     */
+    void afterInstanceProcessing(E instance) throws PipelineComponentException;
 }

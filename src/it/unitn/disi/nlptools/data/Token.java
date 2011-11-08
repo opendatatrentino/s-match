@@ -47,4 +47,14 @@ public class Token extends TextSpan implements IToken {
     public void setSenses(List<ISense> senses) {
         this.senses = senses;
     }
+
+    @Override
+    public String toString() {
+        return "Token{" +
+                "text='" + text + '\'' +
+                ", lemma='" + lemma + '\'' +
+                ", posTag='" + posTag + '\'' +
+                ", senses=" + senses +
+                '}';
+    }
 }

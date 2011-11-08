@@ -54,4 +54,9 @@ public class Label extends TextSpan implements ILabel {
     public void setFormula(String formula) {
         this.formula = formula;
     }
+
+    @Override
+    public String toString() {
+        return text;
+    }
 }
