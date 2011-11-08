@@ -169,16 +169,24 @@ public class DatasetTool extends Configurable {
 
             if (!config.isEmpty()) {
                 if (1 == args.length) {
-                    String inputFile = args[0];
-                    IBaseContext context = dt.loadContext(inputFile);
-                    dt.process(context);
+                    String[] inputFiles = args[0].split(";");
+                    for (String inputFile : inputFiles) {
+                        IBaseContext context = dt.loadContext(inputFile);
+                        dt.process(context);
+                    }
                 } else if (2 == args.length) {
-                    String inputFile = args[0];
-                    String outputFile = args[1];
+                    String[] inputFiles = args[0].split(";");
+                    String[] outputFiles = args[1].split(";");
 
-                    IBaseContext context = dt.loadContext(inputFile);
-                    dt.process(context);
-                    dt.renderContext(context, outputFile);
+                    if (inputFiles.length == outputFiles.length) {
+                        for (int i = 0; i < inputFiles.length; i++) {
+                            IBaseContext context = dt.loadContext(inputFiles[i]);
+                            dt.process(context);
+                            dt.renderContext(context, outputFiles[i]);
+                        }
+                    } else {
+                        System.out.println("Input and output arguments count mismatch.");
+                    }
                 }
             } else {
                 System.out.println("Not enough arguments.");
