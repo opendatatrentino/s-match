@@ -32,6 +32,7 @@ import java.io.File;
 import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.*;
+import java.util.List;
 
 /**
  * POS annotation GUI for labels. Also corrects tokenization: use space to split tokens, use + to join tokens.
@@ -50,6 +51,9 @@ public class POSAnnotationTool extends Configurable {
     private static final String CONF_FILE = ".." + File.separator + "conf" + File.separator + "annotation.properties";
     private static final String LOOK_AND_FEEL_KEY = "LookAndFeel";
     private String lookAndFeel = null;
+
+    private static final String TAG_ORDER = "tagOrder";
+    List<String> tagOrder = Arrays.asList(NLPToolsConstants.ARR_POS_ALL);
 
     private static final String CONTEXT_LOADER_KEY = "contextLoader";
     private INLPContextLoader contextLoader;
@@ -330,6 +334,18 @@ public class POSAnnotationTool extends Configurable {
                 lookAndFeel = newProperties.getProperty(LOOK_AND_FEEL_KEY);
             }
 
+            if (newProperties.containsKey(TAG_ORDER)) {
+                String order = newProperties.getProperty(TAG_ORDER);
+
+                String[] tags = order.split("\t");
+                tagOrder = new ArrayList<String>(Arrays.asList(tags));
+                for (String t : NLPToolsConstants.ARR_POS_ALL) {
+                    if (!tagOrder.contains(t)) {
+                        tagOrder.add(t);
+                    }
+                }
+            }
+
             contextLoader = (INLPContextLoader) configureComponent(contextLoader, oldProperties, newProperties, "context loader", CONTEXT_LOADER_KEY, INLPContextLoader.class);
             contextRenderer = (INLPContextRenderer) configureComponent(contextRenderer, oldProperties, newProperties, "context renderer", CONTEXT_RENDERER_KEY, INLPContextRenderer.class);
             tokenizer = (ILabelPipelineComponent) configureComponent(tokenizer, oldProperties, newProperties, "tokenizer", TOKENIZER_KEY, ILabelPipelineComponent.class);
@@ -573,9 +589,7 @@ public class POSAnnotationTool extends Configurable {
         JList posList = new JList();
         posList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         DefaultListModel model = new DefaultListModel();
-        ArrayList<String> posTags = new ArrayList<String>();
-        posTags.addAll(Arrays.asList(NLPToolsConstants.ARR_POS_ALL));
-        for (String pos : posTags) {
+        for (String pos : tagOrder) {
             model.addElement(pos);
         }
         //for empty tags. should be encountered rarely
