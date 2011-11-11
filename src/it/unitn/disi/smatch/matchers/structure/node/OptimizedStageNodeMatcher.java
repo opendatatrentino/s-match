@@ -38,8 +38,8 @@ public class OptimizedStageNodeMatcher extends BaseNodeMatcher implements INodeM
         String sourceCLabFormula = sourceNode.getNodeData().getcLabFormula();
         String targetCLabFormula = targetNode.getNodeData().getcLabFormula();
 
-        if (null != sourceCNodeFormula && null != targetCNodeFormula && !"".equals(sourceCNodeFormula) && !"".equals(targetCNodeFormula) &&
-                null != sourceCLabFormula && null != targetCLabFormula && !"".equals(sourceCLabFormula) && !"".equals(targetCLabFormula)
+        if (null != sourceCNodeFormula && null != targetCNodeFormula && !sourceCNodeFormula.isEmpty() && !targetCNodeFormula.isEmpty() &&
+                null != sourceCLabFormula && null != targetCLabFormula && !sourceCLabFormula.isEmpty() && !targetCLabFormula.isEmpty()
                 ) {
             HashMap<IAtomicConceptOfLabel, String> hashConceptNumber = new HashMap<IAtomicConceptOfLabel, String>();
             Object[] obj = mkAxioms(hashConceptNumber, nmtAcols, sourceACoLs, targetACoLs, acolMapping, sourceNode, targetNode);
@@ -83,8 +83,8 @@ public class OptimizedStageNodeMatcher extends BaseNodeMatcher implements INodeM
         String sourceCLabFormula = sourceNode.getNodeData().getcLabFormula();
         String targetCLabFormula = targetNode.getNodeData().getcLabFormula();
 
-        if (null != sourceCNodeFormula && null != targetCNodeFormula && !"".equals(sourceCNodeFormula) && !"".equals(targetCNodeFormula) &&
-                null != sourceCLabFormula && null != targetCLabFormula && !"".equals(sourceCLabFormula) && !"".equals(targetCLabFormula)
+        if (null != sourceCNodeFormula && null != targetCNodeFormula && !sourceCNodeFormula.isEmpty() && !targetCNodeFormula.isEmpty() &&
+                null != sourceCLabFormula && null != targetCLabFormula && !sourceCLabFormula.isEmpty() && !targetCLabFormula.isEmpty()
                 ) {
             if (sourceNode.getNodeData().getSource()) {
                 HashMap<IAtomicConceptOfLabel, String> hashConceptNumber = new HashMap<IAtomicConceptOfLabel, String>();

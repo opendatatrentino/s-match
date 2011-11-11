@@ -31,7 +31,7 @@ public class PlainMappingLoader extends BaseFileMappingLoader {
         String line;
         while ((line = reader.readLine()) != null &&
                 !line.startsWith("#") &&
-                !line.equals("")) {
+                !line.isEmpty()) {
 
             INode sourceNode;
             INode targetNode;

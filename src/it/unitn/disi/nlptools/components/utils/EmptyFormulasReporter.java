@@ -15,7 +15,7 @@ public class EmptyFormulasReporter extends LabelPipelineComponent {
     private static final Logger log = Logger.getLogger(EmptyFormulasReporter.class);
 
     public void process(ILabel instance) throws PipelineComponentException {
-        if (null == instance.getFormula() || "".equals(instance.getFormula())) {
+        if (null == instance.getFormula() || instance.getFormula().isEmpty()) {
             log.debug("Empty formula for label: " + instance.getText());
         }
     }

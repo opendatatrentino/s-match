@@ -50,7 +50,7 @@ public class OpenNLPTokenizer extends LabelPipelineComponent {
         if (result) {
             if (newProperties.containsKey(MODEL_FILE_NAME_KEY)) {
                 String newModelFileName = (String) newProperties.get(MODEL_FILE_NAME_KEY);
-                if (null != newModelFileName && !"".equals(newModelFileName) && !newModelFileName.equals(modelFileName)) {
+                if (null != newModelFileName && !newModelFileName.isEmpty() && !newModelFileName.equals(modelFileName)) {
                     modelFileName = newModelFileName;
                     if (log.isEnabledFor(Level.INFO)) {
                         log.info("Loading model: " + modelFileName);

@@ -48,7 +48,7 @@ public class TabContextLoader extends BaseFileContextLoader<IContext> implements
             String line;
             while ((line = input.readLine()) != null &&
                     !line.startsWith("#") &&
-                    !line.equals("")) {
+                    !line.isEmpty()) {
 
                 int int_depth = numOfTabs(line);
                 String name = line.substring(int_depth);

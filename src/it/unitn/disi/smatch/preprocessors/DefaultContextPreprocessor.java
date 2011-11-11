@@ -434,7 +434,7 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
                 // If non first token
                 if (vec != null && vec.size() > 0) {
                     // construct formula
-                    if (connective.equals("")) {
+                    if (connective.isEmpty()) {
                         formulaOfConcept.append(" | ").append(bracket).append(vec.toString());
                     } else {
                         formulaOfConcept.append(connective).append(bracket).append(vec.toString());

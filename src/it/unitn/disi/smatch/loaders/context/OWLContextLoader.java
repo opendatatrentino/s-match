@@ -222,7 +222,7 @@ public class OWLContextLoader extends BaseContextLoader<IContext> implements ICo
         if (le.getResult() != null) {
             result = le.getResult();
         } else {
-            if (null != clazz.getIRI().getFragment() && !"".equals(clazz.getIRI().getFragment())) {
+            if (null != clazz.getIRI().getFragment() && !clazz.getIRI().getFragment().isEmpty()) {
                 result = clazz.getIRI().getFragment();
             } else {
                 result = clazz.getIRI().toString();

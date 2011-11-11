@@ -26,7 +26,7 @@ public class TabPathContextLoader extends BaseFileContextLoader<IContext> implem
         String line;
         while ((line = input.readLine()) != null &&
                 !line.startsWith("#") &&
-                !line.equals("")) {
+                !line.isEmpty()) {
 
             createNode(result, line);
 

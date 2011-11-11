@@ -90,7 +90,7 @@ public class SKOSContextLoader extends BaseContextLoader<IContext> implements IC
                 // get a node name from pref labels
                 SKOSPrefLabelProperty prefLabelProperty = manager.getSKOSDataFactory().getSKOSPrefLabelProperty();
                 for (SKOSLiteral literal : concept.getSKOSRelatedConstantByProperty(dataSet, prefLabelProperty)) {
-                    if ("".equals(preferredLanguage)) {
+                    if (preferredLanguage.isEmpty()) {
                         nodeName = literal.getLiteral();
                         break;
                     } else {
@@ -102,10 +102,10 @@ public class SKOSContextLoader extends BaseContextLoader<IContext> implements IC
                 }
 
                 // get a node name from alt labels
-                if ("".equals(nodeName)) {
+                if (nodeName.isEmpty()) {
                     SKOSAltLabelProperty altLabelProperty = manager.getSKOSDataFactory().getSKOSAltLabelProperty();
                     for (SKOSLiteral literal : concept.getSKOSRelatedConstantByProperty(dataSet, altLabelProperty)) {
-                        if ("".equals(preferredLanguage)) {
+                        if (preferredLanguage.isEmpty()) {
                             nodeName = literal.getLiteral();
                             break;
                         } else {
@@ -117,7 +117,7 @@ public class SKOSContextLoader extends BaseContextLoader<IContext> implements IC
                     }
                 }
 
-                if ("".equals(nodeName)) {
+                if (nodeName.isEmpty()) {
                     unlabeledNodeCount++;
                     if (log.isEnabledFor(Level.WARN)) {
                         log.warn("Label is not found in language " + preferredLanguage + " for a concept: " + concept.getIRI());

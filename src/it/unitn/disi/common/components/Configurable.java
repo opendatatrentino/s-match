@@ -105,11 +105,11 @@ public abstract class Configurable implements IConfigurable {
         }
 
         String oldClassName = oldProperties.getProperty(componentKey);
-        if ("".equals(oldClassName)) {
+        if (oldClassName.isEmpty()) {
             oldClassName = null;
         }
         String newClassName = newProperties.getProperty(componentKey);
-        if ("".equals(newClassName)) {
+        if (newClassName.isEmpty()) {
             newClassName = null;
         }
         Properties oldComponentProperties = getComponentProperties(makeComponentPrefix(componentKey, oldClassName), oldProperties);

@@ -36,7 +36,7 @@ public class CNFContextClassifier extends Configurable implements IContextClassi
         StringBuilder path = new StringBuilder();
         INodeData nd = in.getNodeData();
         String formula = toCNF(in, nd.getcLabFormula());
-        if (formula != null && !formula.equals("") && !formula.equals(" ")) {
+        if (formula != null && !formula.isEmpty() && !formula.equals(" ")) {
             if (formula.contains(" ")) {
                 formula = "(" + formula + ")";
             }
@@ -44,7 +44,7 @@ public class CNFContextClassifier extends Configurable implements IContextClassi
         }
         if (in.hasParent()) {
             formula = in.getParent().getNodeData().getcNodeFormula();
-            if (formula != null && !formula.equals("") && !formula.equals(" ")) {
+            if (formula != null && !formula.isEmpty() && !formula.equals(" ")) {
                 if (2 < path.length()) {
                     path.append(" & ").append(formula);
                 } else {
@@ -71,7 +71,7 @@ public class CNFContextClassifier extends Configurable implements IContextClassi
             tmpFormula = tmpFormula.trim();
             try {
                 ClassicalLogic cl = new ClassicalLogic();
-                if (!tmpFormula.equals("")) {
+                if (!tmpFormula.isEmpty()) {
                     tmpFormula = tmpFormula.replace('.', 'P');
                     Formula f = (Formula) (cl.createExpression(tmpFormula));
                     Formula cnf = ClassicalLogic.Utilities.conjunctiveForm(f);
