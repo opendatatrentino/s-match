@@ -811,6 +811,7 @@ public class POSAnnotationTool extends Configurable {
         builder.add(lbPath, cc.xy(3, 1));
 
         final JToolBar toolBar1 = new JToolBar();
+        toolBar1.setFloatable(false);
         JButton btPrev = new JButton(prevAction);
         toolBar1.add(btPrev);
         btNext = new JButton(nextAction);
