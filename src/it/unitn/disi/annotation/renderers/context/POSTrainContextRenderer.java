@@ -8,7 +8,7 @@ import it.unitn.disi.nlptools.data.IToken;
  *
  * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  */
-public class POSTrainContextRenderer extends TokTrainContextRenderer implements INLPContextRenderer {
+public class POSTrainContextRenderer extends AbstractTextContextRenderer {
 
     @Override
     protected String getTrainSample(INLPNode curNode) {
