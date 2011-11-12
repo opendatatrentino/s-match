@@ -4,9 +4,7 @@ import it.unitn.disi.annotation.pipelines.components.TagCounter;
 import it.unitn.disi.nlptools.components.PipelineComponentException;
 import org.apache.log4j.Logger;
 
-import java.util.Comparator;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 /**
  * Reports tag counts.
@@ -29,11 +27,11 @@ public class TagCounterContextPipeline extends BaseContextPipeline {
         Map<String, Long> tagCounts = TagCounter.getTagCounts();
         //sort by counts and print
         MapValueComparator<String, Long> mvc = new MapValueComparator<String, Long>(tagCounts);
-        TreeMap<String, Long> sortedMap = new TreeMap<String, Long>(mvc);
-        sortedMap.putAll(tagCounts);
+        ArrayList<String> tags = new ArrayList<String>(tagCounts.keySet());
+        Collections.sort(tags, mvc);
 
-        for (Map.Entry<String, Long> e : sortedMap.entrySet()) {
-            log.info(e.getKey() + "\t" + e.getValue());
+        for (String tag : tags) {
+            log.info(tag + "\t" + tagCounts.get(tag));
         }
     }
 
