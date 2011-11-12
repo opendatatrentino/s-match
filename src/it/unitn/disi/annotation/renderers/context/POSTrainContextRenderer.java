@@ -5,6 +5,8 @@ import it.unitn.disi.annotation.data.INLPNode;
 import it.unitn.disi.nlptools.data.IToken;
 import it.unitn.disi.smatch.renderers.context.BaseFileContextRenderer;
 import it.unitn.disi.smatch.renderers.context.ContextRendererException;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -17,12 +19,19 @@ import java.util.Iterator;
  */
 public class POSTrainContextRenderer extends BaseFileContextRenderer<INLPContext> implements INLPContextRenderer {
 
+    private static final Logger log = Logger.getLogger(POSTrainContextRenderer.class);
+
     public static final String TRAIN_FILES = "Train files (*.train)";
+    private long renderedCount;
 
     @Override
     protected void process(INLPContext context, BufferedWriter out) throws IOException, ContextRendererException {
+        renderedCount = 0;
         INLPNode curNode = context.getRoot();
         processNode(curNode, out);
+        if (log.isEnabledFor(Level.INFO)) {
+            log.info("Rendered labels: " + renderedCount);
+        }
     }
 
     private void processNode(INLPNode curNode, BufferedWriter out) throws IOException {
@@ -30,6 +39,7 @@ public class POSTrainContextRenderer extends BaseFileContextRenderer<INLPContext
         if (null != toWrite) {
             out.write(toWrite);
             out.write("\n");
+            renderedCount++;
         }
         Iterator<INLPNode> i = curNode.getChildren();
         while (i.hasNext()) {
