@@ -145,19 +145,10 @@ public class POSAnnotationTool extends Configurable {
         public void actionPerformed(ActionEvent e) {
             super.actionPerforming(e);
 
-            //add previous one to cache
-            ILabel curLabel;
-            if (-1 != curIndex) {
-                curLabel = data.get(curIndex).getNodeData().getLabel();
-                if (null != curLabel) {
-                    taggedPOS.put(curLabel.getText(), toTabText(curLabel));
-                }
-            }
-
             //next
             curIndex++;
 
-            curLabel = data.get(curIndex).getNodeData().getLabel();
+            ILabel curLabel = data.get(curIndex).getNodeData().getLabel();
             if (null == curLabel) {
                 //create label
                 curLabel = new Label(data.get(curIndex).getNodeData().getName());
@@ -405,7 +396,7 @@ public class POSAnnotationTool extends Configurable {
 
                 JScrollPane listScroll = new JScrollPane();
                 listScroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-                JList list = buildTokenPOSList(tokens.get(i));
+                JList list = buildTokenPOSList(curPhrase, tokens.get(i));
                 builder.getPanel().putClientProperty(MAGIC_TOKEN_POS_LIST + Integer.toString(i), list);
                 listScroll.setViewportView(list);
                 builder.add(listScroll, cc.xy(1 + 2 * i, 3, CellConstraints.FILL, CellConstraints.DEFAULT));
@@ -585,7 +576,7 @@ public class POSAnnotationTool extends Configurable {
         modify();
     }
 
-    private JList buildTokenPOSList(IToken token) {
+    private JList buildTokenPOSList(ILabel label, IToken token) {
         JList posList = new JList();
         posList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         DefaultListModel model = new DefaultListModel();
@@ -604,13 +595,14 @@ public class POSAnnotationTool extends Configurable {
             posList.ensureIndexIsVisible(idx);
         } else {
             if (log.isEnabledFor(Level.WARN)) {
-                log.warn("buildTokenPOSList(IToken token): POS tag not found. Token: " + token.getText() + ". POS: " + token.getPOSTag());
+                log.warn("buildTokenPOSList(ILabel label, IToken token): POS tag not found. Token: " + token.getText() + ". POS: " + token.getPOSTag());
             }
         }
         updatePOSListToolTip(posList, token);
 
-        //token for future reference in listener
+        //token and label for future reference in listener
         posList.putClientProperty(MAGIC_TOKEN, token);
+        posList.putClientProperty(MAGIC_LABEL, label);
 
         //hook listener
         posList.addListSelectionListener(tokenPOSListSelectionListener);
@@ -634,6 +626,12 @@ public class POSAnnotationTool extends Configurable {
                     String tag = (String) source.getSelectedValue();
                     token.setPOSTag(tag);
                     updatePOSListToolTip(source, token);
+
+                    //update cache, useful on correction
+                    ILabel label = (ILabel) source.getClientProperty(MAGIC_LABEL);
+                    taggedPOS.remove(label.getText());
+                    taggedPOS.put(label.getText(), toTabText(label));
+
                     modify();
                 }
             }
