@@ -1,5 +1,6 @@
 package it.unitn.disi.annotation;
 
+import com.ikayzo.swing.icon.JIconFile;
 import com.jgoodies.forms.builder.PanelBuilder;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
@@ -18,6 +19,9 @@ import it.unitn.disi.nlptools.data.IToken;
 import it.unitn.disi.nlptools.data.Label;
 import it.unitn.disi.nlptools.data.Token;
 import it.unitn.disi.nlptools.pipelines.ILabelPipelineComponent;
+import it.unitn.disi.smatch.data.trees.IBaseNode;
+import it.unitn.disi.smatch.data.trees.IBaseNodeData;
+import it.unitn.disi.smatch.gui.SMatchGUI;
 import it.unitn.disi.smatch.loaders.context.ContextLoaderException;
 import it.unitn.disi.smatch.renderers.context.ContextRendererException;
 import org.apache.log4j.Level;
@@ -26,6 +30,7 @@ import org.apache.log4j.Logger;
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.tree.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
@@ -46,6 +51,8 @@ public class POSAnnotationTool extends Configurable {
     static {
         MiscUtils.configureLog4J();
         log = Logger.getLogger(POSAnnotationTool.class);
+        JIconFile icon = SMatchGUI.loadIconFile(SMatchGUI.TANGO_ICONS_PATH + "actions/view-fullscreen");
+        iconUncoalesceSmall = icon.getIcon(SMatchGUI.SMALL_ICON_SIZE);
     }
 
     private static final String CONF_FILE = ".." + File.separator + "conf" + File.separator + "annotation.properties";
@@ -82,6 +89,8 @@ public class POSAnnotationTool extends Configurable {
 
     private String datasetSizeString = "";
 
+    private static Icon iconUncoalesceSmall;
+
     private Action prevAction = new PrevAction("Prev", "Go to previous item", KeyEvent.VK_P);
     private Action nextAction = new NextAction("Next", "Go to next item", KeyEvent.VK_N);
     private Action nextNNPAction = new NextNNPAction("NNP && Next", "Mark all NNP and go to next item", KeyEvent.VK_X);
@@ -103,6 +112,8 @@ public class POSAnnotationTool extends Configurable {
     private static JTextField lbPath;
     private static JScrollPane tokensScroll;
     private static JProgressBar progressBar;
+    private static JTree tSource;
+    private static JScrollPane spSource;
 
     //label -> tagged label:  token \t tag \t\t ...
     private static final HashMap<String, String> taggedPOS = new HashMap<String, String>();
@@ -119,6 +130,7 @@ public class POSAnnotationTool extends Configurable {
             updateActions();
             loadPanel();
             updateProgressBar();
+            focusNodeInATree(tSource, spSource, data.get(curIndex));
         }
 
         public void actionPerforming(ActionEvent e) {
@@ -202,6 +214,30 @@ public class POSAnnotationTool extends Configurable {
         }
     }
 
+    private final MouseListener treeMouseListener = new MouseAdapter() {
+        public void mousePressed(MouseEvent e) {
+            if (e.getClickCount() == 2) {
+                JTree tree = tSource;
+                boolean result = null != tree
+                        && 1 == tree.getSelectionCount()
+                        && null != tree.getSelectionPath().getParentPath()
+                        && null != tree.getSelectionPath().getParentPath().getLastPathComponent();
+
+                if (result) {
+                    result = tree.getSelectionPath().getLastPathComponent() instanceof DefaultMutableTreeNode;
+                    if (result) {
+                        DefaultMutableTreeNode dmtn = (DefaultMutableTreeNode) tree.getSelectionPath().getLastPathComponent();
+                        result = dmtn.getUserObject() instanceof SMatchGUI.BaseCoalesceTreeModel.Coalesce;
+                    }
+                }
+
+                if (result) {
+                    SMatchGUI.uncoalesceNode(tree);
+                }
+            }
+        }
+    };
+
     /**
      * Tab text format: token \t pos \t\t token \t pos \t\t ...
      *
@@ -273,6 +309,70 @@ public class POSAnnotationTool extends Configurable {
         public void actionPerforming(ActionEvent e) {
         }
     }
+
+    private class CoalesceTreeCellRenderer extends DefaultTreeCellRenderer {
+        public CoalesceTreeCellRenderer() {
+            super();
+        }
+
+        public Component getTreeCellRendererComponent(final JTree tree, final Object value,
+                                                      final boolean sel,
+                                                      final boolean expanded,
+                                                      final boolean leaf, final int row,
+                                                      final boolean hasFocus) {
+            super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
+            setToolTipText("");
+            if (value instanceof INLPNode) {
+                INLPNode node = (INLPNode) value;
+                ILabel label = node.getNodeData().getLabel();
+                if (null != label) {
+                    String posPattern = getPOSPattern(label);
+                    setToolTipText(posPattern);
+                    //String newText = node.getNodeData().getName() + " (" + posPattern + ")";
+                    //setText(newText);
+                }
+            } else
+            if (value instanceof DefaultMutableTreeNode) {
+                DefaultMutableTreeNode dmtn = (DefaultMutableTreeNode) value;
+                if (dmtn.getUserObject() instanceof SMatchGUI.BaseCoalesceTreeModel.Coalesce) {
+                    SMatchGUI.BaseCoalesceTreeModel.Coalesce c = (SMatchGUI.BaseCoalesceTreeModel.Coalesce) dmtn.getUserObject();
+                    setText(SMatchGUI.ELLIPSIS);
+                    setIcon(iconUncoalesceSmall);
+                    StringBuilder tip = new StringBuilder();
+                    for (int i = c.range.x; i <= c.range.y; i++) {
+                        if (i < c.parent.getChildCount()) {
+                            tip.append(c.parent.getChildAt(i).getNodeData().getName());
+                            if (i < c.range.y) {
+                                tip.append(", ");
+                            }
+                        }
+                    }
+                    if (100 < tip.length()) {
+                        tip.delete(50, tip.length() - 50);
+                        tip.insert(50, "...");
+                    }
+                    setToolTipText(tip.toString());
+                }
+            }
+
+            return this;
+        }
+
+    }
+
+    private String getPOSPattern(ILabel label) {
+        StringBuilder result = new StringBuilder();
+        if (0 < label.getTokens().size()) {
+            for (IToken token : label.getTokens()) {
+                result.append(token.getPOSTag()).append(" ");
+            }
+            return result.substring(0, result.length() - 1);
+        }
+        return result.toString();
+    }
+
+    private final CoalesceTreeCellRenderer coalesceTreeCellRenderer = new CoalesceTreeCellRenderer();
+
 
     private void copyTags(ILabel source, ILabel target) {
         if (null != source && null != target) {
@@ -711,6 +811,80 @@ public class POSAnnotationTool extends Configurable {
         nextNNPAction.setEnabled(curIndex < data.size() - 1);
     }
 
+    private void clearUserObjects(INLPNode root) {
+        root.getNodeData().setUserObject(null);
+        for (INLPNode node : root.getDescendantsList()) {
+            node.getNodeData().setUserObject(null);
+        }
+    }
+
+    /**
+     * Creates the tree from a context and a mapping.
+     *
+     * @param context context
+     * @param jTree   a JTree
+     */
+    private void createTree(final INLPContext context, final JTree jTree) {
+        TreeModel treeModel;
+        clearUserObjects(context.getRoot());
+        treeModel = new SMatchGUI.BaseCoalesceTreeModel(context.getRoot());
+        jTree.setModel(treeModel);
+
+        //expand first level
+        TreePath p = new TreePath(context.getRoot());
+        jTree.expandPath(p);
+        jTree.setEditable(false);
+    }
+
+    @SuppressWarnings("unchecked")
+    public void focusNodeInATree(JTree tTarget, JScrollPane spTarget, IBaseNode target) {
+        if (tTarget.getModel() instanceof SMatchGUI.BaseCoalesceTreeModel) {
+            SMatchGUI.BaseCoalesceTreeModel mtm = (SMatchGUI.BaseCoalesceTreeModel) tTarget.getModel();
+            mtm.uncoalesceParents(target);
+
+            // construct path to root
+            TreePath pp = SMatchGUI.createPathToRoot(target);
+            List<Object> ppList = Arrays.asList(pp.getPath());
+
+            tTarget.makeVisible(pp);
+            tTarget.setSelectionPath(pp);
+            tTarget.scrollPathToVisible(pp);
+
+            // check whether root is visible
+            if (!SMatchGUI.isRootVisible(tTarget)) {
+                // first try collapsing all the nodes above the target one
+                IBaseNode<IBaseNode, IBaseNodeData> curNode = target.getParent();
+                while (null != curNode) {
+                    for (IBaseNode child : curNode.getChildrenList()) {
+                        if (!ppList.contains(child) && !mtm.isCoalesced(child)) {
+                            tTarget.collapsePath(SMatchGUI.createPathToRoot(child));
+                        }
+                    }
+                    curNode = curNode.getParent();
+                }
+
+                if (!SMatchGUI.isRootVisible(tTarget)) {
+                    // second try coalescing nodes, starting from those in the top
+                    for (int i = 0; i < ppList.size() - 1; i++) {
+                        if (ppList.get(i) instanceof IBaseNode && ppList.get(i + 1) instanceof IBaseNode) {
+                            IBaseNode node = (IBaseNode) ppList.get(i);
+                            IBaseNode child = (IBaseNode) ppList.get(i + 1);
+                            int idx = node.getChildIndex(child);
+                            mtm.coalesce(node, 0, idx - 1);
+
+                            if (SMatchGUI.isRootVisible(tTarget)) {
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            spTarget.repaint();
+        }
+    }
+
+
     private void prepareData() throws ContextLoaderException {
         context = contextLoader.loadContext(inputFileName);
         data = context.getNodesList();
@@ -738,6 +912,8 @@ public class POSAnnotationTool extends Configurable {
 
         //restore index
         curIndex = oldIndex;
+
+        createTree(context, tSource);
     }
 
     private void loadAlso(String loadAlsoFileNames) throws ContextLoaderException {
@@ -843,8 +1019,31 @@ public class POSAnnotationTool extends Configurable {
         progressBar = new JProgressBar(0, 100);
         builder.add(progressBar, cc.xyw(1, 7, 3, CellConstraints.FILL, CellConstraints.BOTTOM));
 
-        //FormDebugUtils.dumpAll(builder.getPanel());
-        mainPanel = builder.getPanel();
+
+        //tree and tags
+        JPanel pnTreeTags = new JPanel();
+        pnTreeTags.setLayout(new FormLayout("fill:d:grow", "fill:d:grow"));
+        JSplitPane spnTreeTags = new JSplitPane();
+        spnTreeTags.setContinuousLayout(true);
+        spnTreeTags.setOrientation(JSplitPane.HORIZONTAL_SPLIT);
+        spnTreeTags.setOneTouchExpandable(true);
+
+        pnTreeTags.add(spnTreeTags, cc.xy(1, 1, CellConstraints.FILL, CellConstraints.DEFAULT));
+
+        //tags
+        spnTreeTags.setRightComponent(builder.getPanel());
+
+        //tree
+        spSource = new JScrollPane();
+        tSource = new JTree(new DefaultMutableTreeNode("Top"));
+        tSource.setCellRenderer(coalesceTreeCellRenderer);
+        tSource.addMouseListener(treeMouseListener);
+        ToolTipManager.sharedInstance().registerComponent(tSource);
+        tSource.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+        spSource.setViewportView(tSource);
+        spnTreeTags.setLeftComponent(spSource);
+
+        mainPanel = pnTreeTags;
     }
 
 

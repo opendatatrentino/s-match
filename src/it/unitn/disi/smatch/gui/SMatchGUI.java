@@ -13,6 +13,7 @@ import it.unitn.disi.common.components.ConfigurableException;
 import it.unitn.disi.smatch.data.mappings.IContextMapping;
 import it.unitn.disi.smatch.data.mappings.IMappingElement;
 import it.unitn.disi.smatch.data.mappings.MappingElement;
+import it.unitn.disi.smatch.data.trees.IBaseNode;
 import it.unitn.disi.smatch.data.trees.IContext;
 import it.unitn.disi.smatch.data.trees.INode;
 import it.unitn.disi.common.utils.MiscUtils;
@@ -139,7 +140,7 @@ public class SMatchGUI extends Observable implements Observer {
 
     private Action acConfigurationEdit;
 
-    private static final String TANGO_ICONS_PATH = "/tango-icon-theme-0.8.90/";
+    public static final String TANGO_ICONS_PATH = "/tango-icon-theme-0.8.90/";
 
     public static JIconFile loadIconFile(String name) {
         JIconFile icon = null;
@@ -183,12 +184,12 @@ public class SMatchGUI extends Observable implements Observer {
     private static Icon iconUncoalesceSmall;
     private static Icon iconUncoalesceLarge;
 
-    private static final int VERY_SMALL_ICON_SIZE = 12;
-    private static final int SMALL_ICON_SIZE = 16;
-    private static final int LARGE_ICON_SIZE = 32;
+    public static final int VERY_SMALL_ICON_SIZE = 12;
+    public static final int SMALL_ICON_SIZE = 16;
+    public static final int LARGE_ICON_SIZE = 32;
 
     private static final String EMPTY_ROOT_NODE_LABEL = "Create or open context";
-    private static final String ELLIPSIS = "...";
+    public static final String ELLIPSIS = "...";
 
 
     private static final String NAME_EQ = "equivalent";
@@ -308,32 +309,307 @@ public class SMatchGUI extends Observable implements Observer {
      *
      * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
      */
-    private class MappingTreeModel extends DefaultTreeModel {
+    public static class BaseCoalesceTreeModel extends DefaultTreeModel {
 
-        protected INode root;
-
-        //whether this tree is a source tree of a mapping
-        private boolean isSource;
-
-        private IContextMapping<INode> mapping;
+        protected final IBaseNode root;
 
         public class Coalesce {
-            public Point range;
-            public DefaultMutableTreeNode sub;
-            public INode parent;
+            public final Point range;
+            public final DefaultMutableTreeNode sub;
+            public final IBaseNode parent;
 
-            private Coalesce(Point range, DefaultMutableTreeNode sub, INode parent) {
+            private Coalesce(Point range, DefaultMutableTreeNode sub, IBaseNode parent) {
                 this.range = range;
                 this.sub = sub;
                 this.parent = parent;
             }
         }
         // for each node keep an inclusive range of its coalesced children plus a substitute node with ellipsis
-        private HashMap<INode, Coalesce> coalesce = new HashMap<INode, Coalesce>();
+        protected final HashMap<IBaseNode, Coalesce> coalesce = new HashMap<IBaseNode, Coalesce>();
 
-        public MappingTreeModel(INode root, boolean isSource, IContextMapping<INode> mapping) {
+        public BaseCoalesceTreeModel(IBaseNode root) {
             super(root);
             this.root = root;
+        }
+
+        /**
+         * Coalesces the <code>parent</code>'s children from <code>start</code> to <code>end</code> (inclusive).
+         *
+         * @param parent the node with children to coalesce
+         * @param start  starting index
+         * @param end    ending index
+         */
+        public void coalesce(IBaseNode parent, int start, int end) {
+            Coalesce c = coalesce.get(parent);
+            if (null != c) {
+                uncoalesce(parent);
+            }
+
+            if (0 <= start && end < getChildCount(parent) && start < end) {
+                DefaultMutableTreeNode dmtn = new DefaultMutableTreeNode();
+                c = new Coalesce(new Point(start, end), dmtn, parent);
+                dmtn.setUserObject(c);
+                coalesce.put(parent, c);
+
+                int[] childIndices = new int[end - start + 1];
+                Object[] removedChildren = new Object[end - start + 1];
+                for (int i = 0; i < childIndices.length; i++) {
+                    childIndices[i] = start + i;
+                    if ((start + i) < parent.getChildCount()) {
+                        removedChildren[i] = parent.getChildAt(start + i);
+                    }
+                }
+                //signal the "removal" of a range
+                nodesWereRemoved(parent, childIndices, removedChildren);
+                //signal the insertion of a sub
+                nodesWereInserted(parent, new int[]{start});
+            }
+        }
+
+        /**
+         * Expands coalesced children.
+         *
+         * @param parent node to expand coalesced children.
+         */
+        public void uncoalesce(IBaseNode parent) {
+            Coalesce c = coalesce.get(parent);
+            if (null != c) {
+                coalesce.remove(parent);
+
+                int[] childIndices = new int[c.range.y - c.range.x + 1];
+                for (int i = 0; i < childIndices.length; i++) {
+                    childIndices[i] = c.range.x + i;
+                }
+                //signal the deletion of a sub
+                nodesWereRemoved(parent, new int[]{c.range.x}, new Object[]{c.sub});
+                //signal the "insertion" of a range
+                nodesWereInserted(parent, childIndices);
+            }
+        }
+
+        /**
+         * Expands all coalesced nodes.
+         */
+        public void uncoalesceAll() {
+            List<IBaseNode> parents = new ArrayList<IBaseNode>(coalesce.keySet());
+            while (0 < parents.size()) {
+                uncoalesce(parents.get(0));
+                parents.remove(0);
+            }
+            coalesce.clear();
+        }
+
+
+        /**
+         * Expands coalesced children in parent nodes until the node becomes visible.
+         *
+         * @param node to make visible
+         */
+        public void uncoalesceParents(final IBaseNode node) {
+            IBaseNode curNode = node;
+            while (null != curNode && isCoalescedInAnyParent(curNode)) {
+                if (isCoalesced(curNode)) {
+                    uncoalesce(curNode.getParent());
+                }
+                curNode = curNode.getParent();
+            }
+        }
+
+
+        /**
+         * Returns whether the <code>node</code> is coalesced.
+         *
+         * @param node node to check
+         * @return whether the node is coalesced
+         */
+        @SuppressWarnings("unchecked")
+        public boolean isCoalesced(IBaseNode node) {
+            boolean result = false;
+            IBaseNode parent = node.getParent();
+            if (null != parent) {
+                Coalesce c = coalesce.get(parent);
+                if (null != c) {
+                    int idx = parent.getChildIndex(node);
+                    result = c.range.x <= idx && idx <= c.range.y;
+                }
+            }
+            return result;
+        }
+
+        /**
+         * Returns whether any of the <code>node</code>'s parents is coalesced.
+         *
+         * @param node node to check
+         * @return whether any of the node's parents is coalesced
+         */
+        public boolean isCoalescedInAnyParent(IBaseNode node) {
+            boolean result = false;
+            IBaseNode curNode = node;
+            while (null != curNode && !result) {
+                result = isCoalesced(curNode);
+                curNode = curNode.getParent();
+            }
+            return result;
+        }
+
+        /**
+         * Returns whether there is a coalesced node in this model.
+         *
+         * @return whether there is a coalesced node in this model
+         */
+        public boolean hasCoalescedNode() {
+            return !coalesce.isEmpty();
+        }
+
+        @Override
+        public Object getChild(Object parent, int index) {
+            Object result = null;
+            if (parent instanceof IBaseNode) {
+                IBaseNode parentNode = (IBaseNode) parent;
+                Coalesce c = coalesce.get(parentNode);
+                if (null == c) {
+                    if (0 <= index && index < parentNode.getChildCount()) {
+                        result = parentNode.getChildAt(index);
+                    }
+                } else {
+                    @SuppressWarnings("unchecked")
+                    final int coalescedLength = c.range.y - c.range.x;
+                    final int coalescedIdx = parentNode.getChildCount() - coalescedLength;
+                    if (0 <= index && index < coalescedIdx) {
+                        if (index == c.range.x) {
+                            result = c.sub;
+                        } else {
+                            if (index < c.range.x) {
+                                if (index < parentNode.getChildCount()) {
+                                    result = parentNode.getChildAt(index);
+                                }
+                            } else {
+                                //index > c.range.x
+                                //result = parentNode.getChildAt(index + coalescedLength);
+                                if ((index + coalescedLength) < parentNode.getChildCount()) {
+                                    result = parentNode.getChildAt(index + coalescedLength);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            return result;
+        }
+
+        @Override
+        public int getChildCount(Object parent) {
+            int result = 0;
+            if (parent instanceof IBaseNode) {
+                IBaseNode parentNode = (IBaseNode) parent;
+                Coalesce c = coalesce.get(parentNode);
+                if (null == c) {
+                    result = parentNode.getChildCount();
+                } else {
+                    final int coalescedLength = c.range.y - c.range.x;
+                    result = parentNode.getChildCount() - coalescedLength;
+                }
+            }
+            return result;
+        }
+
+        @Override
+        public boolean isLeaf(Object node) {
+            boolean result = true;
+            if (node instanceof IBaseNode) {
+                IBaseNode iNode = (IBaseNode) node;
+                result = 0 == iNode.getChildCount();
+            }
+            return result;
+        }
+
+        @Override
+        @SuppressWarnings("unchecked")
+        public int getIndexOfChild(Object parent, Object child) {
+            int result = -1;
+            if (null != parent && null != child) {
+                if (parent instanceof IBaseNode) {
+                    IBaseNode pNode = (IBaseNode) parent;
+                    Coalesce c = coalesce.get(pNode);
+                    if (null == c) {
+                        if (child instanceof IBaseNode) {
+                            IBaseNode cNode = (IBaseNode) child;
+                            result = pNode.getChildIndex(cNode);
+                        } else {
+                            if (child instanceof DefaultMutableTreeNode) {
+                                result = pNode.getChildCount();
+                            }
+                        }
+                    } else {
+                        final int coalescedLength = c.range.y - c.range.x;
+                        if (child instanceof IBaseNode) {
+                            IBaseNode cNode = (IBaseNode) child;
+                            result = pNode.getChildIndex(cNode);
+                            if (c.range.x < result && result < c.range.y) {
+                                result = -1;//the node is coalesced?
+                            } else {
+                                if (c.range.y < result) {
+                                    result = result - coalescedLength;
+                                }
+                            }
+                        } else {
+                            if (child instanceof DefaultMutableTreeNode) {
+                                DefaultMutableTreeNode dmtn = (DefaultMutableTreeNode) child;
+                                if (dmtn.getUserObject() instanceof String) {
+                                    //sub node
+                                    result = c.range.x;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            return result;
+        }
+
+        @Override
+        public void nodesWereInserted(TreeNode node, int[] childIndices) {
+            if (listenerList != null && node != null && childIndices != null && childIndices.length > 0) {
+                int cCount = childIndices.length;
+                Object[] newChildren = new Object[cCount];
+
+                for (int counter = 0; counter < cCount; counter++) {
+                    newChildren[counter] = getChild(node, childIndices[counter]);
+                }
+                fireTreeNodesInserted(this, getPathToRoot(node), childIndices, newChildren);
+            }
+        }
+
+        @Override
+        public void nodesChanged(TreeNode node, int[] childIndices) {
+            if (node != null) {
+                if (childIndices != null) {
+                    int cCount = childIndices.length;
+
+                    if (cCount > 0) {
+                        Object[] cChildren = new Object[cCount];
+
+                        for (int counter = 0; counter < cCount; counter++) {
+                            cChildren[counter] = getChild(node, childIndices[counter]);
+                        }
+                        fireTreeNodesChanged(this, getPathToRoot(node), childIndices, cChildren);
+                    }
+                } else if (node == getRoot()) {
+                    fireTreeNodesChanged(this, getPathToRoot(node), null, null);
+                }
+            }
+        }
+    }
+
+    private class MappingTreeModel extends BaseCoalesceTreeModel {
+
+        //whether this tree is a source tree of a mapping
+        protected boolean isSource;
+
+        protected IContextMapping<INode> mapping;
+
+        public MappingTreeModel(IBaseNode root, boolean isSource, IContextMapping<INode> mapping) {
+            super(root);
             this.isSource = isSource;
             this.mapping = mapping;
         }
@@ -345,11 +621,12 @@ public class SMatchGUI extends Observable implements Observer {
         /**
          * Coalesces the <code>parent</code>'s children from <code>start</code> to <code>end</code> (inclusive).
          *
-         * @param parent the node with children to coalesce
+         * @param bParent the node with children to coalesce
          * @param start  starting index
          * @param end    ending index
          */
-        public void coalesce(INode parent, int start, int end) {
+        public void coalesce(IBaseNode bParent, int start, int end) {
+            INode parent = (INode) bParent;
             Coalesce c = coalesce.get(parent);
             if (null != c) {
                 uncoalesce(parent);
@@ -384,100 +661,6 @@ public class SMatchGUI extends Observable implements Observer {
             }
         }
 
-        /**
-         * Expands coalesced children.
-         *
-         * @param parent node to expand coalesced children.
-         */
-        public void uncoalesce(INode parent) {
-            Coalesce c = coalesce.get(parent);
-            if (null != c) {
-                coalesce.remove(parent);
-
-                int[] childIndices = new int[c.range.y - c.range.x + 1];
-                for (int i = 0; i < childIndices.length; i++) {
-                    childIndices[i] = c.range.x + i;
-                }
-                //signal the deletion of a sub
-                nodesWereRemoved(parent, new int[]{c.range.x}, new Object[]{c.sub});
-                //signal the "insertion" of a range
-                nodesWereInserted(parent, childIndices);
-            }
-        }
-
-        /**
-         * Expands all coalesced nodes.
-         */
-        public void uncoalesceAll() {
-            List<INode> parents = new ArrayList<INode>(coalesce.keySet());
-            while (0 < parents.size()) {
-                uncoalesce(parents.get(0));
-                parents.remove(0);
-            }
-            coalesce.clear();
-        }
-
-
-        /**
-         * Expands coalesced children in parent nodes until the node becomes visible.
-         *
-         * @param node to make visible
-         */
-        public void uncoalesceParents(final INode node) {
-            INode curNode = node;
-            while (null != curNode && isCoalescedInAnyParent(curNode)) {
-                if (isCoalesced(curNode)) {
-                    uncoalesce(curNode.getParent());
-                }
-                curNode = curNode.getParent();
-            }
-        }
-
-
-        /**
-         * Returns whether the <code>node</code> is coalesced.
-         *
-         * @param node node to check
-         * @return whether the node is coalesced
-         */
-        public boolean isCoalesced(INode node) {
-            boolean result = false;
-            INode parent = node.getParent();
-            if (null != parent) {
-                Coalesce c = coalesce.get(parent);
-                if (null != c) {
-                    int idx = parent.getChildIndex(node);
-                    result = c.range.x <= idx && idx <= c.range.y;
-                }
-            }
-            return result;
-        }
-
-        /**
-         * Returns whether any of the <code>node</code>'s parents is coalesced.
-         *
-         * @param node node to check
-         * @return whether any of the node's parents is coalesced
-         */
-        public boolean isCoalescedInAnyParent(INode node) {
-            boolean result = false;
-            INode curNode = node;
-            while (null != curNode && !result) {
-                result = isCoalesced(curNode);
-                curNode = curNode.getParent();
-            }
-            return result;
-        }
-
-        /**
-         * Returns whether there is a coalesced node in this model.
-         *
-         * @return whether there is a coalesced node in this model
-         */
-        public boolean hasCoalescedNode() {
-            return !coalesce.isEmpty();
-        }
-
         @Override
         public Object getRoot() {
             if (null == root.getNodeData().getUserObject()) {
@@ -487,7 +670,8 @@ public class SMatchGUI extends Observable implements Observer {
             return root;
         }
 
-        public List<DefaultMutableTreeNode> updateUserObject(final INode node) {
+        public List<DefaultMutableTreeNode> updateUserObject(final IBaseNode bNode) {
+            INode node = (INode) bNode;
             List<DefaultMutableTreeNode> result = Collections.emptyList();
             List<IMappingElement<INode>> links;
             if (null != mapping) {
@@ -710,39 +894,6 @@ public class SMatchGUI extends Observable implements Observer {
                 }
             }
             return result;
-        }
-
-        @Override
-        public void nodesWereInserted(TreeNode node, int[] childIndices) {
-            if (listenerList != null && node != null && childIndices != null && childIndices.length > 0) {
-                int cCount = childIndices.length;
-                Object[] newChildren = new Object[cCount];
-
-                for (int counter = 0; counter < cCount; counter++) {
-                    newChildren[counter] = getChild(node, childIndices[counter]);
-                }
-                fireTreeNodesInserted(this, getPathToRoot(node), childIndices, newChildren);
-            }
-        }
-
-        @Override
-        public void nodesChanged(TreeNode node, int[] childIndices) {
-            if (node != null) {
-                if (childIndices != null) {
-                    int cCount = childIndices.length;
-
-                    if (cCount > 0) {
-                        Object[] cChildren = new Object[cCount];
-
-                        for (int counter = 0; counter < cCount; counter++) {
-                            cChildren[counter] = getChild(node, childIndices[counter]);
-                        }
-                        fireTreeNodesChanged(this, getPathToRoot(node), childIndices, cChildren);
-                    }
-                } else if (node == getRoot()) {
-                    fireTreeNodesChanged(this, getPathToRoot(node), null, null);
-                }
-            }
         }
     }
 
@@ -2267,12 +2418,12 @@ public class SMatchGUI extends Observable implements Observer {
         }
     }
 
-    private boolean isRootVisible(JTree tTarget) {
+    public static boolean isRootVisible(JTree tTarget) {
         boolean result = false;
-        if (tTarget.getModel() instanceof MappingTreeModel) {
-            MappingTreeModel mtm = (MappingTreeModel) tTarget.getModel();
-            if (mtm.getRoot() instanceof INode) {
-                INode root = (INode) mtm.getRoot();
+        if (tTarget.getModel() instanceof BaseCoalesceTreeModel) {
+            BaseCoalesceTreeModel mtm = (BaseCoalesceTreeModel) tTarget.getModel();
+            if (mtm.getRoot() instanceof IBaseNode) {
+                IBaseNode root = (IBaseNode) mtm.getRoot();
                 TreePath rootPath = new TreePath(root);
                 result = tTarget.getVisibleRect().contains(tTarget.getPathBounds(rootPath));
             }
@@ -3035,17 +3186,17 @@ public class SMatchGUI extends Observable implements Observer {
         }
     }
 
-    private void uncoalesceNode(JTree tree) {
+    public static void uncoalesceNode(JTree tree) {
         Object o = tree.getSelectionPath().getLastPathComponent();
         TreePath parentPath = tree.getSelectionPath().getParentPath();
         if (o instanceof DefaultMutableTreeNode) {
             DefaultMutableTreeNode dmtn = (DefaultMutableTreeNode) o;
-            if (dmtn.getUserObject() instanceof MappingTreeModel.Coalesce) {
-                if (null != parentPath && parentPath.getLastPathComponent() instanceof INode) {
-                    INode parent = (INode) parentPath.getLastPathComponent();
+            if (dmtn.getUserObject() instanceof BaseCoalesceTreeModel.Coalesce) {
+                if (null != parentPath && parentPath.getLastPathComponent() instanceof IBaseNode) {
+                    IBaseNode parent = (IBaseNode) parentPath.getLastPathComponent();
                     TreeModel m = tree.getModel();
-                    if (m instanceof MappingTreeModel) {
-                        MappingTreeModel mtm = (MappingTreeModel) m;
+                    if (m instanceof BaseCoalesceTreeModel) {
+                        BaseCoalesceTreeModel mtm = (BaseCoalesceTreeModel) m;
                         mtm.uncoalesce(parent);
                     }
                 }
@@ -3057,9 +3208,9 @@ public class SMatchGUI extends Observable implements Observer {
         tree.scrollPathToVisible(parentPath);
     }
 
-    private void uncoalesceTree(JTree tree) {
-        if (tree.getModel() instanceof MappingTreeModel) {
-            MappingTreeModel mtm = (MappingTreeModel) tree.getModel();
+    public static void uncoalesceTree(JTree tree) {
+        if (tree.getModel() instanceof BaseCoalesceTreeModel) {
+            BaseCoalesceTreeModel mtm = (BaseCoalesceTreeModel) tree.getModel();
             mtm.uncoalesceAll();
         }
     }
@@ -3125,9 +3276,9 @@ public class SMatchGUI extends Observable implements Observer {
         }
     }
 
-    private TreePath createPathToRoot(INode node) {
-        Deque<INode> pathToRoot = new ArrayDeque<INode>();
-        INode curNode = node;
+    public static TreePath createPathToRoot(IBaseNode node) {
+        Deque<IBaseNode> pathToRoot = new ArrayDeque<IBaseNode>();
+        IBaseNode curNode = node;
         while (null != curNode) {
             pathToRoot.push(curNode);
             curNode = curNode.getParent();
