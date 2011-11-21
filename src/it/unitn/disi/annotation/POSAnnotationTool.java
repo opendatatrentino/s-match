@@ -145,10 +145,19 @@ public class POSAnnotationTool extends Configurable {
         public void actionPerformed(ActionEvent e) {
             super.actionPerforming(e);
 
+            //add previous one to cache
+            ILabel curLabel;
+            if (-1 != curIndex) {
+                curLabel = data.get(curIndex).getNodeData().getLabel();
+                if (null != curLabel) {
+                    taggedPOS.put(curLabel.getText(), toTabText(curLabel));
+                }
+            }
+
             //next
             curIndex++;
 
-            ILabel curLabel = data.get(curIndex).getNodeData().getLabel();
+            curLabel = data.get(curIndex).getNodeData().getLabel();
             if (null == curLabel) {
                 //create label
                 curLabel = new Label(data.get(curIndex).getNodeData().getName());
