@@ -663,7 +663,7 @@ public class SMatchGUI extends Observable implements Observer {
 
         @Override
         public Object getRoot() {
-            if (null == root.getNodeData().getUserObject()) {
+            if (null != root && null == root.getNodeData().getUserObject()) {
                 updateUserObject(root);
             }
 
@@ -3734,9 +3734,11 @@ public class SMatchGUI extends Observable implements Observer {
 
 
     private void clearUserObjects(INode root) {
-        root.getNodeData().setUserObject(null);
-        for (INode node : root.getDescendantsList()) {
-            node.getNodeData().setUserObject(null);
+        if (null != root) {
+            root.getNodeData().setUserObject(null);
+            for (INode node : root.getDescendantsList()) {
+                node.getNodeData().setUserObject(null);
+            }
         }
     }
 
