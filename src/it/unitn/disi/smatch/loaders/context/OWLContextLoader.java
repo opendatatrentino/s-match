@@ -24,6 +24,9 @@ import java.util.Set;
  * Takes in an excludeNothing parameter, which specifies whether to exclude Nothing class. Default true.
  * Takes in a replaceUnderscore parameter, which specifies whether to replace _ in class names. Default true.
  *
+ * The loader uses class hierarchy from the ontology in question and loads it into a tree.
+ * Currently, the loader follows subclass hierarchy.
+ *
  * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
  */
 public class OWLContextLoader extends BaseContextLoader<IContext> implements IContextLoader {
