@@ -1,8 +1,0 @@
-Courses
-	College of Arts and Sciences
-		Earth and Atmospheric Sciences
-		History
-			Latin America History
-			America History
-			Ancient European History
-		Computer Science
