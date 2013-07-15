@@ -349,7 +349,7 @@ public class MatchManager extends Configurable implements IMatchManager {
      */
     private void convertWordNetToFlat(Properties properties) throws SMatchException {
         InMemoryWordNetBinaryArray.createWordNetCaches(GLOBAL_PREFIX + SENSE_MATCHER_KEY, properties);
-        WordNet.createWordNetCaches(CONTEXT_PREPROCESSOR_KEY, properties);
+        WordNet.createWordNetCaches(GLOBAL_PREFIX + LINGUISTIC_ORACLE_KEY, properties);
     }
 
     /**
@@ -494,5 +494,23 @@ public class MatchManager extends Configurable implements IMatchManager {
                 System.out.println("Unrecognized command.");
             }
         }
+    }
+
+    public static IContextMapping<INode> simpleMatch(IContext ctxSource, IContext ctxTarget) throws IOException, ConfigurableException {
+
+        String configFileName = DEFAULT_CONFIG_FILE_NAME;
+
+        MatchManager mm = new MatchManager();
+
+        Properties config = new Properties();
+        config.load(new FileInputStream(configFileName));
+
+        mm.setProperties(config);
+
+        mm.offline(ctxSource);
+        mm.offline(ctxTarget);
+
+        return mm.online(ctxSource, ctxTarget);
+
     }
 }
