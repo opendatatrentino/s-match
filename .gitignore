@@ -13,3 +13,4 @@ demos/alignapi/bin/o/
 *.iml
 *.ipr
 *.iws
+/target/
