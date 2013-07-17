@@ -4,7 +4,7 @@
 
     <groupId>it.unitn.disi</groupId>
     <artifactId>s-match</artifactId>
-    <version>1.0.0</version>
+    <version>0.9.9</version>
     <packaging>jar</packaging>
 
     <name>s-match</name>
@@ -84,5 +84,14 @@
             <url>http://homepages.cs.ncl.ac.uk/phillip.lord/maven</url>
         </repository>
     </repositories>
+
+    <developers>
+        <developer>
+            <id>moaz</id>
+            <name>Moaz Reyad</name>
+            <email>reyad@disi.unitn.it</email>
+            <organization>DISI</organization>
+        </developer>
+    </developers> 
 
 </project>
