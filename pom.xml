@@ -140,9 +140,9 @@
     <scm>
         <url>git@github.com:opendatatrentino/s-match.git</url>
         <connection>scm:git:git://github.com/opendatatrentino/s-match</connection>
-        <developerConnection>scm:git:git://github.com/opendatatrentino/s-match</developerConnection>
-      <tag>s-match-0.9.9</tag>
-  </scm>
+        <developerConnection>scm:git:https://github.com/opendatatrentino/s-match.git</developerConnection>
+        <tag>s-match-0.9.9</tag>
+    </scm>
     
     <developers>
         <developer>
