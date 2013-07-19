@@ -1,3 +1,11 @@
+2013.07.19
+ * Create a Maven project to build S-Match and to release the JAR in Sonatype.
+ * Reorganize source directories to follow Maven's directory strucure.
+ * Remove libraries and classes that are not available in Maven central.
+ * Replace the Orbital library with AIMA.
+ * Add changes for supporting Italian language.
+ * Create a method that performs both offline and online steps together.
+ 
 2010.09.14
  * new GUI with edit and advanced navigation facilities
  * SPSM integrated
