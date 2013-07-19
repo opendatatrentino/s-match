@@ -1,5 +1,4 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
@@ -10,7 +9,7 @@
   
     <groupId>it.unitn.disi</groupId>
     <artifactId>s-match</artifactId>
-    <version>0.9.9-SNAPSHOT</version>
+    <version>0.9.9</version>
     <packaging>jar</packaging>
 
     <name>s-match</name>
@@ -142,7 +141,8 @@
         <url>git@github.com:opendatatrentino/s-match.git</url>
         <connection>scm:git:git://github.com/opendatatrentino/s-match</connection>
         <developerConnection>scm:git:git://github.com/opendatatrentino/s-match</developerConnection>
-    </scm>
+      <tag>s-match-0.9.9</tag>
+  </scm>
     
     <developers>
         <developer>
