@@ -20,25 +20,15 @@ with sometimes little thinking about memory consumption and processing speed.
 
 S-Match is written in Java and runs in a Java Virtual Machine version 6 or later.
 
-4.1 Command line
+The data files configuration fils are not available inside the JAR libray. 
 
-Run the matching of provided sample trees by running bin/all-cw.cmd (Windows) or 
-all-cw.sh (Linux). This will execute the following steps:
-  a) convert sample trees in test-data/cw/c.txt and test-data/cw/w.txt
-     from text files to internal XML format.
-  b) enrich the trees with logical formulas ("offline" steps of the algorithm)
-  c) match the trees ("online" steps of the algorithm)
-  d) match the trees with the minimal matching algorithm
-        
-The script will render the results of the
-step c) into: test-data/cw/result-cw.txt 
-step d) into: test-data/cw/result-minimal-cw.txt
+Download the directories conf and data from:
 
-4.2 GUI
+https://github.com/opendatatrentino/s-match
 
-Run bin\runGUI.cmd or bin/runGUI.sh
+and put them in the parent directory of the runnning application which uses the JAR.
 
-4.3 S-Match Wiki
+4.1 S-Match Wiki
 
 Access S-Match Wiki for more information:
 http://sourceforge.net/apps/trac/s-match/wiki/
