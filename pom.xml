@@ -13,8 +13,8 @@
     <packaging>jar</packaging>
 
     <name>s-match</name>
-    <description>S-Match is a semantic matching framework</description>
-    <url>http://semanticmatching.org/s-match.html</url>
+    <description>A version of S-Match semantic matching framework for Open Data</description>
+    <url>https://github.com/opendatatrentino/s-match</url>
 
     <licenses>
         <license>
