@@ -1,1 +1,0 @@
-Make sure to run the demo from s-match/bin folder.
