@@ -28,7 +28,6 @@ import it.unitn.disi.smatch.renderers.mapping.IMappingRenderer;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -51,7 +50,8 @@ public class MatchManager extends Configurable implements IMatchManager {
     /**
      * Default configuration file name.
      */
-    public static final String DEFAULT_CONFIG_FILE_NAME = ".." + File.separator + "conf" + File.separator + "s-match.properties";
+    public static final String DEFAULT_CONFIG_FILE_NAME = "conf/s-match.properties";
+    
     // config file command line key
     public static final String configFileCmdLineKey = "-config=";
     // property command line key
@@ -359,9 +359,9 @@ public class MatchManager extends Configurable implements IMatchManager {
      * @throws IOException           IOException
      * @throws ConfigurableException ConfigurableException
      */
-    public static void main(String[] args) throws IOException, ConfigurableException {
+    public static void main(String[] args) throws IOException, ConfigurableException, ClassNotFoundException {
         // initialize property file
-        String configFileName = DEFAULT_CONFIG_FILE_NAME;
+        String configFileName = null;
         ArrayList<String> cleanArgs = new ArrayList<String>();
         for (String arg : args) {
             if (arg.startsWith(configFileCmdLineKey)) {
@@ -371,6 +371,7 @@ public class MatchManager extends Configurable implements IMatchManager {
             }
         }
 
+       
         args = cleanArgs.toArray(new String[cleanArgs.size()]);
         cleanArgs.clear();
 
@@ -401,7 +402,11 @@ public class MatchManager extends Configurable implements IMatchManager {
             MatchManager mm = new MatchManager();
 
             Properties config = new Properties();
-            config.load(new FileInputStream(configFileName));
+            if (configFileName == null) {
+                config.load(new FileInputStream(ClassLoader.getSystemResource(DEFAULT_CONFIG_FILE_NAME).getPath()));
+            } else {
+                config.load(new FileInputStream(configFileName));
+            }
 
             if (log.isEnabledFor(Level.DEBUG)) {
                 for (String k : commandProperties.stringPropertyNames()) {

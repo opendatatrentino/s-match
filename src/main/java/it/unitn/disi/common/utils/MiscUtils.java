@@ -55,13 +55,21 @@ public class MiscUtils {
      * Reads Java object from a file.
      *
      * @param fileName the file where the object is stored
+     * @parm isInternalFile reads from internal data file in resources folder
      * @return the object
      * @throws DISIException DISIException
      */
-    public static Object readObject(String fileName) throws DISIException {
+    public static Object readObject(String fileName, boolean isInternalFile) throws DISIException {
         Object result;
         try {
-            FileInputStream fos = new FileInputStream(fileName);
+            FileInputStream fos = null;
+
+            if (isInternalFile == true) {
+                fos = new FileInputStream(ClassLoader.getSystemResource(fileName).getPath());
+            } else {
+                fos = new FileInputStream(fileName);
+            }
+
             BufferedInputStream bis = new BufferedInputStream(fos);
             ObjectInputStream oos = new ObjectInputStream(bis);
             try {

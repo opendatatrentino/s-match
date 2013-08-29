@@ -47,6 +47,7 @@ public class InMemoryWordNetBinaryArray extends Configurable implements ISenseMa
     private static final String ADV_ANT_KEY = "adverbsAntonymFile";
 
     private static final String JWNL_PROPERTIES_PATH_KEY = "JWNLPropertiesPath";
+    private static final String USE_INTERNAL_FILES = "UseInternalFiles";
 
     // controls loading of arrays, used to skip loading before conversion
     private static final String LOAD_ARRAYS_KEY = "loadArrays";
@@ -69,15 +70,21 @@ public class InMemoryWordNetBinaryArray extends Configurable implements ISenseMa
                 loadArrays = Boolean.parseBoolean(newProperties.getProperty(LOAD_ARRAYS_KEY));
             }
 
+            boolean useInternalFiles = true;
+
+            if (properties.containsKey(USE_INTERNAL_FILES)) {
+                useInternalFiles = Boolean.parseBoolean(properties.getProperty(USE_INTERNAL_FILES));
+            }
+
             if (loadArrays) {
                 log.info("Loading WordNet cache to memory...");
-                adj_syn = readArray(newProperties, ADJ_SYN_KEY, "adjective synonyms");
-                adj_opp = readArray(newProperties, ADJ_ANT_KEY, "adjective antonyms");
-                noun_mg = readArray(newProperties, NOUN_MG_KEY, "noun hypernyms");
-                noun_opp = readArray(newProperties, NOUN_ANT_KEY, "noun antonyms");
-                verb_mg = readArray(newProperties, VERB_MG_KEY, "verb hypernyms");
-                adv_opp = readArray(newProperties, ADV_ANT_KEY, "adverb antonyms");
-                nominalizations = readArray(newProperties, NOMINALIZATION_KEY, "nominalizations");
+                adj_syn = readArray(newProperties, ADJ_SYN_KEY, "adjective synonyms", useInternalFiles);
+                adj_opp = readArray(newProperties, ADJ_ANT_KEY, "adjective antonyms", useInternalFiles);
+                noun_mg = readArray(newProperties, NOUN_MG_KEY, "noun hypernyms", useInternalFiles);
+                noun_opp = readArray(newProperties, NOUN_ANT_KEY, "noun antonyms", useInternalFiles);
+                verb_mg = readArray(newProperties, VERB_MG_KEY, "verb hypernyms", useInternalFiles);
+                adv_opp = readArray(newProperties, ADV_ANT_KEY, "adverb antonyms", useInternalFiles);
+                nominalizations = readArray(newProperties, NOMINALIZATION_KEY, "nominalizations", useInternalFiles);
                 log.info("Loading WordNet cache to memory finished");
             }
         }
@@ -198,10 +205,10 @@ public class InMemoryWordNetBinaryArray extends Configurable implements ISenseMa
         return false;
     }
 
-    private static long[] readArray(Properties properties, String key, String name) throws ConfigurableException {
+    private static long[] readArray(Properties properties, String key, String name, boolean isInternalFile) throws ConfigurableException {
         long[] result;
         if (properties.containsKey(key)) {
-            result = readHash(properties.getProperty(key));
+            result = readHash(properties.getProperty(key),  isInternalFile);
             log.debug("Read " + name + ": " + result.length);
         } else {
             final String errMessage = "Cannot find configuration key " + key;
@@ -211,9 +218,9 @@ public class InMemoryWordNetBinaryArray extends Configurable implements ISenseMa
         return result;
     }
 
-    private static long[] readHash(String fileName) throws SMatchException {
+    private static long[] readHash(String fileName, boolean isInternalFile) throws SMatchException {
         try {
-            return (long[]) MiscUtils.readObject(fileName);
+            return (long[]) MiscUtils.readObject(fileName, isInternalFile);
         } catch (DISIException e) {
             throw new SMatchException(e.getMessage(), e);
         }

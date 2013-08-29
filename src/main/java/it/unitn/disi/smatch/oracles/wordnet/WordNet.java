@@ -41,6 +41,8 @@ public class WordNet extends Configurable implements ILinguisticOracle, ISenseMa
     private static final Logger log = Logger.getLogger(WordNet.class);
 
     private static final String JWNL_PROPERTIES_PATH_KEY = "JWNLPropertiesPath";
+    private static final String USE_INTERNAL_FILES = "UseInternalFiles";
+    
     private Dictionary dic = null;
 
     // controls loading of arrays, used to skip loading before conversion
@@ -66,13 +68,24 @@ public class WordNet extends Configurable implements ILinguisticOracle, ISenseMa
             if (newProperties.containsKey(LOAD_ARRAYS_KEY)) {
                 loadArrays = Boolean.parseBoolean(newProperties.getProperty(LOAD_ARRAYS_KEY));
             }
+            
+            boolean useInternalFiles = true;
+            
+            if (newProperties.contains(USE_INTERNAL_FILES)) {
+                useInternalFiles = Boolean.parseBoolean(newProperties.getProperty(USE_INTERNAL_FILES));
+            }
 
             if (newProperties.containsKey(JWNL_PROPERTIES_PATH_KEY)) {
                 // initialize JWNL (this must be done before JWNL library can be used)
                 try {
                     final String configPath = newProperties.getProperty(JWNL_PROPERTIES_PATH_KEY);
                     log.info("Initializing JWNL from " + configPath);
-                    JWNL.initialize(new FileInputStream(configPath));
+                    if (useInternalFiles) {
+                        log.info("Using internal files.");
+                        JWNL.initialize(new FileInputStream(ClassLoader.getSystemResource(configPath).getPath()));
+                    } else {
+                        JWNL.initialize(new FileInputStream(configPath));
+                    }
                     dic = Dictionary.getInstance();
                 } catch (JWNLException e) {
                     final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
@@ -93,7 +106,7 @@ public class WordNet extends Configurable implements ILinguisticOracle, ISenseMa
                 if (loadArrays) {
                     String multiwordFileName = newProperties.getProperty(MULTIWORDS_FILE_KEY);
                     log.info("Loading multiwords: " + multiwordFileName);
-                    multiwords = readHash(multiwordFileName);
+                    multiwords = readHash(multiwordFileName, useInternalFiles);
                     log.info("loaded multiwords: " + multiwords.size());
                 } else {
                     multiwords = new HashMap<String, ArrayList<ArrayList<String>>>();
@@ -446,13 +459,14 @@ public class WordNet extends Configurable implements ILinguisticOracle, ISenseMa
      * Value - List of Lists, which contain the other words in the all the multiwords starting with key.
      *
      * @param fileName the file name from which the hashmap will be read
+     * @parm isInternalFile reads from internal data file in resources folder
      * @return multiwords hashmap
      * @throws it.unitn.disi.smatch.SMatchException SMatchException
      */
     @SuppressWarnings("unchecked")
-    private static HashMap<String, ArrayList<ArrayList<String>>> readHash(String fileName) throws SMatchException {
+    private static HashMap<String, ArrayList<ArrayList<String>>> readHash(String fileName, boolean isInternalFile) throws SMatchException {
         try {
-            return (HashMap<String, ArrayList<ArrayList<String>>>) MiscUtils.readObject(fileName);
+            return (HashMap<String, ArrayList<ArrayList<String>>>) MiscUtils.readObject(fileName, isInternalFile);
         } catch (DISIException e) {
             throw new SMatchException(e.getMessage(), e);
         }
@@ -472,7 +486,19 @@ public class WordNet extends Configurable implements ILinguisticOracle, ISenseMa
             try {
                 final String configPath = properties.getProperty(JWNL_PROPERTIES_PATH_KEY);
                 log.info("Initializing JWNL from " + configPath);
-                JWNL.initialize(new FileInputStream(configPath));
+               
+                boolean useInternalFiles = true;
+
+                if (properties.contains(USE_INTERNAL_FILES)) {
+                    useInternalFiles = Boolean.parseBoolean(properties.getProperty(USE_INTERNAL_FILES));
+                }
+
+                if (useInternalFiles == true) {
+                    log.info("Using internal files.");
+                    JWNL.initialize(new FileInputStream(ClassLoader.getSystemResource("data/wordnet/2.1/cache/multiwords.hash").getPath()));
+                } else {
+                    JWNL.initialize(new FileInputStream(configPath));
+                }
                 log.info("Creating WordNet caches...");
                 writeMultiwords(properties);
                 log.info("Done");
