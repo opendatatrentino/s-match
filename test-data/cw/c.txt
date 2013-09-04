@@ -1,0 +1,7 @@
+Snow Registry
+	Code
+	Name
+	Short Name
+	height
+	Latitude
+	Longitude
