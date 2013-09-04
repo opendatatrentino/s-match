@@ -25,11 +25,14 @@ import it.unitn.disi.smatch.preprocessors.IContextPreprocessor;
 import it.unitn.disi.smatch.renderers.context.IBaseContextRenderer;
 import it.unitn.disi.smatch.renderers.context.IContextRenderer;
 import it.unitn.disi.smatch.renderers.mapping.IMappingRenderer;
+import java.io.File;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Properties;
 
@@ -403,7 +406,7 @@ public class MatchManager extends Configurable implements IMatchManager {
 
             Properties config = new Properties();
             if (configFileName == null) {
-                config.load(new FileInputStream(ClassLoader.getSystemResource(DEFAULT_CONFIG_FILE_NAME).getPath()));
+                config.load(Thread.currentThread().getContextClassLoader().getResource(DEFAULT_CONFIG_FILE_NAME).openStream());
             } else {
                 config.load(new FileInputStream(configFileName));
             }
@@ -501,14 +504,13 @@ public class MatchManager extends Configurable implements IMatchManager {
         }
     }
 
-    public static IContextMapping<INode> simpleMatch(IContext ctxSource, IContext ctxTarget) throws IOException, ConfigurableException {
-
-        String configFileName = DEFAULT_CONFIG_FILE_NAME;
+    public static IContextMapping<INode> simpleMatch(IContext ctxSource, IContext ctxTarget) throws IOException, ConfigurableException, URISyntaxException {
 
         MatchManager mm = new MatchManager();
 
         Properties config = new Properties();
-        config.load(new FileInputStream(configFileName));
+  
+        config.load(Thread.currentThread().getContextClassLoader().getResource(DEFAULT_CONFIG_FILE_NAME).openStream());
 
         mm.setProperties(config);
 

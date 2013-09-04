@@ -62,10 +62,10 @@ public class MiscUtils {
     public static Object readObject(String fileName, boolean isInternalFile) throws DISIException {
         Object result;
         try {
-            FileInputStream fos = null;
+            InputStream fos = null;
 
             if (isInternalFile == true) {
-                fos = new FileInputStream(ClassLoader.getSystemResource(fileName).getPath());
+                fos = Thread.currentThread().getContextClassLoader().getResource(fileName).openStream();
             } else {
                 fos = new FileInputStream(fileName);
             }

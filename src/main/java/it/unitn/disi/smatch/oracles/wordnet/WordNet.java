@@ -25,7 +25,9 @@ import org.apache.log4j.Logger;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.*;
+import java.util.logging.Level;
 import java.util.regex.Pattern;
 
 /**
@@ -82,7 +84,7 @@ public class WordNet extends Configurable implements ILinguisticOracle, ISenseMa
                     log.info("Initializing JWNL from " + configPath);
                     if (useInternalFiles) {
                         log.info("Using internal files.");
-                        JWNL.initialize(new FileInputStream(ClassLoader.getSystemResource(configPath).getPath()));
+                            JWNL.initialize(Thread.currentThread().getContextClassLoader().getResource(configPath).openStream());
                     } else {
                         JWNL.initialize(new FileInputStream(configPath));
                     }
@@ -95,6 +97,8 @@ public class WordNet extends Configurable implements ILinguisticOracle, ISenseMa
                     final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
                     log.error(errMessage, e);
                     throw new ConfigurableException(errMessage, e);
+                } catch (IOException ex) {
+                    java.util.logging.Logger.getLogger(WordNet.class.getName()).log(Level.SEVERE, null, ex);
                 }
             } else {
                 final String errMessage = "Cannot find configuration key " + JWNL_PROPERTIES_PATH_KEY;
@@ -494,8 +498,8 @@ public class WordNet extends Configurable implements ILinguisticOracle, ISenseMa
                 }
 
                 if (useInternalFiles == true) {
-                    log.info("Using internal files.");
-                    JWNL.initialize(new FileInputStream(ClassLoader.getSystemResource("data/wordnet/2.1/cache/multiwords.hash").getPath()));
+                    log.info("Using internal files.");                    
+                    JWNL.initialize( Thread.currentThread().getContextClassLoader().getResource(configPath).openStream());
                 } else {
                     JWNL.initialize(new FileInputStream(configPath));
                 }
@@ -510,6 +514,8 @@ public class WordNet extends Configurable implements ILinguisticOracle, ISenseMa
                 final String errMessage = e.getClass().getSimpleName() + ": " + e.getMessage();
                 log.error(errMessage, e);
                 throw new SMatchException(errMessage, e);
+            } catch (IOException ex) {
+                java.util.logging.Logger.getLogger(WordNet.class.getName()).log(Level.SEVERE, null, ex);
             }
         } else {
             final String errMessage = "Cannot find configuration key " + JWNL_PROPERTIES_PATH_KEY;
