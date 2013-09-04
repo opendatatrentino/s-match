@@ -1,3 +1,7 @@
+2013.09.04
+ * Move data and config files to /src/main/resources.
+ * Use internal configuration or data by default if no external configuration or data are given.
+
 2013.07.19
  * Create a Maven project to build S-Match and to release the JAR in Sonatype.
  * Reorganize source directories to follow Maven's directory strucure.
