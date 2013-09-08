@@ -94,7 +94,7 @@ public class WordNet extends Configurable implements ILinguisticOracle, ISenseMa
                         InputStream propertiesStream = Thread.currentThread().getContextClassLoader().getResource(configPath).openStream();
                         String dictionaryPath = Thread.currentThread().getContextClassLoader().getResource("data").toString();
                         dictionaryPath = dictionaryPath.replace("file:/", "");
-                        dictionaryPath = dictionaryPath + "/";
+                        dictionaryPath = "/" + dictionaryPath + "/";
                         log.info("dictionaryPath: " + dictionaryPath);
                         String propertiesFromStream = getTextFromStream(propertiesStream);
                         propertiesFromStream = propertiesFromStream.replace(DEFAULT_FILE_DICTIONARY_PATH, dictionaryPath);
@@ -518,7 +518,7 @@ public class WordNet extends Configurable implements ILinguisticOracle, ISenseMa
                     InputStream propertiesStream = Thread.currentThread().getContextClassLoader().getResource(configPath).openStream();
                     String dictionaryPath = Thread.currentThread().getContextClassLoader().getResource("data").toString();
                     dictionaryPath = dictionaryPath.replace("file:/", "");
-                    dictionaryPath = dictionaryPath + "/";
+                    dictionaryPath = "/" + dictionaryPath + "/";
                     log.info("dictionaryPath: " + dictionaryPath);
                     String propertiesFromStream = getTextFromStream(propertiesStream);
                     propertiesFromStream = propertiesFromStream.replace(DEFAULT_FILE_DICTIONARY_PATH, dictionaryPath);
