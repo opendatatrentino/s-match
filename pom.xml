@@ -9,7 +9,7 @@
   
     <groupId>it.unitn.disi</groupId>
     <artifactId>s-match</artifactId>
-    <version>0.9.18-SNAPSHOT</version>
+    <version>0.9.18</version>
     <packaging>jar</packaging>
 
     <name>s-match</name>
@@ -180,7 +180,8 @@
         <url>git@github.com:opendatatrentino/s-match.git</url>
         <connection>scm:git:git://github.com/opendatatrentino/s-match</connection>
         <developerConnection>scm:git:https://github.com/opendatatrentino/s-match.git</developerConnection>
-    </scm>
+      <tag>s-match-0.9.18</tag>
+  </scm>
     
     <developers>
         <developer>
