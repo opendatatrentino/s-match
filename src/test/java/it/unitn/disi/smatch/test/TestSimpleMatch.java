@@ -42,21 +42,21 @@ public class TestSimpleMatch extends TestCase {
 
     public void testSMatch() throws SMatchException, FileNotFoundException, 
             ConfigurableException, IOException, ClassNotFoundException {
+               
+        String[] convertC = {"convert", "test-data/cw/c.txt",
+            "test-data/cw/c.xml", "-config=src/main/resources/conf/s-match-Tab2XML.properties"};
+
+        String[] convertW = {"convert", "test-data/cw/w.txt",
+            "test-data/cw/w.xml", "-config=src/main/resources/conf/s-match-Tab2XML.properties"};
+
+        String[] offlineC = {"offline", "test-data/cw/c.xml",
+            "test-data/cw/c.xml"};
+
+        String[] offlineW = {"offline", "test-data/cw/w.xml",
+            "test-data/cw/w.xml"};
         
-        String[] convertC = {"convert", "test-data\\cw\\c.txt",
-            "test-data\\cw\\c.xml", "-config=src\\main\\resources\\conf\\s-match-Tab2XML.properties"};
-
-        String[] convertW = {"convert", "test-data\\cw\\w.txt",
-            "test-data\\cw\\w.xml", "-config=src\\main\\resources\\conf\\s-match-Tab2XML.properties"};
-
-        String[] offlineC = {"offline", "test-data\\cw\\c.xml",
-            "test-data\\cw\\c.xml"};
-
-        String[] offlineW = {"offline", "test-data\\cw\\w.xml",
-            "test-data\\cw\\w.xml"};
-        
-        String[] online = {"online", "test-data\\cw\\c.xml",
-            "test-data\\cw\\w.xml","test-data\\cw\\result-cw.txt"};
+        String[] online = {"online", "test-data/cw/c.xml",
+            "test-data/cw/w.xml","test-data/cw/result-cw.txt"};
 
         MatchManager.main(convertC);
         MatchManager.main(convertW);
