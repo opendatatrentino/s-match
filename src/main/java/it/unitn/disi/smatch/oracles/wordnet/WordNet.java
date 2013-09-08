@@ -11,6 +11,8 @@ import it.unitn.disi.smatch.oracles.ILinguisticOracle;
 import it.unitn.disi.smatch.oracles.ISenseMatcher;
 import it.unitn.disi.smatch.oracles.LinguisticOracleException;
 import it.unitn.disi.smatch.oracles.SenseMatcherException;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import net.sf.extjwnl.JWNL;
 import net.sf.extjwnl.JWNLException;
 import net.sf.extjwnl.data.*;
@@ -26,6 +28,8 @@ import org.apache.log4j.Logger;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.regex.Pattern;
@@ -44,6 +48,7 @@ public class WordNet extends Configurable implements ILinguisticOracle, ISenseMa
 
     private static final String JWNL_PROPERTIES_PATH_KEY = "JWNLPropertiesPath";
     private static final String USE_INTERNAL_FILES = "UseInternalFiles";
+    private static final String DEFAULT_FILE_DICTIONARY_PATH = "../data/";
     
     private Dictionary dic = null;
 
@@ -82,9 +87,19 @@ public class WordNet extends Configurable implements ILinguisticOracle, ISenseMa
                 try {
                     final String configPath = newProperties.getProperty(JWNL_PROPERTIES_PATH_KEY);
                     log.info("Initializing JWNL from " + configPath);
+
                     if (useInternalFiles) {
                         log.info("Using internal files.");
-                            JWNL.initialize(Thread.currentThread().getContextClassLoader().getResource(configPath).openStream());
+
+                        InputStream propertiesStream = Thread.currentThread().getContextClassLoader().getResource(configPath).openStream();
+                        String dictionaryPath = Thread.currentThread().getContextClassLoader().getResource("data").toString();
+                        dictionaryPath = dictionaryPath.replace("file:/", "");
+                        dictionaryPath = dictionaryPath + "/";
+                        log.info("dictionaryPath: " + dictionaryPath);
+                        String propertiesFromStream = getTextFromStream(propertiesStream);
+                        propertiesFromStream = propertiesFromStream.replace(DEFAULT_FILE_DICTIONARY_PATH, dictionaryPath);
+                        InputStream is = new ByteArrayInputStream(propertiesFromStream.getBytes());
+                        JWNL.initialize(is);
                     } else {
                         JWNL.initialize(new FileInputStream(configPath));
                     }
@@ -490,7 +505,7 @@ public class WordNet extends Configurable implements ILinguisticOracle, ISenseMa
             try {
                 final String configPath = properties.getProperty(JWNL_PROPERTIES_PATH_KEY);
                 log.info("Initializing JWNL from " + configPath);
-               
+
                 boolean useInternalFiles = true;
 
                 if (properties.contains(USE_INTERNAL_FILES)) {
@@ -498,8 +513,17 @@ public class WordNet extends Configurable implements ILinguisticOracle, ISenseMa
                 }
 
                 if (useInternalFiles == true) {
-                    log.info("Using internal files.");                    
-                    JWNL.initialize( Thread.currentThread().getContextClassLoader().getResource(configPath).openStream());
+                    log.info("Using internal files.");
+
+                    InputStream propertiesStream = Thread.currentThread().getContextClassLoader().getResource(configPath).openStream();
+                    String dictionaryPath = Thread.currentThread().getContextClassLoader().getResource("data").toString();
+                    dictionaryPath = dictionaryPath.replace("file:/", "");
+                    dictionaryPath = dictionaryPath + "/";
+                    log.info("dictionaryPath: " + dictionaryPath);
+                    String propertiesFromStream = getTextFromStream(propertiesStream);
+                    propertiesFromStream = propertiesFromStream.replace(DEFAULT_FILE_DICTIONARY_PATH, dictionaryPath);
+                    InputStream is = new ByteArrayInputStream(propertiesFromStream.getBytes());
+                    JWNL.initialize(is);
                 } else {
                     JWNL.initialize(new FileInputStream(configPath));
                 }
@@ -568,5 +592,21 @@ public class WordNet extends Configurable implements ILinguisticOracle, ISenseMa
             log.error(errMessage, e);
             throw new SMatchException(errMessage, e);
         }
+    }
+    
+    private static String getTextFromStream(InputStream inputStream) throws IOException {
+        BufferedReader fileCheck;
+        fileCheck = new BufferedReader(new InputStreamReader(inputStream));
+        StringBuilder fileText = new StringBuilder();
+        String line;
+        while (null != (line = fileCheck.readLine())) {
+            fileText.append(line).append("\n");
+        }
+        try {
+            fileCheck.close();
+        } catch (IOException e) {
+            // doesn't matter.
+        }
+        return fileText.toString();
     }
 }
