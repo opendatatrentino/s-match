@@ -1,3 +1,6 @@
+2013.09.09
+ * Move data to another project smatch-data 
+ 
 2013.09.04
  * Move data and config files to /src/main/resources.
  * Use internal configuration or data by default if no external configuration or data are given.
