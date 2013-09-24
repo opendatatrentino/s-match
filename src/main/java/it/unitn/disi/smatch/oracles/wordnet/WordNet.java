@@ -78,7 +78,7 @@ public class WordNet extends Configurable implements ILinguisticOracle, ISenseMa
             
             boolean useInternalFiles = true;
             
-            if (newProperties.contains(USE_INTERNAL_FILES)) {
+            if (newProperties.containsKey(USE_INTERNAL_FILES)) {
                 useInternalFiles = Boolean.parseBoolean(newProperties.getProperty(USE_INTERNAL_FILES));
             }
 
@@ -508,7 +508,7 @@ public class WordNet extends Configurable implements ILinguisticOracle, ISenseMa
 
                 boolean useInternalFiles = true;
 
-                if (properties.contains(USE_INTERNAL_FILES)) {
+                if (properties.containsKey(USE_INTERNAL_FILES)) {
                     useInternalFiles = Boolean.parseBoolean(properties.getProperty(USE_INTERNAL_FILES));
                 }
 
