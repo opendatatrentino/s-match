@@ -504,13 +504,17 @@ public class MatchManager extends Configurable implements IMatchManager {
         }
     }
 
-    public static IContextMapping<INode> simpleMatch(IContext ctxSource, IContext ctxTarget) throws IOException, ConfigurableException, URISyntaxException {
+    public static IContextMapping<INode> simpleMatch(IContext ctxSource, IContext ctxTarget, String propertiesFile) throws IOException, ConfigurableException, URISyntaxException {
 
         MatchManager mm = new MatchManager();
 
         Properties config = new Properties();
   
-        config.load(Thread.currentThread().getContextClassLoader().getResource(DEFAULT_CONFIG_FILE_NAME).openStream());
+        if (propertiesFile.isEmpty()) {
+            config.load(Thread.currentThread().getContextClassLoader().getResource(DEFAULT_CONFIG_FILE_NAME).openStream());
+        } else {
+            config.load(new FileInputStream(propertiesFile));
+        }
 
         mm.setProperties(config);
 
