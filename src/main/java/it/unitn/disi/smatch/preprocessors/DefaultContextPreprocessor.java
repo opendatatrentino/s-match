@@ -25,6 +25,7 @@ import java.util.*;
  *
  * @author Mikalai Yatskevich mikalai.yatskevich@comlab.ox.ac.uk
  * @author <a rel="author" href="http://autayeu.com/">Aliaksandr Autayeu</a>
+ * @author Moaz Reyad <reyad@disi.unitn.it>
  */
 public class DefaultContextPreprocessor extends Configurable implements IContextPreprocessor {
 
@@ -435,9 +436,9 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
                 if (vec != null && vec.size() > 0) {
                     // construct formula
                     if (connective.isEmpty()) {
-                        formulaOfConcept.append(" | ").append(bracket).append(vec.toString());
+                        formulaOfConcept.append(" | ").append(bracket).append(encloseWithParentheses(vec));
                     } else {
-                        formulaOfConcept.append(connective).append(bracket).append(vec.toString());
+                        formulaOfConcept.append(connective).append(bracket).append(encloseWithParentheses(vec));
                     }
                     insert = true;
                     connective = "";
@@ -462,7 +463,7 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
                 // If logical not
             } else if (notWords.contains(" " + token + " ")) {
                 if (vec != null && vec.size() > 0) {
-                    formulaOfConcept.append(connective).append(vec.toString());
+                    formulaOfConcept.append(connective).append(encloseWithParentheses(vec));
                     vec = new ArrayList<String>();
                     connective = "";
                 }
@@ -483,9 +484,9 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
         if (vec != null && vec.size() > 0) {
             //construct formula
             if (connective.contains("&") || connective.contains("|") || connective.equals(" ")) {
-                formulaOfConcept.append(connective).append(bracket).append(vec.toString());
+                formulaOfConcept.append(connective).append(bracket).append(encloseWithParentheses(vec));
             } else {
-                formulaOfConcept.append(" & ").append(vec.toString());
+                formulaOfConcept.append(" & ").append(encloseWithParentheses(vec));
             }
             connective = "";
         } else {
@@ -900,5 +901,78 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
             }
         }
         return tmp;
+    }
+
+    /**
+     * This method will give the string "[[[a,b],[c,d]], ..., [z]]" instead of 
+     * the List.toString() which will give "[a,b,c, ..., z]"
+     *
+     * [n1.0] becomes [n1.0] 
+     * [n1.0, n2.0] becomes [n1.0, n2.0]
+     * [n1.0, n2.0, n3.0] becomes [[n1.0, n2.0], [n3.0]] 
+     * [n1.0, n2.0, n3.0, n4.0] becomes [[n1.0, n2.0], [n3.0, n4.0]]
+     * [n1.0, n2.0, n3.0, n4.0, n5.0] becomes [[[n1.0, n2.0], [n3.0, n4.0]], [n5.0]]
+     *
+     * It does not work if the size of the array is greater than five.
+     * 
+     * @param vec vector of propositional logic items (maximum five elements)
+     * @return the same formula of the input logic items with brackets
+     * @see TestEnclosingParentheses
+     */
+    public static String encloseWithParentheses(List<String> vec) {
+        
+        if(vec.size() > 5)
+        {
+            // Error: More than five items are not supported. 
+            return vec.toString();
+        }
+        
+        String result = new String();
+
+        int numberOfParentheses = vec.size() / 2;
+
+        if (vec.size() % 2 != 0) {
+            numberOfParentheses = numberOfParentheses + 1;
+        }
+
+        int numberOfParenthesesToClose = 0;
+        for (int i = 0; i < numberOfParentheses - 1; i++) {
+            result = result.concat("[");
+            numberOfParenthesesToClose++;
+        }
+
+        int i = 0;
+
+        while (i < vec.size()) {
+
+            result = result.concat("[");
+            numberOfParenthesesToClose++;
+
+            result = result.concat(vec.get(i));
+
+            // last element
+            if (i == vec.size() - 1) {
+                for (int j = 0; j < numberOfParenthesesToClose; j++) {
+                    result = result.concat("]");
+                }
+            } else {
+                result = result.concat(", ");
+                i++;
+                result = result.concat(vec.get(i));
+
+                for (int j = 0; j < (i + 1) / 2; j++) {
+                    result = result.concat("]");
+                    numberOfParenthesesToClose--;
+                }
+            }
+
+            i++;
+
+            if (i < vec.size()) {
+                result = result.concat(", ");
+            }
+        }
+
+        return result;
     }
 }
