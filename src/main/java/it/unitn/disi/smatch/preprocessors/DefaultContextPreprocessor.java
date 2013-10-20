@@ -909,70 +909,25 @@ public class DefaultContextPreprocessor extends Configurable implements IContext
      *
      * [n1.0] becomes [n1.0] 
      * [n1.0, n2.0] becomes [n1.0, n2.0]
-     * [n1.0, n2.0, n3.0] becomes [[n1.0, n2.0], [n3.0]] 
+     * [n1.0, n2.0, n3.0] becomes [[n1.0], [n2.0, n3.0]]
      * [n1.0, n2.0, n3.0, n4.0] becomes [[n1.0, n2.0], [n3.0, n4.0]]
-     * [n1.0, n2.0, n3.0, n4.0, n5.0] becomes [[[n1.0, n2.0], [n3.0, n4.0]], [n5.0]]
+     * [n1.0, n2.0, n3.0, n4.0, n5.0] becomes [[n1.0, n2.0], [[n3.0], [n4.0, n5.0]]]
      *
-     * It does not work if the size of the array is greater than five.
-     * 
      * @param vec vector of propositional logic items (maximum five elements)
      * @return the same formula of the input logic items with brackets
      * @see TestEnclosingParentheses
      */
     public static String encloseWithParentheses(List<String> vec) {
-        
-        if(vec.size() > 5)
-        {
-            // Error: More than five items are not supported. 
-            return vec.toString();
+        if (vec.size() == 1) {
+            return "[" + vec.get(0) + "]";
+        } else if (vec.size() == 2) {
+            return "[" + vec.get(0) + ", " + vec.get(1) + "]";
+        } else {
+            return "["
+                    + encloseWithParentheses(vec.subList(0, (vec.size() / 2)))
+                    + ", "
+                    + encloseWithParentheses(vec.subList((vec.size() / 2), vec.size()))
+                    + "]";
         }
-        
-        String result = new String();
-
-        int numberOfParentheses = vec.size() / 2;
-
-        if (vec.size() % 2 != 0) {
-            numberOfParentheses = numberOfParentheses + 1;
-        }
-
-        int numberOfParenthesesToClose = 0;
-        for (int i = 0; i < numberOfParentheses - 1; i++) {
-            result = result.concat("[");
-            numberOfParenthesesToClose++;
-        }
-
-        int i = 0;
-
-        while (i < vec.size()) {
-
-            result = result.concat("[");
-            numberOfParenthesesToClose++;
-
-            result = result.concat(vec.get(i));
-
-            // last element
-            if (i == vec.size() - 1) {
-                for (int j = 0; j < numberOfParenthesesToClose; j++) {
-                    result = result.concat("]");
-                }
-            } else {
-                result = result.concat(", ");
-                i++;
-                result = result.concat(vec.get(i));
-
-                for (int j = 0; j < (i + 1) / 2; j++) {
-                    result = result.concat("]");
-                    numberOfParenthesesToClose--;
-                }
-            }
-
-            i++;
-
-            if (i < vec.size()) {
-                result = result.concat(", ");
-            }
-        }
-
-        return result;
     }
 }

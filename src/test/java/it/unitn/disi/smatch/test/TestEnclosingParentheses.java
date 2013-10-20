@@ -19,6 +19,7 @@
 package it.unitn.disi.smatch.test;
 
 import it.unitn.disi.smatch.preprocessors.DefaultContextPreprocessor;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import static junit.framework.Assert.assertEquals;
@@ -44,9 +45,9 @@ public class TestEnclosingParentheses extends TestCase {
 
         String expected1 = "[n1.0]";
         String expected2 = "[n1.0, n2.0]";
-        String expected3 = "[[n1.0, n2.0], [n3.0]]";
+        String expected3 = "[[n1.0], [n2.0, n3.0]]";
         String expected4 = "[[n1.0, n2.0], [n3.0, n4.0]]";
-        String expected5 = "[[[n1.0, n2.0], [n3.0, n4.0]], [n5.0]]";
+        String expected5 = "[[n1.0, n2.0], [[n3.0], [n4.0, n5.0]]]";
 
         String out = DefaultContextPreprocessor.encloseWithParentheses(vec1);
         assertEquals("Parentheses error", expected1, out);
@@ -62,5 +63,15 @@ public class TestEnclosingParentheses extends TestCase {
 
         out = DefaultContextPreprocessor.encloseWithParentheses(vec5);
         assertEquals("Parentheses error", expected5, out);
+        
+        for (int i = 5; i < 10; i++) {
+            List<String> vecTest = new ArrayList<String>();
+            
+            for (int j = 0; j <= i; j++) {
+                vecTest.add("n" + String.valueOf(j) + ".0");
+            }
+            
+            DefaultContextPreprocessor.encloseWithParentheses(vecTest);
+        }
     }
 }
