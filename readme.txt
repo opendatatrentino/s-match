@@ -3,7 +3,7 @@
 S-Match is a semantic matching algorithm developed at the University of Trento
 under the direction of Fausto Giunchiglia.
 
-To learn more about S-Match visit: http://s-match.org/
+To learn more about S-Match visit: http://semanticmatching.org/s-match.html
 
 2. Current Release
 
@@ -35,4 +35,4 @@ http://sourceforge.net/apps/trac/s-match/wiki/
 
 5. Documentation
 
-For S-Match documentation visit: http://s-match.org/documentation.html
+For S-Match documentation visit: http://semanticmatching.org/documentation.html
